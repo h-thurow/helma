@@ -172,7 +172,8 @@ public class HopObjectCtor extends FunctionObject {
             } catch (Exception x) {
                 return null;
             }
-            return node == null ? null : Context.toObject(node, this);
+            
+            return node == null ? null : (core.app.getPrototype(node).isInstanceOf(type) ? Context.toObject(node, this) : null);
         }
 
         public int getArity() {
