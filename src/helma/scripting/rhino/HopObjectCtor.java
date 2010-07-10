@@ -7,6 +7,7 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
+ * Contributions by Daniel Ruthardt are copyright 2010, dowee it solutions GmbH. All rights reserved.
  *
  * $RCSfile$
  * $Author$
@@ -172,8 +173,14 @@ public class HopObjectCtor extends FunctionObject {
             } catch (Exception x) {
                 return null;
             }
-            
-            return node == null ? null : (core.app.getPrototype(node).isInstanceOf(type) ? Context.toObject(node, this) : null);
+
+            if (node == null
+                    || !HopObjectCtor.this.core.app.getPrototype(node)
+                            .isInstanceOf(type)) {
+                return null;
+            }
+
+            return Context.toObject(node, this);
         }
 
         public int getArity() {
