@@ -7,7 +7,10 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
- * Contributions by Daniel Ruthardt are copyright 2010, dowee it solutions GmbH. All rights reserved.
+ *
+ * Contributions:
+ * 	Daniel Ruthardt
+ * 	Copyright 2010 dowee it solutions GmbH. All rights reserved.
  *
  * $RCSfile$
  * $Author$
