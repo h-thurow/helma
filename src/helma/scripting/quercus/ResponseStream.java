@@ -101,7 +101,7 @@ public class ResponseStream extends StreamImpl {
      */
     @Override
     public void write(final byte[] buffer, final int offset, final int length,
-            final boolean isEnd) throws IOException {
+            final boolean isEnd) {
         final byte[] usedBuffer = Arrays.copyOfRange(buffer, offset, length);
         this._response.writeBinary(usedBuffer);
 
@@ -118,7 +118,7 @@ public class ResponseStream extends StreamImpl {
     @Override
     public boolean write(final byte[] buffer1, final int offset1,
             final int length1, final byte[] buffer2, final int offset2,
-            final int length2, final boolean isEnd) throws IOException {
+            final int length2, final boolean isEnd) {
         write(buffer1, offset1, length1, isEnd);
         write(buffer2, offset2, length2, isEnd);
 

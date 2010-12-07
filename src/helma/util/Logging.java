@@ -51,7 +51,7 @@ public class Logging extends LogFactory {
      *  helma.logdir system property.
      */
     public Logging() {
-        logdir = System.getProperty("helma.logdir", "log"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.logdir = System.getProperty("helma.logdir", "log"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -66,17 +66,14 @@ public class Logging extends LogFactory {
         }
         // normalize log name
         logname = logname.replaceAll("[^\\w\\d\\.]", ""); //$NON-NLS-1$ //$NON-NLS-2$
-        if ("console".equals(logdir)) { //$NON-NLS-1$
+        if ("console".equals(this.logdir)) { //$NON-NLS-1$
             if (logname.startsWith("org.mortbay.")) //$NON-NLS-1$
                 return getConsoleLog().getSedatedLog();
-            else
-                return getConsoleLog();
-        } else {
-            if (logname.startsWith("org.mortbay.")) //$NON-NLS-1$
-                return getFileLog(logname).getSedatedLog();
-            else
-                return getFileLog(logname);
+            return getConsoleLog();
         }
+        if (logname.startsWith("org.mortbay.")) //$NON-NLS-1$
+            return getFileLog(logname).getSedatedLog();
+        return getFileLog(logname);
     }
 
     /**
@@ -98,7 +95,7 @@ public class Logging extends LogFactory {
         Logger log = (Logger) loggerMap.get(logname);
 
         if (log == null) {
-            log = new FileLogger(logdir, logname);
+            log = new FileLogger(this.logdir, logname);
             loggerMap.put(logname, log);
             loggers.add(log);
         }
@@ -120,7 +117,7 @@ public class Logging extends LogFactory {
     @Override
     public Object getAttribute(String name) {
         if ("logdir".equals(name)) { //$NON-NLS-1$
-            return logdir;
+            return this.logdir;
         }
         return null;
     }
@@ -197,14 +194,9 @@ public class Logging extends LogFactory {
         for (int i = nloggers - 1; i >= 0; i--) {
             FileLogger log = (FileLogger) loggers.get(i);
 
-            try {
-                File file = log.rotateLogFile();
-                if (file != null) {
-                    files.add(file);
-                }
-            } catch (IOException io) {
-                System.err.println(Messages.getString("Logging.1") + log.getName() + Messages.getString("Logging.2") + //$NON-NLS-1$ //$NON-NLS-2$
-                                    io.toString());
+            File file = log.rotateLogFile();
+            if (file != null) {
+                files.add(file);
             }
         }
 

@@ -14,10 +14,6 @@ package helma.scripting.quercus;
 import helma.framework.ResponseTrans;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
-import helma.scripting.ScriptingException;
-
 import com.caucho.quercus.env.ObjectExtJavaValue;
 import com.caucho.quercus.env.StringValue;
 import com.caucho.quercus.module.AbstractQuercusModule;
@@ -146,9 +142,6 @@ public class GlobalFunctions extends AbstractQuercusModule {
                 skin.render(engine.getRequestEvaluator(), null, parameters);
             } catch (final helma.framework.RedirectException e) {
                 // ignored by intention
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
         }
     }
@@ -188,9 +181,6 @@ public class GlobalFunctions extends AbstractQuercusModule {
                                 parameters, skin)).toStringValue();
             } catch (final helma.framework.RedirectException e) {
                 // ignored by intention
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
         }
 

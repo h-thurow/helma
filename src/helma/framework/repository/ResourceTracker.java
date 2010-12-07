@@ -16,8 +16,6 @@
 
 package helma.framework.repository;
 
-import java.io.IOException;
-
 /**
  * A utility class that allows Resource consumers to track changes
  * on resources.
@@ -32,15 +30,15 @@ public class ResourceTracker {
         markClean();
     }
 
-    public boolean hasChanged() throws IOException {
-        return lastModified != resource.lastModified();
+    public boolean hasChanged() {
+        return this.lastModified != this.resource.lastModified();
     }
 
     public void markClean() {
-        lastModified = resource.lastModified();
+        this.lastModified = this.resource.lastModified();
     }
 
     public Resource getResource() {
-        return resource;
+        return this.resource;
     }
 }

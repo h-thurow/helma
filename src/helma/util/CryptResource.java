@@ -21,7 +21,6 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import helma.framework.repository.Resource;
-import helma.framework.repository.Resource;
 
 /**
  *  This file authenticates against a passwd source
@@ -42,7 +41,7 @@ public class CryptResource {
     public CryptResource(Resource resource, CryptResource parentResource) {
         this.resource = resource;
         this.parentResource = parentResource;
-        users = new Properties();
+        this.users = new Properties();
     }
 
     /**
@@ -54,13 +53,13 @@ public class CryptResource {
      * @return ...
      */
     public boolean authenticate(String username, String pw) {
-        if (resource.exists() && (resource.lastModified() > lastRead)) {
+        if (this.resource.exists() && (this.resource.lastModified() > this.lastRead)) {
             readFile();
-        } else if (!resource.exists() && (users.size() > 0)) {
-            users.clear();
+        } else if (!this.resource.exists() && (this.users.size() > 0)) {
+            this.users.clear();
         }
 
-        String realpw = users.getProperty(username);
+        String realpw = this.users.getProperty(username);
 
         if (realpw != null) {
             try {
@@ -80,8 +79,8 @@ public class CryptResource {
                 return false;
             }
         } else {
-            if (parentResource != null) {
-                return parentResource.authenticate(username, pw);
+            if (this.parentResource != null) {
+                return this.parentResource.authenticate(username, pw);
             }
         }
 
@@ -91,10 +90,10 @@ public class CryptResource {
     private synchronized void readFile() {
         BufferedReader reader = null;
 
-        users = new Properties();
+        this.users = new Properties();
 
         try {
-            reader = new BufferedReader(new StringReader(resource.getContent()));
+            reader = new BufferedReader(new StringReader(this.resource.getContent()));
 
             String line = reader.readLine();
 
@@ -102,7 +101,7 @@ public class CryptResource {
                 StringTokenizer st = new StringTokenizer(line, ":"); //$NON-NLS-1$
 
                 if (st.countTokens() > 1) {
-                    users.put(st.nextToken(), st.nextToken());
+                    this.users.put(st.nextToken(), st.nextToken());
                 }
 
                 line = reader.readLine();
@@ -116,7 +115,7 @@ public class CryptResource {
                 }
             }
 
-            lastRead = System.currentTimeMillis();
+            this.lastRead = System.currentTimeMillis();
         }
     }
 

@@ -58,17 +58,17 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
      */
     public Node read(File file)
               throws ParserConfigurationException, SAXException, IOException {
-        if (nmgr == null) {
+        if (this.nmgr == null) {
             throw new RuntimeException(Messages.getString("XmlDatabaseReader.0")); //$NON-NLS-1$
         }
 
         SAXParser parser = factory.newSAXParser();
 
-        currentNode = null;
+        this.currentNode = null;
 
         parser.parse(file, this);
 
-        return currentNode;
+        return this.currentNode;
     }
 
     /**
@@ -84,12 +84,12 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
                              Attributes atts) {
         // System.err.println ("XML-READ: startElement "+namespaceURI+", "+localName+", "+qName+", "+atts.getValue("id"));
         // discard the first element called xmlroot
-        if ("xmlroot".equals(qName) && (currentNode == null)) { //$NON-NLS-1$
+        if ("xmlroot".equals(qName) && (this.currentNode == null)) { //$NON-NLS-1$
             return;
         }
 
         // if currentNode is null, this must be the hopobject node
-        if ("hopobject".equals(qName) && (currentNode == null)) { //$NON-NLS-1$
+        if ("hopobject".equals(qName) && (this.currentNode == null)) { //$NON-NLS-1$
             String id = atts.getValue("id"); //$NON-NLS-1$
             String name = atts.getValue("name"); //$NON-NLS-1$
             String prototype = atts.getValue("prototype"); //$NON-NLS-1$
@@ -102,10 +102,10 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
                 long created = Long.parseLong(atts.getValue("created")); //$NON-NLS-1$
                 long lastmodified = Long.parseLong(atts.getValue("lastModified")); //$NON-NLS-1$
 
-                currentNode = new Node(name, id, prototype, nmgr.safe, created,
+                this.currentNode = new Node(name, id, prototype, this.nmgr.safe, created,
                                        lastmodified);
             } catch (NumberFormatException e) {
-                currentNode = new Node(name, id, prototype, nmgr.safe);
+                this.currentNode = new Node(name, id, prototype, this.nmgr.safe);
             }
 
             return;
@@ -120,13 +120,13 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
             NodeHandle handle = makeNodeHandle(atts);
 
             if ("hop:child".equals(qName)) { //$NON-NLS-1$
-                if (subnodes == null) {
-                    subnodes = currentNode.createSubnodeList();
+                if (this.subnodes == null) {
+                    this.subnodes = this.currentNode.createSubnodeList();
                 }
 
-                subnodes.add(handle);
+                this.subnodes.add(handle);
             } else if ("hop:parent".equals(qName)) { //$NON-NLS-1$
-                currentNode.setParentHandle(handle);
+                this.currentNode.setParentHandle(handle);
             } else {
                 // property name may be encoded as "propertyname" attribute,
                 // otherwise it is the element name
@@ -136,37 +136,37 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
                     propName = qName;
                 }
 
-                Property prop = new Property(propName, currentNode);
+                Property prop = new Property(propName, this.currentNode);
 
                 prop.setNodeHandle(handle);
 
-                if (propMap == null) {
-                    propMap = new Hashtable();
-                    currentNode.setPropMap(propMap);
+                if (this.propMap == null) {
+                    this.propMap = new Hashtable();
+                    this.currentNode.setPropMap(this.propMap);
                 }
 
-                propMap.put(propName, prop);
+                this.propMap.put(propName, prop);
             }
         } else {
             // a primitive property
-            elementType = atts.getValue("type"); //$NON-NLS-1$
+            this.elementType = atts.getValue("type"); //$NON-NLS-1$
 
-            if (elementType == null) {
-                elementType = "string"; //$NON-NLS-1$
+            if (this.elementType == null) {
+                this.elementType = "string"; //$NON-NLS-1$
             }
 
             // property name may be encoded as "propertyname" attribute,
             // otherwise it is the element name
-            elementName = atts.getValue("propertyname"); //$NON-NLS-1$
+            this.elementName = atts.getValue("propertyname"); //$NON-NLS-1$
 
-            if (elementName == null) {
-                elementName = qName;
+            if (this.elementName == null) {
+                this.elementName = qName;
             }
 
-            if (charBuffer == null) {
-                charBuffer = new StringBuffer();
+            if (this.charBuffer == null) {
+                this.charBuffer = new StringBuffer();
             } else {
-                charBuffer.setLength(0);
+                this.charBuffer.setLength(0);
             }
         }
     }
@@ -181,11 +181,10 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
      * @throws SAXException ...
      */
     @Override
-    public void characters(char[] ch, int start, int length)
-                    throws SAXException {
+    public void characters(char[] ch, int start, int length) {
         // append chars to char buffer
-        if (elementType != null) {
-            charBuffer.append(ch, start, length);
+        if (this.elementType != null) {
+            this.charBuffer.append(ch, start, length);
         }
     }
 
@@ -199,21 +198,20 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
      * @throws SAXException ...
      */
     @Override
-    public void endElement(String namespaceURI, String localName, String qName)
-                    throws SAXException {
-        if (elementType != null) {
-            Property prop = new Property(elementName, currentNode);
-            String charValue = charBuffer.toString();
+    public void endElement(String namespaceURI, String localName, String qName) {
+        if (this.elementType != null) {
+            Property prop = new Property(this.elementName, this.currentNode);
+            String charValue = this.charBuffer.toString();
 
-            charBuffer.setLength(0);
+            this.charBuffer.setLength(0);
 
-            if ("boolean".equals(elementType)) { //$NON-NLS-1$
+            if ("boolean".equals(this.elementType)) { //$NON-NLS-1$
                 if ("true".equals(charValue)) { //$NON-NLS-1$
                     prop.setBooleanValue(true);
                 } else {
                     prop.setBooleanValue(false);
                 }
-            } else if ("date".equals(elementType)) { //$NON-NLS-1$
+            } else if ("date".equals(this.elementType)) { //$NON-NLS-1$
                 SimpleDateFormat format = new SimpleDateFormat(DATEFORMAT);
 
                 try {
@@ -223,22 +221,22 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
                 } catch (ParseException e) {
                     prop.setStringValue(charValue);
                 }
-            } else if ("float".equals(elementType)) { //$NON-NLS-1$
+            } else if ("float".equals(this.elementType)) { //$NON-NLS-1$
                 prop.setFloatValue((new Double(charValue)).doubleValue());
-            } else if ("integer".equals(elementType)) { //$NON-NLS-1$
+            } else if ("integer".equals(this.elementType)) { //$NON-NLS-1$
                 prop.setIntegerValue((new Long(charValue)).longValue());
             } else {
                 prop.setStringValue(charValue);
             }
 
-            if (propMap == null) {
-                propMap = new Hashtable();
-                currentNode.setPropMap(propMap);
+            if (this.propMap == null) {
+                this.propMap = new Hashtable();
+                this.currentNode.setPropMap(this.propMap);
             }
 
-            propMap.put(elementName, prop);
-            elementName = null;
-            elementType = null;
+            this.propMap.put(this.elementName, prop);
+            this.elementName = null;
+            this.elementType = null;
             charValue = null;
         }
     }
@@ -250,7 +248,7 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
         DbMapping dbmap = null;
 
         if (protoref != null) {
-            dbmap = nmgr.getDbMapping(protoref);
+            dbmap = this.nmgr.getDbMapping(protoref);
         }
 
         return new NodeHandle(new DbKey(dbmap, idref));

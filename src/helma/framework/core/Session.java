@@ -73,12 +73,12 @@ public class Session implements Serializable {
         this.app = app;
         this.uid = null;
         this.userHandle = null;
-        cacheNode = new TransientNode("session"); //$NON-NLS-1$
-        cacheLastModified = cacheNode.lastModified();
+        this.cacheNode = new TransientNode("session"); //$NON-NLS-1$
+        this.cacheLastModified = this.cacheNode.lastModified();
         // HACK - decrease timestamp by 1 to notice modifications
         // taking place immediately after object creation
-        onSince = System.currentTimeMillis() - 1;
-        lastTouched = lastModified = onSince;
+        this.onSince = System.currentTimeMillis() - 1;
+        this.lastTouched = this.lastModified = this.onSince;
     }
 
     /**
@@ -86,15 +86,15 @@ public class Session implements Serializable {
      */
     public void login(INode usernode) {
         if (usernode == null) {
-            userHandle = null;
-            uid = null;
+            this.userHandle = null;
+            this.uid = null;
         } else {
-            userHandle = ((Node) usernode).getHandle();
-            uid = usernode.getElementName();
+            this.userHandle = ((Node) usernode).getHandle();
+            this.uid = usernode.getElementName();
         }
 
-        lastModified = System.currentTimeMillis();
-        modifiedInRequest = true;
+        this.lastModified = System.currentTimeMillis();
+        this.modifiedInRequest = true;
     }
 
     /**
@@ -105,9 +105,9 @@ public class Session implements Serializable {
      * @return true if session was logged in.
      */
     public boolean login(String userName, String password) {
-        if (app.loginSession(userName, password, this)) {
-            lastModified = System.currentTimeMillis();
-            modifiedInRequest = true;
+        if (this.app.loginSession(userName, password, this)) {
+            this.lastModified = System.currentTimeMillis();
+            this.modifiedInRequest = true;
             return true;
         }
         return false;
@@ -117,27 +117,27 @@ public class Session implements Serializable {
      * Remove this sessions's user node.
      */
     public void logout() {
-        if (userHandle != null) {
+        if (this.userHandle != null) {
             try {
                 // Invoke User.onLogout() iff this is a transactor request with a request
                 // evaluator already associated (i.e., if this is called from an app/script).
                 // Otherwise, we assume being called from the scheduler thread, which takes
                 // care of calling User.onLogout().
-                RequestEvaluator reval = app.getCurrentRequestEvaluator();
+                RequestEvaluator reval = this.app.getCurrentRequestEvaluator();
                 if (reval != null) {
-                    Node userNode = userHandle.getNode(app.nmgr.safe);
+                    Node userNode = this.userHandle.getNode(this.app.nmgr.safe);
                     if (userNode != null)
-                        reval.invokeDirectFunction(userNode, "onLogout", new Object[] {sessionId}); //$NON-NLS-1$
+                        reval.invokeDirectFunction(userNode, "onLogout", new Object[] {this.sessionId}); //$NON-NLS-1$
                 }
             } catch (Exception x) {
                 // errors should already be logged by request evaluator, but you never know
-                app.logError(Messages.getString("Session.0"), x); //$NON-NLS-1$
+                this.app.logError(Messages.getString("Session.0"), x); //$NON-NLS-1$
             } finally {
                 // do log out
-                userHandle = null;
-                uid = null;
-                lastModified = System.currentTimeMillis();
-                modifiedInRequest = true;
+                this.userHandle = null;
+                this.uid = null;
+                this.lastModified = System.currentTimeMillis();
+                this.modifiedInRequest = true;
 
             }
         }
@@ -149,7 +149,7 @@ public class Session implements Serializable {
      * @return ...
      */
     public boolean isLoggedIn() {
-        return userHandle != null;
+        return this.userHandle != null;
     }
 
     /**
@@ -163,18 +163,17 @@ public class Session implements Serializable {
      * Get the Node handle for the current user, if logged in.
      */
     public NodeHandle getUserHandle() {
-        return userHandle;
+        return this.userHandle;
     }
 
     /**
      * Gets the user Node from this Application's NodeManager.
      */
     public INode getUserNode() {
-        if (userHandle != null) {
-            return userHandle.getNode(app.getWrappedNodeManager());
-        } else {
-            return null;
+        if (this.userHandle != null) {
+            return this.userHandle.getNode(this.app.getWrappedNodeManager());
         }
+        return null;
     }
 
     /**
@@ -185,14 +184,14 @@ public class Session implements Serializable {
             throw new NullPointerException(Messages.getString("Session.1")); //$NON-NLS-1$
         }
         this.cacheNode = node;
-        this.cacheLastModified = cacheNode.lastModified();
+        this.cacheLastModified = this.cacheNode.lastModified();
     }
 
     /**
      * Gets the transient cache node.
      */
     public INode getCacheNode() {
-        return cacheNode;
+        return this.cacheNode;
     }
 
     /**
@@ -201,7 +200,7 @@ public class Session implements Serializable {
      * @return ...
      */
     public Application getApp() {
-        return app;
+        return this.app;
     }
 
     /**
@@ -219,7 +218,7 @@ public class Session implements Serializable {
      * @return ...
      */
     public String getSessionId() {
-        return sessionId;
+        return this.sessionId;
     }
 
     /**
@@ -227,7 +226,7 @@ public class Session implements Serializable {
      * being used.
      */
     public void touch() {
-        lastTouched = System.currentTimeMillis();
+        this.lastTouched = System.currentTimeMillis();
     }
 
     /**
@@ -236,13 +235,13 @@ public class Session implements Serializable {
      * @param reval the request evaluator that handled the request
      */
     public void commit(RequestEvaluator reval, SessionManager smgr) {
-        if (modifiedInRequest || cacheLastModified != cacheNode.lastModified()) {
-            if (!registered) {
+        if (this.modifiedInRequest || this.cacheLastModified != this.cacheNode.lastModified()) {
+            if (!this.registered) {
                 smgr.registerSession(this);
-                registered = true;
+                this.registered = true;
             }
-            modifiedInRequest = false;
-            cacheLastModified = cacheNode.lastModified();
+            this.modifiedInRequest = false;
+            this.cacheLastModified = this.cacheNode.lastModified();
         }
     }
 
@@ -252,7 +251,7 @@ public class Session implements Serializable {
      * @return ...
      */
     public long lastTouched() {
-        return lastTouched;
+        return this.lastTouched;
     }
 
     /**
@@ -262,7 +261,7 @@ public class Session implements Serializable {
      * @return ...
      */
     public long lastModified() {
-        return lastModified;
+        return this.lastModified;
     }
 
     /**
@@ -271,7 +270,7 @@ public class Session implements Serializable {
      * @param l the timestamp
      */
     public void setLastModified(long l) {
-        lastModified = l;
+        this.lastModified = l;
     }
 
     /**
@@ -280,7 +279,7 @@ public class Session implements Serializable {
      * @return ...
      */
     public long onSince() {
-        return onSince;
+        return this.onSince;
     }
 
     /**
@@ -290,11 +289,10 @@ public class Session implements Serializable {
      */
     @Override
     public String toString() {
-        if (uid != null) {
-            return "[Session for user " + uid + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-        } else {
-            return "[Anonymous Session]"; //$NON-NLS-1$
+        if (this.uid != null) {
+            return "[Session for user " + this.uid + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
+        return "[Anonymous Session]"; //$NON-NLS-1$
     }
 
     /**
@@ -302,7 +300,7 @@ public class Session implements Serializable {
      * This is usually the user name, or null if the user is not logged in.
      */
     public String getUID() {
-        return uid;
+        return this.uid;
     }
 
     /**
@@ -319,12 +317,12 @@ public class Session implements Serializable {
      * @param res the response to set the messages on
      */
     public synchronized void recoverResponseMessages(ResponseTrans res) {
-        if (message != null || debugBuffer != null) {
-            res.setMessage(message);
-            res.setDebugBuffer(debugBuffer);
-            message = null;
-            debugBuffer = null;
-            modifiedInRequest = true;
+        if (this.message != null || this.debugBuffer != null) {
+            res.setMessage(this.message);
+            res.setDebugBuffer(this.debugBuffer);
+            this.message = null;
+            this.debugBuffer = null;
+            this.modifiedInRequest = true;
         }
     }
 
@@ -334,10 +332,10 @@ public class Session implements Serializable {
      * @param res the response to retrieve the messages from
      */
     public synchronized void storeResponseMessages(ResponseTrans res) {
-        message = res.getMessage();
-        debugBuffer = res.getDebugBuffer();
-        if (message != null || debugBuffer != null) {
-            modifiedInRequest = true;
+        this.message = res.getMessage();
+        this.debugBuffer = res.getDebugBuffer();
+        if (this.message != null || this.debugBuffer != null) {
+            this.modifiedInRequest = true;
         }
     }
 
@@ -348,7 +346,7 @@ public class Session implements Serializable {
      * @return the message, or null if none was set.
      */
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     /**
@@ -360,7 +358,7 @@ public class Session implements Serializable {
      * @param msg the message
      */
     public void setMessage(String msg) {
-        message = msg;
+        this.message = msg;
     }
 
     /**
@@ -370,7 +368,7 @@ public class Session implements Serializable {
      * @return the debug buffer, or null if none was set.
      */
     public StringBuffer getDebugBuffer() {
-        return debugBuffer;
+        return this.debugBuffer;
     }
 
     /**
@@ -382,30 +380,29 @@ public class Session implements Serializable {
      * @param buffer the buffer
      */
     public void setDebugBuffer(StringBuffer buffer) {
-        debugBuffer = buffer;
+        this.debugBuffer = buffer;
     }
 
     protected UploadStatus createUpload(String uploadId) {
-        if (uploads == null) {
-            uploads = new HashMap();
+        if (this.uploads == null) {
+            this.uploads = new HashMap();
         }
         UploadStatus status = new UploadStatus();
-        uploads.put(uploadId, status);
+        this.uploads.put(uploadId, status);
         return status;
     }
 
     protected UploadStatus getUpload(String uploadId) {
-        if (uploads == null) {
+        if (this.uploads == null) {
             return null;
-        } else {
-            return (UploadStatus) uploads.get(uploadId);
         }
+        return (UploadStatus) this.uploads.get(uploadId);
     }
 
     protected void pruneUploads() {
-        if (uploads == null || uploads.isEmpty())
+        if (this.uploads == null || this.uploads.isEmpty())
             return;
-        for (Iterator it = uploads.values().iterator(); it.hasNext();) {
+        for (Iterator it = this.uploads.values().iterator(); it.hasNext();) {
             UploadStatus status = (UploadStatus) it.next();
             if (status.isDisposable()) {
                 it.remove();

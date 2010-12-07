@@ -43,7 +43,7 @@ public class RedirectException extends Error {
      * @return the URL
      */
     public String getUrl() {
-        return url;
+        return this.url;
     }
 
 }

@@ -53,18 +53,18 @@ public class MultiFileRepository extends FileRepository {
      */
     @Override
     public synchronized void update() {
-        if (!directory.exists()) {
-            repositories = emptyRepositories;
-            if (resources != null)
-                resources.clear();
-            lastModified = 0;
+        if (!this.directory.exists()) {
+            this.repositories = emptyRepositories;
+            if (this.resources != null)
+                this.resources.clear();
+            this.lastModified = 0;
             return;
         }
 
-        if (directory.lastModified() != lastModified) {
-            lastModified = directory.lastModified();
+        if (this.directory.lastModified() != this.lastModified) {
+            this.lastModified = this.directory.lastModified();
 
-            File[] list = directory.listFiles();
+            File[] list = this.directory.listFiles();
 
             ArrayList newRepositories = new ArrayList(list.length);
             HashMap newResources = new HashMap(list.length);
@@ -81,9 +81,9 @@ public class MultiFileRepository extends FileRepository {
                 }
             }
 
-            repositories = (Repository[])
+            this.repositories = (Repository[])
                     newRepositories.toArray(new Repository[newRepositories.size()]);
-            resources = newResources;
+            this.resources = newResources;
         }
     }
 
@@ -93,7 +93,7 @@ public class MultiFileRepository extends FileRepository {
      */
     @Override
     public int hashCode() {
-        return 37 + (37 * directory.hashCode());
+        return 37 + (37 * this.directory.hashCode());
     }
 
     /**
@@ -104,7 +104,7 @@ public class MultiFileRepository extends FileRepository {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof MultiFileRepository &&
-               directory.equals(((MultiFileRepository) obj).directory);
+               this.directory.equals(((MultiFileRepository) obj).directory);
     }
 
     /**
@@ -113,6 +113,6 @@ public class MultiFileRepository extends FileRepository {
      */
     @Override
     public String toString() {
-        return new StringBuffer("MultiFileRepository[").append(name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
+        return new StringBuffer("MultiFileRepository[").append(this.name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

@@ -222,7 +222,6 @@ public class ImageInfo {
 	private int height;
 	private int bitsPerPixel;
     private int numColors;
-	private int colorType = COLOR_TYPE_UNKNOWN;
 	private boolean progressive;
 	private int format;
 	private InputStream in;
@@ -237,10 +236,10 @@ public class ImageInfo {
 	private int bitPos;
 
 	private void addComment(String s) {
-		if (comments == null) {
-			comments = new Vector();
+		if (this.comments == null) {
+			this.comments = new Vector();
 		}
-		comments.addElement(s);
+		this.comments.addElement(s);
 	}
 
 	/**
@@ -251,15 +250,15 @@ public class ImageInfo {
 	 * @return if information could be retrieved from input
 	 */
 	public boolean check() {
-		format = -1;
-		width = -1;
-		height = -1;
-		bitsPerPixel = -1;
-		numberOfImages = 1;
-		physicalHeightDpi = -1;
-		physicalWidthDpi = -1;
-        numColors = -1;
-		comments = null;
+		this.format = -1;
+		this.width = -1;
+		this.height = -1;
+		this.bitsPerPixel = -1;
+		this.numberOfImages = 1;
+		this.physicalHeightDpi = -1;
+		this.physicalWidthDpi = -1;
+        this.numColors = -1;
+		this.comments = null;
 		try {
 			int b1 = read() & 0xff;
 			int b2 = read() & 0xff;
@@ -315,15 +314,15 @@ public class ImageInfo {
 		if (read(a) != a.length) {
 			return false;
 		}
-		width = getIntLittleEndian(a, 16);
-		height = getIntLittleEndian(a, 20);
-		if (width < 1 || height < 1) {
+		this.width = getIntLittleEndian(a, 16);
+		this.height = getIntLittleEndian(a, 20);
+		if (this.width < 1 || this.height < 1) {
 			return false;
 		}
-		bitsPerPixel = getShortLittleEndian(a, 26);
-		if (bitsPerPixel != 1 && bitsPerPixel != 4 &&
-		    bitsPerPixel != 8 && bitsPerPixel != 16 &&
-		    bitsPerPixel != 24 && bitsPerPixel != 32) {
+		this.bitsPerPixel = getShortLittleEndian(a, 26);
+		if (this.bitsPerPixel != 1 && this.bitsPerPixel != 4 &&
+		    this.bitsPerPixel != 8 && this.bitsPerPixel != 16 &&
+		    this.bitsPerPixel != 24 && this.bitsPerPixel != 32) {
 		    return false;
 		}
 		int x = (int)(getIntLittleEndian(a, 36) * 0.0254);
@@ -334,7 +333,7 @@ public class ImageInfo {
 		if (y > 0) {
 			setPhysicalHeightDpi(y);
 		}
-		format = FORMAT_BMP;
+		this.format = FORMAT_BMP;
 		return true;
 	}
 
@@ -349,21 +348,21 @@ public class ImageInfo {
 			(!equals(a, 0, GIF_MAGIC_87A, 0, 4))) {
 			return false;
 		}
-		format = FORMAT_GIF;
-		width = getShortLittleEndian(a, 4);
-		height = getShortLittleEndian(a, 6);
+		this.format = FORMAT_GIF;
+		this.width = getShortLittleEndian(a, 4);
+		this.height = getShortLittleEndian(a, 6);
 		int flags = a[8] & 0xff;
-		bitsPerPixel = ((flags >> 4) & 0x07) + 1;
-		progressive = (flags & 0x02) != 0;
+		this.bitsPerPixel = ((flags >> 4) & 0x07) + 1;
+		this.progressive = (flags & 0x02) != 0;
 		// skip global color palette
 		if ((flags & 0x80) != 0) {
-            numColors = (1 << ((flags & 7) + 1));
-			skip(numColors * 3);
+            this.numColors = (1 << ((flags & 7) + 1));
+			skip(this.numColors * 3);
 		}
-        if (!determineNumberOfImages) {
+        if (!this.determineNumberOfImages) {
             return true;
         }
-		numberOfImages = 0;
+		this.numberOfImages = 0;
 		int blockType;
 		do
 		{
@@ -377,14 +376,14 @@ public class ImageInfo {
 					}
 					flags = a[8] & 0xff;
 					int localBitsPerPixel = (flags & 0x07) + 1;
-					if (localBitsPerPixel > bitsPerPixel) {
-						bitsPerPixel = localBitsPerPixel;
+					if (localBitsPerPixel > this.bitsPerPixel) {
+						this.bitsPerPixel = localBitsPerPixel;
 					}
 					if ((flags & 0x80) != 0) {
                        int localNumColors = 1 << localBitsPerPixel;
                        skip(localNumColors * 3);
-                        if (localNumColors > numColors) {
-                            numColors = localNumColors;
+                        if (localNumColors > this.numColors) {
+                            this.numColors = localNumColors;
                         }
 					}
 					skip(1); // initial code length
@@ -401,13 +400,13 @@ public class ImageInfo {
 						}
 					}
 					while (n > 0);
-					numberOfImages++;
+					this.numberOfImages++;
 					break;
 				}
 				case(0x21): // extension
 				{
 					int extensionType = read();
-					if (collectComments && extensionType == 0xfe) {
+					if (this.collectComments && extensionType == 0xfe) {
 						StringBuffer sb = new StringBuffer();
 						int n;
 						do
@@ -488,14 +487,13 @@ public class ImageInfo {
 				if (read(a, 0, 9) != 9) {
 					return false;
 				}
-				format = FORMAT_IFF;
-				width = getShortBigEndian(a, 0);
-				height = getShortBigEndian(a, 2);
-				bitsPerPixel = a[8] & 0xff;
-				return (width > 0 && height > 0 && bitsPerPixel > 0 && bitsPerPixel < 33);
-			} else {
-				skip(size);
+				this.format = FORMAT_IFF;
+				this.width = getShortBigEndian(a, 0);
+				this.height = getShortBigEndian(a, 2);
+				this.bitsPerPixel = a[8] & 0xff;
+				return (this.width > 0 && this.height > 0 && this.bitsPerPixel > 0 && this.bitsPerPixel < 33);
 			}
+            skip(size);
 		} while (true);
 	}
 
@@ -535,7 +533,7 @@ public class ImageInfo {
 				skip(size - 14);
 			}
 			else
-			if (collectComments && size > 2 && marker == 0xfffe) { // comment
+			if (this.collectComments && size > 2 && marker == 0xfffe) { // comment
 				size -= 2;
 				byte[] chars = new byte[size];
 				if (read(chars, 0, size) != size) {
@@ -550,12 +548,12 @@ public class ImageInfo {
 				if (read(data, 0, 6) != 6) {
 					return false;
 				}
-				format = FORMAT_JPEG;
-				bitsPerPixel = (data[0] & 0xff) * (data[5] & 0xff);
-				progressive = marker == 0xffc2 || marker == 0xffc6 ||
+				this.format = FORMAT_JPEG;
+				this.bitsPerPixel = (data[0] & 0xff) * (data[5] & 0xff);
+				this.progressive = marker == 0xffc2 || marker == 0xffc6 ||
 					marker == 0xffca || marker == 0xffce;
-				width = getShortBigEndian(data, 3);
-				height = getShortBigEndian(data, 1);
+				this.width = getShortBigEndian(data, 3);
+				this.height = getShortBigEndian(data, 1);
 				return true;
 			} else {
 				skip(size - 2);
@@ -579,25 +577,25 @@ public class ImageInfo {
 		if (x1 < 0 || x2 < x1 || y1 < 0 || y2 < y1) {
 			return false;
 		}
-		width = x2 - x1 + 1;
-		height = y2 - y1 + 1;
+		this.width = x2 - x1 + 1;
+		this.height = y2 - y1 + 1;
 		// color depth
 		int bits = a[1];
 		int planes = a[63];
 		if (planes == 1 &&
 		    (bits == 1 || bits == 2 || bits == 4 || bits == 8)) {
 			// paletted
-			bitsPerPixel = bits;
+			this.bitsPerPixel = bits;
 		} else
 		if (planes == 3 && bits == 8) {
 			// RGB truecolor
-			bitsPerPixel = 24;
+			this.bitsPerPixel = 24;
 		} else {
 			return false;
 		}
 		setPhysicalWidthDpi(getShortLittleEndian(a, 10));
 		setPhysicalHeightDpi(getShortLittleEndian(a, 10));
-		format = FORMAT_PCX;
+		this.format = FORMAT_PCX;
 		return true;
 	}
 
@@ -610,15 +608,15 @@ public class ImageInfo {
 		if (!equals(a, 0, PNG_MAGIC, 0, 6)) {
 			return false;
 		}
-		format = FORMAT_PNG;
-		width = getIntBigEndian(a, 14);
-		height = getIntBigEndian(a, 18);
-		bitsPerPixel = a[22] & 0xff;
+		this.format = FORMAT_PNG;
+		this.width = getIntBigEndian(a, 14);
+		this.height = getIntBigEndian(a, 18);
+		this.bitsPerPixel = a[22] & 0xff;
 		int colorType = a[23] & 0xff;
 		if (colorType == 2 || colorType == 6) {
-			bitsPerPixel *= 3;
+			this.bitsPerPixel *= 3;
 		}
-		progressive = (a[26] & 0xff) != 0;
+		this.progressive = (a[26] & 0xff) != 0;
 		return true;
 	}
 
@@ -627,7 +625,7 @@ public class ImageInfo {
 			return false;
 		}
 		final int[] PNM_FORMATS = {FORMAT_PBM, FORMAT_PGM, FORMAT_PPM};
-		format = PNM_FORMATS[(id - 1) % 3];
+		this.format = PNM_FORMATS[(id - 1) % 3];
 		boolean hasPixelResolution = false;
 		String s;
 		while (true)
@@ -640,7 +638,7 @@ public class ImageInfo {
 				continue;
 			}
 			if (s.charAt(0) == '#') { // comment
-				if (collectComments && s.length() > 1) {
+				if (this.collectComments && s.length() > 1) {
 					addComment(s.substring(1));
 				}
 				continue;
@@ -657,16 +655,16 @@ public class ImageInfo {
 				}
 				String heightString = s.substring(spaceIndex + 1);
 				try {
-					width = Integer.parseInt(widthString);
-					height = Integer.parseInt(heightString);
+					this.width = Integer.parseInt(widthString);
+					this.height = Integer.parseInt(heightString);
 				} catch (NumberFormatException nfe) {
 					return false;
 				}
-				if (width < 1 || height < 1) {
+				if (this.width < 1 || this.height < 1) {
 					return false;
 				}
-				if (format == FORMAT_PBM) {
-					bitsPerPixel = 1;
+				if (this.format == FORMAT_PBM) {
+					this.bitsPerPixel = 1;
 					return true;
 				}
 				hasPixelResolution = true;
@@ -684,9 +682,9 @@ public class ImageInfo {
 				}
 				for (int i = 0; i < 25; i++) {
 					if (maxSample < (1 << (i + 1))) {
-						bitsPerPixel = i + 1;
-						if (format == FORMAT_PPM) {
-							bitsPerPixel *= 3;
+						this.bitsPerPixel = i + 1;
+						if (this.format == FORMAT_PPM) {
+							this.bitsPerPixel *= 3;
 						}
 						return true;
 					}
@@ -705,13 +703,13 @@ public class ImageInfo {
 		if (!equals(a, 0, PSD_MAGIC, 0, 2)) {
 			return false;
 		}
-		format = FORMAT_PSD;
-		width = getIntBigEndian(a, 16);
-		height = getIntBigEndian(a, 12);
+		this.format = FORMAT_PSD;
+		this.width = getIntBigEndian(a, 16);
+		this.height = getIntBigEndian(a, 12);
 		int channels = getShortBigEndian(a, 10);
 		int depth = getShortBigEndian(a, 20);
-		bitsPerPixel = channels * depth;
-		return (width > 0 && height > 0 && bitsPerPixel > 0 && bitsPerPixel <= 64);
+		this.bitsPerPixel = channels * depth;
+		return (this.width > 0 && this.height > 0 && this.bitsPerPixel > 0 && this.bitsPerPixel <= 64);
 	}
 
 	private boolean checkRas() throws IOException {
@@ -723,11 +721,11 @@ public class ImageInfo {
 		if (!equals(a, 0, RAS_MAGIC, 0, 2)) {
 			return false;
 		}
-		format = FORMAT_RAS;
-		width = getIntBigEndian(a, 2);
-		height = getIntBigEndian(a, 6);
-		bitsPerPixel = getIntBigEndian(a, 10);
-		return (width > 0 && height > 0 && bitsPerPixel > 0 && bitsPerPixel <= 24);
+		this.format = FORMAT_RAS;
+		this.width = getIntBigEndian(a, 2);
+		this.height = getIntBigEndian(a, 6);
+		this.bitsPerPixel = getIntBigEndian(a, 10);
+		return (this.width > 0 && this.height > 0 && this.bitsPerPixel > 0 && this.bitsPerPixel <= 24);
 	}
 
 	// Written by Michael Aird.
@@ -737,17 +735,19 @@ public class ImageInfo {
 		if (read(a) != a.length) {
 			return false;
 		}
-		format = FORMAT_SWF;
+		this.format = FORMAT_SWF;
 		int bitSize = (int)readUBits( 5 );
-		int minX = (int)readSBits( bitSize );
-		int maxX = (int)readSBits( bitSize );
-		int minY = (int)readSBits( bitSize );
-		int maxY = (int)readSBits( bitSize );
-		width = maxX/20; //cause we're in twips
-		height = maxY/20;  //cause we're in twips
+		@SuppressWarnings("unused")
+        int minX = readSBits( bitSize );
+		int maxX = readSBits( bitSize );
+		@SuppressWarnings("unused")
+        int minY = readSBits( bitSize );
+		int maxY = readSBits( bitSize );
+		this.width = maxX/20; //cause we're in twips
+		this.height = maxY/20;  //cause we're in twips
 		setPhysicalWidthDpi(72);
 		setPhysicalHeightDpi(72);
-		return (width > 0 && height > 0);
+		return (this.width > 0 && this.height > 0);
 	}
 
 	/**
@@ -780,14 +780,14 @@ public class ImageInfo {
 	 * @return number of bits per image pixel
 	 */
 	public int getBitsPerPixel() {
-		return bitsPerPixel;
+		return this.bitsPerPixel;
 	}
 
     /** 
      * @return number of colors, for palette based images
      */
     public int getNumColors() {
-        return numColors;
+        return this.numColors;
     }
 
     /**
@@ -797,10 +797,10 @@ public class ImageInfo {
 	 * @see #getNumberOfComments
 	 */
 	public String getComment(int index) {
-		if (comments == null || index < 0 || index >= comments.size()) {
+		if (this.comments == null || index < 0 || index >= this.comments.size()) {
 			throw new IllegalArgumentException(Messages.getString("ImageInfo.0") + index); //$NON-NLS-1$
 		}
-		return (String)comments.elementAt(index);
+		return (String)this.comments.elementAt(index);
 	}
 
 	/**
@@ -810,7 +810,7 @@ public class ImageInfo {
 	 * @return file format as a FORMAT_xyz constant
 	 */
 	public int getFormat() {
-		return format;
+		return this.format;
 	}
 
 	/**
@@ -819,11 +819,10 @@ public class ImageInfo {
 	 * @return file format name
 	 */
 	public String getFormatName() {
-		if (format >= 0 && format < FORMAT_NAMES.length) {
-			return FORMAT_NAMES[format];
-		} else {
-			return "?"; //$NON-NLS-1$
+		if (this.format >= 0 && this.format < FORMAT_NAMES.length) {
+			return FORMAT_NAMES[this.format];
 		}
+        return "?"; //$NON-NLS-1$
 	}
 
 	/** 
@@ -832,7 +831,7 @@ public class ImageInfo {
 	 * @return image height in pixels
 	 */
 	public int getHeight() {
-		return height;
+		return this.height;
 	}
 
 	private int getIntBigEndian(byte[] a, int offs) {
@@ -857,15 +856,14 @@ public class ImageInfo {
 	 * @return MIME type, e.g. <code>image/jpeg</code>
 	 */
 	public String getMimeType() {
-		if (format >= 0 && format < MIME_TYPE_STRINGS.length) {
-			if (format == FORMAT_JPEG && progressive)
+		if (this.format >= 0 && this.format < MIME_TYPE_STRINGS.length) {
+			if (this.format == FORMAT_JPEG && this.progressive)
 			{
 				return "image/pjpeg"; //$NON-NLS-1$
 			}
-			return MIME_TYPE_STRINGS[format];
-		} else {
-			return null;
+			return MIME_TYPE_STRINGS[this.format];
 		}
+        return null;
 	}
 
 	/**
@@ -878,11 +876,10 @@ public class ImageInfo {
 	 */
 	public int getNumberOfComments()
 	{
-		if (comments == null) {
+		if (this.comments == null) {
 			return 0;
-		} else {
-			return comments.size();
 		}
+        return this.comments.size();
 	}
 
 	/**
@@ -894,7 +891,7 @@ public class ImageInfo {
 	 */
 	public int getNumberOfImages()
 	{
-		return numberOfImages;
+		return this.numberOfImages;
 	}
 
 	/**
@@ -906,7 +903,7 @@ public class ImageInfo {
 	 * @see #getPhysicalHeightInch()
 	 */
 	public int getPhysicalHeightDpi() {
-		return physicalHeightDpi;
+		return this.physicalHeightDpi;
 	}
 
 	/**
@@ -922,9 +919,8 @@ public class ImageInfo {
 		int ph = getPhysicalHeightDpi();
 		if (h > 0 && ph > 0) {
 			return ((float)h) / ((float)ph);
-		} else {
-			return -1.0f;
 		}
+        return -1.0f;
 	}
 
 	/**
@@ -936,7 +932,7 @@ public class ImageInfo {
 	 * @see #getPhysicalHeightInch()
 	 */
 	public int getPhysicalWidthDpi() {
-		return physicalWidthDpi;
+		return this.physicalWidthDpi;
 	}
 
 	/**
@@ -952,9 +948,8 @@ public class ImageInfo {
 		int pw = getPhysicalWidthDpi();
 		if (w > 0 && pw > 0) {
 			return ((float)w) / ((float)pw);
-		} else {
-			return -1.0f;
 		}
+        return -1.0f;
 	}
 
 	private int getShortBigEndian(byte[] a, int offs) {
@@ -973,7 +968,7 @@ public class ImageInfo {
 	 * @return image width in pixels
 	 */
 	public int getWidth() {
-		return width;
+		return this.width;
 	}
 
 	/**
@@ -982,7 +977,7 @@ public class ImageInfo {
 	 */
 	public boolean isProgressive()
 	{
-		return progressive;
+		return this.progressive;
 	}
 
 	/**
@@ -1098,29 +1093,26 @@ public class ImageInfo {
 	}
 
 	private int read() throws IOException {
-		if (in != null) {
-			return in.read();
-		} else {
-			return din.readByte();
+		if (this.in != null) {
+			return this.in.read();
 		}
+        return this.din.readByte();
 	}
 
 	private int read(byte[] a) throws IOException {
-		if (in != null) {
-			return in.read(a);
-		} else {
-			din.readFully(a);
-			return a.length;
+		if (this.in != null) {
+			return this.in.read(a);
 		}
+        this.din.readFully(a);
+        return a.length;
 	}
 
 	private int read(byte[] a, int offset, int num) throws IOException {
-		if (in != null) {
-			return in.read(a, offset, num);
-		} else {
-			din.readFully(a, offset, num);
-			return num;
+		if (this.in != null) {
+			return this.in.read(a, offset, num);
 		}
+        this.din.readFully(a, offset, num);
+        return num;
 	}
 
 	private String readLine() throws IOException {
@@ -1146,38 +1138,38 @@ public class ImageInfo {
 		}
 		int bitsLeft = numBits;
 		long result = 0;
-		if (bitPos == 0) { //no value in the buffer - read a byte
-			if (in != null) {
-				bitBuf = in.read();
+		if (this.bitPos == 0) { //no value in the buffer - read a byte
+			if (this.in != null) {
+				this.bitBuf = this.in.read();
 			} else {
-				bitBuf = din.readByte();
+				this.bitBuf = this.din.readByte();
 			}
-			bitPos = 8;
+			this.bitPos = 8;
 		}
         
 	    while( true )
         {
-            int shift = bitsLeft - bitPos;
+            int shift = bitsLeft - this.bitPos;
             if( shift > 0 )
             {
                 // Consume the entire buffer
-                result |= bitBuf << shift;
-                bitsLeft -= bitPos;
+                result |= this.bitBuf << shift;
+                bitsLeft -= this.bitPos;
 
                 // Get the next byte from the input stream
-                if (in != null) {
-                  bitBuf = in.read();
+                if (this.in != null) {
+                  this.bitBuf = this.in.read();
                 } else {
-                  bitBuf = din.readByte();
+                  this.bitBuf = this.din.readByte();
                 }
-                bitPos = 8;
+                this.bitPos = 8;
             }
             else
             {
              	// Consume a portion of the buffer
-                result |= bitBuf >> -shift;
-                bitPos -= bitsLeft;
-                bitBuf &= 0xff >> (8 - bitPos);	// mask off the consumed bits
+                result |= this.bitBuf >> -shift;
+                this.bitPos -= bitsLeft;
+                this.bitBuf &= 0xff >> (8 - this.bitPos);	// mask off the consumed bits
 
                 return result;
             }
@@ -1202,18 +1194,6 @@ public class ImageInfo {
         return (int)uBits;        
     }  
    
-	private void synchBits()
-	{
-		bitBuf = 0;
-		bitPos = 0;
-	}
-
-	private String readLine(int firstChar) throws IOException {
-		StringBuffer result = new StringBuffer();
-		result.append((char)firstChar);
-		return readLine(result);
-	}
-
 	private static void run(String sourceName, InputStream in, ImageInfo imageInfo, boolean verbose) {
 		imageInfo.setInput(in);
 		imageInfo.setDetermineImageNumber(false);
@@ -1233,7 +1213,7 @@ public class ImageInfo {
 	 */
 	public void setCollectComments(boolean newValue)
 	{
-		collectComments = newValue;
+		this.collectComments = newValue;
 	}
 
 	/**
@@ -1252,7 +1232,7 @@ public class ImageInfo {
 	 */
 	public void setDetermineImageNumber(boolean newValue)
 	{
-		determineNumberOfImages = newValue;
+		this.determineNumberOfImages = newValue;
 	}
 
 	/**
@@ -1262,8 +1242,8 @@ public class ImageInfo {
 	 * @param dataInput the input stream to read from
 	 */
 	public void setInput(DataInput dataInput) {
-		din = dataInput;
-		in = null;
+		this.din = dataInput;
+		this.in = null;
 	}
 
 	/**
@@ -1271,25 +1251,25 @@ public class ImageInfo {
 	 * @param inputStream the input stream to read from
 	 */
 	public void setInput(InputStream inputStream) {
-		in = inputStream;
-		din = null;
+		this.in = inputStream;
+		this.din = null;
 	}
 
 	private void setPhysicalHeightDpi(int newValue) {
-		physicalWidthDpi = newValue;
+		this.physicalWidthDpi = newValue;
 	}
 
 	private void setPhysicalWidthDpi(int newValue) {
-		physicalHeightDpi = newValue;
+		this.physicalHeightDpi = newValue;
 	}
 
 	private void skip(int num) throws IOException {
 		while (num > 0) {
 			long result;
-			if (in != null) {
-				result = in.skip(num);
+			if (this.in != null) {
+				result = this.in.skip(num);
 			} else {
-				result = din.skipBytes(num);
+				result = this.din.skipBytes(num);
 			}
 			if (result > 0) {
 				num -= result;

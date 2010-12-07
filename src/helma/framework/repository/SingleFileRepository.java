@@ -16,7 +16,6 @@
 
 package helma.framework.repository;
 
-import java.io.IOException;
 import java.io.File;
 import java.util.List;
 import java.util.Iterator;
@@ -54,14 +53,14 @@ public class SingleFileRepository implements Repository {
      */
     public SingleFileRepository(File file, Repository parent) {
         this.parent = parent;
-        res = new FileResource(file, this);
-        allResources.add(res);
-        isScriptFile = file.getName().endsWith(".js"); //$NON-NLS-1$
-        if (isScriptFile) {
-            repositories = new Repository[] { new FakeGlobal() };
+        this.res = new FileResource(file, this);
+        this.allResources.add(this.res);
+        this.isScriptFile = file.getName().endsWith(".js"); //$NON-NLS-1$
+        if (this.isScriptFile) {
+            this.repositories = new Repository[] { new FakeGlobal() };
         } else {
-            repositories = AbstractRepository.emptyRepositories;
-            resources.add(res);
+            this.repositories = AbstractRepository.emptyRepositories;
+            this.resources.add(this.res);
         }
     }
 
@@ -72,8 +71,8 @@ public class SingleFileRepository implements Repository {
      * @return checksum
      * @throws java.io.IOException
      */
-    public long getChecksum() throws IOException {
-        return res.lastModified();
+    public long getChecksum() {
+        return this.res.lastModified();
     }
 
     /**
@@ -82,7 +81,7 @@ public class SingleFileRepository implements Repository {
      * @return name of the repository
      */
     public String getShortName() {
-        return res.getShortName();
+        return this.res.getShortName();
     }
 
     /**
@@ -92,7 +91,7 @@ public class SingleFileRepository implements Repository {
      * @return full name of the repository
      */
     public String getName() {
-        return res.getName();
+        return this.res.getName();
     }
 
     /**
@@ -112,7 +111,7 @@ public class SingleFileRepository implements Repository {
      * @return the parent repository
      */
     public Repository getParentRepository() {
-        return parent;
+        return this.parent;
     }
 
     /**
@@ -132,7 +131,7 @@ public class SingleFileRepository implements Repository {
      *
      * @throws java.io.IOException
      */
-    public void create() throws IOException {
+    public void create() {
         // noop
     }
 
@@ -142,8 +141,8 @@ public class SingleFileRepository implements Repository {
      * @return true if the repository exists
      * @throws java.io.IOException
      */
-    public boolean exists() throws IOException {
-        return res.exists();
+    public boolean exists() {
+        return this.res.exists();
     }
 
     /**
@@ -152,8 +151,8 @@ public class SingleFileRepository implements Repository {
      * @return direct repositories
      * @throws java.io.IOException
      */
-    public Repository[] getRepositories() throws IOException {
-        return repositories;
+    public Repository[] getRepositories() {
+        return this.repositories;
     }
 
     /**
@@ -162,8 +161,8 @@ public class SingleFileRepository implements Repository {
      * @return resources recursive
      * @throws java.io.IOException
      */
-    public List getAllResources() throws IOException {
-        return resources;
+    public List getAllResources() {
+        return this.resources;
     }
 
     /**
@@ -172,8 +171,8 @@ public class SingleFileRepository implements Repository {
      * @return direct resources
      * @throws java.io.IOException
      */
-    public Iterator getResources() throws IOException {
-        return resources.iterator();
+    public Iterator getResources() {
+        return this.resources.iterator();
     }
 
     /**
@@ -183,8 +182,8 @@ public class SingleFileRepository implements Repository {
      * @return specified child resource
      */
     public Resource getResource(String resourceName) {
-        if (!isScriptFile && res.getName().equals(resourceName)) {
-            return res;
+        if (!this.isScriptFile && this.res.getName().equals(resourceName)) {
+            return this.res;
         }
         return null;
     }
@@ -195,8 +194,8 @@ public class SingleFileRepository implements Repository {
      * @return last modified date
      * @throws java.io.IOException
      */
-    public long lastModified() throws IOException {
-        return res.lastModified();
+    public long lastModified() {
+        return this.res.lastModified();
     }
 
     /**
@@ -204,7 +203,7 @@ public class SingleFileRepository implements Repository {
      * @return the wrapped resource
      */
     protected Resource getResource() {
-        return res;
+        return this.res;
     }
 
     /**
@@ -213,7 +212,7 @@ public class SingleFileRepository implements Repository {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof SingleFileRepository &&
-                res.equals(((SingleFileRepository) obj).res));
+                this.res.equals(((SingleFileRepository) obj).res));
     }
 
     /**
@@ -221,7 +220,7 @@ public class SingleFileRepository implements Repository {
      */
     @Override
     public int hashCode() {
-        return res.hashCode();
+        return this.res.hashCode();
     }
 
     /**
@@ -230,7 +229,7 @@ public class SingleFileRepository implements Repository {
     @Override
     public String toString() {
         return new StringBuffer("SingleFileRepository[") //$NON-NLS-1$
-                .append(res.getName()).append("]").toString(); //$NON-NLS-1$
+                .append(this.res.getName()).append("]").toString(); //$NON-NLS-1$
     }
 
     class FakeGlobal implements Repository {
@@ -242,8 +241,8 @@ public class SingleFileRepository implements Repository {
          * @return checksum
          * @throws java.io.IOException
          */
-        public long getChecksum() throws IOException {
-            return res.lastModified();
+        public long getChecksum() {
+            return SingleFileRepository.this.res.lastModified();
         }
 
         /**
@@ -264,7 +263,7 @@ public class SingleFileRepository implements Repository {
          * @return full name of the repository
          */
         public String getName() {
-            return res.getName();
+            return SingleFileRepository.this.res.getName();
         }
 
         /**
@@ -304,7 +303,7 @@ public class SingleFileRepository implements Repository {
          *
          * @throws java.io.IOException
          */
-        public void create() throws IOException {
+        public void create() {
         }
 
         /**
@@ -313,8 +312,8 @@ public class SingleFileRepository implements Repository {
          * @return true if the repository exists
          * @throws java.io.IOException
          */
-        public boolean exists() throws IOException {
-            return res.exists();
+        public boolean exists() {
+            return SingleFileRepository.this.res.exists();
         }
 
         /**
@@ -323,7 +322,7 @@ public class SingleFileRepository implements Repository {
          * @return direct repositories
          * @throws java.io.IOException
          */
-        public Repository[] getRepositories() throws IOException {
+        public Repository[] getRepositories() {
             return AbstractRepository.emptyRepositories;
         }
 
@@ -333,8 +332,8 @@ public class SingleFileRepository implements Repository {
          * @return resources recursive
          * @throws java.io.IOException
          */
-        public List getAllResources() throws IOException {
-            return allResources;
+        public List getAllResources() {
+            return SingleFileRepository.this.allResources;
         }
 
         /**
@@ -343,8 +342,8 @@ public class SingleFileRepository implements Repository {
          * @return direct resources
          * @throws java.io.IOException
          */
-        public Iterator getResources() throws IOException {
-            return allResources.iterator();
+        public Iterator getResources() {
+            return SingleFileRepository.this.allResources.iterator();
         }
 
         /**
@@ -354,8 +353,8 @@ public class SingleFileRepository implements Repository {
          * @return specified child resource
          */
         public Resource getResource(String resourceName) {
-            if (res.getName().equals(resourceName)) {
-                return res;
+            if (SingleFileRepository.this.res.getName().equals(resourceName)) {
+                return SingleFileRepository.this.res;
             }
             return null;
         }
@@ -366,8 +365,8 @@ public class SingleFileRepository implements Repository {
          * @return last modified date
          * @throws java.io.IOException
          */
-        public long lastModified() throws IOException {
-            return res.lastModified();
+        public long lastModified() {
+            return SingleFileRepository.this.res.lastModified();
         }
     }
 

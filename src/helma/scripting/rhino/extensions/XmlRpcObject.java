@@ -69,11 +69,10 @@ public class XmlRpcObject extends BaseFunction {
         if (args.length == 1) {
             String url = args[0].toString();
             return new XmlRpcObject(url);
-        } else {
-            String url = args[0].toString();
-            String method = args[1].toString();
-            return new XmlRpcObject(url, method);
         }
+        String url = args[0].toString();
+        String method = args[1].toString();
+        return new XmlRpcObject(url, method);
 
     }
 
@@ -97,8 +96,8 @@ public class XmlRpcObject extends BaseFunction {
 
     @Override
     public Object get(String name, Scriptable start) {
-        String m = method == null ? name : method+"."+name; //$NON-NLS-1$
-        return new XmlRpcObject(url, m);
+        String m = this.method == null ? name : this.method+"."+name; //$NON-NLS-1$
+        return new XmlRpcObject(this.url, m);
     }
 
     @Override
@@ -108,7 +107,7 @@ public class XmlRpcObject extends BaseFunction {
                              Object[] args)
                       throws EvaluatorException {
 
-        if (method == null) {
+        if (this.method == null) {
             throw new EvaluatorException(Messages.getString("XmlRpcObject.1")); //$NON-NLS-1$
         }
 
@@ -117,7 +116,7 @@ public class XmlRpcObject extends BaseFunction {
 
         try {
             retval = Context.getCurrentContext().newObject(core.getScope());
-            XmlRpcClient client = new XmlRpcClient(url);
+            XmlRpcClient client = new XmlRpcClient(this.url);
 
             int l = args.length;
             Vector v = new Vector();
@@ -127,7 +126,7 @@ public class XmlRpcObject extends BaseFunction {
                 v.addElement(arg);
             }
 
-            Object result = client.execute(method, v);
+            Object result = client.execute(this.method, v);
             // FIXME: Apache XML-RPC 2.0 seems to return Exceptions instead of
             // throwing them.
             if (result instanceof Exception) {
@@ -158,7 +157,7 @@ public class XmlRpcObject extends BaseFunction {
 
     @Override
     public String toString() {
-        return "[Remote "+url+"]"; //$NON-NLS-1$ //$NON-NLS-2$
+        return "[Remote "+this.url+"]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

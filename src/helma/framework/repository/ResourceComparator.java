@@ -53,8 +53,8 @@ public class ResourceComparator implements Comparator {
         Repository rep1 = getRootRepository(obj1);
         Repository rep2 = getRootRepository(obj2);
 
-        int pos1 = app.getRepositoryIndex(rep1);
-        int pos2 = app.getRepositoryIndex(rep2);
+        int pos1 = this.app.getRepositoryIndex(rep1);
+        int pos2 = this.app.getRepositoryIndex(rep2);
 
         if (rep1 == rep2 || (pos1 == -1 && pos2 == -1)) {
             // Same root repository, but we must not return 0 unless objects are equal
@@ -76,7 +76,7 @@ public class ResourceComparator implements Comparator {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof ResourceComparator) &&
-                app == ((ResourceComparator) obj).getApplication();
+                this.app == ((ResourceComparator) obj).getApplication();
     }
 
     /**
@@ -85,7 +85,7 @@ public class ResourceComparator implements Comparator {
      * @return the application instance
      */
     public Application getApplication() {
-        return app;
+        return this.app;
     }
 
     private Repository getRootRepository(Object obj) {

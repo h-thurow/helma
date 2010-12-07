@@ -54,8 +54,8 @@ public class MimePartDataSource implements DataSource {
      *
      * @throws IOException ...
      */
-    public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(part.getContent());
+    public InputStream getInputStream() {
+        return new ByteArrayInputStream(this.part.getContent());
     }
 
     /**
@@ -75,7 +75,7 @@ public class MimePartDataSource implements DataSource {
      * @return ...
      */
     public String getContentType() {
-        return part.getContentType();
+        return this.part.getContentType();
     }
 
     /**
@@ -84,6 +84,6 @@ public class MimePartDataSource implements DataSource {
      * @return ...
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 }

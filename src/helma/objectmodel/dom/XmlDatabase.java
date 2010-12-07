@@ -48,18 +48,18 @@ public final class XmlDatabase implements IDatabase {
      */
     public void init(File dbHome, Application app) throws DatabaseException {
         this.app = app;
-        nmgr = app.getNodeManager();
-        dbHomeDir = dbHome;
+        this.nmgr = app.getNodeManager();
+        this.dbHomeDir = dbHome;
 
-        if (!dbHomeDir.exists() && !dbHomeDir.mkdirs()) {
-            throw new DatabaseException(Messages.getString("XmlDatabase.0")+dbHomeDir); //$NON-NLS-1$
+        if (!this.dbHomeDir.exists() && !this.dbHomeDir.mkdirs()) {
+            throw new DatabaseException(Messages.getString("XmlDatabase.0")+this.dbHomeDir); //$NON-NLS-1$
         }
 
-        if (!dbHomeDir.canWrite()) {
-            throw new DatabaseException(Messages.getString("XmlDatabase.1")+dbHomeDir); //$NON-NLS-1$
+        if (!this.dbHomeDir.canWrite()) {
+            throw new DatabaseException(Messages.getString("XmlDatabase.1")+this.dbHomeDir); //$NON-NLS-1$
         }
 
-        File stylesheet = new File(dbHomeDir, "helma.xsl"); //$NON-NLS-1$
+        File stylesheet = new File(this.dbHomeDir, "helma.xsl"); //$NON-NLS-1$
         // if style sheet doesn't exist, copy it
         if (!stylesheet.exists()) {
             copyStylesheet(stylesheet);
@@ -83,14 +83,14 @@ public final class XmlDatabase implements IDatabase {
             txn = beginTransaction();
 
             try {
-                idgen = getIDGenerator(txn);
+                this.idgen = getIDGenerator(txn);
 
-                if (idgen.getValue() < idBaseValue) {
-                    idgen.setValue(idBaseValue);
+                if (this.idgen.getValue() < idBaseValue) {
+                    this.idgen.setValue(idBaseValue);
                 }
             } catch (ObjectNotFoundException notfound) {
                 // will start with idBaseValue+1
-                idgen = new XmlIDGenerator(idBaseValue);
+                this.idgen = new XmlIDGenerator(idBaseValue);
             }
 
             // check if we need to set the id generator to a base value
@@ -99,7 +99,7 @@ public final class XmlDatabase implements IDatabase {
             try {
                 getNode(txn, "0"); //$NON-NLS-1$
             } catch (ObjectNotFoundException notfound) {
-                node = new Node("root", "0", "Root", nmgr.safe); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                node = new Node("root", "0", "Root", this.nmgr.safe); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 node.setDbMapping(app.getDbMapping("root")); //$NON-NLS-1$
                 insertNode(txn, node.getID(), node);
                 // register node with nodemanager cache
@@ -109,7 +109,7 @@ public final class XmlDatabase implements IDatabase {
             try {
                 getNode(txn, "1"); //$NON-NLS-1$
             } catch (ObjectNotFoundException notfound) {
-                node = new Node("users", "1", null, nmgr.safe); //$NON-NLS-1$ //$NON-NLS-2$
+                node = new Node("users", "1", null, this.nmgr.safe); //$NON-NLS-1$ //$NON-NLS-2$
                 node.setDbMapping(app.getDbMapping("__userroot__")); //$NON-NLS-1$
                 insertNode(txn, node.getID(), node);
                 // register node with nodemanager cache
@@ -181,10 +181,10 @@ public final class XmlDatabase implements IDatabase {
      * @throws DatabaseException
      */
     public void commitTransaction(ITransaction txn) throws DatabaseException {
-        if (idgen.dirty) {
+        if (this.idgen.dirty) {
             try {
                 saveIDGenerator(txn);
-                idgen.dirty = false;
+                this.idgen.dirty = false;
             } catch (IOException x) {
                 throw new DatabaseException(x.toString());
             }
@@ -209,11 +209,11 @@ public final class XmlDatabase implements IDatabase {
      * @throws ObjectNotFoundException
      */
     public String nextID() throws ObjectNotFoundException {
-        if (idgen == null) {
+        if (this.idgen == null) {
             getIDGenerator(null);
         }
 
-        return idgen.newID();
+        return this.idgen.newID();
     }
 
     /**
@@ -225,11 +225,11 @@ public final class XmlDatabase implements IDatabase {
      */
     public XmlIDGenerator getIDGenerator(ITransaction txn)
                                throws ObjectNotFoundException {
-        File file = new File(dbHomeDir, "idgen.xml"); //$NON-NLS-1$
+        File file = new File(this.dbHomeDir, "idgen.xml"); //$NON-NLS-1$
 
         this.idgen = XmlIDGenerator.getIDGenerator(file);
 
-        return idgen;
+        return this.idgen;
     }
 
     /**
@@ -240,11 +240,11 @@ public final class XmlDatabase implements IDatabase {
      */
     public void saveIDGenerator(ITransaction txn)
                          throws IOException {
-        File tmp = File.createTempFile("idgen.xml.", ".tmp", dbHomeDir); //$NON-NLS-1$ //$NON-NLS-2$
+        File tmp = File.createTempFile("idgen.xml.", ".tmp", this.dbHomeDir); //$NON-NLS-1$ //$NON-NLS-2$
 
-        XmlIDGenerator.saveIDGenerator(idgen, tmp);
+        XmlIDGenerator.saveIDGenerator(this.idgen, tmp);
 
-        File file = new File(dbHomeDir, "idgen.xml"); //$NON-NLS-1$
+        File file = new File(this.dbHomeDir, "idgen.xml"); //$NON-NLS-1$
         if (file.exists() && !file.canWrite()) {
             throw new IOException(Messages.getString("XmlDatabase.4")+file); //$NON-NLS-1$
         }
@@ -263,22 +263,22 @@ public final class XmlDatabase implements IDatabase {
      */
     public INode getNode(ITransaction txn, String kstr)
                   throws IOException, ObjectNotFoundException {
-        File f = new File(dbHomeDir, kstr + ".xml"); //$NON-NLS-1$
+        File f = new File(this.dbHomeDir, kstr + ".xml"); //$NON-NLS-1$
 
         if (!f.exists()) {
             throw new ObjectNotFoundException(Messages.getString("XmlDatabase.5") + kstr); //$NON-NLS-1$
         }
 
        try {
-            XmlDatabaseReader reader = new XmlDatabaseReader(nmgr);
+            XmlDatabaseReader reader = new XmlDatabaseReader(this.nmgr);
             Node node = reader.read(f);
 
             return node;
         } catch (ParserConfigurationException x) {
-            app.logError(Messages.getString("XmlDatabase.6") +f, x); //$NON-NLS-1$
+            this.app.logError(Messages.getString("XmlDatabase.6") +f, x); //$NON-NLS-1$
             throw new IOException(x.toString());
         } catch (SAXException x) {
-            app.logError(Messages.getString("XmlDatabase.7") +f, x); //$NON-NLS-1$
+            this.app.logError(Messages.getString("XmlDatabase.7") +f, x); //$NON-NLS-1$
             throw new IOException(x.toString());
         }
     }
@@ -293,7 +293,7 @@ public final class XmlDatabase implements IDatabase {
      */
     public void insertNode(ITransaction txn, String kstr, INode node)
                 throws IOException {
-        File f = new File(dbHomeDir, kstr + ".xml"); //$NON-NLS-1$
+        File f = new File(this.dbHomeDir, kstr + ".xml"); //$NON-NLS-1$
 
         if (f.exists()) {
             throw new IOException(Messages.getString("XmlDatabase.8") + kstr); //$NON-NLS-1$
@@ -315,10 +315,10 @@ public final class XmlDatabase implements IDatabase {
     public void updateNode(ITransaction txn, String kstr, INode node)
                 throws IOException {
         XmlWriter writer = null;
-        File tmp = File.createTempFile(kstr + ".xml.", ".tmp", dbHomeDir); //$NON-NLS-1$ //$NON-NLS-2$
+        File tmp = File.createTempFile(kstr + ".xml.", ".tmp", this.dbHomeDir); //$NON-NLS-1$ //$NON-NLS-2$
 
-        if (encoding != null) {
-            writer = new XmlWriter(tmp, encoding);
+        if (this.encoding != null) {
+            writer = new XmlWriter(tmp, this.encoding);
         } else {
             writer = new XmlWriter(tmp);
         }
@@ -327,7 +327,7 @@ public final class XmlDatabase implements IDatabase {
         writer.write(node);
         writer.close();
 
-        File file = new File(dbHomeDir, kstr+".xml"); //$NON-NLS-1$
+        File file = new File(this.dbHomeDir, kstr+".xml"); //$NON-NLS-1$
         if (file.exists() && !file.canWrite()) {
             throw new IOException(Messages.getString("XmlDatabase.9")+file); //$NON-NLS-1$
         }
@@ -342,9 +342,8 @@ public final class XmlDatabase implements IDatabase {
      * @param kstr
      * @throws IOException
      */
-    public void deleteNode(ITransaction txn, String kstr)
-                    throws IOException {
-        Resource res = new Resource(new File(dbHomeDir, kstr+".xml"), null); //$NON-NLS-1$
+    public void deleteNode(ITransaction txn, String kstr) {
+        Resource res = new Resource(new File(this.dbHomeDir, kstr+".xml"), null); //$NON-NLS-1$
         txn.addResource(res, ITransaction.DELETED);
     }
 
@@ -363,7 +362,7 @@ public final class XmlDatabase implements IDatabase {
      * @return the file encoding used by this database
      */
     public String getEncoding() {
-        return encoding;
+        return this.encoding;
     }
 
     class XmlTransaction implements ITransaction {
@@ -376,9 +375,9 @@ public final class XmlDatabase implements IDatabase {
          */
         public void commit() throws DatabaseException {
             // move through updated/created files and persist them
-            int l = writeFiles.size();
+            int l = this.writeFiles.size();
             for (int i=0; i<l; i++) {
-                Resource res = (Resource) writeFiles.get(i);
+                Resource res = (Resource) this.writeFiles.get(i);
                 try {
                     // because of a Java/Windows quirk, we have to delete
                     // the existing file before trying to overwrite it
@@ -391,8 +390,8 @@ public final class XmlDatabase implements IDatabase {
                         res.tmpfile.delete();
                     } else {
                         // error - leave tmp file and print a message
-                        app.logError(Messages.getString("XmlDatabase.10")+res.file); //$NON-NLS-1$
-                        app.logError(Messages.getString("XmlDatabase.11")+res.tmpfile); //$NON-NLS-1$
+                        XmlDatabase.this.app.logError(Messages.getString("XmlDatabase.10")+res.file); //$NON-NLS-1$
+                        XmlDatabase.this.app.logError(Messages.getString("XmlDatabase.11")+res.tmpfile); //$NON-NLS-1$
                     }
                 } catch (SecurityException ignore) {
                     // shouldn't happen
@@ -400,9 +399,9 @@ public final class XmlDatabase implements IDatabase {
             }
 
             // move through deleted files and delete them
-            l = deleteFiles.size();
+            l = this.deleteFiles.size();
             for (int i=0; i<l; i++) {
-                Resource res = (Resource) deleteFiles.get(i);
+                Resource res = (Resource) this.deleteFiles.get(i);
                 // delete files enlisted as deleted
                 try {
                     res.file.delete();
@@ -411,17 +410,17 @@ public final class XmlDatabase implements IDatabase {
                 }
             }
             // clear registered resources
-            writeFiles.clear();
-            deleteFiles.clear();
+            this.writeFiles.clear();
+            this.deleteFiles.clear();
         }
 
         /**
          * Rollback the transaction, forgetting the changed items
          */
         public void abort() throws DatabaseException {
-            int l = writeFiles.size();
+            int l = this.writeFiles.size();
             for (int i=0; i<l; i++) {
-                Resource res = (Resource) writeFiles.get(i);
+                Resource res = (Resource) this.writeFiles.get(i);
                 // delete tmp files created by this transaction
                 try {
                     res.tmpfile.delete();
@@ -431,8 +430,8 @@ public final class XmlDatabase implements IDatabase {
             }
 
             // clear registered resources
-            writeFiles.clear();
-            deleteFiles.clear();
+            this.writeFiles.clear();
+            this.deleteFiles.clear();
         }
 
         /**
@@ -444,9 +443,9 @@ public final class XmlDatabase implements IDatabase {
         public void addResource(Object res, int status)
                throws DatabaseException {
             if (status == DELETED) {
-                deleteFiles.add(res);
+                this.deleteFiles.add(res);
             } else {
-                writeFiles.add(res);
+                this.writeFiles.add(res);
             }
         }
 

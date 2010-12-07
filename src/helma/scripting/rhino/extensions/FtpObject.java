@@ -85,11 +85,10 @@ public class FtpObject extends ScriptableObject {
     }
 
     Exception getLastError() {
-        if (lastError == null) {
+        if (this.lastError == null) {
             return null;
-        } else {
-            return lastError;
         }
+        return this.lastError;
     }
 
     /**
@@ -100,15 +99,15 @@ public class FtpObject extends ScriptableObject {
      * @return  true if successful, false otherwise
      */
     public boolean login(String username, String password) {
-        if (server == null) {
+        if (this.server == null) {
             return false;
         }
 
         try {
-            ftpclient = new FTPClient();
-            ftpclient.connect(server);
+            this.ftpclient = new FTPClient();
+            this.ftpclient.connect(this.server);
 
-            return ftpclient.login(username, password);
+            return this.ftpclient.login(username, password);
         } catch (Exception x) {
             return false;
         } catch (NoClassDefFoundError x) {
@@ -117,12 +116,12 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean cd(String path) {
-        if (ftpclient == null) {
+        if (this.ftpclient == null) {
             return false;
         }
 
         try {
-            ftpclient.changeWorkingDirectory(path);
+            this.ftpclient.changeWorkingDirectory(path);
 
             return true;
         } catch (Exception wrong) {
@@ -132,12 +131,12 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean mkdir(String dir) {
-        if (ftpclient == null) {
+        if (this.ftpclient == null) {
             return false;
         }
 
         try {
-            return ftpclient.makeDirectory(dir);
+            return this.ftpclient.makeDirectory(dir);
         } catch (Exception wrong) {
         }
 
@@ -146,10 +145,10 @@ public class FtpObject extends ScriptableObject {
 
     public boolean lcd(String dir) {
         try {
-            localDir = new File(dir);
+            this.localDir = new File(dir);
 
-            if (!localDir.exists()) {
-                localDir.mkdirs();
+            if (!this.localDir.exists()) {
+                this.localDir.mkdirs();
             }
 
             return true;
@@ -160,15 +159,15 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean putFile(String localFile, String remoteFile) {
-        if (ftpclient == null) {
+        if (this.ftpclient == null) {
             return false;
         }
 
         try {
-            File f = (localDir == null) ? new File(localFile) : new File(localDir, localFile);
+            File f = (this.localDir == null) ? new File(localFile) : new File(this.localDir, localFile);
             InputStream fin = new BufferedInputStream(new FileInputStream(f));
 
-            ftpclient.storeFile(remoteFile, fin);
+            this.ftpclient.storeFile(remoteFile, fin);
             fin.close();
 
             return true;
@@ -179,7 +178,7 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean putString(Object obj, String remoteFile) {
-        if (ftpclient == null || obj == null) {
+        if (this.ftpclient == null || obj == null) {
             return false;
         }
 
@@ -197,7 +196,7 @@ public class FtpObject extends ScriptableObject {
 
             ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
 
-            ftpclient.storeFile(remoteFile, bin);
+            this.ftpclient.storeFile(remoteFile, bin);
 
             return true;
         } catch (Exception wrong) {
@@ -207,15 +206,15 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean getFile(String remoteFile, String localFile) {
-        if (ftpclient == null) {
+        if (this.ftpclient == null) {
             return false;
         }
 
         try {
-            File f = (localDir == null) ? new File(localFile) : new File(localDir, localFile);
+            File f = (this.localDir == null) ? new File(localFile) : new File(this.localDir, localFile);
             OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
 
-            ftpclient.retrieveFile(remoteFile, out);
+            this.ftpclient.retrieveFile(remoteFile, out);
             out.close();
 
             return true;
@@ -226,14 +225,14 @@ public class FtpObject extends ScriptableObject {
     }
 
     public Object getString(String remoteFile) {
-        if (ftpclient == null) {
+        if (this.ftpclient == null) {
             return null;
         }
 
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
-            ftpclient.retrieveFile(remoteFile, bout);
+            this.ftpclient.retrieveFile(remoteFile, bout);
 
             return bout.toString();
         } catch (Exception wrong) {
@@ -248,14 +247,14 @@ public class FtpObject extends ScriptableObject {
      * @return  true if successful, false otherwise
      */
     public boolean logout() {
-        if (ftpclient != null) {
+        if (this.ftpclient != null) {
             try {
-                ftpclient.logout();
+                this.ftpclient.logout();
             } catch (IOException ignore) {
             }
 
             try {
-                ftpclient.disconnect();
+                this.ftpclient.disconnect();
             } catch (IOException ignore) {
             }
         }
@@ -264,9 +263,9 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean binary() {
-        if (ftpclient != null) {
+        if (this.ftpclient != null) {
             try {
-                ftpclient.setFileType(FTP.BINARY_FILE_TYPE);
+                this.ftpclient.setFileType(FTP.BINARY_FILE_TYPE);
 
                 return true;
             } catch (IOException ignore) {
@@ -277,9 +276,9 @@ public class FtpObject extends ScriptableObject {
     }
 
     public boolean ascii() {
-        if (ftpclient != null) {
+        if (this.ftpclient != null) {
             try {
-                ftpclient.setFileType(FTP.ASCII_FILE_TYPE);
+                this.ftpclient.setFileType(FTP.ASCII_FILE_TYPE);
 
                 return true;
             } catch (IOException ignore) {

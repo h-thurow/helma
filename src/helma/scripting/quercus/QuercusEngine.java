@@ -169,8 +169,7 @@ public class QuercusEngine implements ScriptingEngine {
      * @see org.warp.scripting.ScriptingEngine#deserialize(java.io.InputStream)
      */
     @Override
-    public Object deserialize(final InputStream in) throws IOException,
-            ClassNotFoundException {
+    public Object deserialize(final InputStream in) {
         // TODO: implement
         return null;
     }
@@ -802,8 +801,7 @@ public class QuercusEngine implements ScriptingEngine {
      * java.io.OutputStream)
      */
     @Override
-    public void serialize(final Object obj, final OutputStream out)
-            throws IOException {
+    public void serialize(final Object obj, final OutputStream out) {
         // TODO: implement
     }
 

@@ -20,7 +20,6 @@
 
 package helma.image.imageio.gif;
 
-import java.io.*;
 import java.util.*;
 import javax.imageio.*;
 import javax.imageio.spi.*;
@@ -48,8 +47,7 @@ public class GIFImageWriterSpi extends ImageWriterSpi {
     }
 
     @Override
-    public ImageWriter createWriterInstance(Object extension)
-        throws IOException {
+    public ImageWriter createWriterInstance(Object extension) {
         return new GIFImageWriter(this);
     }
 

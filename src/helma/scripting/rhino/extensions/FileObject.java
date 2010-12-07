@@ -54,13 +54,13 @@ public class FileObject extends ScriptableObject {
     protected FileObject(String fileName) {
         // always convert to absolute file straight away, since
         // relative file name handling is pretty broken in java.io.File
-        file = new File(fileName).getAbsoluteFile();
+        this.file = new File(fileName).getAbsoluteFile();
     }
 
     protected FileObject(String pathName, String fileName) {
         // always convert to absolute file straight away, since
         // relative file name handling is pretty broken in java.io.File
-        file = new File(pathName, fileName).getAbsoluteFile();
+        this.file = new File(pathName, fileName).getAbsoluteFile();
     }
 
     public static FileObject fileObjCtor(Context cx, Object[] args,
@@ -131,30 +131,30 @@ public class FileObject extends ScriptableObject {
 
     @Override
     public String toString() {
-         if (file==null) return "<null>"; //$NON-NLS-1$
-         return file.toString();
+         if (this.file==null) return "<null>"; //$NON-NLS-1$
+         return this.file.toString();
     }
 
     public String toDetailString() {
         return "ES:[Object: builtin " + this.getClass().getName() + ":" + //$NON-NLS-1$ //$NON-NLS-2$
-            ((file == null) ? "null" : file.toString()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+            ((this.file == null) ? "null" : this.file.toString()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     protected void setError(Throwable e) {
-        lastError = e;
+        this.lastError = e;
     }
 
     public boolean exists() {
-        if (file == null) return false;
-        return file.exists();
+        if (this.file == null) return false;
+        return this.file.exists();
     }
 
     public boolean open() {
-        if (readerWriter != null) {
+        if (this.readerWriter != null) {
             setError(new IllegalStateException(Messages.getString("FileObject.2"))); //$NON-NLS-1$
             return false;
         }
-        if (file == null) {
+        if (this.file == null) {
             setError(new IllegalArgumentException(Messages.getString("FileObject.3"))); //$NON-NLS-1$
             return false;
         }
@@ -164,10 +164,10 @@ public class FileObject extends ScriptableObject {
         // Otherwise we have an open file until the reader/writer
         // get garbage collected.
         try{
-           if (file.exists()) {
-               readerWriter = new BufferedReader(new FileReader(file));
+           if (this.file.exists()) {
+               this.readerWriter = new BufferedReader(new FileReader(this.file));
            } else {
-               readerWriter = new PrintWriter(new FileWriter(file));
+               this.readerWriter = new PrintWriter(new FileWriter(this.file));
            }
            return true;
        } catch (IOException e) {
@@ -177,37 +177,37 @@ public class FileObject extends ScriptableObject {
     }
 
     public boolean isOpened() {
-       return (readerWriter != null);
+       return (this.readerWriter != null);
     }
 
     public boolean close() {
-       if (readerWriter == null)
+       if (this.readerWriter == null)
                        return false;
        try {
-          if (readerWriter instanceof Reader) {
-              ((Reader) readerWriter).close();
+          if (this.readerWriter instanceof Reader) {
+              ((Reader) this.readerWriter).close();
           } else {
-              ((Writer) readerWriter).close();
+              ((Writer) this.readerWriter).close();
           }
-          readerWriter = null;
+          this.readerWriter = null;
           return true;
        } catch (IOException e) {
            setError(e);
-           readerWriter = null;
+           this.readerWriter = null;
            return false;
        }
     }
    
     public boolean write(Object what) {
-        if (readerWriter == null) {
+        if (this.readerWriter == null) {
             setError(new IllegalStateException(Messages.getString("FileObject.4"))); //$NON-NLS-1$
             return false;
         }
-        if (! (readerWriter instanceof PrintWriter)) {
+        if (! (this.readerWriter instanceof PrintWriter)) {
             setError(new IllegalStateException(Messages.getString("FileObject.5"))); //$NON-NLS-1$
             return false;
         }
-        PrintWriter writer = (PrintWriter) readerWriter;
+        PrintWriter writer = (PrintWriter) this.readerWriter;
         if (what != null) {
             writer.print(what.toString());
         }
@@ -216,15 +216,15 @@ public class FileObject extends ScriptableObject {
     }
 
     public boolean writeln(Object what) {
-        if (readerWriter == null) {
+        if (this.readerWriter == null) {
             setError(new IllegalStateException(Messages.getString("FileObject.6"))); //$NON-NLS-1$
             return false;
         }
-        if (! (readerWriter instanceof PrintWriter)) {
+        if (! (this.readerWriter instanceof PrintWriter)) {
             setError(new IllegalStateException(Messages.getString("FileObject.7"))); //$NON-NLS-1$
             return false;
         }
-        PrintWriter writer = (PrintWriter) readerWriter;
+        PrintWriter writer = (PrintWriter) this.readerWriter;
         if (what != null) {
             writer.print(what.toString());
         }
@@ -233,29 +233,29 @@ public class FileObject extends ScriptableObject {
     }
 
     public String readln() {
-        if (readerWriter == null) {
+        if (this.readerWriter == null) {
             setError(new IllegalStateException(Messages.getString("FileObject.8"))); //$NON-NLS-1$
             return null;
         }
-        if (! (readerWriter instanceof BufferedReader)) {
+        if (! (this.readerWriter instanceof BufferedReader)) {
             setError(new IllegalStateException(Messages.getString("FileObject.9"))); //$NON-NLS-1$
             return null;
         }
-        if (atEOF) {
+        if (this.atEOF) {
             setError(new EOFException());
             return null;
         }
-        if (lastLine!=null) {
-            String line = lastLine;
-            lastLine = null;
+        if (this.lastLine!=null) {
+            String line = this.lastLine;
+            this.lastLine = null;
             return line;
         }
-        BufferedReader reader = (BufferedReader) readerWriter;
+        BufferedReader reader = (BufferedReader) this.readerWriter;
         // Here lastLine is null, return a new line
         try {
           String line = reader.readLine();
           if (line == null) {
-              atEOF = true;
+              this.atEOF = true;
               setError(new EOFException());
           }
           return line;
@@ -266,21 +266,21 @@ public class FileObject extends ScriptableObject {
     }
 
     public boolean eof() {
-        if (readerWriter == null) {
+        if (this.readerWriter == null) {
             setError(new IllegalStateException(Messages.getString("FileObject.10"))); //$NON-NLS-1$
             return true;
         }
-        if (! (readerWriter instanceof BufferedReader)) {
+        if (! (this.readerWriter instanceof BufferedReader)) {
             setError(new IllegalStateException(Messages.getString("FileObject.11"))); //$NON-NLS-1$
             return true;
         }
-        if (atEOF) return true;
-        if (lastLine!=null) return false;
-        BufferedReader reader = (BufferedReader) readerWriter;
+        if (this.atEOF) return true;
+        if (this.lastLine!=null) return false;
+        BufferedReader reader = (BufferedReader) this.readerWriter;
         try {
-          lastLine = reader.readLine();
-          if (lastLine == null) atEOF = true;
-          return atEOF;
+          this.lastLine = reader.readLine();
+          if (this.lastLine == null) this.atEOF = true;
+          return this.atEOF;
         } catch (IOException e) {
           setError(e);
           return true;
@@ -288,29 +288,29 @@ public class FileObject extends ScriptableObject {
     }
 
     public boolean isFile() {
-        if (file == null) {
+        if (this.file == null) {
             setError(new IllegalArgumentException(Messages.getString("FileObject.12"))); //$NON-NLS-1$
             return false;
         }
-        return file.isFile();
+        return this.file.isFile();
     }
 
     public boolean isDirectory() {
-        if (file == null) {
+        if (this.file == null) {
             setError(new IllegalArgumentException(Messages.getString("FileObject.13"))); //$NON-NLS-1$
             return false;
         }
-        return file.isDirectory();
+        return this.file.isDirectory();
     }
 
     public boolean flush() {
-        if (readerWriter == null) {
+        if (this.readerWriter == null) {
             setError(new IllegalStateException(Messages.getString("FileObject.14"))); //$NON-NLS-1$
             return false;
         }
-        if (readerWriter instanceof Writer) {
+        if (this.readerWriter instanceof Writer) {
               try {
-                  ((Writer) readerWriter).flush();
+                  ((Writer) this.readerWriter).flush();
              } catch (IOException e) {
                  setError(e);
                  return false;
@@ -324,50 +324,49 @@ public class FileObject extends ScriptableObject {
    
    
     public double getLength() {
-       if (file == null) {
+       if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.16"))); //$NON-NLS-1$
            return -1;
        }
-       return file.length();
+       return this.file.length();
     }
   
     public double lastModified() {
-       if (file == null) {
+       if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.17"))); //$NON-NLS-1$
-           return (double) 0L;
+           return 0L;
        }
-       return (double) file.lastModified();
+       return this.file.lastModified();
     }
   
     public String error() {
-      if (lastError == null) {
+      if (this.lastError == null) {
           return ""; //$NON-NLS-1$
-      } else {
-          String exceptionName = lastError.getClass().getName();
-          int l = exceptionName.lastIndexOf("."); //$NON-NLS-1$
-          if (l>0) exceptionName = exceptionName.substring(l+1);
-          return exceptionName +": " + lastError.getMessage(); //$NON-NLS-1$
       }
+    String exceptionName = this.lastError.getClass().getName();
+      int l = exceptionName.lastIndexOf("."); //$NON-NLS-1$
+      if (l>0) exceptionName = exceptionName.substring(l+1);
+      return exceptionName +": " + this.lastError.getMessage(); //$NON-NLS-1$
     }
    
     public void clearError() {
-        lastError = null;
+        this.lastError = null;
     }
    
     public boolean remove() {
-       if (file == null) {
+       if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.18"))); //$NON-NLS-1$
            return false;
        }
-       if (readerWriter != null) {
+       if (this.readerWriter != null) {
            setError(new IllegalStateException(Messages.getString("FileObject.19"))); //$NON-NLS-1$
            return false;
        }
-       return file.delete();
+       return this.file.delete();
     }
    
     public boolean renameTo(FileObject toFile) {
-       if (file == null) {
+       if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.20"))); //$NON-NLS-1$
            return false;
        }
@@ -375,7 +374,7 @@ public class FileObject extends ScriptableObject {
            setError(new IllegalArgumentException(Messages.getString("FileObject.21"))); //$NON-NLS-1$
            return false;
        }
-       if (readerWriter != null) {
+       if (this.readerWriter != null) {
            setError(new IllegalStateException(Messages.getString("FileObject.22"))); //$NON-NLS-1$
            return false;
        }
@@ -383,105 +382,105 @@ public class FileObject extends ScriptableObject {
            setError(new IllegalStateException(Messages.getString("FileObject.23"))); //$NON-NLS-1$
            return false;
        }
-       return file.renameTo(toFile.file);
+       return this.file.renameTo(toFile.file);
     }
    
     public boolean canRead() {
-        if (file == null) {
+        if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.24"))); //$NON-NLS-1$
            return false;
         }
-        return file.canRead();
+        return this.file.canRead();
     }
     
     public boolean canWrite() {
-        if (file == null) {
+        if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.25"))); //$NON-NLS-1$
            return false;
         }
-        return file.canWrite();
+        return this.file.canWrite();
     }
     
     public String getParent() {
-        if (file == null) {
+        if (this.file == null) {
             setError(new IllegalArgumentException(Messages.getString("FileObject.26"))); //$NON-NLS-1$
             return ""; //$NON-NLS-1$
         }
-        String parent = file.getParent();
+        String parent = this.file.getParent();
         return (parent==null ? "" : parent); //$NON-NLS-1$
     }
     
     public String getName() {
-        if (file == null) {
+        if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.27"))); //$NON-NLS-1$
            return ""; //$NON-NLS-1$
         }
-        String name = file.getName();
+        String name = this.file.getName();
         return (name==null ? "" : name); //$NON-NLS-1$
     }
     
     public String getPath() {
-        if (file == null) {
+        if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.28"))); //$NON-NLS-1$
            return ""; //$NON-NLS-1$
         }
-        String path = file.getPath();
+        String path = this.file.getPath();
         return (path==null ? "" : path); //$NON-NLS-1$
     }
     
     public String getAbsolutePath() {
-        if (file == null) {
+        if (this.file == null) {
            setError(new IllegalArgumentException(Messages.getString("FileObject.29"))); //$NON-NLS-1$
            return ""; //$NON-NLS-1$
         }
-        String absolutPath = file.getAbsolutePath();
+        String absolutPath = this.file.getAbsolutePath();
         return (absolutPath==null ? "" : absolutPath); //$NON-NLS-1$
     }
     
     public boolean isAbsolute() {
-        if (file == null) return false;
-        return file.isAbsolute();
+        if (this.file == null) return false;
+        return this.file.isAbsolute();
     }
     
     public boolean mkdir() {
-        if (file == null) return false;
-        if(readerWriter != null) return false;
-        return file.mkdirs();   // Using multi directory version
+        if (this.file == null) return false;
+        if(this.readerWriter != null) return false;
+        return this.file.mkdirs();   // Using multi directory version
     }
     
     public Object list() {
-        if (file == null) return null;
-        if(readerWriter != null) return null;
-        if (!file.isDirectory()) return null;
-        return file.list();   
+        if (this.file == null) return null;
+        if(this.readerWriter != null) return null;
+        if (!this.file.isDirectory()) return null;
+        return this.file.list();   
     }
     
     
     public String readAll() {
         // Open the file for readAll
-        if (readerWriter != null) {
+        if (this.readerWriter != null) {
             setError(new IllegalStateException(Messages.getString("FileObject.30"))); //$NON-NLS-1$
             return null;
         }
-        if (file == null) {
+        if (this.file == null) {
             setError(new IllegalArgumentException(Messages.getString("FileObject.31"))); //$NON-NLS-1$
             return null;
         }
         try{ 
-           if (file.exists()) {
-               readerWriter = new BufferedReader(new FileReader(file));
+           if (this.file.exists()) {
+               this.readerWriter = new BufferedReader(new FileReader(this.file));
            } else {
                setError(new IllegalStateException(Messages.getString("FileObject.32"))); //$NON-NLS-1$
                return null;
            }
-           if(!file.isFile()) {
+           if(!this.file.isFile()) {
                setError(new IllegalStateException(Messages.getString("FileObject.33"))); //$NON-NLS-1$
                return null;
            }
 
            // read content line by line to setup properl eol
-           StringBuffer buffer = new StringBuffer((int) (file.length()*1.10));
-           BufferedReader reader = (BufferedReader) readerWriter;
+           StringBuffer buffer = new StringBuffer((int) (this.file.length()*1.10));
+           BufferedReader reader = (BufferedReader) this.readerWriter;
            while (true) {
               String line = reader.readLine();
               if (line == null) {
@@ -493,18 +492,18 @@ public class FileObject extends ScriptableObject {
 
            
            // Close the file
-           ((Reader) readerWriter).close();
-           readerWriter = null;
+           ((Reader) this.readerWriter).close();
+           this.readerWriter = null;
            return buffer.toString();
        } catch (IOException e) {
-           readerWriter = null;
+           this.readerWriter = null;
            setError(e);
            return null;
        }
     }
 
     protected File getFile() {
-        return file;
+        return this.file;
     }
   
 } //class FileObject

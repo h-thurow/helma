@@ -42,15 +42,14 @@ public class XmlUtil {
 
         if (domBuilder != null) {
             return domBuilder;
-        } else {
-            try {
-                domBuilder = domBuilderFactory.newDocumentBuilder();
-                domBuilders.put(Thread.currentThread(), domBuilder);
+        }
+        try {
+            domBuilder = domBuilderFactory.newDocumentBuilder();
+            domBuilders.put(Thread.currentThread(), domBuilder);
 
-                return domBuilder;
-            } catch (ParserConfigurationException e) {
-                throw new RuntimeException(Messages.getString("XmlUtil.0") + e.toString()); //$NON-NLS-1$
-            }
+            return domBuilder;
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(Messages.getString("XmlUtil.0") + e.toString()); //$NON-NLS-1$
         }
     }
 

@@ -21,6 +21,7 @@ import helma.framework.core.RequestEvaluator;
 import helma.framework.core.Application;
 import helma.objectmodel.ConcurrencyException;
 import helma.objectmodel.INode;
+import helma.objectmodel.INodeState;
 import helma.objectmodel.IProperty;
 import helma.objectmodel.TransientNode;
 import helma.util.EmptyEnumeration;
@@ -72,7 +73,7 @@ public final class Node implements INode {
      * @param timestamp
      */
     protected Node(long timestamp) {
-        created = lastmodified = timestamp;
+        this.created = this.lastmodified = timestamp;
         this.nmgr = null;
     }
 
@@ -85,7 +86,7 @@ public final class Node implements INode {
             throw new NullPointerException("nmgr"); //$NON-NLS-1$
         }
         this.nmgr = nmgr;
-        created = lastmodified = System.currentTimeMillis();
+        this.created = this.lastmodified = System.currentTimeMillis();
     }
 
     /**
@@ -124,8 +125,8 @@ public final class Node implements INode {
         this.nmgr = nmgr;
         setParent(home);
         // generate a key for the virtual node that can't be mistaken for a Database Key
-        primaryKey = new SyntheticKey(home.getKey(), propname);
-        this.id = primaryKey.getID();
+        this.primaryKey = new SyntheticKey(home.getKey(), propname);
+        this.id = this.primaryKey.getID();
         this.name = propname;
         this.prototype = prototype;
         this.anonymous = false;
@@ -147,19 +148,19 @@ public final class Node implements INode {
         }
         this.nmgr = nmgr;
         this.prototype = prototype;
-        dbmap = nmgr.getDbMapping(prototype);
+        this.dbmap = nmgr.getDbMapping(prototype);
 
         // the id is only generated when the node is actually checked into db,
         // or when it's explicitly requested.
-        id = null;
+        this.id = null;
         this.name = (name == null) ? "" : name; //$NON-NLS-1$
-        created = lastmodified = System.currentTimeMillis();
-        state = TRANSIENT;
+        this.created = this.lastmodified = System.currentTimeMillis();
+        this.state = TRANSIENT;
 
-        if (prototype != null && dbmap != null) {
-            String protoProperty = dbmap.columnNameToProperty(dbmap.getPrototypeField());
+        if (prototype != null && this.dbmap != null) {
+            String protoProperty = this.dbmap.columnNameToProperty(this.dbmap.getPrototypeField());
             if (protoProperty != null) {
-                setString(protoProperty, dbmap.getExtensionId());
+                setString(protoProperty, this.dbmap.getExtensionId());
             }
         }
     }
@@ -181,9 +182,9 @@ public final class Node implements INode {
         this.propMap = propMap;
 
         // set lastmodified and created timestamps and mark as clean
-        created = lastmodified = System.currentTimeMillis();
+        this.created = this.lastmodified = System.currentTimeMillis();
 
-        if (state != CLEAN) {
+        if (this.state != CLEAN) {
             markAs(CLEAN);
         }
     }
@@ -200,7 +201,7 @@ public final class Node implements INode {
      * lock is already held by another thread.
      */
     synchronized void checkWriteLock() {
-        if (state == TRANSIENT) {
+        if (this.state == TRANSIENT) {
             return; // no need to lock transient node
         }
 
@@ -210,39 +211,39 @@ public final class Node implements INode {
             throw new helma.framework.TimeoutException();
         }
 
-        if (state == INVALID) {
-            nmgr.logEvent(Messages.getString("Node.0") + this); //$NON-NLS-1$
+        if (this.state == INVALID) {
+            this.nmgr.logEvent(Messages.getString("Node.0") + this); //$NON-NLS-1$
             Thread.dumpStack();
             throw new ConcurrencyException(Messages.getString("Node.1") + this + //$NON-NLS-1$
                                            Messages.getString("Node.2")); //$NON-NLS-1$
         }
 
-        if ((lock != null) && (lock != tx) && lock.isAlive() && lock.isActive()) {
+        if ((this.lock != null) && (this.lock != tx) && this.lock.isAlive() && this.lock.isActive()) {
             // nmgr.logEvent("Concurrency conflict for " + this + ", lock held by " + lock);
             throw new ConcurrencyException(Messages.getString("Node.3") + this + //$NON-NLS-1$
                                            Messages.getString("Node.4")); //$NON-NLS-1$
         }
 
         tx.visitDirtyNode(this);
-        lock = tx;
+        this.lock = tx;
     }
 
     /**
      * Clear the write lock on this node.
      */
     synchronized void clearWriteLock() {
-        lock = null;
+        this.lock = null;
     }
 
     /**
      *  Set this node's state, registering it with the transactor if necessary.
      */
     void markAs(int s) {
-        if (s == state || state == INVALID || state == VIRTUAL || state == TRANSIENT) {
+        if (s == this.state || this.state == INVALID || this.state == VIRTUAL || this.state == TRANSIENT) {
             return;
         }
 
-        state = s;
+        this.state = s;
 
         Transactor tx = Transactor.getInstance();
         if (tx != null) {
@@ -267,13 +268,12 @@ public final class Node implements INode {
     void registerSubnodeChange() {
         // we do not fetch subnodes for nodes that haven't been persisted yet or are in
         // the process of being persistified - except if "manual" subnoderelation is set.
-        if ((state == TRANSIENT || state == NEW) && subnodeRelation == null) {
+        if ((this.state == TRANSIENT || this.state == NEW) && this.subnodeRelation == null) {
             return;
-        } else {
-            Transactor tx = Transactor.getInstance();
-            if (tx != null) {
-                tx.visitParentNode(this);
-            }
+        }
+        Transactor tx = Transactor.getInstance();
+        if (tx != null) {
+            tx.visitParentNode(this);
         }
     }
 
@@ -284,14 +284,14 @@ public final class Node implements INode {
      * @param propname the name of the property being changed
      */
     void notifyPropertyChange(String propname) {
-        Node parent = (parentHandle == null) ? null : (Node) getParent();
+        Node parent = (this.parentHandle == null) ? null : (Node) getParent();
 
         if ((parent != null) && (parent.getDbMapping() != null)) {
             // check if this node is already registered with the old name; if so, remove it.
             // then set parent's property to this node for the new name value
             DbMapping parentmap = parent.getDbMapping();
             Relation subrel = parentmap.getSubnodeRelation();
-            String dbcolumn = dbmap.propertyToColumnName(propname);
+            String dbcolumn = this.dbmap.propertyToColumnName(propname);
             if (subrel == null || dbcolumn == null)
                 return;
 
@@ -306,8 +306,8 @@ public final class Node implements INode {
      * child index as changed
      */
     public void markSubnodesChanged() {
-        if (subnodes != null) {
-            subnodes.markAsChanged();
+        if (this.subnodes != null) {
+            this.subnodes.markAsChanged();
         }
     }
 
@@ -317,7 +317,7 @@ public final class Node implements INode {
      * @return this node's state
      */
     public int getState() {
-        return state;
+        return this.state;
     }
 
     /**
@@ -326,7 +326,7 @@ public final class Node implements INode {
      * @param s this node's new state
      */
     public void setState(int s) {
-        state = s;
+        this.state = s;
     }
 
     /**
@@ -334,12 +334,12 @@ public final class Node implements INode {
      */
     public void invalidate() {
         // This doesn't make sense for transient nodes
-        if ((state == TRANSIENT) || (state == NEW)) {
+        if ((this.state == TRANSIENT) || (this.state == NEW)) {
             return;
         }
 
         checkWriteLock();
-        nmgr.evictNode(this);
+        this.nmgr.evictNode(this);
     }
 
     /**
@@ -347,7 +347,7 @@ public final class Node implements INode {
      */
     public void invalidateNode(String key) {
         // This doesn't make sense for transient nodes
-        if ((state == TRANSIENT) || (state == NEW)) {
+        if ((this.state == TRANSIENT) || (this.state == NEW)) {
             return;
         }
 
@@ -355,9 +355,9 @@ public final class Node implements INode {
 
         if (rel != null) {
             if (rel.usesPrimaryKey()) {
-                nmgr.evictNodeByKey(new DbKey(getDbMapping().getSubnodeMapping(), key));
+                this.nmgr.evictNodeByKey(new DbKey(getDbMapping().getSubnodeMapping(), key));
             } else {
-                nmgr.evictNodeByKey(new SyntheticKey(getKey(), key));
+                this.nmgr.evictNodeByKey(new SyntheticKey(getKey(), key));
             }
         }
     }
@@ -369,10 +369,10 @@ public final class Node implements INode {
     public String getID() {
         // if we are transient, we generate an id on demand. It's possible that we'll never need
         // it, but if we do it's important to keep the one we have.
-        if (state == TRANSIENT && id == null) {
-            id = generateTransientID();
+        if (this.state == TRANSIENT && this.id == null) {
+            this.id = generateTransientID();
         }
-        return id;
+        return this.id;
     }
 
     /**
@@ -380,14 +380,14 @@ public final class Node implements INode {
      * is accessed by name
      */
     public boolean isAnonymous() {
-        return anonymous;
+        return this.anonymous;
     }
 
     /**
      * Return this node' name, which may or may not have some meaning
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -396,47 +396,47 @@ public final class Node implements INode {
      */
     public String getElementName() {
         // check element name - this is either the Node's id or name.
-        long lastmod = lastmodified;
+        long lastmod = this.lastmodified;
 
-        if (dbmap != null) {
-            lastmod = Math.max(lastmod, dbmap.getLastTypeChange());
+        if (this.dbmap != null) {
+            lastmod = Math.max(lastmod, this.dbmap.getLastTypeChange());
         }
 
-        if ((parentHandle != null) && (lastNameCheck <= lastmod)) {
+        if ((this.parentHandle != null) && (this.lastNameCheck <= lastmod)) {
             try {
-                Node p = parentHandle.getNode(nmgr);
+                Node p = this.parentHandle.getNode(this.nmgr);
                 DbMapping parentmap = p.getDbMapping();
                 Relation prel = parentmap.getSubnodeRelation();
 
                 if (prel != null) {
                     if (prel.groupby != null) {
                         setName(getString("groupname")); //$NON-NLS-1$
-                        anonymous = false;
+                        this.anonymous = false;
                     } else if (prel.accessName != null) {
-                        String propname = dbmap.columnNameToProperty(prel.accessName);
+                        String propname = this.dbmap.columnNameToProperty(prel.accessName);
                         String propvalue = getString(propname);
 
                         if ((propvalue != null) && (propvalue.length() > 0)) {
                             setName(propvalue);
-                            anonymous = false;
-                        } else if (!anonymous && p.isParentOf(this)) {
-                            anonymous = true;
+                            this.anonymous = false;
+                        } else if (!this.anonymous && p.isParentOf(this)) {
+                            this.anonymous = true;
                         }
-                    } else if (!anonymous && p.isParentOf(this)) {
-                        anonymous = true;
+                    } else if (!this.anonymous && p.isParentOf(this)) {
+                        this.anonymous = true;
                     }
-                } else if (!anonymous && p.isParentOf(this)) {
-                    anonymous = true;
+                } else if (!this.anonymous && p.isParentOf(this)) {
+                    this.anonymous = true;
                 }
             } catch (Exception ignore) {
                 // FIXME: add proper NullPointer checks in try statement
                 // just fall back to default method
             }
 
-            lastNameCheck = System.currentTimeMillis();
+            this.lastNameCheck = System.currentTimeMillis();
         }
 
-        return (anonymous || (name == null) || (name.length() == 0)) ? id : name;
+        return (this.anonymous || (this.name == null) || (this.name.length() == 0)) ? this.id : this.name;
     }
 
     /**
@@ -474,11 +474,11 @@ public final class Node implements INode {
      */
     public String getPrototype() {
         // if prototype is null, it's a vanilla HopObject.
-        if (prototype == null) {
+        if (this.prototype == null) {
             return "HopObject"; //$NON-NLS-1$
         }
 
-        return prototype;
+        return this.prototype;
     }
 
     /**
@@ -502,36 +502,36 @@ public final class Node implements INode {
      * Get the node's {@link DbMapping}.
      */
     public DbMapping getDbMapping() {
-        return dbmap;
+        return this.dbmap;
     }
 
     /**
      * Get the node's key.
      */
     public Key getKey() {
-        if (primaryKey == null && state == TRANSIENT) {
+        if (this.primaryKey == null && this.state == TRANSIENT) {
             throw new RuntimeException(Messages.getString("Node.5") + this); //$NON-NLS-1$
         }
 
-        if ((dbmap == null) && (prototype != null) && (nmgr != null)) {
-            dbmap = nmgr.getDbMapping(prototype);
+        if ((this.dbmap == null) && (this.prototype != null) && (this.nmgr != null)) {
+            this.dbmap = this.nmgr.getDbMapping(this.prototype);
         }
 
-        if (primaryKey == null) {
-            primaryKey = new DbKey(dbmap, id);
+        if (this.primaryKey == null) {
+            this.primaryKey = new DbKey(this.dbmap, this.id);
         }
 
-        return primaryKey;
+        return this.primaryKey;
     }
 
     /**
      * Get the node's handle.
      */
     public NodeHandle getHandle() {
-        if (handle == null) {
-            handle = new NodeHandle(this);
+        if (this.handle == null) {
+            this.handle = new NodeHandle(this);
         }
-        return handle;
+        return this.handle;
     }
 
     /**
@@ -546,10 +546,10 @@ public final class Node implements INode {
         checkWriteLock();
         this.subnodeRelation = rel;
 
-        DbMapping smap = (dbmap == null) ? null : dbmap.getSubnodeMapping();
+        DbMapping smap = (this.dbmap == null) ? null : this.dbmap.getSubnodeMapping();
 
-        if (subnodes != null && smap != null && smap.isRelational()) {
-            subnodes = null;
+        if (this.subnodes != null && smap != null && smap.isRelational()) {
+            this.subnodes = null;
         }
     }
 
@@ -557,7 +557,7 @@ public final class Node implements INode {
      * Get the node's explicit subnode select clause if one was set, or null
      */
     public synchronized String getSubnodeRelation() {
-        return subnodeRelation;
+        return this.subnodeRelation;
     }
 
     /**
@@ -566,7 +566,7 @@ public final class Node implements INode {
     public void setName(String name) {
         if ((name == null) || (name.length() == 0)) {
             // use id as name
-            this.name = id;
+            this.name = this.id;
         } else if (name.indexOf('/') > -1) {
             // "/" is used as delimiter, so it's not a legal char
             return;
@@ -579,14 +579,14 @@ public final class Node implements INode {
      * Set this node's parent node.
      */
     public void setParent(Node parent) {
-        parentHandle = (parent == null) ? null : parent.getHandle();
+        this.parentHandle = (parent == null) ? null : parent.getHandle();
     }
 
     /**
      *  Set this node's parent node to the node referred to by the NodeHandle.
      */
     public void setParentHandle(NodeHandle parent) {
-        parentHandle = parent;
+        this.parentHandle = parent;
     }
 
     /**
@@ -596,15 +596,15 @@ public final class Node implements INode {
         // check what's specified in the type.properties for this node.
         ParentInfo[] parentInfo = null;
 
-        if (isRelational() && lastParentSet <= Math.max(dbmap.getLastTypeChange(), lastmodified)) {
-            parentInfo = dbmap.getParentInfo();
+        if (isRelational() && this.lastParentSet <= Math.max(this.dbmap.getLastTypeChange(), this.lastmodified)) {
+            parentInfo = this.dbmap.getParentInfo();
         }
 
         // check if current parent candidate matches presciption,
         // if not, try to get one that does.
-        if (nmgr.isRootNode(this)) {
-            parentHandle = null;
-            lastParentSet =  System.currentTimeMillis();
+        if (this.nmgr.isRootNode(this)) {
+            this.parentHandle = null;
+            this.lastParentSet =  System.currentTimeMillis();
             return null;
         } else if (parentInfo != null) {
 
@@ -617,14 +617,14 @@ public final class Node implements INode {
 
                 // see if there is an explicit relation defined for this parent info
                 // we only try to fetch a node if an explicit relation is specified for the prop name
-                Relation rel = dbmap.propertyToRelation(pinfo.propname);
+                Relation rel = this.dbmap.propertyToRelation(pinfo.propname);
                 if ((rel != null) && (rel.isReference() || rel.isComplexReference())) {
                     parentNode = (Node) getNode(pinfo.propname);
                 }
 
                 // the parent of this node is the app's root node...
                 if ((parentNode == null) && pinfo.isroot) {
-                    parentNode = nmgr.getRootNode();
+                    parentNode = this.nmgr.getRootNode();
                 }
 
                 // if we found a parent node, check if we ought to use a virtual or groupby node as parent
@@ -652,7 +652,7 @@ public final class Node implements INode {
                     try {
                         if ((dbm != null) && (dbm.getSubnodeGroupby() != null)) {
                             // check for groupby
-                            rel = dbmap.columnNameToRelation(dbm.getSubnodeGroupby());
+                            rel = this.dbmap.columnNameToRelation(dbm.getSubnodeGroupby());
                             parentNode = (Node) parentNode.getChildElement(getString(rel.propName));
                         }
 
@@ -661,8 +661,8 @@ public final class Node implements INode {
                         // no other parent matches. See http://helma.org/bugs/show_bug.cgi?id=593
                         if (parentNode != null) {
                             if (parentNode.isParentOf(this)) {
-                                parentHandle = parentNode.getHandle();
-                                lastParentSet = System.currentTimeMillis();
+                                this.parentHandle = parentNode.getHandle();
+                                this.lastParentSet = System.currentTimeMillis();
                                 return parentNode;
                             } else if (parentFallback == null) {
                                 parentFallback = parentNode;
@@ -674,34 +674,33 @@ public final class Node implements INode {
                     }
                 }
             }
-            lastParentSet = System.currentTimeMillis();
+            this.lastParentSet = System.currentTimeMillis();
             // if we came till here and we didn't find a parent.
             // set parent to null unless we have a fallback.
             if (parentFallback != null) {
-                parentHandle = parentFallback.getHandle();
+                this.parentHandle = parentFallback.getHandle();
                 return parentFallback;
-            } else {
-                parentHandle = null;
-                if (state != TRANSIENT) {
-                    getApp().logEvent(Messages.getString("Node.10") + this + //$NON-NLS-1$
-                            Messages.getString("Node.11")); //$NON-NLS-1$
-                }
-                return null;
             }
+            this.parentHandle = null;
+            if (this.state != TRANSIENT) {
+                getApp().logEvent(Messages.getString("Node.10") + this + //$NON-NLS-1$
+                        Messages.getString("Node.11")); //$NON-NLS-1$
+            }
+            return null;
         }
 
-        return parentHandle == null ? null : parentHandle.getNode(nmgr);
+        return this.parentHandle == null ? null : this.parentHandle.getNode(this.nmgr);
     }
 
     /**
      * Get parent, using cached info if it exists.
      */
     public Node getCachedParent() {
-        if (parentHandle == null) {
+        if (this.parentHandle == null) {
             return null;
         }
 
-        return parentHandle.getNode(nmgr);
+        return this.parentHandle.getNode(this.nmgr);
     }
 
     /**
@@ -730,7 +729,7 @@ public final class Node implements INode {
         }
 
         // only lock nodes if parent node is not transient
-        if (state != TRANSIENT) {
+        if (this.state != TRANSIENT) {
             // only lock parent if it has to be modified for a change in subnodes
             if (!ignoreSubnodeChange()) {
                 checkWriteLock();
@@ -738,26 +737,26 @@ public final class Node implements INode {
             node.checkWriteLock();
         }
 
-        Relation subrel = dbmap == null ? null : dbmap.getSubnodeRelation();
+        Relation subrel = this.dbmap == null ? null : this.dbmap.getSubnodeRelation();
         // if subnodes are defined via relation, make sure its constraints are enforced.
-        if (subrel != null && (subrel.countConstraints() < 2 || state != TRANSIENT)) {
+        if (subrel != null && (subrel.countConstraints() < 2 || this.state != TRANSIENT)) {
             subrel.setConstraints(this, node);
         }
 
         // if the new node is marked as TRANSIENT and this node is not, mark new node as NEW
-        if (state != TRANSIENT && node.state == TRANSIENT) {
+        if (this.state != TRANSIENT && node.state == TRANSIENT) {
             node.makePersistable();
         }
 
         // only mark this node as modified if subnodes are not in relational db
         // pointing to this node.
-        if (!ignoreSubnodeChange() && (state == CLEAN || state == DELETED)) {
+        if (!ignoreSubnodeChange() && (this.state == CLEAN || this.state == DELETED)) {
             markAs(MODIFIED);
         }
 
         // TODO this is a rather minimal fix for bug http://helma.org/bugs/show_bug.cgi?id=554
         // - eventually we want to get rid of this code as a whole.
-        if (state != TRANSIENT && (node.state == CLEAN || node.state == DELETED)) {
+        if (this.state != TRANSIENT && (node.state == CLEAN || node.state == DELETED)) {
             node.markAs(MODIFIED);
         }
 
@@ -774,27 +773,27 @@ public final class Node implements INode {
 
         NodeHandle nhandle = node.getHandle();
 
-        if (subnodes != null && subnodes.contains(nhandle)) {
+        if (this.subnodes != null && this.subnodes.contains(nhandle)) {
             // Node is already subnode of this - just move to new position
-            synchronized (subnodes) {
-                subnodes.remove(nhandle);
+            synchronized (this.subnodes) {
+                this.subnodes.remove(nhandle);
                 // check if index is out of bounds when adding
-                if (where < 0 || where > subnodes.size()) {
-                    subnodes.add(nhandle);
+                if (where < 0 || where > this.subnodes.size()) {
+                    this.subnodes.add(nhandle);
                 } else {
-                    subnodes.add(where, nhandle);
+                    this.subnodes.add(where, nhandle);
                 }
             }
         } else {
             // create subnode list if necessary
-            if (subnodes == null) {
-                subnodes = createSubnodeList();
+            if (this.subnodes == null) {
+                this.subnodes = createSubnodeList();
             }
 
             // check if subnode accessname is set. If so, check if another node
             // uses the same access name, throwing an exception if so.
-            if (dbmap != null && node.dbmap != null) {
-                Relation prel = dbmap.getSubnodeRelation();
+            if (this.dbmap != null && node.dbmap != null) {
+                Relation prel = this.dbmap.getSubnodeRelation();
 
                 if (prel != null && prel.accessName != null) {
                     Relation localrel = node.dbmap.columnNameToRelation(prel.accessName);
@@ -815,43 +814,43 @@ public final class Node implements INode {
                                 Messages.getString("Node.14")); //$NON-NLS-1$
                         }
 
-                        if (state != TRANSIENT) {
+                        if (this.state != TRANSIENT) {
                             Transactor tx = Transactor.getInstanceOrFail();
                             SyntheticKey key = new SyntheticKey(this.getKey(), prop);
                             tx.visitCleanNode(key, node);
-                            nmgr.registerNode(node, key);
+                            this.nmgr.registerNode(node, key);
                         }
                     }
                 }
             }
 
             // actually add the new child to the subnode list
-            synchronized (subnodes) {
+            synchronized (this.subnodes) {
                 // check if index is out of bounds when adding
-                if (where < 0 || where > subnodes.size()) {
-                    subnodes.add(nhandle);
+                if (where < 0 || where > this.subnodes.size()) {
+                    this.subnodes.add(nhandle);
                 } else {
-                    subnodes.add(where, nhandle);
+                    this.subnodes.add(where, nhandle);
                 }
             }
 
-            if (node != this && !nmgr.isRootNode(node)) {
+            if (node != this && !this.nmgr.isRootNode(node)) {
                 // avoid calling getParent() because it would return bogus results
                 // for the not-anymore transient node
                 Node nparent = (node.parentHandle == null) ? null
-                                                           : node.parentHandle.getNode(nmgr);
+                                                           : node.parentHandle.getNode(this.nmgr);
 
                 // if the node doesn't have a parent yet, or it has one but it's
                 // transient while we are persistent, make this the nodes new parent.
                 if ((nparent == null) ||
-                        ((state != TRANSIENT) && (nparent.getState() == TRANSIENT))) {
+                        ((this.state != TRANSIENT) && (nparent.getState() == TRANSIENT))) {
                     node.setParent(this);
                     node.anonymous = true;
                 }
             }
         }
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
         // we want the element name to be recomputed on the child node
         node.lastNameCheck = 0;
         registerSubnodeChange();
@@ -912,16 +911,16 @@ public final class Node implements INode {
         String proto = null;
 
         // try to get proper prototype for new node
-        if (dbmap != null) {
+        if (this.dbmap != null) {
             DbMapping childmap = anon ?
-                dbmap.getSubnodeMapping() :
-                dbmap.getPropertyMapping(nm);
+                this.dbmap.getSubnodeMapping() :
+                this.dbmap.getPropertyMapping(nm);
             if (childmap != null) {
                 proto = childmap.getTypeName();
             }
         }
 
-        Node n = new Node(nm, proto, nmgr);
+        Node n = new Node(nm, proto, this.nmgr);
 
         if (anon) {
             addNode(n, where);
@@ -937,52 +936,50 @@ public final class Node implements INode {
      * This implements the getChildElement() method of the IPathElement interface
      */
     public IPathElement getChildElement(String name) {
-        if (dbmap != null) {
+        if (this.dbmap != null) {
             // if a dbmapping is provided, check what it tells us about
             // getting this specific child element
-            Relation rel = dbmap.getExactPropertyRelation(name);
+            Relation rel = this.dbmap.getExactPropertyRelation(name);
 
             if (rel != null && !rel.isPrimitive()) {
                 return getNode(name);
             }
 
-            rel = dbmap.getSubnodeRelation();
+            rel = this.dbmap.getSubnodeRelation();
 
             if ((rel != null) && (rel.groupby != null || rel.accessName != null)) {
-                if (state != TRANSIENT && rel.otherType != null && rel.otherType.isRelational()) {
-                    return nmgr.getNode(this, name, rel);
-                } else {
-                    // Do what we have to do: loop through subnodes and
-                    // check if any one matches
-                    String propname = rel.groupby != null ? "groupname" : rel.accessName; //$NON-NLS-1$
-                    INode node = null;
-                    Enumeration e = getSubnodes();
-                    while (e.hasMoreElements()) {
-                        Node n = (Node) e.nextElement();
-                        if (name.equalsIgnoreCase(n.getString(propname))) {
-                            node = n;
-                            break;
-                        }
-                    }
-                    // set DbMapping for embedded db group nodes
-                    if (node != null && rel.groupby != null) {
-                         node.setDbMapping(dbmap.getGroupbyMapping());
-                    }
-                    return node;
+                if (this.state != TRANSIENT && rel.otherType != null && rel.otherType.isRelational()) {
+                    return this.nmgr.getNode(this, name, rel);
                 }
+                // Do what we have to do: loop through subnodes and
+                // check if any one matches
+                String propname = rel.groupby != null ? "groupname" : rel.accessName; //$NON-NLS-1$
+                INode node = null;
+                Enumeration e = getSubnodes();
+                while (e.hasMoreElements()) {
+                    Node n = (Node) e.nextElement();
+                    if (name.equalsIgnoreCase(n.getString(propname))) {
+                        node = n;
+                        break;
+                    }
+                }
+                // set DbMapping for embedded db group nodes
+                if (node != null && rel.groupby != null) {
+                     node.setDbMapping(this.dbmap.getGroupbyMapping());
+                }
+                return node;
             }
 
             return getSubnode(name);
-        } else {
-            // no dbmapping - just try child collection first, then named property.
-            INode child = getSubnode(name);
-
-            if (child == null) {
-                child = getNode(name);
-            }
-
-            return child;
         }
+        // no dbmapping - just try child collection first, then named property.
+        INode child = getSubnode(name);
+
+        if (child == null) {
+            child = getNode(name);
+        }
+
+        return child;
     }
 
     /**
@@ -1002,16 +999,16 @@ public final class Node implements INode {
 
         Node retval = null;
         loadNodes();
-        if (subnodes == null || subnodes.size() == 0) {
+        if (this.subnodes == null || this.subnodes.size() == 0) {
             return null;
         }
 
         NodeHandle nhandle = null;
-        int l = subnodes.size();
+        int l = this.subnodes.size();
 
         for (int i = 0; i < l; i++) {
             try {
-                NodeHandle shandle = subnodes.get(i);
+                NodeHandle shandle = this.subnodes.get(i);
                 if (subid.equals(shandle.getID())) {
                     nhandle = shandle;
                     break;
@@ -1022,7 +1019,7 @@ public final class Node implements INode {
         }
 
         if (nhandle != null) {
-            retval = nhandle.getNode(nmgr);
+            retval = nhandle.getNode(this.nmgr);
         }
 
         // This would be a better way to do it, without loading the subnodes,
@@ -1030,7 +1027,7 @@ public final class Node implements INode {
         //    if (dbmap != null && dbmap.getSubnodeRelation () != null)
         //         retval = nmgr.getNode (this, subid, dbmap.getSubnodeRelation ());
 
-        if (retval != null && retval.parentHandle == null && !nmgr.isRootNode(retval)) {
+        if (retval != null && retval.parentHandle == null && !this.nmgr.isRootNode(retval)) {
             retval.setParent(this);
             retval.anonymous = true;
         }
@@ -1046,10 +1043,10 @@ public final class Node implements INode {
      */
     public INode getSubnodeAt(int index) {
         loadNodes();
-        if (subnodes == null) {
+        if (this.subnodes == null) {
             return null;
         }
-        return subnodes.getNode(index);
+        return this.subnodes.getNode(index);
     }
 
     /**
@@ -1064,8 +1061,8 @@ public final class Node implements INode {
             return null;
         }
         
-        if (dbmap != null) {
-            Relation subrel = dbmap.getSubnodeRelation();
+        if (this.dbmap != null) {
+            Relation subrel = this.dbmap.getSubnodeRelation();
 
             if (subrel != null && subrel.groupby != null) {
                 // use actual child mapping to resolve group property name,
@@ -1085,7 +1082,7 @@ public final class Node implements INode {
                         Transactor.getInstance().visitParentNode(this);
                     }
                 } else {
-                    groupbyNode.setDbMapping(dbmap.getGroupbyMapping());
+                    groupbyNode.setDbMapping(this.dbmap.getGroupbyMapping());
                 }
 
                 return groupbyNode;
@@ -1106,25 +1103,25 @@ public final class Node implements INode {
             throw new IllegalArgumentException(Messages.getString("Node.15")); //$NON-NLS-1$
         }
 
-        boolean persistent = state != TRANSIENT;
+        boolean persistent = this.state != TRANSIENT;
 
         loadNodes();
 
-        if (subnodes == null) {
-            subnodes = new SubnodeList(this);
+        if (this.subnodes == null) {
+            this.subnodes = new SubnodeList(this);
         }
 
-        if (create || subnodes.contains(new NodeHandle(new SyntheticKey(getKey(), groupname)))) {
+        if (create || this.subnodes.contains(new NodeHandle(new SyntheticKey(getKey(), groupname)))) {
             try {
-                DbMapping groupbyMapping = dbmap.getGroupbyMapping();
+                DbMapping groupbyMapping = this.dbmap.getGroupbyMapping();
                 boolean relational = groupbyMapping.getSubnodeMapping().isRelational();
 
                 if (relational || create) {
                     Node node;
                     if (relational && persistent) {
-                        node = new Node(this, groupname, nmgr, null);
+                        node = new Node(this, groupname, this.nmgr, null);
                     } else {
-                        node = new Node(groupname, null, nmgr);
+                        node = new Node(groupname, null, this.nmgr);
                         node.setParent(this);
                     }
 
@@ -1143,8 +1140,8 @@ public final class Node implements INode {
                     // if we created a new node, check if we need to add it to subnodes
                     if (create) {
                         NodeHandle handle = node.getHandle();
-                        if (!subnodes.contains(handle))
-                            subnodes.add(handle);
+                        if (!this.subnodes.contains(handle))
+                            this.subnodes.add(handle);
                     }
 
                     // If we created the group node, we register it with the
@@ -1154,16 +1151,16 @@ public final class Node implements INode {
                             // register group node with transactor
                             Transactor tx = Transactor.getInstanceOrFail();
                             tx.visitCleanNode(node);
-                            nmgr.registerNode(node);
+                            this.nmgr.registerNode(node);
                         } else {
-                            nmgr.evictKey(node.getKey());
+                            this.nmgr.evictKey(node.getKey());
                         }
                     }
 
                     return node;
                 }
             } catch (Exception noluck) {
-                nmgr.nmgr.app.logError(Messages.getString("Node.16") + groupname, noluck); //$NON-NLS-1$
+                this.nmgr.nmgr.app.logError(Messages.getString("Node.16") + groupname, noluck); //$NON-NLS-1$
             }
         }
 
@@ -1222,12 +1219,12 @@ public final class Node implements INode {
         // index which would potentially still contain the removed child
         loadNodes();
 
-        if (subnodes != null) {
+        if (this.subnodes != null) {
             boolean removed = false;
-            synchronized (subnodes) {
-                removed = subnodes.remove(node.getHandle());
+            synchronized (this.subnodes) {
+                removed = this.subnodes.remove(node.getHandle());
             }
-            if (dbmap != null && dbmap.isGroup() && subnodes.size() == 0) {
+            if (this.dbmap != null && this.dbmap.isGroup() && this.subnodes.size() == 0) {
                 // clean up ourself if we're an empty group node
                 remove();
             } else if (removed) {
@@ -1237,8 +1234,8 @@ public final class Node implements INode {
 
 
         // check if subnodes are also accessed as properties. If so, also unset the property
-        if (dbmap != null && node.dbmap != null) {
-            Relation prel = dbmap.getSubnodeRelation();
+        if (this.dbmap != null && node.dbmap != null) {
+            Relation prel = this.dbmap.getSubnodeRelation();
 
             if (prel != null) {
                 if (prel.accessName != null) {
@@ -1253,14 +1250,14 @@ public final class Node implements INode {
                             unset(prop);
                         }
                         // let the node cache know this key's not for this node anymore.
-                        if (state != TRANSIENT) {
-                            nmgr.evictKey(new SyntheticKey(getKey(), prop));
+                        if (this.state != TRANSIENT) {
+                            this.nmgr.evictKey(new SyntheticKey(getKey(), prop));
                         }
                     }
                 } else if (prel.groupby != null) {
                     String prop = node.getString("groupname"); //$NON-NLS-1$
-                    if (prop != null && state != TRANSIENT) {
-                        nmgr.evictKey(new SyntheticKey(getKey(), prop));
+                    if (prop != null && this.state != TRANSIENT) {
+                        this.nmgr.evictKey(new SyntheticKey(getKey(), prop));
                     }
 
                 }
@@ -1282,9 +1279,9 @@ public final class Node implements INode {
             return;
         }
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN) {
+        if (this.state == CLEAN) {
             markAs(MODIFIED);
         }
     }
@@ -1297,11 +1294,11 @@ public final class Node implements INode {
     protected void deepRemoveNode() {
 
         // tell all nodes that are properties of n that they are no longer used as such
-        if (propMap != null) {
-            for (Enumeration en = propMap.elements(); en.hasMoreElements();) {
+        if (this.propMap != null) {
+            for (Enumeration en = this.propMap.elements(); en.hasMoreElements();) {
                 Property p = (Property) en.nextElement();
 
-                if ((p != null) && (p.getType() == Property.NODE)) {
+                if ((p != null) && (p.getType() == IProperty.NODE)) {
                     Node n = (Node) p.getNodeValue();
                     if (n != null && !n.isRelational() && n.getParent() == this) {
                         n.deepRemoveNode();
@@ -1312,7 +1309,7 @@ public final class Node implements INode {
 
         // cascading delete of all subnodes. This is never done for relational subnodes, because
         // the parent info is not 100% accurate for them.
-        if (subnodes != null) {
+        if (this.subnodes != null) {
             Vector v = new Vector();
 
             // remove modifies the Vector we are enumerating, so we are extra careful.
@@ -1335,8 +1332,8 @@ public final class Node implements INode {
 
         // mark the node as deleted and evict its primary key
         setParent(null);
-        if (primaryKey != null || state != TRANSIENT) {
-            nmgr.evictKey(getKey());
+        if (this.primaryKey != null || this.state != TRANSIENT) {
+            this.nmgr.evictKey(getKey());
         }
         markAs(DELETED);
     }
@@ -1356,7 +1353,7 @@ public final class Node implements INode {
 
         loadNodes();
 
-        if (subnodes == null) {
+        if (this.subnodes == null) {
             return -1;
         }
 
@@ -1368,7 +1365,7 @@ public final class Node implements INode {
 
         Node node = (Node) n;
 
-        return subnodes.indexOf(node.getHandle());
+        return this.subnodes.indexOf(node.getHandle());
     }
 
     /**
@@ -1380,8 +1377,8 @@ public final class Node implements INode {
      * @return true if the given node is contained in this node's child list
      */
     public boolean isParentOf(Node n) {
-        if (dbmap != null) {
-            Relation subrel = dbmap.getSubnodeRelation();
+        if (this.dbmap != null) {
+            Relation subrel = this.dbmap.getSubnodeRelation();
             // if we're dealing with relational child nodes use
             // Relation.checkConstraints to avoid loading the child index.
             // Note that we only do that if no filter is set, since
@@ -1408,7 +1405,7 @@ public final class Node implements INode {
      */
     public int numberOfNodes() {
         loadNodes();
-        return (subnodes == null) ? 0 : subnodes.size();
+        return (this.subnodes == null) ? 0 : this.subnodes.size();
     }
 
     /**
@@ -1418,19 +1415,19 @@ public final class Node implements INode {
      */
     public void loadNodes() {
         // Don't do this for transient nodes which don't have an explicit subnode relation set
-        if ((state == TRANSIENT || state == NEW) && subnodeRelation == null) {
+        if ((this.state == TRANSIENT || this.state == NEW) && this.subnodeRelation == null) {
             return;
         }
 
-        DbMapping subMap = (dbmap == null) ? null : dbmap.getSubnodeMapping();
+        DbMapping subMap = (this.dbmap == null) ? null : this.dbmap.getSubnodeMapping();
 
         if (subMap != null && subMap.isRelational()) {
             // check if subnodes need to be reloaded
             synchronized (this) {
-                if (subnodes == null) {
+                if (this.subnodes == null) {
                     createSubnodeList();
                 }
-                subnodes.update();
+                this.subnodes.update();
             }
         }
     }
@@ -1440,10 +1437,10 @@ public final class Node implements INode {
      * @return List an empty List of the type used by this Node
      */
     public SubnodeList createSubnodeList() {
-        Relation subrel = dbmap == null ? null : dbmap.getSubnodeRelation();
-        subnodes = subrel == null || !subrel.lazyLoading ?
+        Relation subrel = this.dbmap == null ? null : this.dbmap.getSubnodeRelation();
+        this.subnodes = subrel == null || !subrel.lazyLoading ?
                 new SubnodeList(this) : new SegmentedSubnodeList(this);
-        return subnodes;
+        return this.subnodes;
     }
 
     /**
@@ -1452,10 +1449,10 @@ public final class Node implements INode {
      */
     long getLastSubnodeChange() {
         // TODO check if we should compute this on demand
-        if (subnodes == null) {
+        if (this.subnodes == null) {
             createSubnodeList();
         }
-        return subnodes.getLastSubnodeChange();
+        return this.subnodes.getLastSubnodeChange();
     }
 
     /**
@@ -1473,11 +1470,11 @@ public final class Node implements INode {
 
         loadNodes();
 
-        if (subnodes == null || startIndex >= subnodes.size()) {
+        if (this.subnodes == null || startIndex >= this.subnodes.size()) {
             return;
         }
 
-        subnodes.prefetch(startIndex, length);
+        this.subnodes.prefetch(startIndex, length);
     }
 
     /**
@@ -1490,7 +1487,7 @@ public final class Node implements INode {
     }
 
     private Enumeration getLoadedSubnodes() {
-        final SubnodeList list = subnodes;
+        final SubnodeList list = this.subnodes;
         if (list == null) {
             return new EmptyEnumeration();
         }
@@ -1499,14 +1496,14 @@ public final class Node implements INode {
             int pos = 0;
 
             public boolean hasMoreElements() {
-                return pos < list.size();
+                return this.pos < list.size();
             }
 
             public Object nextElement() {
                 // prefetch in batches of 100
                 // if (pos % 100 == 0)
                 //     list.prefetch(pos, 100);
-                return list.getNode(pos++);
+                return list.getNode(this.pos++);
             }
         };
     }
@@ -1517,7 +1514,7 @@ public final class Node implements INode {
      * @return the subnode list
      */
     public SubnodeList getSubnodeList() {
-        return subnodes;
+        return this.subnodes;
     }
 
    /**
@@ -1525,7 +1522,7 @@ public final class Node implements INode {
     * stored in the subnodes themselves.
     */
     private boolean ignoreSubnodeChange() {
-        Relation rel = (dbmap == null) ? null : dbmap.getSubnodeRelation();
+        Relation rel = (this.dbmap == null) ? null : this.dbmap.getSubnodeRelation();
 
         return ((rel != null) && (rel.otherType != null) && rel.otherType.isRelational());
     }
@@ -1534,20 +1531,20 @@ public final class Node implements INode {
      *  Get all properties of this node.
      */
     public Enumeration properties() {
-        if ((dbmap != null) && dbmap.isRelational()) {
+        if ((this.dbmap != null) && this.dbmap.isRelational()) {
             // return the properties defined in type.properties, if there are any
-            return dbmap.getPropertyEnumeration();
+            return this.dbmap.getPropertyEnumeration();
         }
 
-        Relation prel = (dbmap == null) ? null : dbmap.getSubnodeRelation();
+        Relation prel = (this.dbmap == null) ? null : this.dbmap.getSubnodeRelation();
 
-        if (state != TRANSIENT && prel != null && prel.hasAccessName() &&
+        if (this.state != TRANSIENT && prel != null && prel.hasAccessName() &&
                 prel.otherType != null && prel.otherType.isRelational()) {
             // return names of objects from a relational db table
-            return nmgr.getPropertyNames(this, prel).elements();
-        } else if (propMap != null) {
+            return this.nmgr.getPropertyNames(this, prel).elements();
+        } else if (this.propMap != null) {
             // return the actually explicitly stored properties
-            return propMap.keys();
+            return this.propMap.keys();
         }
 
         // sorry, no properties for this Node
@@ -1560,7 +1557,7 @@ public final class Node implements INode {
      * @return ...
      */
     public Hashtable getPropMap() {
-        return propMap;
+        return this.propMap;
     }
 
     /**
@@ -1580,7 +1577,7 @@ public final class Node implements INode {
      * @return ...
      */
     public String getParentInfo() {
-        return "anonymous:" + anonymous + ",parentHandle" + parentHandle + ",parent:" +  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$
+        return "anonymous:" + this.anonymous + ",parentHandle" + this.parentHandle + ",parent:" +  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$
                getParent();
     }
 
@@ -1596,16 +1593,16 @@ public final class Node implements INode {
             return null;
         }
 
-        Relation rel = dbmap == null ?
-                null : dbmap.getExactPropertyRelation(propname);
+        Relation rel = this.dbmap == null ?
+                null : this.dbmap.getExactPropertyRelation(propname);
 
         // 1) check if the property is contained in the propMap
-        Property prop = propMap == null ? null : (Property) propMap.get(propname);
+        Property prop = this.propMap == null ? null : (Property) this.propMap.get(propname);
 
         if (prop != null) {
             if (rel != null) {
                 // Is a relational node stored by id but things it's a string or int. Fix it.
-                if (rel.otherType != null && prop.getType() != Property.NODE) {
+                if (rel.otherType != null && prop.getType() != IProperty.NODE) {
                     prop.convertToNodeReference(rel);
                 }
                 if (rel.isVirtual()) {
@@ -1620,26 +1617,26 @@ public final class Node implements INode {
                 }
             }
             return prop;
-        } else if (state == TRANSIENT && rel != null && rel.isVirtual()) {
+        } else if (this.state == TRANSIENT && rel != null && rel.isVirtual()) {
             // When we get a collection from a transient node for the first time, or when
             // we get a collection whose content objects are stored in the embedded
             // XML data storage, we just want to create and set a generic node without
             // consulting the NodeManager about it.
-            Node n = new Node(propname, rel.getPrototype(), nmgr);
+            Node n = new Node(propname, rel.getPrototype(), this.nmgr);
             n.setDbMapping(rel.getVirtualMapping());
             n.setParent(this);
             setNode(propname, n);
-            return (Property) propMap.get(propname);
+            return (Property) this.propMap.get(propname);
         }
 
         // 2) check if this is a create-on-demand node property
         if (rel != null && (rel.isVirtual() || rel.isComplexReference())) {
-            if (state != TRANSIENT) {
-                Node n = nmgr.getNode(this, propname, rel);
+            if (this.state != TRANSIENT) {
+                Node n = this.nmgr.getNode(this, propname, rel);
 
                 if (n != null) {
                     if ((n.parentHandle == null) &&
-                            !nmgr.isRootNode(n)) {
+                            !this.nmgr.isRootNode(n)) {
                         n.setParent(this);
                         n.name = propname;
                         n.anonymous = false;
@@ -1786,29 +1783,29 @@ public final class Node implements INode {
      * @param value ...
      */
     protected void set(String propname, Object value, int type) {
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
 
         if (prop != null) {
             prop.setValue(value, type);
         } else {
             prop = new Property(propname, this);
             prop.setValue(value, type);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -1821,17 +1818,17 @@ public final class Node implements INode {
      */
     public void setString(String propname, String value) {
         // nmgr.logEvent ("setting String prop");
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
         String oldvalue = null;
 
         if (prop != null) {
@@ -1846,19 +1843,19 @@ public final class Node implements INode {
         } else {
             prop = new Property(propname, this);
             prop.setStringValue(value);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
-        if (dbmap != null) {
+        if (this.dbmap != null) {
 
             // check if this may have an effect on the node's parerent's child collection
             // in combination with the accessname or order field.
-            Node parent = (parentHandle == null) ? null : (Node) getParent();
+            Node parent = (this.parentHandle == null) ? null : (Node) getParent();
 
             if ((parent != null) && (parent.getDbMapping() != null)) {
                 DbMapping parentmap = parent.getDbMapping();
                 Relation subrel = parentmap.getSubnodeRelation();
-                String dbcolumn = dbmap.propertyToColumnName(propname);
+                String dbcolumn = this.dbmap.propertyToColumnName(propname);
 
                 if (subrel != null && dbcolumn != null) {
                     // inlined version of notifyPropertyChange();
@@ -1886,7 +1883,7 @@ public final class Node implements INode {
                                 parent.addNode(this);
 
                                 // let the node cache know this key's not for this node anymore.
-                                nmgr.evictKey(new SyntheticKey(parent.getKey(), oldvalue));
+                                this.nmgr.evictKey(new SyntheticKey(parent.getKey(), oldvalue));
                             }
                         }
 
@@ -1896,19 +1893,19 @@ public final class Node implements INode {
             }
 
             // check if the property we're setting specifies the prototype of this object.
-            if (state != TRANSIENT &&
-                    propname.equals(dbmap.columnNameToProperty(dbmap.getPrototypeField()))) {
-                DbMapping newmap = nmgr.getDbMapping(value);
+            if (this.state != TRANSIENT &&
+                    propname.equals(this.dbmap.columnNameToProperty(this.dbmap.getPrototypeField()))) {
+                DbMapping newmap = this.nmgr.getDbMapping(value);
 
                 if (newmap != null) {
                     // see if old and new prototypes have same storage - otherwise type change is ignored
-                    String oldStorage = dbmap.getStorageTypeName();
+                    String oldStorage = this.dbmap.getStorageTypeName();
                     String newStorage = newmap.getStorageTypeName();
 
                     if (((oldStorage == null) && (newStorage == null)) ||
                             ((oldStorage != null) && oldStorage.equals(newStorage))) {
                         // long now = System.currentTimeMillis();
-                        dbmap.setLastDataChange();
+                        this.dbmap.setLastDataChange();
                         newmap.setLastDataChange();
                         this.dbmap = newmap;
                         this.prototype = value;
@@ -1917,9 +1914,9 @@ public final class Node implements INode {
             }
         }
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -1932,31 +1929,31 @@ public final class Node implements INode {
      */
     public void setInteger(String propname, long value) {
         // nmgr.logEvent ("setting bool prop");
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
 
         if (prop != null) {
             prop.setIntegerValue(value);
         } else {
             prop = new Property(propname, this);
             prop.setIntegerValue(value);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
         notifyPropertyChange(propname);
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -1969,31 +1966,31 @@ public final class Node implements INode {
      */
     public void setFloat(String propname, double value) {
         // nmgr.logEvent ("setting bool prop");
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
 
         if (prop != null) {
             prop.setFloatValue(value);
         } else {
             prop = new Property(propname, this);
             prop.setFloatValue(value);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
         notifyPropertyChange(propname);
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -2006,31 +2003,31 @@ public final class Node implements INode {
      */
     public void setBoolean(String propname, boolean value) {
         // nmgr.logEvent ("setting bool prop");
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
 
         if (prop != null) {
             prop.setBooleanValue(value);
         } else {
             prop = new Property(propname, this);
             prop.setBooleanValue(value);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
         notifyPropertyChange(propname);
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -2043,31 +2040,31 @@ public final class Node implements INode {
      */
     public void setDate(String propname, Date value) {
         // nmgr.logEvent ("setting date prop");
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
 
         if (prop != null) {
             prop.setDateValue(value);
         } else {
             prop = new Property(propname, this);
             prop.setDateValue(value);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
         notifyPropertyChange(propname);
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -2080,31 +2077,31 @@ public final class Node implements INode {
      */
     public void setJavaObject(String propname, Object value) {
         // nmgr.logEvent ("setting jobject prop");
-        boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+        boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
         if (isPersistable) {
             checkWriteLock();
         }
 
-        if (propMap == null) {
-            propMap = new Hashtable();
+        if (this.propMap == null) {
+            this.propMap = new Hashtable();
         }
 
         propname = propname.trim();
-        Property prop = (Property) propMap.get(propname);
+        Property prop = (Property) this.propMap.get(propname);
 
         if (prop != null) {
             prop.setJavaObjectValue(value);
         } else {
             prop = new Property(propname, this);
             prop.setJavaObjectValue(value);
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
         }
 
         notifyPropertyChange(propname);
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
-        if (state == CLEAN && isPersistable) {
+        if (this.state == CLEAN && isPersistable) {
             markAs(MODIFIED);
         }
     }
@@ -2118,8 +2115,8 @@ public final class Node implements INode {
     public void setNode(String propname, INode value) {
         // nmgr.logEvent ("setting node prop");
         // check if types match, otherwise throw exception
-        Relation rel = (dbmap == null) ?
-                null : dbmap.getExactPropertyRelation(propname);
+        Relation rel = (this.dbmap == null) ?
+                null : this.dbmap.getExactPropertyRelation(propname);
         DbMapping nmap = (rel == null) ? null : rel.getPropertyMapping();
         DbMapping vmap = value.getDbMapping();
 
@@ -2134,7 +2131,7 @@ public final class Node implements INode {
             }
         }
 
-        if (state != TRANSIENT) {
+        if (this.state != TRANSIENT) {
             checkWriteLock();
         }
 
@@ -2148,26 +2145,26 @@ public final class Node implements INode {
 
         boolean isPersistable = isPersistableProperty(propname);
         // if the new node is marked as TRANSIENT and this node is not, mark new node as NEW
-        if (state != TRANSIENT && n.state == TRANSIENT && isPersistable) {
+        if (this.state != TRANSIENT && n.state == TRANSIENT && isPersistable) {
             n.makePersistable();
         }
 
-        if (state != TRANSIENT) {
+        if (this.state != TRANSIENT) {
             n.checkWriteLock();
         }
 
         // check if the main identity of this node is as a named property
         // or as an anonymous node in a collection
-        if (n != this && !nmgr.isRootNode(n) && isPersistable) {
+        if (n != this && !this.nmgr.isRootNode(n) && isPersistable) {
             // avoid calling getParent() because it would return bogus results
             // for the not-anymore transient node
             Node nparent = (n.parentHandle == null) ? null
-                                                    : n.parentHandle.getNode(nmgr);
+                                                    : n.parentHandle.getNode(this.nmgr);
 
             // if the node doesn't have a parent yet, or it has one but it's
             // transient while we are persistent, make this the nodes new parent.
             if ((nparent == null) ||
-               ((state != TRANSIENT) && (nparent.getState() == TRANSIENT))) {
+               ((this.state != TRANSIENT) && (nparent.getState() == TRANSIENT))) {
                 n.setParent(this);
                 n.name = propname;
                 n.anonymous = false;
@@ -2175,27 +2172,27 @@ public final class Node implements INode {
         }
 
         propname = propname.trim();
-        if (rel == null && dbmap != null) {
+        if (rel == null && this.dbmap != null) {
             // widen relation to non-exact (collection) mapping
-            rel = dbmap.getPropertyRelation(propname);
+            rel = this.dbmap.getPropertyRelation(propname);
         }
 
-        if (rel != null && state != TRANSIENT && (rel.countConstraints() > 1 || rel.isComplexReference())) {
+        if (rel != null && this.state != TRANSIENT && (rel.countConstraints() > 1 || rel.isComplexReference())) {
             rel.setConstraints(this, n);
             if (rel.isComplexReference()) {
                 Key key = new MultiKey(n.getDbMapping(), rel.getKeyParts(this));
-                nmgr.nmgr.registerNode(n, key);
+                this.nmgr.nmgr.registerNode(n, key);
                 return;
             }
         }
 
-        Property prop = (propMap == null) ? null : (Property) propMap.get(propname);
+        Property prop = (this.propMap == null) ? null : (Property) this.propMap.get(propname);
 
         if (prop != null) {
             if ((prop.getType() == IProperty.NODE) &&
                     n.getHandle().equals(prop.getNodeHandle())) {
                 // nothing to do, just clean up locks and return
-                if (state == CLEAN) {
+                if (this.state == CLEAN) {
                     clearWriteLock();
                 }
 
@@ -2213,17 +2210,17 @@ public final class Node implements INode {
 
         if ((rel == null) ||
                 rel.isReference() ||
-                state == TRANSIENT ||
+                this.state == TRANSIENT ||
                 rel.otherType == null ||
                 !rel.otherType.isRelational()) {
             // the node must be stored as explicit property
-            if (propMap == null) {
-                propMap = new Hashtable();
+            if (this.propMap == null) {
+                this.propMap = new Hashtable();
             }
 
-            propMap.put(propname, prop);
+            this.propMap.put(propname, prop);
 
-            if (state == CLEAN && isPersistable) {
+            if (this.state == CLEAN && isPersistable) {
                 markAs(MODIFIED);
             }
         }
@@ -2239,14 +2236,14 @@ public final class Node implements INode {
             tx.visitCleanNode(n.getKey(), n);
 
             // if the field is not the primary key of the property, also register it
-            if ((rel != null) && (rel.accessName != null) && (state != TRANSIENT)) {
+            if ((rel != null) && (rel.accessName != null) && (this.state != TRANSIENT)) {
                 Key secKey = new SyntheticKey(getKey(), propname);
-                nmgr.registerNode(n, secKey);
+                this.nmgr.registerNode(n, secKey);
                 tx.visitCleanNode(secKey, n);
             }
         }
 
-        lastmodified = System.currentTimeMillis();
+        this.lastmodified = System.currentTimeMillis();
 
         if (n.state == DELETED) {
             n.markAs(MODIFIED);
@@ -2267,18 +2264,18 @@ public final class Node implements INode {
             // if node is relational, leave a null property so that it is
             // updated in the DB. Otherwise, remove the property.
             Property p = null;
-            boolean relational = (dbmap != null) && dbmap.isRelational();
+            boolean relational = (this.dbmap != null) && this.dbmap.isRelational();
 
-            if (propMap != null) {
+            if (this.propMap != null) {
                 if (relational) {
-                    p = (Property) propMap.get(propname);
+                    p = (Property) this.propMap.get(propname);
                 } else {
-                    p = (Property) propMap.remove(propname);
+                    p = (Property) this.propMap.remove(propname);
                 }
             }
 
             if (p != null) {
-                boolean isPersistable = state != TRANSIENT && isPersistableProperty(propname);
+                boolean isPersistable = this.state != TRANSIENT && isPersistableProperty(propname);
                 if (isPersistable) {
                     checkWriteLock();
                 }
@@ -2288,15 +2285,15 @@ public final class Node implements INode {
                     notifyPropertyChange(propname);
                 }
 
-                lastmodified = System.currentTimeMillis();
+                this.lastmodified = System.currentTimeMillis();
 
-                if (state == CLEAN && isPersistable) {
+                if (this.state == CLEAN && isPersistable) {
                     markAs(MODIFIED);
                 }
-            } else if (dbmap != null) {
+            } else if (this.dbmap != null) {
                 // check if this is a complex constraint and we have to
                 // unset constraints.
-                Relation rel = dbmap.getExactPropertyRelation(propname);
+                Relation rel = this.dbmap.getExactPropertyRelation(propname);
 
                 if (rel != null && (rel.isComplexReference())) {
                     p = getProperty(propname);
@@ -2314,7 +2311,7 @@ public final class Node implements INode {
      * @return ...
      */
     public long lastModified() {
-        return lastmodified;
+        return this.lastmodified;
     }
 
     /**
@@ -2323,7 +2320,7 @@ public final class Node implements INode {
      * @return ...
      */
     public long created() {
-        return created;
+        return this.created;
     }
 
     /**
@@ -2345,7 +2342,7 @@ public final class Node implements INode {
         } catch (Exception x) {
             // fall back to default representation
         }
-        return "HopObject " + name; //$NON-NLS-1$
+        return "HopObject " + this.name; //$NON-NLS-1$
     }
 
     /**
@@ -2354,16 +2351,16 @@ public final class Node implements INode {
      * persistent
      */
     public boolean isRelational() {
-        return (dbmap != null) && dbmap.isRelational();
+        return (this.dbmap != null) && this.dbmap.isRelational();
     }
 
     /**
      * Public method to make a node persistent.
      */
     public void persist() {
-        if (state == TRANSIENT) {
+        if (this.state == TRANSIENT) {
             makePersistable();
-        } else if (state == CLEAN) {
+        } else if (this.state == CLEAN) {
             markAs(MODIFIED);
         }
 
@@ -2378,7 +2375,7 @@ public final class Node implements INode {
      */
     private void makePersistable() {
         // if this isn't a transient node, do nothing.
-        if (state != TRANSIENT) {
+        if (this.state != TRANSIENT) {
             return;
         }
 
@@ -2386,7 +2383,7 @@ public final class Node implements INode {
         setState(NEW);
 
         // generate a real, persistent ID for this object
-        id = nmgr.generateID(dbmap);
+        this.id = this.nmgr.generateID(this.dbmap);
         getHandle().becomePersistent();
 
         // register node with the transactor
@@ -2405,7 +2402,7 @@ public final class Node implements INode {
      * using makePersistable() or converted to virtual using convertToVirtual().
      */
     private void makeChildrenPersistable() {
-        Relation subrel = dbmap == null ? null : dbmap.getSubnodeRelation();
+        Relation subrel = this.dbmap == null ? null : this.dbmap.getSubnodeRelation();
         for (Enumeration e = getLoadedSubnodes(); e.hasMoreElements();) {
             Node node = (Node) e.nextElement();
 
@@ -2423,7 +2420,7 @@ public final class Node implements INode {
         }
 
         // no need to make properties of virtual nodes persistable
-        if (state == VIRTUAL) return;
+        if (this.state == VIRTUAL) return;
 
         for (Enumeration e = properties(); e.hasMoreElements();) {
             String propname = (String) e.nextElement();
@@ -2441,7 +2438,7 @@ public final class Node implements INode {
                 continue;
             }
 
-            rel = dbmap == null ? null : dbmap.getExactPropertyRelation(next.getName());
+            rel = this.dbmap == null ? null : this.dbmap.getExactPropertyRelation(next.getName());
             if (rel != null && rel.isVirtual() && !rel.needsPersistence()) {
                 convertToVirtual(node);
             } else {
@@ -2475,18 +2472,18 @@ public final class Node implements INode {
      * used to store transient cache data per node from Javascript.
      */
     public synchronized INode getCacheNode() {
-        if (cacheNode == null) {
-            cacheNode = new TransientNode();
+        if (this.cacheNode == null) {
+            this.cacheNode = new TransientNode();
         }
 
-        return cacheNode;
+        return this.cacheNode;
     }
 
     /**
      * Reset the cache node for this node.
      */
     public synchronized void clearCacheNode() {
-        cacheNode = null;
+        this.cacheNode = null;
     }
 
     /**
@@ -2501,11 +2498,11 @@ public final class Node implements INode {
                 break;
             }
 
-            if (node.getState() == Node.TRANSIENT) {
+            if (node.getState() == INodeState.TRANSIENT) {
                 DbMapping map = node.getDbMapping();
                 if (map == null || !map.isVirtual())
                     return node;
-            } else if (node.getState() != Node.VIRTUAL) {
+            } else if (node.getState() != INodeState.VIRTUAL) {
                 return node;
             }
 
@@ -2520,7 +2517,7 @@ public final class Node implements INode {
      *  This method tells the caller whether this is the case.
      */
     public boolean isNullNode() {
-        return nmgr == null;
+        return this.nmgr == null;
     }
 
     String generateTransientID() {
@@ -2536,19 +2533,18 @@ public final class Node implements INode {
      */
     @Override
     public int hashCode() {
-        if (prototype == null) {
+        if (this.prototype == null) {
             return super.hashCode();
-        } else {
-            return super.hashCode() + prototype.hashCode();
         }
+        return super.hashCode() + this.prototype.hashCode();
     }
 
     /**
      *
      */
     public void dump() {
-        System.err.println(Messages.getString("Node.24") + subnodes); //$NON-NLS-1$
-        System.err.println(Messages.getString("Node.25") + propMap); //$NON-NLS-1$
+        System.err.println(Messages.getString("Node.24") + this.subnodes); //$NON-NLS-1$
+        System.err.println(Messages.getString("Node.25") + this.propMap); //$NON-NLS-1$
     }
 
     /**
@@ -2556,6 +2552,6 @@ public final class Node implements INode {
      * @return the app we belong to
      */
     private Application getApp() {
-        return nmgr.nmgr.app;
+        return this.nmgr.nmgr.app;
     }
 }

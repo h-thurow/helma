@@ -97,7 +97,7 @@ public class RequestTrans implements Serializable {
         this.uri = null;
         this.request = null;
         this.response = null;
-        startTime = System.currentTimeMillis();
+        this.startTime = System.currentTimeMillis();
     }
 
     /**
@@ -110,17 +110,17 @@ public class RequestTrans implements Serializable {
         this.response = response;
         this.path = path;
         this.uri = request.getRequestURI();
-        startTime = System.currentTimeMillis();
+        this.startTime = System.currentTimeMillis();
 
         // do standard HTTP variables
         String header = request.getHeader("Host"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_host", header.toLowerCase()); //$NON-NLS-1$
+            this.values.put("http_host", header.toLowerCase()); //$NON-NLS-1$
         }
 
         header = request.getHeader("Referer"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_referer", header); //$NON-NLS-1$
+            this.values.put("http_referer", header); //$NON-NLS-1$
         }
 
         try {
@@ -139,22 +139,22 @@ public class RequestTrans implements Serializable {
 
         header = request.getRemoteAddr();
         if (header != null) {
-            values.put("http_remotehost", header); //$NON-NLS-1$
+            this.values.put("http_remotehost", header); //$NON-NLS-1$
         }
 
         header = request.getHeader("User-Agent"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_browser", header); //$NON-NLS-1$
+            this.values.put("http_browser", header); //$NON-NLS-1$
         }
 
         header = request.getHeader("Accept-Language"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_language", header); //$NON-NLS-1$
+            this.values.put("http_language", header); //$NON-NLS-1$
         }
 
         header = request.getHeader("authorization"); //$NON-NLS-1$
         if (header != null) {
-            values.put("authorization", header); //$NON-NLS-1$
+            this.values.put("authorization", header); //$NON-NLS-1$
         }
     }
 
@@ -164,8 +164,8 @@ public class RequestTrans implements Serializable {
      * @return true if this might be an XML-RPC request.
      */
     public synchronized boolean checkXmlRpc() {
-        if ("POST".equalsIgnoreCase(method)) { //$NON-NLS-1$
-            String contentType = request.getContentType();
+        if ("POST".equalsIgnoreCase(this.method)) { //$NON-NLS-1$
+            String contentType = this.request.getContentType();
             if (contentType == null) {
                 return false;
             }
@@ -186,7 +186,7 @@ public class RequestTrans implements Serializable {
      * @return true if this request is handled as XML-RPC request.
      */
     public synchronized boolean isXmlRpc() {
-        return XMLRPC.equals(method);
+        return XMLRPC.equals(this.method);
     }
 
     /**
@@ -195,50 +195,50 @@ public class RequestTrans implements Serializable {
      * @param cookie the cookie
      */
     public void setCookie(String name, Cookie cookie) {
-        if (cookies == null) {
-            cookies = new ParameterMap();
+        if (this.cookies == null) {
+            this.cookies = new ParameterMap();
         }
-        cookies.put(name, cookie);
+        this.cookies.put(name, cookie);
     }
 
     /**
      * @return a map containing the cookies sent with this request
      */
     public Map getCookies() {
-        if (cookies == null) {
-            cookies = new ParameterMap();
+        if (this.cookies == null) {
+            this.cookies = new ParameterMap();
         }
-        return cookies;
+        return this.cookies;
     }
 
     /**
      * @return the combined query and post parameters for this request
      */
     public Map getParams() {
-        if (params == null) {
-            params = new ParamComboMap();
+        if (this.params == null) {
+            this.params = new ParamComboMap();
         }
-        return params;
+        return this.params;
     }
 
     /**
      * @return get the query parameters for this request
      */
     public Map getQueryParams() {
-        if (queryParams == null) {
-            queryParams = new ParameterMap();
+        if (this.queryParams == null) {
+            this.queryParams = new ParameterMap();
         }
-        return queryParams;
+        return this.queryParams;
     }
 
     /**
      * @return get the post parameters for this request
      */
     public Map getPostParams() {
-        if (postParams == null) {
-            postParams = new ParameterMap();
+        if (this.postParams == null) {
+            this.postParams = new ParameterMap();
         }
-        return postParams;
+        return this.postParams;
     }
 
     /**
@@ -246,9 +246,9 @@ public class RequestTrans implements Serializable {
      */
     public void setParameters(Map parameters, boolean isPost) {
         if (isPost) {
-            postParams = new ParameterMap(parameters);
+            this.postParams = new ParameterMap(parameters);
         } else {
-            queryParams = new ParameterMap(parameters);
+            this.queryParams = new ParameterMap(parameters);
         }
     }
 
@@ -258,18 +258,18 @@ public class RequestTrans implements Serializable {
      * @param value the parameter value
      */
     public void addPostParam(String name, Object value) {
-        if (postParams == null) {
-            postParams = new ParameterMap();
+        if (this.postParams == null) {
+            this.postParams = new ParameterMap();
         }
-        Object previous = postParams.getRaw(name);
+        Object previous = this.postParams.getRaw(name);
         if (previous instanceof Object[]) {
             Object[] array = (Object[]) previous;
             Object[] values = new Object[array.length + 1];
             System.arraycopy(array, 0, values, 0, array.length);
             values[array.length] = value;
-            postParams.put(name, values);
+            this.postParams.put(name, values);
         } else if (previous == null) {
-            postParams.put(name, new Object[] {value});
+            this.postParams.put(name, new Object[] {value});
         }
     }
 
@@ -278,7 +278,7 @@ public class RequestTrans implements Serializable {
      * parses foo[bar][baz] as nested objects/maps.
      */
     public void set(String name, Object value) {
-        values.put(name, value);
+        this.values.put(name, value);
     }
 
     /**
@@ -286,7 +286,7 @@ public class RequestTrans implements Serializable {
      */
     public Object get(String name) {
         try {
-            return values.get(name);
+            return this.values.get(name);
         } catch (Exception x) {
             return null;
         }
@@ -296,7 +296,7 @@ public class RequestTrans implements Serializable {
      *  Get the data map for this request transmitter.
      */
     public Map getRequestData() {
-        return values;
+        return this.values;
     }
 
     /**
@@ -304,7 +304,7 @@ public class RequestTrans implements Serializable {
      * Returns null for internal and XML-RPC requests.
      */
     public HttpServletRequest getServletRequest() {
-        return request;
+        return this.request;
     }
 
     /**
@@ -313,7 +313,7 @@ public class RequestTrans implements Serializable {
      * @return the header value, or null
      */
     public String getHeader(String name) {
-        return request == null ? null : request.getHeader(name);
+        return this.request == null ? null : this.request.getHeader(name);
     }
 
     /**
@@ -322,8 +322,8 @@ public class RequestTrans implements Serializable {
      * @return the header values as string array
      */
     public String[] getHeaders(String name) {
-        return request == null ?
-                null : StringUtils.collect(request.getHeaders(name));
+        return this.request == null ?
+                null : StringUtils.collect(this.request.getHeaders(name));
     }
 
     /**
@@ -333,7 +333,7 @@ public class RequestTrans implements Serializable {
      */
     public int getIntHeader(String name) {
         try {
-            return request == null ? -1 : getIntHeader(name);
+            return this.request == null ? -1 : getIntHeader(name);
         } catch (NumberFormatException nfe) {
             return -1;
         }
@@ -346,7 +346,7 @@ public class RequestTrans implements Serializable {
      */
     public long getDateHeader(String name) {
         try {
-            return request == null ? -1 : getDateHeader(name);
+            return this.request == null ? -1 : getDateHeader(name);
         } catch (NumberFormatException nfe) {
             return -1;
         }
@@ -357,7 +357,7 @@ public class RequestTrans implements Serializable {
      * Returns null for internal and XML-RPC requests.
      */
     public HttpServletResponse getServletResponse() {
-        return response;
+        return this.response;
     }
 
     /**
@@ -366,12 +366,11 @@ public class RequestTrans implements Serializable {
      */
     @Override
     public int hashCode() {
-        if (session == null || path == null) {
+        if (this.session == null || this.path == null) {
             return super.hashCode();
-        } else {
-            return 17 + (37 * session.hashCode()) +
-                        (37 * path.hashCode());
         }
+        return 17 + (37 * this.session.hashCode()) +
+                    (37 * this.path.hashCode());
     }
 
     /**
@@ -382,16 +381,15 @@ public class RequestTrans implements Serializable {
     @Override
     public boolean equals(Object what) {
         if (what instanceof RequestTrans) {
-            if (session == null || path == null) {
+            if (this.session == null || this.path == null) {
                 return super.equals(what);
-            } else {
-                RequestTrans other = (RequestTrans) what;
-                return (session.equals(other.session)
-                        && path.equalsIgnoreCase(other.path)
-                        && values.equals(other.values)
-                        && ifModifiedSince == other.ifModifiedSince
-                        && etags.equals(other.etags));
             }
+            RequestTrans other = (RequestTrans) what;
+            return (this.session.equals(other.session)
+                    && this.path.equalsIgnoreCase(other.path)
+                    && this.values.equals(other.values)
+                    && this.ifModifiedSince == other.ifModifiedSince
+                    && this.etags.equals(other.etags));
         }
         return false;
     }
@@ -401,7 +399,7 @@ public class RequestTrans implements Serializable {
      * one of the Helma pseudo methods defined in this class.
      */
     public synchronized String getMethod() {
-        return method;
+        return this.method;
     }
 
     /**
@@ -417,21 +415,21 @@ public class RequestTrans implements Serializable {
      *  Return true if this object represents a HTTP GET Request.
      */
     public boolean isGet() {
-        return GET.equalsIgnoreCase(method);
+        return GET.equalsIgnoreCase(this.method);
     }
 
     /**
      *  Return true if this object represents a HTTP GET Request.
      */
     public boolean isPost() {
-        return POST.equalsIgnoreCase(method);
+        return POST.equalsIgnoreCase(this.method);
     }
 
     /**
      * Get the request's session id
      */
     public String getSession() {
-        return session;
+        return this.session;
     }
 
     /**
@@ -445,21 +443,21 @@ public class RequestTrans implements Serializable {
      * Get the request's path
      */
     public String getPath() {
-        return path;
+        return this.path;
     }
 
     /**
      * Get the request's path
      */
     public String getUri() {
-        return uri;
+        return this.uri;
     }
 
     /**
      * Get the request's action.
      */
     public String getAction() {
-        return action;
+        return this.action;
     }
 
     /**
@@ -477,7 +475,7 @@ public class RequestTrans implements Serializable {
      * @return the action handler function
      */
     public Object getActionHandler() {
-        return actionHandler;
+        return this.actionHandler;
     }
 
     /**
@@ -494,7 +492,7 @@ public class RequestTrans implements Serializable {
      * Get the time the request was created.
      */
     public long getStartTime() {
-        return startTime;
+        return this.startTime;
     }
 
     /**
@@ -503,7 +501,7 @@ public class RequestTrans implements Serializable {
      * @param since ...
      */
     public void setIfModifiedSince(long since) {
-        ifModifiedSince = since;
+        this.ifModifiedSince = since;
     }
 
     /**
@@ -512,7 +510,7 @@ public class RequestTrans implements Serializable {
      * @return ...
      */
     public long getIfModifiedSince() {
-        return ifModifiedSince;
+        return this.ifModifiedSince;
     }
 
     /**
@@ -524,9 +522,9 @@ public class RequestTrans implements Serializable {
         if (etagHeader.indexOf(",") > -1) { //$NON-NLS-1$
             StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n"); //$NON-NLS-1$
             while (st.hasMoreTokens())
-                etags.add(st.nextToken());
+                this.etags.add(st.nextToken());
         } else {
-            etags.add(etagHeader);
+            this.etags.add(etagHeader);
         }
     }
 
@@ -536,7 +534,7 @@ public class RequestTrans implements Serializable {
      * @return ...
      */
     public Set getETags() {
-        return etags;
+        return this.etags;
     }
 
     /**
@@ -547,11 +545,11 @@ public class RequestTrans implements Serializable {
      * @return ...
      */
     public boolean hasETag(String etag) {
-        if ((etags == null) || (etag == null)) {
+        if ((this.etags == null) || (etag == null)) {
             return false;
         }
 
-        return etags.contains(etag);
+        return this.etags.contains(etag);
     }
 
     /**
@@ -560,8 +558,8 @@ public class RequestTrans implements Serializable {
      * @return ...
      */
     public String getUsername() {
-        if (httpUsername != null) {
-            return httpUsername;
+        if (this.httpUsername != null) {
+            return this.httpUsername;
         }
 
         String auth = (String) get("authorization"); //$NON-NLS-1$
@@ -572,7 +570,7 @@ public class RequestTrans implements Serializable {
 
         decodeHttpAuth(auth);
 
-        return httpUsername;
+        return this.httpUsername;
     }
 
     /**
@@ -581,8 +579,8 @@ public class RequestTrans implements Serializable {
      * @return ...
      */
     public String getPassword() {
-        if (httpPassword != null) {
-            return httpPassword;
+        if (this.httpPassword != null) {
+            return this.httpPassword;
         }
 
         String auth = (String) get("authorization"); //$NON-NLS-1$
@@ -593,7 +591,7 @@ public class RequestTrans implements Serializable {
 
         decodeHttpAuth(auth);
 
-        return httpPassword;
+        return this.httpPassword;
     }
 
     private void decodeHttpAuth(String auth) {
@@ -611,21 +609,21 @@ public class RequestTrans implements Serializable {
         }
 
         try {
-            httpUsername = tok.nextToken();
+            this.httpUsername = tok.nextToken();
         } catch (NoSuchElementException e) {
-            httpUsername = null;
+            this.httpUsername = null;
         }
 
         try {
-            httpPassword = tok.nextToken();
+            this.httpPassword = tok.nextToken();
         } catch (NoSuchElementException e) {
-            httpPassword = null;
+            this.httpPassword = null;
         }
     }
 
     @Override
     public String toString() {
-        return method + ":" + path; //$NON-NLS-1$
+        return this.method + ":" + this.path; //$NON-NLS-1$
     }
 
     class ParameterMap extends SystemMap {
@@ -717,11 +715,11 @@ public class RequestTrans implements Serializable {
             Object value = super.get(key);
             if (value != null)
                 return value;
-            if (postParams != null && (value = postParams.get(key)) != null)
+            if (RequestTrans.this.postParams != null && (value = RequestTrans.this.postParams.get(key)) != null)
                 return value;
-            if (queryParams != null && (value = queryParams.get(key)) != null)
+            if (RequestTrans.this.queryParams != null && (value = RequestTrans.this.queryParams.get(key)) != null)
                 return value;
-            if (cookies != null && (value = cookies.get(key)) != null)
+            if (RequestTrans.this.cookies != null && (value = RequestTrans.this.cookies.get(key)) != null)
                 return value;
             return null;
         }
@@ -734,18 +732,18 @@ public class RequestTrans implements Serializable {
         @Override
         public Set entrySet() {
             Set entries = new HashSet(super.entrySet());
-            if (postParams != null) entries.addAll(postParams.entrySet());
-            if (queryParams != null) entries.addAll(queryParams.entrySet());
-            if (cookies != null) entries.addAll(cookies.entrySet());
+            if (RequestTrans.this.postParams != null) entries.addAll(RequestTrans.this.postParams.entrySet());
+            if (RequestTrans.this.queryParams != null) entries.addAll(RequestTrans.this.queryParams.entrySet());
+            if (RequestTrans.this.cookies != null) entries.addAll(RequestTrans.this.cookies.entrySet());
             return entries;
         }
 
         @Override
         public Set keySet() {
             Set keys = new HashSet(super.keySet());
-            if (postParams != null) keys.addAll(postParams.keySet());
-            if (queryParams != null) keys.addAll(queryParams.keySet());
-            if (cookies != null) keys.addAll(cookies.keySet());
+            if (RequestTrans.this.postParams != null) keys.addAll(RequestTrans.this.postParams.keySet());
+            if (RequestTrans.this.queryParams != null) keys.addAll(RequestTrans.this.queryParams.keySet());
+            if (RequestTrans.this.cookies != null) keys.addAll(RequestTrans.this.cookies.keySet());
             return keys;
         }
     }
@@ -756,9 +754,9 @@ public class RequestTrans implements Serializable {
         @Override
         public Object get(Object key) {
             Object value;
-            if (postParams != null && (value = postParams.get(key)) != null)
+            if (RequestTrans.this.postParams != null && (value = RequestTrans.this.postParams.get(key)) != null)
                 return value;
-            if (queryParams != null && (value = queryParams.get(key)) != null)
+            if (RequestTrans.this.queryParams != null && (value = RequestTrans.this.queryParams.get(key)) != null)
                 return value;
             return null;
         }
@@ -771,16 +769,16 @@ public class RequestTrans implements Serializable {
         @Override
         public Set entrySet() {
             Set entries = new HashSet();
-            if (postParams != null) entries.addAll(postParams.entrySet());
-            if (queryParams != null) entries.addAll(queryParams.entrySet());
+            if (RequestTrans.this.postParams != null) entries.addAll(RequestTrans.this.postParams.entrySet());
+            if (RequestTrans.this.queryParams != null) entries.addAll(RequestTrans.this.queryParams.entrySet());
             return entries;
         }
 
         @Override
         public Set keySet() {
             Set keys = new HashSet();
-            if (postParams != null) keys.addAll(postParams.keySet());
-            if (queryParams != null) keys.addAll(queryParams.keySet());
+            if (RequestTrans.this.postParams != null) keys.addAll(RequestTrans.this.postParams.keySet());
+            if (RequestTrans.this.queryParams != null) keys.addAll(RequestTrans.this.queryParams.keySet());
             return keys;
         }
     }

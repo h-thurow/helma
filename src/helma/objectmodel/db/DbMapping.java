@@ -132,10 +132,10 @@ public final class DbMapping {
     public DbMapping(Application app, String parentTypeName) {
         this(app, parentTypeName, null);
         // DbMappings created with this constructor always define virtual nodes
-        isVirtual = true;
+        this.isVirtual = true;
         if (parentTypeName != null) {
-            parentMapping = app.getDbMapping(parentTypeName);
-            if (parentMapping == null) {
+            this.parentMapping = app.getDbMapping(parentTypeName);
+            if (this.parentMapping == null) {
                 throw new IllegalArgumentException(Messages.getString("DbMapping.0") + parentTypeName); //$NON-NLS-1$
             }
         }
@@ -146,7 +146,7 @@ public final class DbMapping {
      */
     public DbMapping(Application app, String typename, Properties props, boolean virtual) {
         this(app,  typename, props);
-        isVirtual = virtual;
+        this.isVirtual = virtual;
     }
 
     /**
@@ -158,11 +158,11 @@ public final class DbMapping {
         // we can compare types just by using == instead of equals.
         this.typename = typename == null ? null : typename.intern();
 
-        prop2db = new HashMap();
-        db2prop = new HashMap();
-        columnMap = new HashMap();
-        parentInfo = null;
-        idField = null;
+        this.prop2db = new HashMap();
+        this.db2prop = new HashMap();
+        this.columnMap = new HashMap();
+        this.parentInfo = null;
+        this.idField = null;
         this.props = props;
 
         if (props != null) {
@@ -174,8 +174,8 @@ public final class DbMapping {
      * Tell the type manager whether we need update() to be called
      */
     public boolean needsUpdate() {
-        if (props instanceof ResourceProperties) {
-            return ((ResourceProperties) props).lastModified() != lastTypeChange;
+        if (this.props instanceof ResourceProperties) {
+            return ((ResourceProperties) this.props).lastModified() != this.lastTypeChange;
         }
         return false;
     }
@@ -185,27 +185,27 @@ public final class DbMapping {
      * dbsource.
      */
     private void readBasicProperties() {
-        tableName = props.getProperty("_table"); //$NON-NLS-1$
-        dbSourceName = props.getProperty("_db"); //$NON-NLS-1$
+        this.tableName = this.props.getProperty("_table"); //$NON-NLS-1$
+        this.dbSourceName = this.props.getProperty("_db"); //$NON-NLS-1$
 
-        if (dbSourceName != null) {
-            dbSource = app.getDbSource(dbSourceName);
+        if (this.dbSourceName != null) {
+            this.dbSource = this.app.getDbSource(this.dbSourceName);
 
-            if (dbSource == null) {
-                app.logError(Messages.getString("DbMapping.1") + typename + //$NON-NLS-1$
-                             Messages.getString("DbMapping.2") + dbSourceName); //$NON-NLS-1$
-                app.logError(Messages.getString("DbMapping.3") + typename + //$NON-NLS-1$
+            if (this.dbSource == null) {
+                this.app.logError(Messages.getString("DbMapping.1") + this.typename + //$NON-NLS-1$
+                             Messages.getString("DbMapping.2") + this.dbSourceName); //$NON-NLS-1$
+                this.app.logError(Messages.getString("DbMapping.3") + this.typename + //$NON-NLS-1$
                              Messages.getString("DbMapping.4")); //$NON-NLS-1$
-            } else if (tableName == null) {
-                app.logError(Messages.getString("DbMapping.5") + typename); //$NON-NLS-1$
-                app.logError(Messages.getString("DbMapping.6") + typename + //$NON-NLS-1$
+            } else if (this.tableName == null) {
+                this.app.logError(Messages.getString("DbMapping.5") + this.typename); //$NON-NLS-1$
+                this.app.logError(Messages.getString("DbMapping.6") + this.typename + //$NON-NLS-1$
                              Messages.getString("DbMapping.7")); //$NON-NLS-1$
 
                 // mark mapping as invalid by nulling the dbSource field
-                dbSource = null;
+                this.dbSource = null;
             } else {
                 // dbSource and tableName not null - register this instance
-                dbSource.registerDbMapping(this);
+                this.dbSource.registerDbMapping(this);
             }
         }
     }
@@ -220,93 +220,93 @@ public final class DbMapping {
     public synchronized void update() {
         // read in properties
         readBasicProperties();
-        idgen = props.getProperty("_idgen"); //$NON-NLS-1$
+        this.idgen = this.props.getProperty("_idgen"); //$NON-NLS-1$
         // if id field is null, we assume "ID" as default. We don't set it
         // however, so that if null we check the parent prototype first.
-        idField = props.getProperty("_id"); //$NON-NLS-1$
-        nameField = props.getProperty("_name"); //$NON-NLS-1$
-        protoField = props.getProperty("_prototype"); //$NON-NLS-1$
+        this.idField = this.props.getProperty("_id"); //$NON-NLS-1$
+        this.nameField = this.props.getProperty("_name"); //$NON-NLS-1$
+        this.protoField = this.props.getProperty("_prototype"); //$NON-NLS-1$
 
-        parentSetting = props.getProperty("_parent"); //$NON-NLS-1$
-        if (parentSetting != null) {
+        this.parentSetting = this.props.getProperty("_parent"); //$NON-NLS-1$
+        if (this.parentSetting != null) {
             // comma-separated list of properties to be used as parent
-            StringTokenizer st = new StringTokenizer(parentSetting, ",;"); //$NON-NLS-1$
-            parentInfo = new ParentInfo[st.countTokens()];
+            StringTokenizer st = new StringTokenizer(this.parentSetting, ",;"); //$NON-NLS-1$
+            this.parentInfo = new ParentInfo[st.countTokens()];
 
-            for (int i = 0; i < parentInfo.length; i++) {
-                parentInfo[i] = new ParentInfo(st.nextToken().trim());
+            for (int i = 0; i < this.parentInfo.length; i++) {
+                this.parentInfo[i] = new ParentInfo(st.nextToken().trim());
             }
         } else {
-            parentInfo = null;
+            this.parentInfo = null;
         }
 
-        lastTypeChange = props instanceof ResourceProperties ?
-                ((ResourceProperties) props).lastModified() : System.currentTimeMillis();
+        this.lastTypeChange = this.props instanceof ResourceProperties ?
+                ((ResourceProperties) this.props).lastModified() : System.currentTimeMillis();
 
         // see if this prototype extends (inherits from) any other prototype
-        String extendsProto = props.getProperty("_extends"); //$NON-NLS-1$
+        String extendsProto = this.props.getProperty("_extends"); //$NON-NLS-1$
 
         if (extendsProto != null) {
-            parentMapping = app.getDbMapping(extendsProto);
-            if (parentMapping == null) {
-                app.logError(Messages.getString("DbMapping.8") + typename + //$NON-NLS-1$
+            this.parentMapping = this.app.getDbMapping(extendsProto);
+            if (this.parentMapping == null) {
+                this.app.logError(Messages.getString("DbMapping.8") + this.typename + //$NON-NLS-1$
                              Messages.getString("DbMapping.9") + extendsProto); //$NON-NLS-1$
             } else {
-                if (parentMapping.needsUpdate()) {
-                    parentMapping.update();
+                if (this.parentMapping.needsUpdate()) {
+                    this.parentMapping.update();
                 }
                 // if tableName or DbSource are inherited from the parent mapping
                 // set them to null so we are aware of the fact.
-                if (tableName != null &&
-                        tableName.equals(parentMapping.getTableName())) {
-                    tableName = null;
+                if (this.tableName != null &&
+                        this.tableName.equals(this.parentMapping.getTableName())) {
+                    this.tableName = null;
                 }
-                if (dbSourceName != null &&
-                        dbSourceName.equals(parentMapping.getDbSourceName())) {
-                    dbSourceName = null;
-                    dbSource = null;
+                if (this.dbSourceName != null &&
+                        this.dbSourceName.equals(this.parentMapping.getDbSourceName())) {
+                    this.dbSourceName = null;
+                    this.dbSource = null;
                 }
             }
         } else {
-            parentMapping = null;
+            this.parentMapping = null;
         }
 
         if (inheritsStorage() && getPrototypeField() == null) {
-            app.logError(Messages.getString("DbMapping.10") + typename); //$NON-NLS-1$
-            app.logError(Messages.getString("DbMapping.11") + extendsProto); //$NON-NLS-1$
+            this.app.logError(Messages.getString("DbMapping.10") + this.typename); //$NON-NLS-1$
+            this.app.logError(Messages.getString("DbMapping.11") + extendsProto); //$NON-NLS-1$
         }
 
         // check if there is an extension-id specified inside the type.properties
-        extensionId = props.getProperty("_extensionId", typename); //$NON-NLS-1$
-        registerExtension(extensionId, typename);
+        this.extensionId = this.props.getProperty("_extensionId", this.typename); //$NON-NLS-1$
+        registerExtension(this.extensionId, this.typename);
 
         // set the parent prototype in the corresponding Prototype object!
         // this was previously done by TypeManager, but we need to do it
         // ourself because DbMapping.update() may be called by other code than
         // the TypeManager.
-        if (typename != null &&
-                !"global".equalsIgnoreCase(typename) && //$NON-NLS-1$
-                !"hopobject".equalsIgnoreCase(typename)) { //$NON-NLS-1$
-            Prototype proto = app.getPrototypeByName(typename);
+        if (this.typename != null &&
+                !"global".equalsIgnoreCase(this.typename) && //$NON-NLS-1$
+                !"hopobject".equalsIgnoreCase(this.typename)) { //$NON-NLS-1$
+            Prototype proto = this.app.getPrototypeByName(this.typename);
             if (proto != null) {
                 if (extendsProto != null) {
-                    proto.setParentPrototype(app.getPrototypeByName(extendsProto));
-                } else if (!app.isJavaPrototype(typename)) {
-                    proto.setParentPrototype(app.getPrototypeByName("hopobject")); //$NON-NLS-1$
+                    proto.setParentPrototype(this.app.getPrototypeByName(extendsProto));
+                } else if (!this.app.isJavaPrototype(this.typename)) {
+                    proto.setParentPrototype(this.app.getPrototypeByName("hopobject")); //$NON-NLS-1$
                 }
             }
         }
 
         // null the cached columns and select string
-        columns = null;
-        columnMap.clear();
-        selectString = insertString = updateString = null;
+        this.columns = null;
+        this.columnMap.clear();
+        this.selectString = this.insertString = this.updateString = null;
 
         HashMap p2d = new HashMap();
         HashMap d2p = new HashMap();
         ArrayList joinList = new ArrayList();
 
-        for (Iterator it = props.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = this.props.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry entry =  (Map.Entry) it.next();
 
             try {
@@ -317,7 +317,7 @@ public final class DbMapping {
                     Object propValue = entry.getValue();
 
                     // check if a relation for this propery already exists. If so, reuse it
-                    Relation rel = (Relation) prop2db.get(propName);
+                    Relation rel = (Relation) this.prop2db.get(propName);
 
                     if (rel == null) {
                         rel = new Relation(propName, this);
@@ -332,7 +332,7 @@ public final class DbMapping {
                         // if so, primitive relations get precendence to references
                         if (old != null) {
                             if (rel.isPrimitive() && old.isPrimitive()) {
-                                app.logEvent(Messages.getString("DbMapping.12") + typename + "." + rel.columnName);  //$NON-NLS-1$//$NON-NLS-2$
+                                this.app.logEvent(Messages.getString("DbMapping.12") + this.typename + "." + rel.columnName);  //$NON-NLS-1$//$NON-NLS-2$
                             } else if (rel.isReference() && old.isPrimitive()) {
                                 // if a column is used both in a primitive and a reference mapping,
                                 // use primitive mapping as primary one and mark reference as
@@ -354,47 +354,47 @@ public final class DbMapping {
                     // app.logEvent ("Mapping "+propName+" -> "+dbField);
                 }
             } catch (Exception x) {
-                app.logEvent(Messages.getString("DbMapping.13") + x.getMessage()); //$NON-NLS-1$
+                this.app.logEvent(Messages.getString("DbMapping.13") + x.getMessage()); //$NON-NLS-1$
             }
         }
 
-        prop2db = p2d;
-        db2prop = d2p;
+        this.prop2db = p2d;
+        this.db2prop = d2p;
 
-        joins = new Relation[joinList.size()];
-        joins = (Relation[]) joinList.toArray(joins);
+        this.joins = new Relation[joinList.size()];
+        this.joins = (Relation[]) joinList.toArray(this.joins);
 
-        Object subnodeMapping = props.get("_children"); //$NON-NLS-1$
+        Object subnodeMapping = this.props.get("_children"); //$NON-NLS-1$
 
         if (subnodeMapping != null) {
             try {
                 // check if subnode relation already exists. If so, reuse it
-                if (subRelation == null) {
-                    subRelation = new Relation("_children", this); //$NON-NLS-1$
+                if (this.subRelation == null) {
+                    this.subRelation = new Relation("_children", this); //$NON-NLS-1$
                 }
 
-                subRelation.update(subnodeMapping, getSubProperties("_children")); //$NON-NLS-1$
+                this.subRelation.update(subnodeMapping, getSubProperties("_children")); //$NON-NLS-1$
 
                 // if subnodes are accessed via access name or group name,
                 // the subnode relation is also the property relation.
-                if ((subRelation.accessName != null) || (subRelation.groupby != null)) {
-                    propRelation = subRelation;
+                if ((this.subRelation.accessName != null) || (this.subRelation.groupby != null)) {
+                    this.propRelation = this.subRelation;
                 } else {
-                    propRelation = null;
+                    this.propRelation = null;
                 }
             } catch (Exception x) {
-                app.logEvent(Messages.getString("DbMapping.14") + typename + ": " +  //$NON-NLS-1$//$NON-NLS-2$
+                this.app.logEvent(Messages.getString("DbMapping.14") + this.typename + ": " +  //$NON-NLS-1$//$NON-NLS-2$
                              x.getMessage());
 
                 // subRelation = null;
             }
         } else {
-            subRelation = propRelation = null;
+            this.subRelation = this.propRelation = null;
         }
 
-        if (groupbyMapping != null) {
+        if (this.groupbyMapping != null) {
             initGroupbyMapping();
-            groupbyMapping.lastTypeChange = this.lastTypeChange;
+            this.groupbyMapping.lastTypeChange = this.lastTypeChange;
         }
     }
 
@@ -409,16 +409,16 @@ public final class DbMapping {
         if (extID == null) {
             return;
         }
-        if (extensionMap == null) {
-            extensionMap = new ResourceProperties();
-            extensionMap.setIgnoreCase(true);
-        } else if (extensionMap.containsValue(extName)) {
+        if (this.extensionMap == null) {
+            this.extensionMap = new ResourceProperties();
+            this.extensionMap.setIgnoreCase(true);
+        } else if (this.extensionMap.containsValue(extName)) {
             // remove any preexisting mapping for the given childmapping
-            extensionMap.values().remove(extName);
+            this.extensionMap.values().remove(extName);
         }
-        extensionMap.setProperty(extID, extName);
+        this.extensionMap.setProperty(extID, extName);
         if (inheritsStorage()) {
-            parentMapping.registerExtension(extID, extName);
+            this.parentMapping.registerExtension(extID, extName);
         }
     }
 
@@ -427,9 +427,9 @@ public final class DbMapping {
      * @return the Set of Prototypes extending this prototype
      */
     public String[] getExtensions() {
-        return extensionMap == null
-                ? new String[] { extensionId }
-                : (String[]) extensionMap.keySet().toArray(new String[0]);
+        return this.extensionMap == null
+                ? new String[] { this.extensionId }
+                : (String[]) this.extensionMap.keySet().toArray(new String[0]);
     }
     
     /**
@@ -440,20 +440,20 @@ public final class DbMapping {
      */
     public String getPrototypeName(String id) {
         if (inheritsStorage()) {
-            return parentMapping.getPrototypeName(id);
+            return this.parentMapping.getPrototypeName(id);
         }
         // fallback to base-prototype if the proto isn't recogniced
         if (id == null) {
-            return typename;
+            return this.typename;
         }
-        return extensionMap.getProperty(id, typename);
+        return this.extensionMap.getProperty(id, this.typename);
     }
 
     /**
      * get the id-value of this extension
      */
     public String getExtensionId() {
-        return extensionId;
+        return this.extensionId;
     }
 
     /**
@@ -467,28 +467,27 @@ public final class DbMapping {
      * Get a JDBC connection for this DbMapping.
      */
     public Connection getConnection() throws ClassNotFoundException, SQLException {
-        if (dbSourceName == null) {
-            if (parentMapping != null) {
-                return parentMapping.getConnection();
-            } else {
-                throw new SQLException(Messages.getString("DbMapping.15")); //$NON-NLS-1$
+        if (this.dbSourceName == null) {
+            if (this.parentMapping != null) {
+                return this.parentMapping.getConnection();
             }
+            throw new SQLException(Messages.getString("DbMapping.15")); //$NON-NLS-1$
         }
 
-        if (tableName == null) {
+        if (this.tableName == null) {
             throw new SQLException(Messages.getString("DbMapping.16") + this); //$NON-NLS-1$
         }
 
         // if dbSource was previously not available, check again
-        if (dbSource == null) {
-            dbSource = app.getDbSource(dbSourceName);
+        if (this.dbSource == null) {
+            this.dbSource = this.app.getDbSource(this.dbSourceName);
         }
 
-        if (dbSource == null) {
-            throw new SQLException(Messages.getString("DbMapping.17") + dbSourceName + ".");  //$NON-NLS-1$//$NON-NLS-2$
+        if (this.dbSource == null) {
+            throw new SQLException(Messages.getString("DbMapping.17") + this.dbSourceName + ".");  //$NON-NLS-1$//$NON-NLS-2$
         }
 
-        return dbSource.getConnection();
+        return this.dbSource.getConnection();
     }
 
     /**
@@ -496,98 +495,98 @@ public final class DbMapping {
      * data source including URL, JDBC driver, username and password.
      */
     public DbSource getDbSource() {
-        if (dbSource == null) {
-            if (dbSourceName != null) {
-                dbSource = app.getDbSource(dbSourceName);
-            } else if (parentMapping != null) {
-                return parentMapping.getDbSource();
+        if (this.dbSource == null) {
+            if (this.dbSourceName != null) {
+                this.dbSource = this.app.getDbSource(this.dbSourceName);
+            } else if (this.parentMapping != null) {
+                return this.parentMapping.getDbSource();
             }
         }
 
-        return dbSource;
+        return this.dbSource;
     }
 
     /**
      * Get the dbsource name used for this type mapping.
      */
     public String getDbSourceName() {
-        if ((dbSourceName == null) && (parentMapping != null)) {
-            return parentMapping.getDbSourceName();
+        if ((this.dbSourceName == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getDbSourceName();
         }
 
-        return dbSourceName;
+        return this.dbSourceName;
     }
 
     /**
      * Get the table name used for this type mapping.
      */
     public String getTableName() {
-        if ((tableName == null) && (parentMapping != null)) {
-            return parentMapping.getTableName();
+        if ((this.tableName == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getTableName();
         }
 
-        return tableName;
+        return this.tableName;
     }
 
     /**
      * Get the application this DbMapping belongs to.
      */
     public Application getApplication() {
-        return app;
+        return this.app;
     }
 
     /**
      * Get the name of this mapping's application
      */
     public String getAppName() {
-        return app.getName();
+        return this.app.getName();
     }
 
     /**
      * Get the name of the object type this DbMapping belongs to.
      */
     public String getTypeName() {
-        return typename;
+        return this.typename;
     }
 
     /**
      * Get the name of this type's parent type, if any.
      */
     public String getExtends() {
-        return parentMapping == null ? null : parentMapping.getTypeName();
+        return this.parentMapping == null ? null : this.parentMapping.getTypeName();
     }
 
     /**
      * Get the primary key column name for objects using this mapping.
      */
     public String getIDField() {
-        if ((idField == null) && (parentMapping != null)) {
-            return parentMapping.getIDField();
+        if ((this.idField == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getIDField();
         }
 
-        return (idField == null) ? "ID" : idField; //$NON-NLS-1$
+        return (this.idField == null) ? "ID" : this.idField; //$NON-NLS-1$
     }
 
     /**
      * Get the column used for (internal) names of objects of this type.
      */
     public String getNameField() {
-        if ((nameField == null) && (parentMapping != null)) {
-            return parentMapping.getNameField();
+        if ((this.nameField == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getNameField();
         }
 
-        return nameField;
+        return this.nameField;
     }
 
     /**
      * Get the column used for names of prototype.
      */
     public String getPrototypeField() {
-        if ((protoField == null) && (parentMapping != null)) {
-            return parentMapping.getPrototypeField();
+        if ((this.protoField == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getPrototypeField();
         }
 
-        return protoField;
+        return this.protoField;
     }
 
     /**
@@ -610,10 +609,10 @@ public final class DbMapping {
     }
 
     private String _columnNameToProperty(final String columnName) {
-        Relation rel = (Relation) db2prop.get(columnName);
+        Relation rel = (Relation) this.db2prop.get(columnName);
 
-        if ((rel == null) && (parentMapping != null)) {
-            return parentMapping._columnNameToProperty(columnName);
+        if ((rel == null) && (this.parentMapping != null)) {
+            return this.parentMapping._columnNameToProperty(columnName);
         }
 
         if ((rel != null) && rel.isPrimitiveOrReference()) {
@@ -637,10 +636,10 @@ public final class DbMapping {
     }
 
     private String _propertyToColumnName(final String propName) {
-        Relation rel = (Relation) prop2db.get(propName);
+        Relation rel = (Relation) this.prop2db.get(propName);
 
-        if ((rel == null) && (parentMapping != null)) {
-            return parentMapping._propertyToColumnName(propName);
+        if ((rel == null) && (this.parentMapping != null)) {
+            return this.parentMapping._propertyToColumnName(propName);
         }
 
         if ((rel != null) && (rel.isPrimitiveOrReference())) {
@@ -662,10 +661,10 @@ public final class DbMapping {
     }
 
     private Relation _columnNameToRelation(final String columnName) {
-        Relation rel = (Relation) db2prop.get(columnName);
+        Relation rel = (Relation) this.db2prop.get(columnName);
 
-        if ((rel == null) && (parentMapping != null)) {
-            return parentMapping._columnNameToRelation(columnName);
+        if ((rel == null) && (this.parentMapping != null)) {
+            return this.parentMapping._columnNameToRelation(columnName);
         }
 
         return rel;
@@ -683,10 +682,10 @@ public final class DbMapping {
     }
 
     private Relation _propertyToRelation(String propName) {
-        Relation rel = (Relation) prop2db.get(propName);
+        Relation rel = (Relation) this.prop2db.get(propName);
 
-        if ((rel == null) && (parentMapping != null)) {
-            return parentMapping._propertyToRelation(propName);
+        if ((rel == null) && (this.parentMapping != null)) {
+            return this.parentMapping._propertyToRelation(propName);
         }
 
         return rel;
@@ -696,10 +695,10 @@ public final class DbMapping {
      * @return the parent info as unparsed string.
      */
     public String getParentSetting() {
-        if ((parentSetting == null) && (parentMapping != null)) {
-            return parentMapping.getParentSetting();
+        if ((this.parentSetting == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getParentSetting();
         }
-        return parentSetting;
+        return this.parentSetting;
     }
 
     /**
@@ -707,11 +706,11 @@ public final class DbMapping {
      * determine its parent object.
      */
     public synchronized ParentInfo[] getParentInfo() {
-        if ((parentInfo == null) && (parentMapping != null)) {
-            return parentMapping.getParentInfo();
+        if ((this.parentInfo == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getParentInfo();
         }
 
-        return parentInfo;
+        return this.parentInfo;
     }
 
     /**
@@ -720,12 +719,12 @@ public final class DbMapping {
      * @return ...
      */
     public DbMapping getSubnodeMapping() {
-        if (subRelation != null) {
-            return subRelation.otherType;
+        if (this.subRelation != null) {
+            return this.subRelation.otherType;
         }
 
-        if (parentMapping != null) {
-            return parentMapping.getSubnodeMapping();
+        if (this.parentMapping != null) {
+            return this.parentMapping.getSubnodeMapping();
         }
 
         return null;
@@ -745,9 +744,8 @@ public final class DbMapping {
             // if this is a virtual node, it doesn't have a dbmapping
             if (rel.virtual && (rel.prototype == null)) {
                 return null;
-            } else {
-                return rel.otherType;
             }
+            return rel.otherType;
         }
 
         return null;
@@ -758,15 +756,15 @@ public final class DbMapping {
      * db-mapping with the right relations to create the group-by nodes
      */
     public synchronized DbMapping getGroupbyMapping() {
-        if (subRelation == null && parentMapping != null) {
-            return parentMapping.getGroupbyMapping();
-        } else if (subRelation == null || subRelation.groupby == null) {
+        if (this.subRelation == null && this.parentMapping != null) {
+            return this.parentMapping.getGroupbyMapping();
+        } else if (this.subRelation == null || this.subRelation.groupby == null) {
             return null;
-        } else if (groupbyMapping == null) {
+        } else if (this.groupbyMapping == null) {
             initGroupbyMapping();
         }
 
-        return groupbyMapping;
+        return this.groupbyMapping;
     }
 
     /**
@@ -775,17 +773,17 @@ public final class DbMapping {
     private void initGroupbyMapping() {
         // if a prototype is defined for groupby nodes, use that
         // if mapping doesn' exist or isn't defined, create a new (anonymous internal) one
-        groupbyMapping = new DbMapping(app, subRelation.groupbyPrototype);
-        groupbyMapping.lastTypeChange = this.lastTypeChange;
-        groupbyMapping.isGroup = true;
+        this.groupbyMapping = new DbMapping(this.app, this.subRelation.groupbyPrototype);
+        this.groupbyMapping.lastTypeChange = this.lastTypeChange;
+        this.groupbyMapping.isGroup = true;
 
         // set subnode and property relations
-        groupbyMapping.subRelation = subRelation.getGroupbySubnodeRelation();
+        this.groupbyMapping.subRelation = this.subRelation.getGroupbySubnodeRelation();
 
-        if (propRelation != null) {
-            groupbyMapping.propRelation = propRelation.getGroupbyPropertyRelation();
+        if (this.propRelation != null) {
+            this.groupbyMapping.propRelation = this.propRelation.getGroupbyPropertyRelation();
         } else {
-            groupbyMapping.propRelation = subRelation.getGroupbyPropertyRelation();
+            this.groupbyMapping.propRelation = this.subRelation.getGroupbyPropertyRelation();
         }
     }
 
@@ -795,7 +793,7 @@ public final class DbMapping {
      * @param rel ...
      */
     public void setPropertyRelation(Relation rel) {
-        propRelation = rel;
+        this.propRelation = rel;
     }
 
     /**
@@ -804,18 +802,18 @@ public final class DbMapping {
      * @return ...
      */
     public Relation getSubnodeRelation() {
-        if ((subRelation == null) && (parentMapping != null)) {
-            return parentMapping.getSubnodeRelation();
+        if ((this.subRelation == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getSubnodeRelation();
         }
 
-        return subRelation;
+        return this.subRelation;
     }
 
     /**
      * Return the list of defined property names as String array.
      */
     public String[] getPropertyNames() {
-        return (String[]) prop2db.keySet().toArray(new String[prop2db.size()]);
+        return (String[]) this.prop2db.keySet().toArray(new String[this.prop2db.size()]);
     }
 
     /**
@@ -824,11 +822,11 @@ public final class DbMapping {
      * @return ...
      */
     private Relation getPropertyRelation() {
-        if ((propRelation == null) && (parentMapping != null)) {
-            return parentMapping.getPropertyRelation();
+        if ((this.propRelation == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getPropertyRelation();
         }
 
-        return propRelation;
+        return this.propRelation;
     }
 
     /**
@@ -866,10 +864,10 @@ public final class DbMapping {
             return null;
         }
 
-        Relation rel = (Relation) prop2db.get(propname);
+        Relation rel = (Relation) this.prop2db.get(propname);
 
-        if ((rel == null) && (parentMapping != null)) {
-            rel = parentMapping.getExactPropertyRelation(propname);
+        if ((rel == null) && (this.parentMapping != null)) {
+            rel = this.parentMapping.getExactPropertyRelation(propname);
         }
 
         return rel;
@@ -881,11 +879,11 @@ public final class DbMapping {
      * @return ...
      */
     public String getSubnodeGroupby() {
-        if ((subRelation == null) && (parentMapping != null)) {
-            return parentMapping.getSubnodeGroupby();
+        if ((this.subRelation == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getSubnodeGroupby();
         }
 
-        return (subRelation == null) ? null : subRelation.groupby;
+        return (this.subRelation == null) ? null : this.subRelation.groupby;
     }
 
     /**
@@ -894,11 +892,11 @@ public final class DbMapping {
      * @return ...
      */
     public String getIDgen() {
-        if ((idgen == null) && (parentMapping != null)) {
-            return parentMapping.getIDgen();
+        if ((this.idgen == null) && (this.parentMapping != null)) {
+            return this.parentMapping.getIDgen();
         }
 
-        return idgen;
+        return this.idgen;
     }
 
     /**
@@ -907,11 +905,11 @@ public final class DbMapping {
      * @return ...
      */
     public WrappedNodeManager getWrappedNodeManager() {
-        if (app == null) {
+        if (this.app == null) {
             throw new RuntimeException(Messages.getString("DbMapping.18")); //$NON-NLS-1$
         }
 
-        return app.getWrappedNodeManager();
+        return this.app.getWrappedNodeManager();
     }
 
     /**
@@ -921,7 +919,7 @@ public final class DbMapping {
      *  not what we want.
      */
     public boolean isRelational() {
-        return dbSourceName != null || (parentMapping != null && parentMapping.isRelational());
+        return this.dbSourceName != null || (this.parentMapping != null && this.parentMapping.isRelational());
     }
 
     /**
@@ -934,7 +932,7 @@ public final class DbMapping {
         }
 
         // Use local variable cols to avoid synchronization (schema may be nulled elsewhere)
-        if (columns == null) {
+        if (this.columns == null) {
             // we do two things here: set the SQL type on the Relation mappings
             // and build a string of column names.
             Connection con = getConnection();
@@ -966,17 +964,17 @@ public final class DbMapping {
                 DbColumn col = new DbColumn(colName, meta.getColumnType(i + 1), rel, this);
                 list.add(col);
             }
-            columns = (DbColumn[]) list.toArray(new DbColumn[list.size()]);
+            this.columns = (DbColumn[]) list.toArray(new DbColumn[list.size()]);
         }
 
-        return columns;
+        return this.columns;
     }
 
     /**
      *  Return the array of relations that are fetched with objects of this type.
      */
     public Relation[] getJoins() {
-        return joins;
+        return this.joins;
     }
 
     /**
@@ -991,9 +989,9 @@ public final class DbMapping {
      */
     public DbColumn getColumn(String columnName)
                        throws ClassNotFoundException, SQLException {
-        DbColumn col = (DbColumn) columnMap.get(columnName);
+        DbColumn col = (DbColumn) this.columnMap.get(columnName);
         if (col == null) {
-            DbColumn[] cols = columns;
+            DbColumn[] cols = this.columns;
             if (cols == null) {
                 cols = getColumns();
             }
@@ -1003,7 +1001,7 @@ public final class DbMapping {
                     break;
                 }
             }
-            columnMap.put(columnName, col);
+            this.columnMap.put(columnName, col);
         }
         return col;
     }
@@ -1019,7 +1017,7 @@ public final class DbMapping {
     public StringBuffer getSelect(Relation rel) {
         // assign to local variable first so we are thread safe
         // (selectString may be reset by other threads)
-        String sel = selectString;
+        String sel = this.selectString;
         boolean isOracle = isOracle();
 
         if (rel == null && sel != null) {
@@ -1038,13 +1036,13 @@ public final class DbMapping {
         s.append(table);
         s.append(".*"); //$NON-NLS-1$
 
-        for (int i = 0; i < joins.length; i++) {
-            if (!joins[i].otherType.isRelational()) {
+        for (int i = 0; i < this.joins.length; i++) {
+            if (!this.joins[i].otherType.isRelational()) {
                 continue;
             }
             s.append(", "); //$NON-NLS-1$
             s.append(Relation.JOIN_PREFIX);
-            s.append(joins[i].propName);
+            s.append(this.joins[i].propName);
             s.append(".*"); //$NON-NLS-1$
         }
 
@@ -1058,34 +1056,34 @@ public final class DbMapping {
 
         s.append(" "); //$NON-NLS-1$
 
-        for (int i = 0; i < joins.length; i++) {
-            if (!joins[i].otherType.isRelational()) {
+        for (int i = 0; i < this.joins.length; i++) {
+            if (!this.joins[i].otherType.isRelational()) {
                 continue;
             }
             if (isOracle) {
                 // generate an old-style oracle left join - see
                 // http://www.praetoriate.com/oracle_tips_outer_joins.htm
                 s.append(", "); //$NON-NLS-1$
-                s.append(joins[i].otherType.getTableName());
+                s.append(this.joins[i].otherType.getTableName());
                 s.append(" "); //$NON-NLS-1$
                 s.append(Relation.JOIN_PREFIX);
-                s.append(joins[i].propName);
+                s.append(this.joins[i].propName);
                 s.append(" "); //$NON-NLS-1$
             } else {
                 s.append("LEFT OUTER JOIN "); //$NON-NLS-1$
-                s.append(joins[i].otherType.getTableName());
+                s.append(this.joins[i].otherType.getTableName());
                 s.append(" "); //$NON-NLS-1$
                 s.append(Relation.JOIN_PREFIX);
-                s.append(joins[i].propName);
+                s.append(this.joins[i].propName);
                 s.append(" ON "); //$NON-NLS-1$
-                joins[i].renderJoinConstraints(s, isOracle);
+                this.joins[i].renderJoinConstraints(s, isOracle);
             }
         }
 
         // cache rendered string for later calls, but only if it wasn't
         // built for a particular Relation
         if (rel == null) {
-            selectString = s.toString();
+            this.selectString = s.toString();
         }
 
         return s;
@@ -1097,7 +1095,7 @@ public final class DbMapping {
      * @return ...
      */
     public String getInsert() throws ClassNotFoundException, SQLException {
-        String ins = insertString;
+        String ins = this.insertString;
 
         if (ins != null) {
             return ins;
@@ -1127,7 +1125,7 @@ public final class DbMapping {
         b1.append(" )"); //$NON-NLS-1$
 
         // cache rendered string for later calls.
-        ins = insertString = b1.toString();
+        ins = this.insertString = b1.toString();
 
         return ins;
     }
@@ -1139,7 +1137,7 @@ public final class DbMapping {
      * @return ...
      */
     public StringBuffer getUpdate() {
-        String upd = updateString;
+        String upd = this.updateString;
 
         if (upd != null) {
             return new StringBuffer(upd);
@@ -1151,7 +1149,7 @@ public final class DbMapping {
         s.append(" SET "); //$NON-NLS-1$
 
         // cache rendered string for later calls.
-        updateString = s.toString();
+        this.updateString = s.toString();
 
         return s;
     }
@@ -1161,16 +1159,15 @@ public final class DbMapping {
      *  to be quoted in SQL queries.
      */
     public boolean needsQuotes(String columnName) throws SQLException, ClassNotFoundException {
-        if ((tableName == null) && (parentMapping != null)) {
-            return parentMapping.needsQuotes(columnName);
+        if ((this.tableName == null) && (this.parentMapping != null)) {
+            return this.parentMapping.needsQuotes(columnName);
         }
         DbColumn col = getColumn(columnName);
         // This is not a mapped column. In case of doubt, add quotes.
         if (col == null) {
             return true;
-        } else {
-            return col.needsQuotes();
         }
+        return col.needsQuotes();
     }
 
     /**
@@ -1185,12 +1182,12 @@ public final class DbMapping {
             return;
         }
 
-        for (int i = 0; i < joins.length; i++) {
-            if (!joins[i].otherType.isRelational()) {
+        for (int i = 0; i < this.joins.length; i++) {
+            if (!this.joins[i].otherType.isRelational()) {
                 continue;
             }
             s.append(prefix);
-            joins[i].renderJoinConstraints(s, isOracle);
+            this.joins[i].renderJoinConstraints(s, isOracle);
             prefix = " AND "; //$NON-NLS-1$
         }
     }
@@ -1201,11 +1198,11 @@ public final class DbMapping {
      * @return true if the dbsource is using an oracle JDBC driver
      */
     public boolean isOracle() {
-        if (dbSource != null) {
-            return dbSource.isOracle();
+        if (this.dbSource != null) {
+            return this.dbSource.isOracle();
         }
-        if (parentMapping != null) {
-            return parentMapping.isOracle();
+        if (this.parentMapping != null) {
+            return this.parentMapping.isOracle();
         }
         return false;
     }
@@ -1216,11 +1213,11 @@ public final class DbMapping {
      * @return true if the dbsource is using a MySQL JDBC driver
      */
     public boolean isMySQL() {
-        if (dbSource != null) {
-            return dbSource.isMySQL();
+        if (this.dbSource != null) {
+            return this.dbSource.isMySQL();
         }
-        if (parentMapping != null) {
-            return parentMapping.isMySQL();
+        if (this.parentMapping != null) {
+            return this.parentMapping.isMySQL();
         }
         return false;
     }
@@ -1231,11 +1228,11 @@ public final class DbMapping {
      * @return true if the dbsource is using a PostgreSQL JDBC driver
      */
     public boolean isPostgreSQL() {
-        if (dbSource != null) {
-            return dbSource.isPostgreSQL();
+        if (this.dbSource != null) {
+            return this.dbSource.isPostgreSQL();
         }
-        if (parentMapping != null) {
-            return parentMapping.isPostgreSQL();
+        if (this.parentMapping != null) {
+            return this.parentMapping.isPostgreSQL();
         }
         return false;
     }
@@ -1246,11 +1243,11 @@ public final class DbMapping {
      * @return true if the dbsource is using a H2 JDBC driver
      */
     public boolean isH2() {
-        if (dbSource != null) {
-            return dbSource.isH2();
+        if (this.dbSource != null) {
+            return this.dbSource.isH2();
         }
-        if (parentMapping != null) {
-            return parentMapping.isH2();
+        if (this.parentMapping != null) {
+            return this.parentMapping.isH2();
         }
         return false;
     }
@@ -1262,11 +1259,10 @@ public final class DbMapping {
      */
     @Override
     public String toString() {
-        if (typename == null) {
+        if (this.typename == null) {
             return "[unspecified internal DbMapping]"; //$NON-NLS-1$
-        } else {
-            return ("[" + app.getName() + "." + typename + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
         }
+        return ("[" + this.app.getName() + "." + this.typename + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
     }
 
     /**
@@ -1275,7 +1271,7 @@ public final class DbMapping {
      * @return time of last mapping change
      */
     public long getLastTypeChange() {
-        return lastTypeChange;
+        return this.lastTypeChange;
     }
 
     /**
@@ -1286,10 +1282,9 @@ public final class DbMapping {
     public long getLastDataChange() {
         // refer to parent mapping if it uses the same db/table
         if (inheritsStorage()) {
-            return parentMapping.getLastDataChange();
-        } else {
-            return lastDataChange;
+            return this.parentMapping.getLastDataChange();
         }
+        return this.lastDataChange;
     }
 
     /**
@@ -1299,12 +1294,12 @@ public final class DbMapping {
     public void setLastDataChange() {
         // forward data change timestamp to storage-compatible parent mapping
         if (inheritsStorage()) {
-            parentMapping.setLastDataChange();
+            this.parentMapping.setLastDataChange();
         } else {
-            lastDataChange += 1;
+            this.lastDataChange += 1;
             // propagate data change timestamp to mappings that depend on us
-            if (!dependentMappings.isEmpty()) {
-                Iterator it = dependentMappings.iterator();
+            if (!this.dependentMappings.isEmpty()) {
+                Iterator it = this.dependentMappings.iterator();
                 while(it.hasNext()) {
                     DbMapping dbmap = (DbMapping) it.next();
                     dbmap.setIndirectDataChange();
@@ -1321,9 +1316,9 @@ public final class DbMapping {
     protected void setIndirectDataChange() {
         // forward data change timestamp to storage-compatible parent mapping
         if (inheritsStorage()) {
-            parentMapping.setIndirectDataChange();
+            this.parentMapping.setIndirectDataChange();
         } else {
-            lastDataChange += 1;
+            this.lastDataChange += 1;
         }
     }
 
@@ -1337,11 +1332,10 @@ public final class DbMapping {
     protected synchronized long getNewID(long dbmax) {
         // refer to parent mapping if it uses the same db/table
         if (inheritsStorage()) {
-            return parentMapping.getNewID(dbmax);
-        } else {
-            lastID = Math.max(dbmax + 1, lastID + 1);
-            return lastID;
+            return this.parentMapping.getNewID(dbmax);
         }
+        this.lastID = Math.max(dbmax + 1, this.lastID + 1);
+        return this.lastID;
     }
 
     /**
@@ -1374,12 +1368,12 @@ public final class DbMapping {
      */
     private void collectPropertyNames(HashSet basket) {
         // fetch propnames from parent mapping first, than add our own.
-        if (parentMapping != null) {
-            parentMapping.collectPropertyNames(basket);
+        if (this.parentMapping != null) {
+            this.parentMapping.collectPropertyNames(basket);
         }
 
-        if (!prop2db.isEmpty()) {
-            basket.addAll(prop2db.keySet());
+        if (!this.prop2db.isEmpty()) {
+            basket.addAll(this.prop2db.keySet());
         }
     }
 
@@ -1390,9 +1384,9 @@ public final class DbMapping {
      */
     public String getStorageTypeName() {
         if (inheritsStorage()) {
-            return parentMapping.getStorageTypeName();
+            return this.parentMapping.getStorageTypeName();
         }
-        return (getDbSourceName() == null) ? null : typename;
+        return (getDbSourceName() == null) ? null : this.typename;
     }
 
     /**
@@ -1407,8 +1401,8 @@ public final class DbMapping {
         // note: tableName and dbSourceName are nulled out in update() if they
         // are inherited from the parent mapping. This way we know that
         // storage is not inherited if either of them is not null.
-        return isRelational() && parentMapping != null
-                && tableName == null && dbSourceName == null;
+        return isRelational() && this.parentMapping != null
+                && this.tableName == null && this.dbSourceName == null;
     }
 
     /**
@@ -1445,11 +1439,11 @@ public final class DbMapping {
      *  by the string argument, either itself or via one of its parent prototypes.
      */
     public boolean isInstanceOf(String other) {
-        if ((typename != null) && typename.equals(other)) {
+        if ((this.typename != null) && this.typename.equals(other)) {
             return true;
         }
 
-        DbMapping p = parentMapping;
+        DbMapping p = this.parentMapping;
 
         while (p != null) {
             if ((p.typename != null) && p.typename.equals(other)) {
@@ -1468,7 +1462,7 @@ public final class DbMapping {
      * @return the parent DbMapping, or null
      */
     public DbMapping getParentMapping() {
-        return parentMapping;
+        return this.parentMapping;
     }
 
     /**
@@ -1477,18 +1471,18 @@ public final class DbMapping {
      * @return our properties
      */
     public Properties getProperties() {
-        return props;
+        return this.props;
     }
 
     public Properties getSubProperties(String prefix) {
-        if (props.get(prefix) instanceof Properties) {
-            return (Properties) props.get(prefix);
-        } else if (props instanceof ResourceProperties) {
-            return ((ResourceProperties) props).getSubProperties(prefix + "."); //$NON-NLS-1$
+        if (this.props.get(prefix) instanceof Properties) {
+            return (Properties) this.props.get(prefix);
+        } else if (this.props instanceof ResourceProperties) {
+            return ((ResourceProperties) this.props).getSubProperties(prefix + "."); //$NON-NLS-1$
         } else {
             Properties subprops = new Properties();
             prefix = prefix + "."; //$NON-NLS-1$
-            Iterator it = props.entrySet().iterator();
+            Iterator it = this.props.entrySet().iterator();
             int prefixLength = prefix.length();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry) it.next();
@@ -1608,11 +1602,10 @@ public final class DbMapping {
         String str = value == null ? null : value.toString();
         if (str == null) {
             return null;
-        } else {
-            str = str.trim();
-            if (str.matches("(?:\\+|\\-)??\\d+(?:\\.\\d+)??")) { //$NON-NLS-1$
-                return str;
-            }
+        }
+        str = str.trim();
+        if (str.matches("(?:\\+|\\-)??\\d+(?:\\.\\d+)??")) { //$NON-NLS-1$
+            return str;
         }
         throw new IllegalArgumentException(Messages.getString("DbMapping.22") + str); //$NON-NLS-1$
     }
@@ -1622,7 +1615,7 @@ public final class DbMapping {
      * @return true if this instance describes a virtual node.
      */
     public boolean isVirtual() {
-        return isVirtual;
+        return this.isVirtual;
     }
 
     /**
@@ -1630,7 +1623,7 @@ public final class DbMapping {
      * @return true if this instance describes a group node.
      */
     public boolean isGroup() {
-        return isGroup;
+        return this.isGroup;
     }
 
     /**
@@ -1641,7 +1634,7 @@ public final class DbMapping {
      */
     public boolean needsPersistence() {
         DbMapping submap = getSubnodeMapping();
-        return !isVirtual || (submap != null && !submap.isRelational());
+        return !this.isVirtual || (submap != null && !submap.isRelational());
     }
 }
 

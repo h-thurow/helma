@@ -70,14 +70,14 @@ public class Main {
             String installDir = getInstallDir(args);
             ClassLoader loader = createClassLoader(installDir);
             // get the main server class
-            serverClass = loader.loadClass("helma.main.Server"); //$NON-NLS-1$
+            this.serverClass = loader.loadClass("helma.main.Server"); //$NON-NLS-1$
             Class[] cargs = new Class[]{args.getClass()};
-            Method loadServer = serverClass.getMethod("loadServer", cargs); //$NON-NLS-1$
+            Method loadServer = this.serverClass.getMethod("loadServer", cargs); //$NON-NLS-1$
             Object[] nargs = new Object[]{args};
             // and invoke the static loadServer(String[]) method
-            server = loadServer.invoke(null, nargs);
-            Method init = serverClass.getMethod("init", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
-            init.invoke(server, EMPTY_OBJECT_ARRAY);
+            this.server = loadServer.invoke(null, nargs);
+            Method init = this.serverClass.getMethod("init", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
+            init.invoke(this.server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             System.err.println(Messages.getString("Main.0")); //$NON-NLS-1$
@@ -88,8 +88,8 @@ public class Main {
 
     public void start() {
         try {
-            Method start = serverClass.getMethod("start", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
-            start.invoke(server, EMPTY_OBJECT_ARRAY);
+            Method start = this.serverClass.getMethod("start", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
+            start.invoke(this.server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             System.err.println(Messages.getString("Main.1")); //$NON-NLS-1$
@@ -100,8 +100,8 @@ public class Main {
 
     public void stop() {
         try {
-            Method start = serverClass.getMethod("stop", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
-            start.invoke(server, EMPTY_OBJECT_ARRAY);
+            Method start = this.serverClass.getMethod("stop", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
+            start.invoke(this.server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             System.err.println(Messages.getString("Main.2")); //$NON-NLS-1$
@@ -112,8 +112,8 @@ public class Main {
 
     public void destroy() {
         try {
-            Method start = serverClass.getMethod("shutdown", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
-            start.invoke(server, EMPTY_OBJECT_ARRAY);
+            Method start = this.serverClass.getMethod("shutdown", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
+            start.invoke(this.server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             System.err.println(Messages.getString("Main.3")); //$NON-NLS-1$

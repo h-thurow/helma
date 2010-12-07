@@ -30,16 +30,16 @@ public class Timer {
      * Creates a new Timer object.
      */
     public Timer() {
-        timeline = new Vector();
-        events = new Hashtable();
+        this.timeline = new Vector();
+        this.events = new Hashtable();
     }
 
     /**
      *
      */
     public void reset() {
-        timeline.setSize(0);
-        events.clear();
+        this.timeline.setSize(0);
+        this.events.clear();
     }
 
     /**
@@ -48,8 +48,8 @@ public class Timer {
      * @param name ...
      */
     public void beginEvent(String name) {
-        timeline.addElement(name);
-        events.put(name, new Event(name));
+        this.timeline.addElement(name);
+        this.events.put(name, new Event(name));
     }
 
     /**
@@ -58,7 +58,7 @@ public class Timer {
      * @param name ...
      */
     public void endEvent(String name) {
-        Event event = (Event) events.get(name);
+        Event event = (Event) this.events.get(name);
 
         if (event != null) {
             event.terminate();
@@ -71,9 +71,9 @@ public class Timer {
      * @param out ...
      */
     public void dump(PrintStream out) {
-        for (int i = 0; i < timeline.size(); i++) {
-            String name = (String) timeline.elementAt(i);
-            Event event = (Event) events.get(name);
+        for (int i = 0; i < this.timeline.size(); i++) {
+            String name = (String) this.timeline.elementAt(i);
+            Event event = (Event) this.events.get(name);
 
             out.println(event);
         }
@@ -86,22 +86,21 @@ public class Timer {
 
         Event(String name) {
             this.name = name;
-            start = System.currentTimeMillis();
+            this.start = System.currentTimeMillis();
         }
 
         void terminate() {
-            end = System.currentTimeMillis();
+            this.end = System.currentTimeMillis();
         }
 
         @Override
         public String toString() {
             long now = System.currentTimeMillis();
 
-            if (end == 0L) {
-                return (" + " + (now - start) + " " + name); //$NON-NLS-1$ //$NON-NLS-2$
-            } else {
-                return ("   " + (end - start) + " " + name); //$NON-NLS-1$ //$NON-NLS-2$
+            if (this.end == 0L) {
+                return (" + " + (now - this.start) + " " + this.name); //$NON-NLS-1$ //$NON-NLS-2$
             }
+            return ("   " + (this.end - this.start) + " " + this.name); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

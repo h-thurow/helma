@@ -206,18 +206,18 @@ public class HacHspConverter {
         boolean isStatic;
 
         public HspBodyPart(String content, boolean isStatic) {
-            isPart = false;
+            this.isPart = false;
             this.content = content;
             this.isStatic = isStatic;
         }
 
         public String getName() {
-            return isStatic ? null : content;
+            return this.isStatic ? null : this.content;
         }
 
         @Override
         public String toString() {
-            return "Template.Part [" + content + "," + isStatic + "]";   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+            return "Template.Part [" + this.content + "," + this.isStatic + "]";   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
         }
     }
 }

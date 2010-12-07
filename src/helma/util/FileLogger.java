@@ -16,8 +16,6 @@
 
 package helma.util;
 
-import org.apache.commons.logging.Log;
-
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -30,7 +28,7 @@ import java.util.zip.GZIPOutputStream;
  * @author Daniel Ruthardt
  * @author Hannes Wallnoefer
  */
-public class FileLogger extends Logger implements Log {
+public class FileLogger extends Logger {
 
     // fields used for logging to files
     private String name;
@@ -49,14 +47,14 @@ public class FileLogger extends Logger implements Log {
      */
     protected FileLogger(String directory, String name) {
         this.name = name;
-        logdir = new File(directory);
+        this.logdir = new File(directory);
         // make logdir have an absolute path in case it doesn't already
-        if (!logdir.isAbsolute())
-            logdir = logdir.getAbsoluteFile();
-        logfile = new File(logdir, name + ".log"); //$NON-NLS-1$
+        if (!this.logdir.isAbsolute())
+            this.logdir = this.logdir.getAbsoluteFile();
+        this.logfile = new File(this.logdir, name + ".log"); //$NON-NLS-1$
 
-        if (!logdir.exists()) {
-            logdir.mkdirs();
+        if (!this.logdir.exists()) {
+            this.logdir.mkdirs();
         }
     }
 
@@ -67,7 +65,7 @@ public class FileLogger extends Logger implements Log {
      */
     private synchronized void openFile() {
         try {
-            if (logfile.exists() && (logfile.lastModified() < Logging.lastMidnight())) {
+            if (this.logfile.exists() && (this.logfile.lastModified() < Logging.lastMidnight())) {
                 // rotate if a log file exists and is NOT from today
                 File archive = rotateLogFile();
                 // gzip rotated log file in a separate thread
@@ -76,10 +74,10 @@ public class FileLogger extends Logger implements Log {
                 }
             }
             // create a new log file, appending to an existing file
-            writer = new PrintWriter(new FileWriter(logfile.getAbsolutePath(), true),
+            this.writer = new PrintWriter(new FileWriter(this.logfile.getAbsolutePath(), true),
                                      false);
         } catch (IOException iox) {
-            System.err.println(Messages.getString("FileLogger.0") + name + ": " + iox);  //$NON-NLS-1$//$NON-NLS-2$
+            System.err.println(Messages.getString("FileLogger.0") + this.name + ": " + iox);  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 
@@ -87,13 +85,13 @@ public class FileLogger extends Logger implements Log {
      * Actually closes the file writer of a log.
      */
     synchronized void closeFile() {
-        if (writer != null) {
+        if (this.writer != null) {
             try {
-                writer.close();
+                this.writer.close();
             } catch (Exception ignore) {
                 // ignore
             } finally {
-                writer = null;
+                this.writer = null;
             }
         }
     }
@@ -104,7 +102,7 @@ public class FileLogger extends Logger implements Log {
     @Override
     protected synchronized void ensureOpen() {
         // open a new writer if writer is null or the log file has been deleted
-        if (writer == null || !logfile.exists()) {
+        if (this.writer == null || !this.logfile.exists()) {
             openFile();
         }
     }
@@ -117,41 +115,40 @@ public class FileLogger extends Logger implements Log {
      *  @return the old renamed log file, or null
      *  @throws IOException if an i/o error occurred
      */
-    protected synchronized File rotateLogFile() throws IOException {
+    protected synchronized File rotateLogFile() {
         // if the logger is not file based do nothing.
-        if (logfile == null) {
+        if (this.logfile == null) {
             return null;
         }
 
         closeFile();
 
         // only backup/rotate if the log file is not empty,
-        if (logfile.exists() && (logfile.length() > 0)) {
-            String today = aformat.format(new Date());
+        if (this.logfile.exists() && (this.logfile.length() > 0)) {
+            String today = this.aformat.format(new Date());
             int ct = 0;
 
             // first append just the date
-            String archname = name + "-" + today + ".log"; //$NON-NLS-1$ //$NON-NLS-2$
-            File archive = new File(logdir, archname);
-            File zipped = new File(logdir, archname + ".gz"); //$NON-NLS-1$
+            String archname = this.name + "-" + today + ".log"; //$NON-NLS-1$ //$NON-NLS-2$
+            File archive = new File(this.logdir, archname);
+            File zipped = new File(this.logdir, archname + ".gz"); //$NON-NLS-1$
 
             // increase counter until we find an unused log archive name, checking
             // both unzipped and zipped file names
             while (archive.exists() || zipped.exists()) {
                 // for the next try we append a counter
-                String archidx = (ct > 999) ? Integer.toString(ct) : nformat.format(++ct);
+                String archidx = (ct > 999) ? Integer.toString(ct) : this.nformat.format(++ct);
 
-                archname = name + "-" + today + "-" + archidx + ".log"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                archive = new File(logdir, archname);
-                zipped = new File(logdir, archname + ".gz"); //$NON-NLS-1$
+                archname = this.name + "-" + today + "-" + archidx + ".log"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                archive = new File(this.logdir, archname);
+                zipped = new File(this.logdir, archname + ".gz"); //$NON-NLS-1$
             }
 
-            if (logfile.renameTo(archive)) {
+            if (this.logfile.renameTo(archive)) {
                 return archive;
-            } else {
-                System.err.println(Messages.getString("FileLogger.1") + canonicalName + //$NON-NLS-1$
-                        Messages.getString("FileLogger.2")); //$NON-NLS-1$
             }
+            System.err.println(Messages.getString("FileLogger.1") + this.canonicalName + //$NON-NLS-1$
+                    Messages.getString("FileLogger.2")); //$NON-NLS-1$
         }
 
         // no log file rotated
@@ -163,7 +160,7 @@ public class FileLogger extends Logger implements Log {
      */
     @Override
     public String toString() {
-        return "FileLogger[" + name + "]";  //$NON-NLS-1$//$NON-NLS-2$
+        return "FileLogger[" + this.name + "]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     /**
@@ -171,7 +168,7 @@ public class FileLogger extends Logger implements Log {
      *  @return the logger's name
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -187,14 +184,14 @@ public class FileLogger extends Logger implements Log {
         }
 
         public GZipper(File file) {
-            files = new ArrayList(1);
-            files.add(file);
+            this.files = new ArrayList(1);
+            this.files.add(file);
             setPriority(MIN_PRIORITY);
         }
 
         @Override
         public void run() {
-            Iterator it = files.iterator();
+            Iterator it = this.files.iterator();
             File file = null;
 
             while (it.hasNext()) {

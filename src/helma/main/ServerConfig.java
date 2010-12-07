@@ -34,35 +34,35 @@ public class ServerConfig {
     private String[] apps = null;
 
     public boolean hasPropFile() {
-        return (propFile != null);
+        return (this.propFile != null);
     }
 
     public boolean hasConfigFile() {
-        return (configFile != null);
+        return (this.configFile != null);
     }
 
     public boolean hasHomeDir() {
-        return (homeDir != null);
+        return (this.homeDir != null);
     }
 
     public boolean hasXmlrpcPort() {
-        return (xmlrpcPort != null);
+        return (this.xmlrpcPort != null);
     }
 
     public boolean hasWebsrvPort() {
-        return (websrvPort != null);
+        return (this.websrvPort != null);
     }
 
     public boolean hasAjp13Port() {
-        return (ajp13Port != null);
+        return (this.ajp13Port != null);
     }
 
     public boolean hasApps() {
-        return (apps != null);
+        return (this.apps != null);
     }
 
     public InetSocketAddress getXmlrpcPort() {
-        return xmlrpcPort;
+        return this.xmlrpcPort;
     }
 
     public void setXmlrpcPort(InetSocketAddress xmlrpcPort) {
@@ -70,7 +70,7 @@ public class ServerConfig {
     }
 
     public InetSocketAddress getWebsrvPort() {
-        return websrvPort;
+        return this.websrvPort;
     }
 
     public void setWebsrvPort(InetSocketAddress websrvPort) {
@@ -78,7 +78,7 @@ public class ServerConfig {
     }
 
     public InetSocketAddress getAjp13Port() {
-        return ajp13Port;
+        return this.ajp13Port;
     }
 
     public void setAjp13Port(InetSocketAddress ajp13Port) {
@@ -86,7 +86,7 @@ public class ServerConfig {
     }
 
     public File getPropFile() {
-        return propFile;
+        return this.propFile;
     }
 
     public void setPropFile(File propFile) {
@@ -94,7 +94,7 @@ public class ServerConfig {
     }
 
     public File getHomeDir() {
-        return homeDir;
+        return this.homeDir;
     }
 
     public void setHomeDir(File homeDir) {
@@ -102,7 +102,7 @@ public class ServerConfig {
     }
     
     public File getConfigFile() {
-		return configFile;
+		return this.configFile;
 	}
 
 	public void setConfigFile(File configFile) {
@@ -110,7 +110,7 @@ public class ServerConfig {
 	}
 
     public String[] getApps() {
-        return apps;
+        return this.apps;
     }
 
     public void setApps(String[] apps) {

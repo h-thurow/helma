@@ -52,7 +52,7 @@ public final class NodeManager {
      */
     public NodeManager(Application app) {
         this.app = app;
-        safe = new WrappedNodeManager(this);
+        this.safe = new WrappedNodeManager(this);
     }
 
     /**
@@ -65,28 +65,28 @@ public final class NodeManager {
                    IllegalAccessException, InstantiationException {
         String cacheImpl = props.getProperty("cacheimpl", "helma.util.CacheMap");  //$NON-NLS-1$//$NON-NLS-2$
 
-        cache = (ObjectCache) Class.forName(cacheImpl).newInstance();
-        cache.init(app);
+        this.cache = (ObjectCache) Class.forName(cacheImpl).newInstance();
+        this.cache.init(this.app);
 
         String idgenImpl = props.getProperty("idGeneratorImpl"); //$NON-NLS-1$
 
         if (idgenImpl != null) {
-            idgen = (IDGenerator) Class.forName(idgenImpl).newInstance();
-            idgen.init(app);
+            this.idgen = (IDGenerator) Class.forName(idgenImpl).newInstance();
+            this.idgen.init(this.app);
         }
 
-        logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));  //$NON-NLS-1$//$NON-NLS-2$
+        this.logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));  //$NON-NLS-1$//$NON-NLS-2$
 
-        db = new XmlDatabase();
-        db.init(dbHome, app);
+        this.db = new XmlDatabase();
+        this.db.init(dbHome, this.app);
     }
 
     /**
      * Gets the application's root node.
      */
     public Node getRootNode() throws Exception {
-        DbMapping rootMapping = app.getRootMapping();
-        DbKey key = new DbKey(rootMapping, app.getRootId());
+        DbMapping rootMapping = this.app.getRootMapping();
+        DbKey key = new DbKey(rootMapping, this.app.getRootId());
         Node node = getNode(key);
         if (node != null && rootMapping != null) {
             node.setDbMapping(rootMapping);
@@ -98,8 +98,8 @@ public final class NodeManager {
      * Checks if the given node is the application's root node.
      */
     public boolean isRootNode(Node node) {
-        return node.getState() != Node.TRANSIENT && app.getRootId().equals(node.getID()) &&
-               DbMapping.areStorageCompatible(app.getRootMapping(), node.getDbMapping());
+        return node.getState() != INodeState.TRANSIENT && this.app.getRootId().equals(node.getID()) &&
+               DbMapping.areStorageCompatible(this.app.getRootMapping(), node.getDbMapping());
     }
 
     /**
@@ -107,8 +107,8 @@ public final class NodeManager {
      */
     public void updateProperties(Properties props) {
         // notify the cache about the properties update
-        cache.updateProperties(props);
-        logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));  //$NON-NLS-1$//$NON-NLS-2$
+        this.cache.updateProperties(props);
+        this.logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     /**
@@ -116,15 +116,15 @@ public final class NodeManager {
      *  using this node manager is stopped.
      */
     public void shutdown() throws DatabaseException {
-        db.shutdown();
+        this.db.shutdown();
 
-        if (cache != null) {
-            cache.shutdown();
-            cache = null;
+        if (this.cache != null) {
+            this.cache.shutdown();
+            this.cache = null;
         }
 
-        if (idgen != null) {
-            idgen.shutdown();
+        if (this.idgen != null) {
+            this.idgen.shutdown();
         }
     }
 
@@ -136,8 +136,8 @@ public final class NodeManager {
             synchronized (this) {
                 Transactor tx = Transactor.getInstanceOrFail();
 
-                node.setState(Node.INVALID);
-                deleteNode(db, tx.txn, node);
+                node.setState(INodeState.INVALID);
+                deleteNode(this.db, tx.txn, node);
             }
         }
     }
@@ -152,14 +152,14 @@ public final class NodeManager {
         // See if Transactor has already come across this node
         Node node = tx.getCleanNode(key);
 
-        if ((node != null) && (node.getState() != Node.INVALID)) {
+        if ((node != null) && (node.getState() != INodeState.INVALID)) {
             return node;
         }
 
         // try to get the node from the shared cache
-        node = (Node) cache.get(key);
+        node = (Node) this.cache.get(key);
 
-        if ((node == null) || (node.getState() == Node.INVALID)) {
+        if ((node == null) || (node.getState() == INodeState.INVALID)) {
             // The requested node isn't in the shared cache.
             if (key instanceof SyntheticKey) {
                 Node parent = getNode(key.getParentKey());
@@ -167,9 +167,8 @@ public final class NodeManager {
 
                 if (rel != null) {
                     return getNode(parent, key.getID(), rel);
-                } else {
-                    return null;
                 }
+                return null;
             } else if (key instanceof DbKey) {
                 node = getNodeByKey(tx.txn, (DbKey) key);
             }
@@ -205,7 +204,7 @@ public final class NodeManager {
         if (rel.isComplexReference()) {
             // a key for a complex reference
             key = new MultiKey(rel.otherType, rel.getKeyParts(home));
-            otherDbm = app.getDbMapping(key.getStorageName());
+            otherDbm = this.app.getDbMapping(key.getStorageName());
         } else if (rel.createOnDemand()) {
             // a key for a virtually defined object that's never actually  stored in the db
             // or a key for an object that represents subobjects grouped by some property,
@@ -219,7 +218,7 @@ public final class NodeManager {
         // See if Transactor has already come across this node
         Node node = tx.getCleanNode(key);
 
-        if (node != null && node.getState() != Node.INVALID) {
+        if (node != null && node.getState() != INodeState.INVALID) {
             // we used to refresh the node in the main cache here to avoid the primary key
             // entry being flushed from cache before the secondary one
             // (risking duplicate nodes in cache) but we don't need to since we fetched
@@ -229,11 +228,11 @@ public final class NodeManager {
         }
 
         // try to get the node from the shared cache
-        node = (Node) cache.get(key);
+        node = (Node) this.cache.get(key);
 
         // check if we can use the cached node without further checks.
         // we need further checks for subnodes fetched by name if the subnodes were changed.
-        if (node != null && node.getState() != Node.INVALID) {
+        if (node != null && node.getState() != INodeState.INVALID) {
             // check if node is null node (cached null)
             if (node.isNullNode()) {
                 // do not check reference nodes against child collection
@@ -257,13 +256,13 @@ public final class NodeManager {
             }
         }
 
-        if (node == null || node.getState() == Node.INVALID) {
+        if (node == null || node.getState() == INodeState.INVALID) {
             // The requested node isn't in the shared cache.
             // Synchronize with key to make sure only one version is fetched
             // from the database.
             node = getNodeByRelation(tx.txn, home, kstr, rel, otherDbm);
 
-            if (node != null && node.getState() != Node.DELETED) {
+            if (node != null && node.getState() != INodeState.DELETED) {
                 Node newNode = node;
                 if (key.equals(node.getKey())) {
                     node = registerNewNode(node, null);
@@ -277,10 +276,10 @@ public final class NodeManager {
                 }
             } else {
                 // node fetched from db is null, cache result using nullNode
-                synchronized (cache) {
+                synchronized (this.cache) {
                     // do not use child collection timestamp as cache guard for object references
                     long lastchange = rel.isComplexReference() ? 0 : home.getLastSubnodeChange();
-                    cache.put(key, new Node(lastchange));
+                    this.cache.put(key, new Node(lastchange));
 
                     // we ignore the case that onother thread has created the node in the meantime
                     return null;
@@ -291,14 +290,14 @@ public final class NodeManager {
             return null;
         } else {
             // update primary key in cache to keep it from being flushed, see above
-            if (!rel.usesPrimaryKey() && node.getState() != Node.TRANSIENT) {
-                synchronized (cache) {
-                    Node old = (Node) cache.put(node.getKey(), node);
+            if (!rel.usesPrimaryKey() && node.getState() != INodeState.TRANSIENT) {
+                synchronized (this.cache) {
+                    Node old = (Node) this.cache.put(node.getKey(), node);
 
                     if (old != node && old != null && !old.isNullNode() && 
-                            old.getState() != Node.INVALID) {
-                        cache.put(node.getKey(), old);
-                        cache.put(key, old);
+                            old.getState() != INodeState.INVALID) {
+                        this.cache.put(node.getKey(), old);
+                        this.cache.put(key, old);
                         node = old;
                     }
                 }
@@ -321,28 +320,28 @@ public final class NodeManager {
      */
     private Node registerNewNode(Node node, Key secondaryKey) {
         Key key = node.getKey();
-        RequestEvaluator reval = app.getCurrentRequestEvaluator();
+        RequestEvaluator reval = this.app.getCurrentRequestEvaluator();
         // if no request evaluator is associated with current thread, do not cache node
         // as we cannot invoke onInit() on it.
         if (reval == null) {
-            Node old = (Node) cache.get(key);
-            if (old != null && !old.isNullNode() && old.getState() != INode.INVALID) {
+            Node old = (Node) this.cache.get(key);
+            if (old != null && !old.isNullNode() && old.getState() != INodeState.INVALID) {
                 return old;
             }
             return node;
         }
 
-        synchronized(cache) {
-            Node old = (Node) cache.put(key, node);
+        synchronized(this.cache) {
+            Node old = (Node) this.cache.put(key, node);
 
-            if (old != null && !old.isNullNode() && old.getState() != INode.INVALID) {
-                cache.put(key, old);
+            if (old != null && !old.isNullNode() && old.getState() != INodeState.INVALID) {
+                this.cache.put(key, old);
                 if (secondaryKey != null) {
-                    cache.put(secondaryKey, old);
+                    this.cache.put(secondaryKey, old);
                 }
                 return old;
             } else if (secondaryKey != null) {
-                cache.put(secondaryKey, node);
+                this.cache.put(secondaryKey, node);
             }
         }
         // New node is going ot be used, invoke onInit() on it
@@ -352,7 +351,7 @@ public final class NodeManager {
             // but the functionality is really worth it.
             reval.invokeDirectFunction(node, "onInit", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
         } catch (Exception x) {
-            app.logError(Messages.getString("NodeManager.0"), x); //$NON-NLS-1$
+            this.app.logError(Messages.getString("NodeManager.0"), x); //$NON-NLS-1$
         }
         return node;
     }
@@ -361,14 +360,14 @@ public final class NodeManager {
      * Register a node in the node cache.
      */
     public void registerNode(Node node) {
-        cache.put(node.getKey(), node);
+        this.cache.put(node.getKey(), node);
     }
 
     /**
      * Register a node in the node cache using the key argument.
      */
     protected void registerNode(Node node, Key key) {
-        cache.put(key, node);
+        this.cache.put(key, node);
     }
 
     /**
@@ -376,8 +375,8 @@ public final class NodeManager {
      * it will be refetched from the database.
      */
     public void evictNode(Node node) {
-        node.setState(INode.INVALID);
-        cache.remove(node.getKey());
+        node.setState(INodeState.INVALID);
+        this.cache.remove(node.getKey());
     }
 
     /**
@@ -385,13 +384,13 @@ public final class NodeManager {
      * it will be refetched from the database.
      */
     public void evictNodeByKey(Key key) {
-        Node n = (Node) cache.remove(key);
+        Node n = (Node) this.cache.remove(key);
 
         if (n != null) {
-            n.setState(INode.INVALID);
+            n.setState(INodeState.INVALID);
 
             if (!(key instanceof DbKey)) {
-                cache.remove(n.getKey());
+                this.cache.remove(n.getKey());
             }
         }
     }
@@ -401,7 +400,7 @@ public final class NodeManager {
      * remains valid, if it is present in the cache by other keys.
      */
     public void evictKey(Key key) {
-        cache.remove(key);
+        this.cache.remove(key);
         // also drop key from thread-local transactor cache
         Transactor tx = Transactor.getInstance();
         if (tx != null) {
@@ -486,7 +485,7 @@ public final class NodeManager {
         // app.logEvent ("inserting relational node: " + node.getID ());
         DbColumn[] columns = dbm.getColumns();
 
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
 
         try {
             int columnNumber = 1;
@@ -516,7 +515,7 @@ public final class NodeManager {
             stmt.executeUpdate();
 
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = java.lang.System.currentTimeMillis();
                 logSqlStatement("SQL INSERT", dbm.getTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, insertString);
@@ -536,12 +535,12 @@ public final class NodeManager {
         try {
             // We need to reach deap into helma.framework.core to invoke onPersist(),
             // but the functionality is really worth it.
-            RequestEvaluator reval = app.getCurrentRequestEvaluator();
+            RequestEvaluator reval = this.app.getCurrentRequestEvaluator();
             if (reval != null) {
                 reval.invokeDirectFunction(node, "onPersist", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
             }
         } catch (Exception x) {
-            app.logError(Messages.getString("NodeManager.8"), x); //$NON-NLS-1$
+            this.app.logError(Messages.getString("NodeManager.8"), x); //$NON-NLS-1$
         }
     }
     
@@ -623,7 +622,7 @@ public final class NodeManager {
             PreparedStatement stmt = con.prepareStatement(b.toString());
 
             int stmtNumber = 0;
-            long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+            long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
 
             try {
                 for (int i = 0; i < props.length; i++) {
@@ -648,7 +647,7 @@ public final class NodeManager {
                 stmt.executeUpdate();
 
             } finally {
-                if (logSql) {
+                if (this.logSql) {
                     long logTimeStop = System.currentTimeMillis();
                     logSqlStatement("SQL UPDATE", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, b.toString());
@@ -687,7 +686,7 @@ public final class NodeManager {
             db.deleteNode(txn, node.getID());
         } else {
             Statement st = null;
-            long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+            long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
             String str = new StringBuffer("DELETE FROM ").append(dbm.getTableName()) //$NON-NLS-1$
                                                          .append(" WHERE ") //$NON-NLS-1$
                                                          .append(dbm.getIDField())
@@ -705,7 +704,7 @@ public final class NodeManager {
                 st.executeUpdate(str);
 
             } finally {
-                if (logSql) {
+                if (this.logSql) {
                     long logTimeStop = System.currentTimeMillis();
                     logSqlStatement("SQL DELETE", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, str);
@@ -720,7 +719,7 @@ public final class NodeManager {
         }
 
         // node may still be cached via non-primary keys. mark as invalid
-        node.setState(Node.INVALID);
+        node.setState(INodeState.INVALID);
     }
 
 
@@ -728,12 +727,11 @@ public final class NodeManager {
      * Generate a new ID for a given type, delegating to our IDGenerator if set.
      */
     public String generateID(DbMapping map) throws Exception {
-        if (idgen != null) {
+        if (this.idgen != null) {
             // use our custom IDGenerator
-            return idgen.generateID(map);
-        } else {
-            return doGenerateID(map);
+            return this.idgen.generateID(map);
         }
+        return doGenerateID(map);
     }
 
     /**
@@ -761,7 +759,7 @@ public final class NodeManager {
      * Gererates an ID for use with the embedded database.
      */
     synchronized String generateEmbeddedID(DbMapping map) throws Exception {
-        return db.nextID();
+        return this.db.nextID();
     }
 
     /**
@@ -771,7 +769,7 @@ public final class NodeManager {
                                       throws Exception {
         String retval = null;
         Statement stmt = null;
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
         String q = new StringBuffer("SELECT MAX(").append(map.getIDField()) //$NON-NLS-1$
                                                   .append(") FROM ") //$NON-NLS-1$
                                                   .append(map.getTableName())
@@ -798,7 +796,7 @@ public final class NodeManager {
                 retval = Long.toString(currMax);
             }
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
                 logSqlStatement("SQL SELECT_MAX", map.getTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, q);
@@ -817,7 +815,7 @@ public final class NodeManager {
     String generateSequenceID(DbMapping map) throws Exception {
         Statement stmt = null;
         String retval = null;
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
         String q;
         if (map.isOracle()) {
             q = new StringBuffer("SELECT ").append(map.getIDgen()) //$NON-NLS-1$
@@ -844,7 +842,7 @@ public final class NodeManager {
 
             retval = rs.getString(1);
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
                 logSqlStatement("SQL SELECT_NEXTVAL", map.getTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, q);
@@ -879,7 +877,7 @@ public final class NodeManager {
         //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = null;
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
         String query = null;
 
         try {
@@ -922,7 +920,7 @@ public final class NodeManager {
 
                 // if these are groupby nodes, evict nullNode keys
                 if (rel.groupby != null) {
-                    Node n = (Node) cache.get(key);
+                    Node n = (Node) this.cache.get(key);
 
                     if ((n != null) && n.isNullNode()) {
                         evictKey(key);
@@ -930,7 +928,7 @@ public final class NodeManager {
                 }
             }
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
                 logSqlStatement("SQL SELECT_IDS", type.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
@@ -955,7 +953,7 @@ public final class NodeManager {
         // This does not apply for groupby nodes - use getNodeIDs instead
         assert rel.groupby == null;
 
-        if ((rel == null) || (rel.otherType == null) || !rel.otherType.isRelational()) {
+        if ((rel.otherType == null) || !rel.otherType.isRelational()) {
             // this should never be called for embedded nodes
             throw new RuntimeException(Messages.getString("NodeManager.12") + //$NON-NLS-1$
                                        home);
@@ -972,7 +970,7 @@ public final class NodeManager {
         DbColumn[] columns = dbm.getColumns();
         Relation[] joins = dbm.getJoins();
         String query = null;
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
 
         try {
             StringBuffer b = dbm.getSelect(rel);
@@ -1008,7 +1006,7 @@ public final class NodeManager {
             }
 
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
                 logSqlStatement("SQL SELECT_ALL", dbm.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
@@ -1028,7 +1026,7 @@ public final class NodeManager {
         List retval = null;
         for (int i = start; i < start + length; i++) {
             NodeHandle handle = list.get(i);
-            if (handle != null && !cache.containsKey(handle.getKey())) {
+            if (handle != null && !this.cache.containsKey(handle.getKey())) {
                 if (retval == null) {
                     retval = new ArrayList();
                 }
@@ -1059,7 +1057,7 @@ public final class NodeManager {
                 DbColumn[] columns = dbm.getColumns();
                 Relation[] joins = dbm.getJoins();
                 String query = null;
-                long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+                long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
 
                 try {
                     StringBuffer b = dbm.getSelect(null).append(" WHERE "); //$NON-NLS-1$
@@ -1150,9 +1148,9 @@ public final class NodeManager {
                     }
 
                 } catch (Exception x) {
-                    app.logError(Messages.getString("NodeManager.13"), x); //$NON-NLS-1$
+                    this.app.logError(Messages.getString("NodeManager.13"), x); //$NON-NLS-1$
                 } finally {
-                    if (logSql) {
+                    if (this.logSql) {
                         long logTimeStop = System.currentTimeMillis();
                         logSqlStatement("SQL SELECT_PREFETCH", dbm.getTableName(), //$NON-NLS-1$
                                         logTimeStart, logTimeStop, query);
@@ -1184,7 +1182,7 @@ public final class NodeManager {
         //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = null;
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
         String query = null;
 
         try {
@@ -1208,7 +1206,7 @@ public final class NodeManager {
                 retval = rs.getInt(1);
             }
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
                 logSqlStatement("SQL SELECT_COUNT", type.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
@@ -1241,7 +1239,7 @@ public final class NodeManager {
         //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = null;
-        long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+        long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
         String query = null;
 
         try {
@@ -1270,7 +1268,7 @@ public final class NodeManager {
                 }
             }
         } finally {
-            if (logSql) {
+            if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
                 logSqlStatement("SQL SELECT_ACCESSNAMES", type.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
@@ -1294,11 +1292,11 @@ public final class NodeManager {
                        throws Exception {
         // Note: Key must be a DbKey, otherwise will not work for relational objects
         Node node = null;
-        DbMapping dbm = app.getDbMapping(key.getStorageName());
+        DbMapping dbm = this.app.getDbMapping(key.getStorageName());
         String kstr = key.getID();
 
         if ((dbm == null) || !dbm.isRelational()) {
-            node = (Node) db.getNode(txn, kstr);
+            node = (Node) this.db.getNode(txn, kstr);
             if ((node != null) && (dbm != null)) {
                 node.setDbMapping(dbm);
             }
@@ -1307,7 +1305,7 @@ public final class NodeManager {
 
             Statement stmt = null;
             String query = null;
-            long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+            long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
 
             try {
                 Connection con = dbm.getConnection();
@@ -1334,10 +1332,10 @@ public final class NodeManager {
                 fetchJoinedNodes(rs, joins, columns.length);
 
                 if (rs.next()) {
-                    app.logError(Messages.getString("NodeManager.16") + query); //$NON-NLS-1$
+                    this.app.logError(Messages.getString("NodeManager.16") + query); //$NON-NLS-1$
                 }
             } finally {
-                if (logSql) {
+                if (this.logSql) {
                     long logTimeStop = System.currentTimeMillis();
                     logSqlStatement("SQL SELECT_BYKEY", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, query);
@@ -1363,7 +1361,7 @@ public final class NodeManager {
             if (rel.needsPersistence()) {
                 node = (Node) home.createNode(kstr);
             } else {
-                node = new Node(home, kstr, safe, rel.prototype);
+                node = new Node(home, kstr, this.safe, rel.prototype);
             }
 
             // set prototype and dbmapping on the newly created virtual/collection node
@@ -1373,17 +1371,17 @@ public final class NodeManager {
             node = home.getGroupbySubnode(kstr, false);
 
             if (node == null && (dbm == null || !dbm.isRelational())) {
-                node = (Node) db.getNode(txn, kstr);
+                node = (Node) this.db.getNode(txn, kstr);
             }
             return node;
         } else if (rel == null || dbm == null || !dbm.isRelational()) {
-            node = (Node) db.getNode(txn, kstr);
+            node = (Node) this.db.getNode(txn, kstr);
             node.setDbMapping(dbm);
             return node;
         } else {
             Statement stmt = null;
             String query = null;
-            long logTimeStart = logSql ? System.currentTimeMillis() : 0;
+            long logTimeStart = this.logSql ? System.currentTimeMillis() : 0;
 
             try {
                 Connection con = dbm.getConnection();
@@ -1425,11 +1423,11 @@ public final class NodeManager {
                 fetchJoinedNodes(rs, joins, columns.length);
 
                 if (rs.next()) {
-                    app.logError(Messages.getString("NodeManager.17") + query); //$NON-NLS-1$
+                    this.app.logError(Messages.getString("NodeManager.17") + query); //$NON-NLS-1$
                 }
 
             } finally {
-                if (logSql) {
+                if (this.logSql) {
                     long logTimeStop = System.currentTimeMillis();
                     logSqlStatement("SQL SELECT_BYRELATION", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, query);
@@ -1458,7 +1456,7 @@ public final class NodeManager {
         String protoName = dbm.getTypeName();
         DbMapping dbmap = dbm;
 
-        Node node = new Node(safe);
+        Node node = new Node(this.safe);
 
         for (int i = 0; i < columns.length; i++) {
 
@@ -1474,7 +1472,7 @@ public final class NodeManager {
 
                     if (dbmap == null) {
                         // invalid prototype name!
-                        app.logError(Messages.getString("NodeManager.18") //$NON-NLS-1$
+                        this.app.logError(Messages.getString("NodeManager.18") //$NON-NLS-1$
                                 + protoName + Messages.getString("NodeManager.19") //$NON-NLS-1$
                                 + dbm.getTypeName() + Messages.getString("NodeManager.20")); //$NON-NLS-1$
                         dbmap = dbm;
@@ -1629,17 +1627,16 @@ public final class NodeManager {
 
         if (id == null) {
             return null;
-        } else {
-            Transactor tx = Transactor.getInstance();
-            if (tx != null) {
-                // Check if the node is already registered with the transactor -
-                // it may be in the process of being DELETED, but do return the
-                // new node if the old one has been marked as INVALID.
-                DbKey key = new DbKey(dbmap, id);
-                Node dirtyNode = tx.getDirtyNode(key);
-                if (dirtyNode != null && dirtyNode.getState() != Node.INVALID) {
-                    return dirtyNode;
-                }
+        }
+        Transactor tx = Transactor.getInstance();
+        if (tx != null) {
+            // Check if the node is already registered with the transactor -
+            // it may be in the process of being DELETED, but do return the
+            // new node if the old one has been marked as INVALID.
+            DbKey key = new DbKey(dbmap, id);
+            Node dirtyNode = tx.getDirtyNode(key);
+            if (dirtyNode != null && dirtyNode.getState() != INodeState.INVALID) {
+                return dirtyNode;
             }
         }
 
@@ -1692,29 +1689,29 @@ public final class NodeManager {
      * method to the app's getDbMapping() method.
      */
     public DbMapping getDbMapping(String protoname) {
-        return app.getDbMapping(protoname);
+        return this.app.getDbMapping(protoname);
     }
 
     /**
      *  Get an array of the the keys currently held in the object cache
      */
     public Object[] getCacheEntries() {
-        return cache.getCachedObjects();
+        return this.cache.getCachedObjects();
     }
 
     /**
      * Get the number of elements in the object cache
      */
     public int countCacheEntries() {
-        return cache.size();
+        return this.cache.size();
     }
 
     /**
      * Clear the object cache, causing all objects to be recreated.
      */
     public void clearCache() {
-        synchronized (cache) {
-            cache.clear();
+        synchronized (this.cache) {
+            this.cache.clear();
         }
     }
 
@@ -1723,14 +1720,14 @@ public final class NodeManager {
      * that adds, modifies or deletes any Nodes.
      */
     public void addNodeChangeListener(NodeChangeListener listener) {
-        listeners.add(listener);
+        this.listeners.add(listener);
     }
     
     /** 
      * Remove a previously added NodeChangeListener. 
      */
     public void removeNodeChangeListener(NodeChangeListener listener) {
-        listeners.remove(listener);
+        this.listeners.remove(listener);
     }
     
     /**
@@ -1738,18 +1735,18 @@ public final class NodeManager {
      * events
      */
     protected boolean hasNodeChangeListeners() {
-        return listeners.size() > 0;
+        return this.listeners.size() > 0;
     }
     
     /**
      * Called by transactors after committing.
      */
     protected void fireNodeChangeEvent(List inserted, List updated, List deleted, List parents) {
-        int l = listeners.size();
+        int l = this.listeners.size();
 
         for (int i=0; i<l; i++) {
             try {
-                ((NodeChangeListener) listeners.get(i)).nodesChanged(inserted, updated, deleted, parents);
+                ((NodeChangeListener) this.listeners.get(i)).nodesChanged(inserted, updated, deleted, parents);
             } catch (Error e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -1866,12 +1863,12 @@ public final class NodeManager {
     private void logSqlStatement(String type, String table,
                                  long logTimeStart, long logTimeStop, String statement) {
         // init sql-log if necessary
-        if (sqlLog == null) {
-            String sqlLogName = app.getProperty("sqlLog", "helma."+app.getName()+".sql");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-            sqlLog = LogFactory.getLog(sqlLogName);
+        if (this.sqlLog == null) {
+            String sqlLogName = this.app.getProperty("sqlLog", "helma."+this.app.getName()+".sql");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+            this.sqlLog = LogFactory.getLog(sqlLogName);
         }
 
-        sqlLog.info(new StringBuffer().append(type)
+        this.sqlLog.info(new StringBuffer().append(type)
                                       .append(" ") //$NON-NLS-1$
                                       .append(table)
                                       .append(" ") //$NON-NLS-1$

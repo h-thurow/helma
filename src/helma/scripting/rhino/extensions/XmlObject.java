@@ -86,7 +86,7 @@ public class XmlObject {
             finalFile.delete();
         }
         tmpFile.renameTo(finalFile);
-        core.getApplication().logEvent(Messages.getString("XmlObject.2") + finalFile.getAbsolutePath()); //$NON-NLS-1$
+        this.core.getApplication().logEvent(Messages.getString("XmlObject.2") + finalFile.getAbsolutePath()); //$NON-NLS-1$
 
         return true;
     }
@@ -154,14 +154,14 @@ public class XmlObject {
 
         if (node == null) {
             // make sure we have a node, even if 2nd arg doesn't exist or is not a node
-            node = new Node(null, null, core.getApplication().getWrappedNodeManager());
+            node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
         }
 
         try {
-            XmlReader reader = new XmlReader(core.app.getWrappedNodeManager());
+            XmlReader reader = new XmlReader(this.core.app.getWrappedNodeManager());
             INode result = reader.read(new File(file), node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
             throw new RuntimeException(Messages.getString("XmlObject.5") + e); //$NON-NLS-1$
         } catch (Exception f) {
@@ -196,14 +196,14 @@ public class XmlObject {
 
         if (node == null) {
             // make sure we have a node, even if 2nd arg doesn't exist or is not a node
-            node = new Node(null, null, core.getApplication().getWrappedNodeManager());
+            node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
         }
 
         try {
-            XmlReader reader = new XmlReader(core.app.getWrappedNodeManager());
+            XmlReader reader = new XmlReader(this.core.app.getWrappedNodeManager());
             INode result = reader.read(new StringReader(str), node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
             throw new RuntimeException(Messages.getString("XmlObject.7") + e); //$NON-NLS-1$
         } catch (Exception f) {
@@ -247,10 +247,10 @@ public class XmlObject {
             }
 
             INode node = new Node(null, null,
-                    core.getApplication().getWrappedNodeManager());
+                    this.core.getApplication().getWrappedNodeManager());
             INode result = converter.convert(url, node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
             throw new RuntimeException(Messages.getString("XmlObject.9")); //$NON-NLS-1$
         }
@@ -290,10 +290,10 @@ public class XmlObject {
                 converter = new XmlConverter();
             }
 
-            INode node = new Node(null, null, core.getApplication().getWrappedNodeManager());
+            INode node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
             INode result = converter.convertFromString(str, node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
             throw new RuntimeException(Messages.getString("XmlObject.11")); //$NON-NLS-1$
         }

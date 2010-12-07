@@ -55,7 +55,7 @@ public class ScriptingException extends Exception {
                            name.endsWith(".hsp"); //$NON-NLS-1$
                 }
             };
-            scriptStack = ((RhinoException) cause).getScriptStackTrace(filter);
+            this.scriptStack = ((RhinoException) cause).getScriptStackTrace(filter);
         }
     }
 
@@ -64,7 +64,7 @@ public class ScriptingException extends Exception {
      * @return the script stack trace
      */
     public String getScriptStackTrace() {
-        return scriptStack;
+        return this.scriptStack;
     }
 
     /**
@@ -83,9 +83,9 @@ public class ScriptingException extends Exception {
     @Override
     public void printStackTrace(PrintStream s) {
         synchronized (s) {
-            if (scriptStack != null) {
+            if (this.scriptStack != null) {
                 s.println(this);
-                s.print(scriptStack);
+                s.print(this.scriptStack);
                 s.print(Messages.getString("ScriptingException.0")); //$NON-NLS-1$
             }
             getCause().printStackTrace(s);
@@ -99,9 +99,9 @@ public class ScriptingException extends Exception {
     @Override
     public void printStackTrace(PrintWriter s) {
         synchronized (s) {
-            if (scriptStack != null) {
+            if (this.scriptStack != null) {
                 s.println(this);
-                s.print(scriptStack);
+                s.print(this.scriptStack);
                 s.print(Messages.getString("ScriptingException.1")); //$NON-NLS-1$
             }
             getCause().printStackTrace(s);

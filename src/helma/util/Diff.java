@@ -125,11 +125,11 @@ public class Diff
         traverseSequences();
 
         // add the last difference, if pending:
-        if (pending != null) {
-            diffs.add(pending);
+        if (this.pending != null) {
+            this.diffs.add(this.pending);
         }
 
-        return Change.fromList(diffs);
+        return Change.fromList(this.diffs);
     }
 
     /**
@@ -141,8 +141,8 @@ public class Diff
     {
         Integer[] matches = getLongestCommonSubsequences();
 
-        int lastA = a.size() - 1;
-        int lastB = b.size() - 1;
+        int lastA = this.a.size() - 1;
+        int lastB = this.b.size() - 1;
         int bi = 0;
         int ai;
 
@@ -243,11 +243,11 @@ public class Diff
      */
     protected void onANotB(int ai, int bi)
     {
-        if (pending == null) {
-            pending = new Difference(ai, ai, bi, -1);
+        if (this.pending == null) {
+            this.pending = new Difference(ai, ai, bi, -1);
         }
         else {
-            pending.setDeleted(ai);
+            this.pending.setDeleted(ai);
         }
     }
 
@@ -256,11 +256,11 @@ public class Diff
      */
     protected void onBNotA(int ai, int bi)
     {
-        if (pending == null) {
-            pending = new Difference(ai, -1, bi, bi);
+        if (this.pending == null) {
+            this.pending = new Difference(ai, -1, bi, bi);
         }
         else {
-            pending.setAdded(bi);
+            this.pending.setAdded(bi);
         }
     }
 
@@ -269,12 +269,12 @@ public class Diff
      */
     protected void onMatch(int ai, int bi)
     {
-        if (pending == null) {
+        if (this.pending == null) {
             // no current pending
         }
         else {
-            diffs.add(pending);
-            pending = null;
+            this.diffs.add(this.pending);
+            this.pending = null;
         }
     }
 
@@ -284,7 +284,7 @@ public class Diff
      */
     protected boolean equals(Object x, Object y)
     {
-        return comparator == null ? x.equals(y) : comparator.compare(x, y) == 0;
+        return this.comparator == null ? x.equals(y) : this.comparator.compare(x, y) == 0;
     }
     
     /**
@@ -293,24 +293,24 @@ public class Diff
     public Integer[] getLongestCommonSubsequences()
     {
         int aStart = 0;
-        int aEnd = a.size() - 1;
+        int aEnd = this.a.size() - 1;
 
         int bStart = 0;
-        int bEnd = b.size() - 1;
+        int bEnd = this.b.size() - 1;
 
         TreeMap matches = new TreeMap();
 
-        while (aStart <= aEnd && bStart <= bEnd && equals(a.get(aStart), b.get(bStart))) {
+        while (aStart <= aEnd && bStart <= bEnd && equals(this.a.get(aStart), this.b.get(bStart))) {
             matches.put(Integer.valueOf(aStart++), Integer.valueOf(bStart++));
         }
 
-        while (aStart <= aEnd && bStart <= bEnd && equals(a.get(aEnd), b.get(bEnd))) {
+        while (aStart <= aEnd && bStart <= bEnd && equals(this.a.get(aEnd), this.b.get(bEnd))) {
             matches.put(Integer.valueOf(aEnd--), Integer.valueOf(bEnd--));
         }
 
         Map bMatches = null;
-        if (comparator == null) {
-            if (a.size() > 0 && a.get(0) instanceof Comparable) {
+        if (this.comparator == null) {
+            if (this.a.size() > 0 && this.a.get(0) instanceof Comparable) {
                 // this uses the Comparable interface
                 bMatches = new TreeMap();
             }
@@ -322,11 +322,11 @@ public class Diff
         else {
             // we don't really want them sorted, but this is the only Map
             // implementation (as of JDK 1.4) that takes a comparator.
-            bMatches = new TreeMap(comparator);
+            bMatches = new TreeMap(this.comparator);
         }
 
         for (int bi = bStart; bi <= bEnd; ++bi) {
-            Object         element    = b.get(bi);
+            Object         element    = this.b.get(bi);
             Object          key       = element;
             List positions = (List) bMatches.get(key);
             
@@ -338,11 +338,11 @@ public class Diff
             positions.add(Integer.valueOf(bi));
         }
 
-        thresh = new TreeMap();
+        this.thresh = new TreeMap();
         Map links = new HashMap();
 
         for (int i = aStart; i <= aEnd; ++i) {
-            Object aElement  = a.get(i);
+            Object aElement  = this.a.get(i);
             List positions = (List) bMatches.get(aElement);
 
             if (positions != null) {
@@ -364,8 +364,8 @@ public class Diff
             }
         }
 
-        if (thresh.size() > 0) {
-            Integer  ti   = (Integer) thresh.lastKey();
+        if (this.thresh.size() > 0) {
+            Integer  ti   = (Integer) this.thresh.lastKey();
             Object[] link = (Object[])links.get(ti);
             while (link != null) {
                 Integer x = (Integer)link[1];
@@ -399,7 +399,7 @@ public class Diff
      */
     protected boolean isGreaterThan(Integer index, Integer val)
     {
-        Integer lhs = (Integer) thresh.get(index);
+        Integer lhs = (Integer) this.thresh.get(index);
         return lhs != null && val != null && lhs.compareTo(val) > 0;
     }
 
@@ -409,7 +409,7 @@ public class Diff
      */
     protected boolean isLessThan(Integer index, Integer val)
     {
-        Integer lhs = (Integer) thresh.get(index);
+        Integer lhs = (Integer) this.thresh.get(index);
         return lhs != null && (val == null || lhs.compareTo(val) < 0);
     }
 
@@ -418,7 +418,7 @@ public class Diff
      */
     protected Integer getLastValue()
     {
-        return (Integer) thresh.get(thresh.lastKey());
+        return (Integer) this.thresh.get(this.thresh.lastKey());
     }
 
     /**
@@ -428,14 +428,14 @@ public class Diff
     protected void append(Integer value)
     {
         Integer addIdx = null;
-        if (thresh.size() == 0) {
+        if (this.thresh.size() == 0) {
             addIdx = Integer.valueOf(0);
         }
         else {
-            Integer lastKey = (Integer) thresh.lastKey();
+            Integer lastKey = (Integer) this.thresh.lastKey();
             addIdx = Integer.valueOf(lastKey.intValue() + 1);
         }
-        thresh.put(addIdx, value);
+        this.thresh.put(addIdx, value);
     }
 
     /**
@@ -444,7 +444,7 @@ public class Diff
     protected Integer insert(Integer j, Integer k)
     {
         if (isNonzero(k) && isGreaterThan(k, j) && isLessThan(Integer.valueOf(k.intValue() - 1), j)) {
-            thresh.put(k, j);
+            this.thresh.put(k, j);
         }
         else {
             int high = -1;
@@ -452,8 +452,8 @@ public class Diff
             if (isNonzero(k)) {
                 high = k.intValue();
             }
-            else if (thresh.size() > 0) {
-                high = ((Integer) thresh.lastKey()).intValue();
+            else if (this.thresh.size() > 0) {
+                high = ((Integer) this.thresh.lastKey()).intValue();
             }
 
             // off the end?
@@ -467,7 +467,7 @@ public class Diff
         
                 while (low <= high) {
                     int     index = (high + low) / 2;
-                    Integer val   = (Integer) thresh.get(Integer.valueOf(index));
+                    Integer val   = (Integer) this.thresh.get(Integer.valueOf(index));
                     int     cmp   = j.compareTo(val);
 
                     if (cmp == 0) {
@@ -481,7 +481,7 @@ public class Diff
                     }
                 }
         
-                thresh.put(Integer.valueOf(low), j);
+                this.thresh.put(Integer.valueOf(low), j);
                 k = Integer.valueOf(low);
             }
         }
@@ -536,7 +536,7 @@ public class Diff
          */
         public int getDeletedStart()
         {
-            return delStart;
+            return this.delStart;
         }
 
         /**
@@ -545,7 +545,7 @@ public class Diff
          */
         public int getDeletedEnd()
         {
-            return delEnd;
+            return this.delEnd;
         }
 
         /**
@@ -554,7 +554,7 @@ public class Diff
          */
         public int getAddedStart()
         {
-            return addStart;
+            return this.addStart;
         }
 
         /**
@@ -563,7 +563,7 @@ public class Diff
          */
         public int getAddedEnd()
         {
-            return addEnd;
+            return this.addEnd;
         }
 
         /**
@@ -572,8 +572,8 @@ public class Diff
          */
         public void setDeleted(int line)
         {
-            delStart = Math.min(line, delStart);
-            delEnd   = Math.max(line, delEnd);
+            this.delStart = Math.min(line, this.delStart);
+            this.delEnd   = Math.max(line, this.delEnd);
         }
 
         /**
@@ -582,8 +582,8 @@ public class Diff
          */
         public void setAdded(int line)
         {
-            addStart = Math.min(line, addStart);
-            addEnd   = Math.max(line, addEnd);
+            this.addStart = Math.min(line, this.addStart);
+            this.addEnd   = Math.max(line, this.addEnd);
         }
 
         /**
@@ -596,14 +596,12 @@ public class Diff
             if (obj instanceof Difference) {
                 Difference other = (Difference)obj;
 
-                return (delStart == other.delStart &&
-                        delEnd   == other.delEnd &&
-                        addStart == other.addStart &&
-                        addEnd   == other.addEnd);
+                return (this.delStart == other.delStart &&
+                        this.delEnd   == other.delEnd &&
+                        this.addStart == other.addStart &&
+                        this.addEnd   == other.addEnd);
             }
-            else {
-                return false;
-            }
+            return false;
         }
 
         /**
@@ -613,9 +611,9 @@ public class Diff
         public String toString()
         {
             StringBuffer buf = new StringBuffer();
-            buf.append("del: [" + delStart + ", " + delEnd + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            buf.append("del: [" + this.delStart + ", " + this.delEnd + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             buf.append(" "); //$NON-NLS-1$
-            buf.append("add: [" + addStart + ", " + addEnd + "]");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+            buf.append("add: [" + this.addStart + ", " + this.addEnd + "]");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
             return buf.toString();
         }
 
@@ -641,20 +639,20 @@ public class Diff
         private Change(Iterator iter, int prev0, int prev1) {
             Difference diff = (Difference) iter.next();
             if (diff.getDeletedEnd() == Difference.NONE) {
-                line0 = prev0 + diff.getAddedStart() - prev1;
-                deleted = 0;
+                this.line0 = prev0 + diff.getAddedStart() - prev1;
+                this.deleted = 0;
             } else {
-                line0 = diff.getDeletedStart();
-                deleted = diff.getDeletedEnd() - line0 + 1;
+                this.line0 = diff.getDeletedStart();
+                this.deleted = diff.getDeletedEnd() - this.line0 + 1;
             }
             if (diff.getAddedEnd() == Difference.NONE) {
-                line1 = prev1 + diff.getDeletedStart() - prev0;
-                inserted = 0;
+                this.line1 = prev1 + diff.getDeletedStart() - prev0;
+                this.inserted = 0;
             } else {
-                line1 = diff.getAddedStart();
-                inserted = diff.getAddedEnd() - line1 + 1;
+                this.line1 = diff.getAddedStart();
+                this.inserted = diff.getAddedEnd() - this.line1 + 1;
             }
-            this.link = iter.hasNext() ? new Change(iter, line0 + deleted, line1 + inserted) : null;
+            this.link = iter.hasNext() ? new Change(iter, this.line0 + this.deleted, this.line1 + this.inserted) : null;
         }
     }
 }

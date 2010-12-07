@@ -43,10 +43,10 @@ public class RequestPath {
      */
     public RequestPath(Application app) {
         this.app = app;
-        objects = new ArrayList();
-        ids = new ArrayList();
-        primaryProtos = new HashMap();
-        secondaryProtos = new HashMap();
+        this.objects = new ArrayList();
+        this.ids = new ArrayList();
+        this.primaryProtos = new HashMap();
+        this.secondaryProtos = new HashMap();
     }
 
     /**
@@ -56,15 +56,15 @@ public class RequestPath {
      * @param obj the object to which the id resolves
      */
     public void add(String id, Object obj) {
-        ids.add(id);
-        objects.add(obj);
+        this.ids.add(id);
+        this.objects.add(obj);
 
-        Prototype proto = app.getPrototype(obj);
+        Prototype proto = this.app.getPrototype(obj);
 
         if (proto != null) {
-            primaryProtos.put(proto.getName(), obj);
-            primaryProtos.put(proto.getLowerCaseName(), obj);
-            proto.registerParents(secondaryProtos, obj);
+            this.primaryProtos.put(proto.getName(), obj);
+            this.primaryProtos.put(proto.getLowerCaseName(), obj);
+            proto.registerParents(this.secondaryProtos, obj);
         }
     }
 
@@ -72,7 +72,7 @@ public class RequestPath {
      * Returns the number of objects in the request path.
      */
     public int size() {
-        return objects.size();
+        return this.objects.size();
     }
 
     /**
@@ -81,11 +81,11 @@ public class RequestPath {
      * @param idx the index of the object in the request path
      */
     public Object get(int idx) {
-        if (idx < 0 || idx >= objects.size()) {
+        if (idx < 0 || idx >= this.objects.size()) {
             return null;
         }
 
-        return objects.get(idx);
+        return this.objects.get(idx);
     }
 
     /**
@@ -95,40 +95,40 @@ public class RequestPath {
      */
     public Object getByPrototypeName(String typeName) {
         // search primary prototypes first
-        Object obj = primaryProtos.get(typeName);
+        Object obj = this.primaryProtos.get(typeName);
 
         if (obj != null) {
             return obj;
         }
 
         // if that fails, consult secondary prototype map
-        return secondaryProtos.get(typeName);
+        return this.secondaryProtos.get(typeName);
     }
 
     /**
      * Returns the string representation of this path usable for links.
      */
     public String href(String action) throws UnsupportedEncodingException {
-        StringBuffer buffer = new StringBuffer(app.getBaseURI());
+        StringBuffer buffer = new StringBuffer(this.app.getBaseURI());
 
         int start = 1;
-        String hrefRootPrototype = app.getHrefRootPrototype();
+        String hrefRootPrototype = this.app.getHrefRootPrototype();
 
         if (hrefRootPrototype != null) {
             Object rootObject = getByPrototypeName(hrefRootPrototype);
 
             if (rootObject != null) {
-                start = objects.indexOf(rootObject) + 1;
+                start = this.objects.indexOf(rootObject) + 1;
             }
         }
 
-        for (int i=start; i<ids.size(); i++) {
-            buffer.append(UrlEncoded.encode(ids.get(i).toString(), app.charset));
+        for (int i=start; i<this.ids.size(); i++) {
+            buffer.append(UrlEncoded.encode(this.ids.get(i).toString(), this.app.charset));
             buffer.append("/"); //$NON-NLS-1$
         }
 
         if (action != null) {
-            buffer.append(UrlEncoded.encode(action, app.charset));
+            buffer.append(UrlEncoded.encode(action, this.app.charset));
         }
 
         return buffer.toString();
@@ -144,7 +144,7 @@ public class RequestPath {
      */
     @Deprecated
     public int contains(Object obj) {
-        return objects.indexOf(obj);
+        return this.objects.indexOf(obj);
     }
 
     /**
@@ -155,7 +155,7 @@ public class RequestPath {
      * @return the index of the element, or -1 if it isn't contained
      */
     public int indexOf(Object obj) {
-        return objects.indexOf(obj);
+        return this.objects.indexOf(obj);
     }
 
    /**
@@ -164,13 +164,13 @@ public class RequestPath {
     @Override
     public String toString() {
         // If there's just one element we're on the root object.
-        if (ids.size() <= 1) 
+        if (this.ids.size() <= 1) 
             return "/"; //$NON-NLS-1$
         
         StringBuffer buffer = new StringBuffer();
-        for (int i=1; i<ids.size(); i++) {
+        for (int i=1; i<this.ids.size(); i++) {
             buffer.append('/');
-            buffer.append(ids.get(i));
+            buffer.append(this.ids.get(i));
         }
         return buffer.toString();
     } 

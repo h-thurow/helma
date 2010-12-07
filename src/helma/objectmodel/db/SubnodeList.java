@@ -16,6 +16,8 @@
 
 package helma.objectmodel.db;
 
+import helma.objectmodel.INodeState;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
@@ -37,6 +39,7 @@ public class SubnodeList implements Serializable {
     /**
      * Hide/disable zero argument constructor for subclasses
      */
+    @SuppressWarnings("unused")
     private SubnodeList()  {}
 
     /**
@@ -55,7 +58,7 @@ public class SubnodeList implements Serializable {
      * @param handle element to be inserted.
      */
     public boolean add(NodeHandle handle) {
-        return list.add(handle);
+        return this.list.add(handle);
     }
     /**
      * Adds the specified object to the list at the given position
@@ -63,14 +66,14 @@ public class SubnodeList implements Serializable {
      * @param handle the object to add
      */
     public void add(int idx, NodeHandle handle) {
-        list.add(idx, handle);
+        this.list.add(idx, handle);
     }
 
     public NodeHandle get(int index) {
-        if (index < 0 || index >= list.size()) {
+        if (index < 0 || index >= this.list.size()) {
             return null;
         }
-        return (NodeHandle) list.get(index);
+        return (NodeHandle) this.list.get(index);
     }
 
     public Node getNode(int index) {
@@ -78,11 +81,11 @@ public class SubnodeList implements Serializable {
         NodeHandle handle = get(index);
 
         if (handle != null) {
-            retval = handle.getNode(node.nmgr);
+            retval = handle.getNode(this.node.nmgr);
             // Legacy alarm!
             if ((retval != null) && (retval.parentHandle == null) &&
-                    !node.nmgr.isRootNode(retval)) {
-                retval.setParent(node);
+                    !this.node.nmgr.isRootNode(retval)) {
+                retval.setParent(this.node);
                 retval.anonymous = true;
             }
         }
@@ -91,11 +94,11 @@ public class SubnodeList implements Serializable {
     }
 
     public boolean contains(Object object) {
-        return list.contains(object);
+        return this.list.contains(object);
     }
 
     public int indexOf(Object object) {
-        return list.indexOf(object);
+        return this.list.indexOf(object);
     }
 
     /**
@@ -103,7 +106,7 @@ public class SubnodeList implements Serializable {
      * @param idx the index-position of the NodeHandle to remove
      */
     public Object remove (int idx) {
-        return list.remove(idx);
+        return this.list.remove(idx);
     }
 
     /**
@@ -111,11 +114,11 @@ public class SubnodeList implements Serializable {
      * @param obj the NodeHandle to remove
      */
     public boolean remove (Object obj) {
-        return list.remove(obj);
+        return this.list.remove(obj);
     }
 
     public Object[] toArray() {
-        return list.toArray();
+        return this.list.toArray();
     }
 
     /**
@@ -123,20 +126,20 @@ public class SubnodeList implements Serializable {
      * @return the list size
      */
     public int size() {
-        return list.size();
+        return this.list.size();
     }
 
     protected void update() {
         // also reload if the type mapping has changed.
         long lastChange = getLastSubnodeChange();
-        if (lastChange != lastSubnodeFetch) {
+        if (lastChange != this.lastSubnodeFetch) {
             Relation rel = getSubnodeRelation();
             if (rel != null && rel.aggressiveLoading && rel.groupby == null) {
-                list = node.nmgr.getNodes(node, rel);
+                this.list = this.node.nmgr.getNodes(this.node, rel);
             } else {
-                list = node.nmgr.getNodeIDs(node, rel);
+                this.list = this.node.nmgr.getNodeIDs(this.node, rel);
             }
-            lastSubnodeFetch = lastChange;
+            this.lastSubnodeFetch = lastChange;
         }
     }
 
@@ -154,7 +157,7 @@ public class SubnodeList implements Serializable {
 
         if (dbmap.isRelational()) {
             Relation rel = getSubnodeRelation();
-            node.nmgr.prefetchNodes(node, rel, this, start, length);
+            this.node.nmgr.prefetchNodes(this.node, rel, this, start, length);
         }
     }
 
@@ -164,28 +167,28 @@ public class SubnodeList implements Serializable {
      */
     protected long getLastSubnodeChange() {
         // include dbmap.getLastTypeChange to also reload if the type mapping has changed.
-        long checkSum = lastSubnodeChange + node.dbmap.getLastTypeChange();
+        long checkSum = this.lastSubnodeChange + this.node.dbmap.getLastTypeChange();
         Relation rel = getSubnodeRelation();
         return rel == null || rel.aggressiveCaching ?
                 checkSum : checkSum + rel.otherType.getLastDataChange();
     }
 
     protected synchronized void markAsChanged() {
-        lastSubnodeChange += 1;
+        this.lastSubnodeChange += 1;
     }
 
     protected boolean hasRelationalNodes() {
         DbMapping dbmap = getSubnodeMapping();
         return (dbmap != null && dbmap.isRelational()
-                && ((node.getState() != Node.TRANSIENT &&  node.getState() != Node.NEW)
-                    || node.getSubnodeRelation() != null));
+                && ((this.node.getState() != INodeState.TRANSIENT &&  this.node.getState() != INodeState.NEW)
+                    || this.node.getSubnodeRelation() != null));
     }
 
     protected DbMapping getSubnodeMapping() {
-        return node.dbmap == null ? null : node.dbmap.getSubnodeMapping();
+        return this.node.dbmap == null ? null : this.node.dbmap.getSubnodeMapping();
     }
 
     protected Relation getSubnodeRelation() {
-        return node.dbmap == null ? null : node.dbmap.getSubnodeRelation();
+        return this.node.dbmap == null ? null : this.node.dbmap.getSubnodeRelation();
     }
 }

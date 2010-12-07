@@ -43,25 +43,25 @@ public class ParentInfo {
 
         switch (parts.length) {
         	case 0:
-        		propname = collectionname = null;
-        		virtualnames = new String[0];
+        		this.propname = this.collectionname = null;
+        		this.virtualnames = new String[0];
         		break;
         	case 1:
-        		propname = parts[0].trim();
-        		virtualnames = new String[0];
-        		collectionname = null;
+        		this.propname = parts[0].trim();
+        		this.virtualnames = new String[0];
+        		this.collectionname = null;
         		break;
         	default:
-        		propname = parts[0].trim();
-        		virtualnames = new String[parts.length - 2];
-        		collectionname = parts[parts.length - 1];
+        		this.propname = parts[0].trim();
+        		this.virtualnames = new String[parts.length - 2];
+        		this.collectionname = parts[parts.length - 1];
         		
         		for (int i = 1; i < parts.length - 1; i++) {
-            		virtualnames[i - 1] = parts[i];
+            		this.virtualnames[i - 1] = parts[i];
             	}
         }
 
-        isroot = "root".equalsIgnoreCase(propname); //$NON-NLS-1$
+        this.isroot = "root".equalsIgnoreCase(this.propname); //$NON-NLS-1$
     }
 
     /**
@@ -69,14 +69,14 @@ public class ParentInfo {
      */
     @Override
     public String toString() {
-        StringBuffer b = new StringBuffer("ParentInfo[").append(propname); //$NON-NLS-1$
-        if (virtualnames.length > 0) {
-        	for (int i = 0; i < virtualnames.length; i++) {
-        		b.append(".").append(virtualnames[i]);	 //$NON-NLS-1$
+        StringBuffer b = new StringBuffer("ParentInfo[").append(this.propname); //$NON-NLS-1$
+        if (this.virtualnames.length > 0) {
+        	for (int i = 0; i < this.virtualnames.length; i++) {
+        		b.append(".").append(this.virtualnames[i]);	 //$NON-NLS-1$
         	}
         }
-        if (collectionname != null)
-            b.append(".").append(collectionname); //$NON-NLS-1$
+        if (this.collectionname != null)
+            b.append(".").append(this.collectionname); //$NON-NLS-1$
         return b.append("]").toString(); //$NON-NLS-1$
     }
 }

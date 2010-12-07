@@ -50,7 +50,7 @@ public class WrappedMap implements Map {
             throw new NullPointerException(
                 Messages.getString("WrappedMap.0")); //$NON-NLS-1$
         }
-        wrapped = map;
+        this.wrapped = map;
         this.readonly = readonly;
     }
 
@@ -65,7 +65,7 @@ public class WrappedMap implements Map {
      *  Is this map readonly?
      */
     public boolean isReadonly() {
-        return readonly;
+        return this.readonly;
     }
 
     // Methods from interface java.util.Map -
@@ -73,68 +73,68 @@ public class WrappedMap implements Map {
     // readonly checks on modifiers.
 
     public int size() {
-        return wrapped.size();
+        return this.wrapped.size();
     }
 
     public boolean isEmpty() {
-        return wrapped.isEmpty();
+        return this.wrapped.isEmpty();
     }
 
     public boolean containsKey(Object key) {
-        return wrapped.containsKey(key);
+        return this.wrapped.containsKey(key);
     }
 
     public boolean containsValue(Object value) {
-        return wrapped.containsValue(value);
+        return this.wrapped.containsValue(value);
     }
 
     public Object get(Object key) {
-        return wrapped.get(key);
+        return this.wrapped.get(key);
     }
 
     // Modification Operations - check for readonly
 
     public Object put(Object key, Object value) {
-        if (readonly) {
+        if (this.readonly) {
             throw new RuntimeException(Messages.getString("WrappedMap.1")); //$NON-NLS-1$
         }
-        return wrapped.put(key, value);
+        return this.wrapped.put(key, value);
     }
 
     public Object remove(Object key) {
-        if (readonly) {
+        if (this.readonly) {
             throw new RuntimeException(Messages.getString("WrappedMap.2")); //$NON-NLS-1$
         }
-        return wrapped.remove(key);
+        return this.wrapped.remove(key);
     }
 
     public void putAll(Map t) {
-        if (readonly) {
+        if (this.readonly) {
             throw new RuntimeException(Messages.getString("WrappedMap.3")); //$NON-NLS-1$
         }
-        wrapped.putAll(t);
+        this.wrapped.putAll(t);
     }
 
     public void clear() {
-        if (readonly) {
+        if (this.readonly) {
             throw new RuntimeException(Messages.getString("WrappedMap.4")); //$NON-NLS-1$
         }
-        wrapped.clear();
+        this.wrapped.clear();
     }
 
 
     // Views
 
     public Set keySet() {
-        return wrapped.keySet();
+        return this.wrapped.keySet();
     }
 
     public Collection values() {
-        return wrapped.values();
+        return this.wrapped.values();
     }
 
     public Set entrySet() {
-        return wrapped.entrySet();
+        return this.wrapped.entrySet();
     }
 
 
@@ -142,19 +142,19 @@ public class WrappedMap implements Map {
 
     @Override
     public boolean equals(Object o) {
-        return wrapped.equals(o);
+        return this.wrapped.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return wrapped.hashCode();
+        return this.wrapped.hashCode();
     }
 
     // toString
 
     @Override
     public String toString() {
-        return wrapped.toString();
+        return this.wrapped.toString();
     }
 
 }

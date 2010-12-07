@@ -70,7 +70,7 @@ public class NodeEvent implements Serializable {
      */
     @Override
     public String toString() {
-        switch (type) {
+        switch (this.type) {
             case CONTENT_CHANGED:
                 return Messages.getString("NodeEvent.0"); //$NON-NLS-1$
 

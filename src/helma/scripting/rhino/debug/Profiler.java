@@ -30,10 +30,10 @@ public class Profiler implements Debugger {
     public DebugFrame getFrame(Context cx, DebuggableScript script) {
         if (script.isFunction()) {
             String name = getFunctionName(script);
-            ProfilerFrame frame = (ProfilerFrame) frames.get(name);
+            ProfilerFrame frame = (ProfilerFrame) this.frames.get(name);
             if (frame == null) {
                 frame = new ProfilerFrame(name);
-                frames.put(name, frame);
+                this.frames.put(name, frame);
             }
             return frame;
         }
@@ -54,13 +54,12 @@ public class Profiler implements Debugger {
                 b.append(": ").append(script.getFunctionName()); //$NON-NLS-1$
             }
             return b.toString();
-        } else {
-            return script.getSourceName();
         }
+        return script.getSourceName();
     }
 
     public String getResult() {
-        ProfilerFrame[] f = (ProfilerFrame[]) frames.values().toArray(new ProfilerFrame[0]);
+        ProfilerFrame[] f = (ProfilerFrame[]) this.frames.values().toArray(new ProfilerFrame[0]);
         Arrays.sort(f, new Comparator() {
             public int compare(Object o1, Object o2) {
                 return ((ProfilerFrame)o2).runtime - ((ProfilerFrame)o1).runtime;
@@ -106,7 +105,7 @@ public class Profiler implements Debugger {
                             Scriptable thisObj, Object[] args) {
 
             long time = System.nanoTime();
-            timer.push(new Long(time));
+            this.timer.push(new Long(time));
         }
 
         /**
@@ -120,9 +119,9 @@ public class Profiler implements Debugger {
          *  Called when the function or script for this frame is about to return.
          */
         public void onExit(Context cx, boolean byThrow, Object resultOrException) {
-            invocations ++;
-            Long time = (Long) timer.pop();
-            runtime += System.nanoTime() - time.longValue();
+            this.invocations ++;
+            Long time = (Long) this.timer.pop();
+            this.runtime += System.nanoTime() - time.longValue();
         }
 
         /**
@@ -146,9 +145,9 @@ public class Profiler implements Debugger {
             Formatter formatter = new java.util.Formatter();
             Object[] args = new Object[] {
                     Integer.valueOf((int) millis),
-                    Integer.valueOf(Math.round(millis / invocations)),
-                    Integer.valueOf(invocations),
-                    name.substring(prefixLength)
+                    Integer.valueOf(Math.round(millis / this.invocations)),
+                    Integer.valueOf(this.invocations),
+                    this.name.substring(prefixLength)
             };
             formatter.format("%1$7d ms %2$5d ms %3$6d    %4$s%n", args); //$NON-NLS-1$
             return formatter.toString();

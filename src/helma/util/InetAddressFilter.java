@@ -30,7 +30,7 @@ public class InetAddressFilter {
      * Creates a new InetAddressFilter object.
      */
     public InetAddressFilter() {
-        patterns = new Vector();
+        this.patterns = new Vector();
     }
 
     /**
@@ -84,7 +84,7 @@ public class InetAddressFilter {
                 }
             }
         }
-        patterns.addElement(pattern);
+        this.patterns.addElement(pattern);
     }
 
     /**
@@ -105,10 +105,10 @@ public class InetAddressFilter {
             return false;
         }
 
-        int l = patterns.size();
+        int l = this.patterns.size();
 
         for (int k = 0; k < l; k++) {
-            int[] pattern = (int[]) patterns.elementAt(k);
+            int[] pattern = (int[]) this.patterns.elementAt(k);
 
             // is the address different version than pattern?
             if (pattern.length != add.length)

@@ -56,7 +56,7 @@ public class ApplicationBean implements Serializable {
      * Clear the application cache.
      */
     public void clearCache() {
-        app.clearCache();
+        this.app.clearCache();
     }
 
     /**
@@ -66,7 +66,7 @@ public class ApplicationBean implements Serializable {
      * @return the app logger.
      */
     public Log getLogger() {
-        return  app.getEventLog();
+        return  this.app.getEventLog();
     }
 
     /**
@@ -105,7 +105,7 @@ public class ApplicationBean implements Serializable {
      * @param msg the log message
      */
     public void debug(Object msg) {
-        if (app.debug()) {
+        if (this.app.debug()) {
             getLogger().debug(msg);
         }
     }
@@ -118,7 +118,7 @@ public class ApplicationBean implements Serializable {
      * @param msg the log message
      */
     public void debug(String logname, Object msg) {
-        if (app.debug()) {
+        if (this.app.debug()) {
             getLogger(logname).debug(msg);
         }
     }
@@ -129,7 +129,7 @@ public class ApplicationBean implements Serializable {
      * @return the an array containing this app's repositories
      */
     public Object[] getRepositories() {
-        return app.getRepositories().toArray();
+        return this.app.getRepositories().toArray();
     }
 
     /**
@@ -140,7 +140,7 @@ public class ApplicationBean implements Serializable {
      * @param obj the repository, relative or absolute path to the library.
      */
     public synchronized void addRepository(Object obj) {
-        Resource current = app.getCurrentCodeResource();
+        Resource current = this.app.getCurrentCodeResource();
         Repository parent = current == null ?
                 null : current.getRepository().getRootRepository();
         Repository rep;
@@ -148,7 +148,7 @@ public class ApplicationBean implements Serializable {
             String path = (String) obj;
             File file = findResource(null, path);
             if (file == null) {
-                file = findResource(app.hopHome, path);
+                file = findResource(this.app.hopHome, path);
                 if (file == null) {
                     throw new RuntimeException(Messages.getString("ApplicationBean.0") + path); //$NON-NLS-1$
                 }
@@ -169,9 +169,9 @@ public class ApplicationBean implements Serializable {
         } else {
             throw new RuntimeException(Messages.getString("ApplicationBean.2") + obj); //$NON-NLS-1$
         }
-        app.addRepository(rep, parent);
+        this.app.addRepository(rep, parent);
         try {
-            app.typemgr.checkRepository(rep, true);
+            this.app.typemgr.checkRepository(rep, true);
         } catch (IOException iox) {
             getLogger().error(Messages.getString("ApplicationBean.3") + rep, iox); //$NON-NLS-1$
         }
@@ -200,7 +200,7 @@ public class ApplicationBean implements Serializable {
      * @return the app's classloader
      */
     public ClassLoader getClassLoader() {
-        return app.getClassLoader();
+        return this.app.getClassLoader();
     }
 
     /**
@@ -208,7 +208,7 @@ public class ApplicationBean implements Serializable {
      * @return the current number of active sessions
      */
     public int countSessions() {
-        return app.countSessions();
+        return this.app.countSessions();
     }
 
     /**
@@ -221,7 +221,7 @@ public class ApplicationBean implements Serializable {
             return null;
         }
 
-        Session session = app.getSession(sessionID.trim());
+        Session session = this.app.getSession(sessionID.trim());
 
         if (session == null) {
             return null;
@@ -240,7 +240,7 @@ public class ApplicationBean implements Serializable {
             return null;
         }
 
-        Session session = app.createSession(sessionID.trim());
+        Session session = this.app.createSession(sessionID.trim());
 
         if (session == null) {
             return null;
@@ -254,7 +254,7 @@ public class ApplicationBean implements Serializable {
      * @return an array of session beans
      */
     public SessionBean[] getSessions() {
-        Map sessions = app.getSessions();
+        Map sessions = this.app.getSessions();
         SessionBean[] array = new SessionBean[sessions.size()];
         int i = 0;
 
@@ -277,9 +277,8 @@ public class ApplicationBean implements Serializable {
         if ((username == null) || (password == null) || "".equals(username.trim()) || //$NON-NLS-1$
                 "".equals(password.trim())) { //$NON-NLS-1$
             return null;
-        } else {
-            return app.registerUser(username, password);
         }
+        return this.app.registerUser(username, password);
     }
 
     /**
@@ -292,7 +291,7 @@ public class ApplicationBean implements Serializable {
             return null;
         }
 
-        return app.getUserNode(username);
+        return this.app.getUserNode(username);
     }
 
     /**
@@ -300,7 +299,7 @@ public class ApplicationBean implements Serializable {
      * @return an array of user nodes
      */
     public INode[] getActiveUsers() {
-        List activeUsers = app.getActiveUsers();
+        List activeUsers = this.app.getActiveUsers();
 
         return (INode[]) activeUsers.toArray(new INode[0]);
     }
@@ -310,7 +309,7 @@ public class ApplicationBean implements Serializable {
      * @return an array containing all registered users
      */
     public INode[] getRegisteredUsers() {
-        List registeredUsers = app.getRegisteredUsers();
+        List registeredUsers = this.app.getRegisteredUsers();
 
         return (INode[]) registeredUsers.toArray(new INode[0]);
     }
@@ -323,9 +322,8 @@ public class ApplicationBean implements Serializable {
     public SessionBean[] getSessionsForUser(INode usernode) {
         if (usernode == null) {
             return new SessionBean[0];
-        } else {
-            return getSessionsForUser(usernode.getName());
         }
+        return getSessionsForUser(usernode.getName());
     }
 
     /**
@@ -338,7 +336,7 @@ public class ApplicationBean implements Serializable {
             return new SessionBean[0];
         }
 
-        List userSessions = app.getSessionsForUsername(username);
+        List userSessions = this.app.getSessionsForUsername(username);
 
         return (SessionBean[]) userSessions.toArray(new SessionBean[0]);
     }
@@ -351,7 +349,7 @@ public class ApplicationBean implements Serializable {
         CronJob job = new CronJob(functionName);
 
         job.setFunction(functionName);
-        app.customCronJobs.put(functionName, job);
+        this.app.customCronJobs.put(functionName, job);
     }
 
     /**
@@ -369,7 +367,7 @@ public class ApplicationBean implements Serializable {
                            String weekday, String hour, String minute) {
         CronJob job = CronJob.newJob(functionName, year, month, day, weekday, hour, minute);
 
-        app.customCronJobs.put(functionName, job);
+        this.app.customCronJobs.put(functionName, job);
     }
 
     /**
@@ -377,7 +375,7 @@ public class ApplicationBean implements Serializable {
      * @param functionName the function name
      */
     public void removeCronJob(String functionName) {
-        app.customCronJobs.remove(functionName);
+        this.app.customCronJobs.remove(functionName);
     }
 
     /**
@@ -386,14 +384,14 @@ public class ApplicationBean implements Serializable {
      * @return a map of cron jobs
      */
     public Map getCronJobs() {
-        return new WrappedMap(app.customCronJobs, true);
+        return new WrappedMap(this.app.customCronJobs, true);
     }
 
     /**
      * Returns the number of elements in the NodeManager's cache
      */
     public int getCacheusage() {
-        return app.getCacheUsage();
+        return this.app.getCacheUsage();
     }
 
     /**
@@ -402,7 +400,7 @@ public class ApplicationBean implements Serializable {
      * @return the app.data node
      */
     public INode getData() {
-        return app.getCacheNode();
+        return this.app.getCacheNode();
     }
 
     /**
@@ -411,7 +409,7 @@ public class ApplicationBean implements Serializable {
      * @return the module map
      */
     public Map getModules() {
-        return app.modules;
+        return this.app.modules;
     }
 
     /**
@@ -421,49 +419,49 @@ public class ApplicationBean implements Serializable {
      * @return the app dir
      */
     public String getDir() {
-        return app.getAppDir().getAbsolutePath();
+        return this.app.getAppDir().getAbsolutePath();
     }
 
     /**
      * @return the app name
      */
     public String getName() {
-        return app.getName();
+        return this.app.getName();
     }
 
     /**
      * @return the application start time
      */
     public Date getUpSince() {
-        return new Date(app.starttime);
+        return new Date(this.app.starttime);
     }
 
     /**
      * @return the number of requests processed by this app
      */
     public long getRequestCount() {
-        return app.getRequestCount();
+        return this.app.getRequestCount();
     }
 
     /**
      * @return the number of XML-RPC requests processed
      */
     public long getXmlrpcCount() {
-        return app.getXmlrpcCount();
+        return this.app.getXmlrpcCount();
     }
 
     /**
      * @return the number of errors encountered
      */
     public long getErrorCount() {
-        return app.getErrorCount();
+        return this.app.getErrorCount();
     }
 
     /**
      * @return the wrapped helma.framework.core.Application object
      */
     public Application get__app__() {
-        return app;
+        return this.app;
     }
 
     /**
@@ -472,10 +470,10 @@ public class ApplicationBean implements Serializable {
      * @return a readonly wrapper around the application's app properties
      */
     public Map getProperties() {
-        if (properties == null) {
-            properties = new WrappedMap(app.getProperties(), true);
+        if (this.properties == null) {
+            this.properties = new WrappedMap(this.app.getProperties(), true);
         }
-        return properties;
+        return this.properties;
     }
 
     /**
@@ -484,14 +482,14 @@ public class ApplicationBean implements Serializable {
      * @return a readonly wrapper around the application's db properties
      */
     public Map getDbProperties() {
-        return new WrappedMap(app.getDbProperties(), true);
+        return new WrappedMap(this.app.getDbProperties(), true);
     }
 
     /**
      * Return a DbSource object for a given name.
      */
     public DbSource getDbSource(String name) {
-        return app.getDbSource(name);
+        return this.app.getDbSource(name);
     }
 
     /**
@@ -503,7 +501,7 @@ public class ApplicationBean implements Serializable {
         Server server = Server.getServer();
         if (server == null)
             return new SystemMap();
-        return new WrappedMap(server.getAppsProperties(app.getName()), true);
+        return new WrappedMap(server.getAppsProperties(this.app.getName()), true);
     }
 
     /**
@@ -512,7 +510,7 @@ public class ApplicationBean implements Serializable {
      * @return an array containing the app's prototypes
      */
     public Prototype[] getPrototypes() {
-        return (Prototype[]) app.getPrototypes().toArray(new Prototype[0]);
+        return (Prototype[]) this.app.getPrototypes().toArray(new Prototype[0]);
     }
 
     /**
@@ -522,7 +520,7 @@ public class ApplicationBean implements Serializable {
      * @return the prototype
      */
     public Prototype getPrototype(String name) {
-        return app.getPrototypeByName(name);
+        return this.app.getPrototypeByName(name);
     }
 
     /**
@@ -530,7 +528,7 @@ public class ApplicationBean implements Serializable {
      * @return the currently available threads
      */
     public int getFreeThreads() {
-        return app.countFreeEvaluators();
+        return this.app.countFreeEvaluators();
     }
 
     /**
@@ -538,7 +536,7 @@ public class ApplicationBean implements Serializable {
      * @return the number of currently active threads
      */
     public int getActiveThreads() {
-        return app.countActiveEvaluators();
+        return this.app.countActiveEvaluators();
     }
 
     /**
@@ -546,7 +544,7 @@ public class ApplicationBean implements Serializable {
      * @return the maximal number of threads/request evaluators
      */
     public int getMaxThreads() {
-        return app.countEvaluators();
+        return this.app.countEvaluators();
     }
 
     /**
@@ -555,7 +553,7 @@ public class ApplicationBean implements Serializable {
      */
     public void setMaxThreads(int n) {
         // add one to the number to compensate for the internal scheduler.
-        app.setNumberOfEvaluators(n + 1);
+        this.app.setNumberOfEvaluators(n + 1);
     }
 
     /**
@@ -564,7 +562,7 @@ public class ApplicationBean implements Serializable {
      */
     public Skin getSkin(String protoname, String skinname, Object[] skinpath) {
         try {
-            return app.getSkin(protoname, skinname, skinpath);
+            return this.app.getSkin(protoname, skinname, skinpath);
         } catch (Exception x) {
             return null;
         }
@@ -578,7 +576,7 @@ public class ApplicationBean implements Serializable {
     public Map getSkinfiles() {
         Map skinz = new SystemMap();
 
-        for (Iterator it = app.getPrototypes().iterator(); it.hasNext();) {
+        for (Iterator it = this.app.getPrototypes().iterator(); it.hasNext();) {
             Prototype p = (Prototype) it.next();
 
             Object skinmap = p.getScriptableSkinMap();
@@ -598,7 +596,7 @@ public class ApplicationBean implements Serializable {
     public Map getSkinfilesInPath(Object[] skinpath) {
         Map skinz = new SystemMap();
 
-        for (Iterator it = app.getPrototypes().iterator(); it.hasNext();) {
+        for (Iterator it = this.app.getPrototypes().iterator(); it.hasNext();) {
             Prototype p = (Prototype) it.next();
 
             Object skinmap = p.getScriptableSkinMap(skinpath);
@@ -615,7 +613,7 @@ public class ApplicationBean implements Serializable {
      * @return the app directory as absolute path
      */
     public String getAppDir() {
-        return app.getAppDir().getAbsolutePath();
+        return this.app.getAppDir().getAbsolutePath();
     }
 
     /**
@@ -623,10 +621,10 @@ public class ApplicationBean implements Serializable {
      * @return the server directory as absolute path
      */
     public String getServerDir() {
-        File f = app.getServerDir();
+        File f = this.app.getServerDir();
 
         if (f == null) {
-            return app.getAppDir().getAbsolutePath();
+            return this.app.getAppDir().getAbsolutePath();
         }
 
         return f.getAbsolutePath();
@@ -637,7 +635,7 @@ public class ApplicationBean implements Serializable {
      * @return the app's charset
      */
     public String getCharset() {
-        return app.getCharset();
+        return this.app.getCharset();
     }
 
     /**
@@ -645,7 +643,7 @@ public class ApplicationBean implements Serializable {
      * @param path an array of global namespaces, or null
      */
     public void setGlobalMacroPath(String[] path) {
-        app.globalMacroPath = path;
+        this.app.globalMacroPath = path;
     }
 
     /**
@@ -653,7 +651,7 @@ public class ApplicationBean implements Serializable {
      * @return an array of global namespaces, or null
      */
     public String[] getGlobalMacroPath() {
-        return app.globalMacroPath;
+        return this.app.globalMacroPath;
     }
 
     /**
@@ -687,11 +685,11 @@ public class ApplicationBean implements Serializable {
     public Object invoke(Object thisObject, Object function,
                          Object[] args, long timeout)
             throws Exception {
-        RequestEvaluator reval = app.getEvaluator();
+        RequestEvaluator reval = this.app.getEvaluator();
         try {
             return reval.invokeInternal(thisObject, function, args, timeout);
         } finally {
-            app.releaseEvaluator(reval);
+            this.app.releaseEvaluator(reval);
         }
     }
 
@@ -758,7 +756,7 @@ public class ApplicationBean implements Serializable {
      */
     @Override
     public String toString() {
-        return "[Application " + app.getName() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+        return "[Application " + this.app.getName() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     class AsyncInvoker extends Thread implements FutureResult {
@@ -773,8 +771,8 @@ public class ApplicationBean implements Serializable {
         private boolean running = true;
 
         private AsyncInvoker(Object thisObj, Object func, Object[] args, long timeout) {
-            thisObject = thisObj;
-            function = func;
+            this.thisObject = thisObj;
+            this.function = func;
             this.args = args;
             this.timeout = timeout;
             start();
@@ -784,60 +782,60 @@ public class ApplicationBean implements Serializable {
         public void run() {
             RequestEvaluator reval = null;
             try {
-                reval = app.getEvaluator();
-                setResult(reval.invokeInternal(thisObject, function, args, timeout));
+                reval = ApplicationBean.this.app.getEvaluator();
+                setResult(reval.invokeInternal(this.thisObject, this.function, this.args, this.timeout));
             } catch (Exception x) {
                 setException(x);
             } finally {
-                running = false;
-                app.releaseEvaluator(reval);
+                this.running = false;
+                ApplicationBean.this.app.releaseEvaluator(reval);
             }
         }
 
         public synchronized boolean getRunning() {
-            return running;
+            return this.running;
         }
 
         private synchronized void setResult(Object obj) {
-            result = obj;
-            running = false;
+            this.result = obj;
+            this.running = false;
             notifyAll();
         }
 
         public synchronized Object getResult() {
-            return result;
+            return this.result;
         }
 
         public synchronized Object waitForResult() throws InterruptedException {
-            if (!running)
-                return result;
+            if (!this.running)
+                return this.result;
             wait();
-            return result;
+            return this.result;
         }
 
         public synchronized Object waitForResult(long timeout)
                 throws InterruptedException {
-            if (!running)
-                return result;
+            if (!this.running)
+                return this.result;
             wait(timeout);
-            return result;
+            return this.result;
         }
 
         private synchronized void setException(Exception x) {
-            exception = x;
-            running = false;
+            this.exception = x;
+            this.running = false;
             notifyAll();
         }
 
         public synchronized Exception getException() {
-            return exception;
+            return this.exception;
         }
 
         @Override
         public String toString() {
-            return new StringBuffer("AsyncInvokeThread{running: ").append(running) //$NON-NLS-1$
-                    .append(", result: ").append(result).append(", exception: ")  //$NON-NLS-1$//$NON-NLS-2$
-                    .append(exception).append("}").toString(); //$NON-NLS-1$
+            return new StringBuffer("AsyncInvokeThread{running: ").append(this.running) //$NON-NLS-1$
+                    .append(", result: ").append(this.result).append(", exception: ")  //$NON-NLS-1$//$NON-NLS-2$
+                    .append(this.exception).append("}").toString(); //$NON-NLS-1$
         }
 
     }

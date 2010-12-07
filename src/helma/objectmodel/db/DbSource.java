@@ -76,14 +76,14 @@ public class DbSource {
             con = getThreadLocalConnection();
         }
 
-        boolean fileUpdated = props.lastModified() > lastRead ||
-                (defaultProps != null && defaultProps.lastModified() > lastRead);
+        boolean fileUpdated = this.props.lastModified() > this.lastRead ||
+                (defaultProps != null && defaultProps.lastModified() > this.lastRead);
 
         if (con == null || con.isClosed() || fileUpdated) {
             init();
-            con = DriverManager.getConnection(url, conProps);
+            con = DriverManager.getConnection(this.url, this.conProps);
 
-            if ("false".equalsIgnoreCase(subProps.getProperty("autoCommit"))) {  //$NON-NLS-1$//$NON-NLS-2$
+            if ("false".equalsIgnoreCase(this.subProps.getProperty("autoCommit"))) {  //$NON-NLS-1$//$NON-NLS-2$
             	con.setAutoCommit(false);
             }
             
@@ -92,7 +92,7 @@ public class DbSource {
             if (tx != null) {
                 tx.registerConnection(this, con);
             } else {
-                connection.set(con);
+                this.connection.set(con);
             }
         }
 
@@ -104,11 +104,11 @@ public class DbSource {
      * @return a thread local tested connection, or null
      */
     private Connection getThreadLocalConnection() {
-        if (connection == null) {
-            connection = new ThreadLocal();
+        if (this.connection == null) {
+            this.connection = new ThreadLocal();
             return null;
         }
-        Connection con = (Connection) connection.get();
+        Connection con = (Connection) this.connection.get();
         if (con != null) {
             // test if connection is still ok
             try {
@@ -133,8 +133,8 @@ public class DbSource {
      */
     public synchronized ResourceProperties switchProperties(ResourceProperties newProps) 
             throws ClassNotFoundException {
-        ResourceProperties oldProps = props;
-        props = newProps;
+        ResourceProperties oldProps = this.props;
+        this.props = newProps;
         init();
         return oldProps;
     }
@@ -145,45 +145,45 @@ public class DbSource {
      * @throws ClassNotFoundException if the JDBC driver couldn't be loaded
      */
     private synchronized void init() throws ClassNotFoundException {
-        lastRead = (defaultProps == null) ? props.lastModified()
-                                          : Math.max(props.lastModified(),
+        this.lastRead = (defaultProps == null) ? this.props.lastModified()
+                                          : Math.max(this.props.lastModified(),
                                                      defaultProps.lastModified());
         // refresh sub-properties for this DbSource
-        subProps = props.getSubProperties(name + '.');
+        this.subProps = this.props.getSubProperties(this.name + '.');
         // use properties hashcode for ourselves
-        hashcode = subProps.hashCode();
+        this.hashcode = this.subProps.hashCode();
         // get JDBC URL and driver class name
-        url = subProps.getProperty("url"); //$NON-NLS-1$
-        driver = subProps.getProperty("driver"); //$NON-NLS-1$
+        this.url = this.subProps.getProperty("url"); //$NON-NLS-1$
+        this.driver = this.subProps.getProperty("driver"); //$NON-NLS-1$
         // sanity checks
-        if (url == null) {
-            throw new NullPointerException(name+Messages.getString("DbSource.0")); //$NON-NLS-1$
+        if (this.url == null) {
+            throw new NullPointerException(this.name+Messages.getString("DbSource.0")); //$NON-NLS-1$
         }
-        if (driver == null) {
-            throw new NullPointerException(name+Messages.getString("DbSource.1")); //$NON-NLS-1$
+        if (this.driver == null) {
+            throw new NullPointerException(this.name+Messages.getString("DbSource.1")); //$NON-NLS-1$
         }
         // test if this is an Oracle or MySQL driver
-        isOracle = driver.startsWith("oracle.jdbc.driver"); //$NON-NLS-1$
-        isMySQL = driver.startsWith("com.mysql.jdbc") || //$NON-NLS-1$
-                  driver.startsWith("org.gjt.mm.mysql"); //$NON-NLS-1$
-        isPostgreSQL = driver.equals("org.postgresql.Driver"); //$NON-NLS-1$
-        isH2 = driver.equals("org.h2.Driver"); //$NON-NLS-1$
+        this.isOracle = this.driver.startsWith("oracle.jdbc.driver"); //$NON-NLS-1$
+        this.isMySQL = this.driver.startsWith("com.mysql.jdbc") || //$NON-NLS-1$
+                  this.driver.startsWith("org.gjt.mm.mysql"); //$NON-NLS-1$
+        this.isPostgreSQL = this.driver.equals("org.postgresql.Driver"); //$NON-NLS-1$
+        this.isH2 = this.driver.equals("org.h2.Driver"); //$NON-NLS-1$
         // test if driver class is available
-        Class.forName(driver);
+        Class.forName(this.driver);
 
         // set up driver connection properties
-        conProps=new Properties();
-        String prop = subProps.getProperty("user"); //$NON-NLS-1$
+        this.conProps=new Properties();
+        String prop = this.subProps.getProperty("user"); //$NON-NLS-1$
         if (prop != null) {
-            conProps.put("user", prop); //$NON-NLS-1$
+            this.conProps.put("user", prop); //$NON-NLS-1$
         }
-        prop = subProps.getProperty("password"); //$NON-NLS-1$
+        prop = this.subProps.getProperty("password"); //$NON-NLS-1$
         if (prop != null) {
-            conProps.put("password", prop); //$NON-NLS-1$
+            this.conProps.put("password", prop); //$NON-NLS-1$
         }
 
         // read any remaining extra properties to be passed to the driver
-        for (Enumeration e = subProps.keys(); e.hasMoreElements(); ) {
+        for (Enumeration e = this.subProps.keys(); e.hasMoreElements(); ) {
             String key = (String) e.nextElement();
 
             // filter out properties we alread have
@@ -194,7 +194,7 @@ public class DbSource {
                 "autoCommit".equalsIgnoreCase(key)) { //$NON-NLS-1$
                 continue;
             }
-            conProps.setProperty(key, subProps.getProperty(key));
+            this.conProps.setProperty(key, this.subProps.getProperty(key));
         }
     }
 
@@ -204,7 +204,7 @@ public class DbSource {
      * @return the class name of the JDBC driver
      */
     public String getDriverName() {
-        return driver;
+        return this.driver;
     }
 
     /**
@@ -213,7 +213,7 @@ public class DbSource {
      * @return the name of the db dource
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -231,7 +231,7 @@ public class DbSource {
      * @return true if we're using an oracle JDBC driver
      */
     public boolean isOracle() {
-        return isOracle;
+        return this.isOracle;
     }
 
     /**
@@ -240,7 +240,7 @@ public class DbSource {
      * @return true if we're using a MySQL JDBC driver
      */
     public boolean isMySQL() {
-        return isMySQL;
+        return this.isMySQL;
     }
 
     /**
@@ -249,7 +249,7 @@ public class DbSource {
      * @return true if we're using a PostgreSQL JDBC driver
      */
     public boolean isPostgreSQL() {
-        return isPostgreSQL;
+        return this.isPostgreSQL;
     }
 
     /**
@@ -258,7 +258,7 @@ public class DbSource {
      * @return true if we're using a H2 JDBC driver
      */
     public boolean isH2() {
-        return isH2;
+        return this.isH2;
     }
 
     /**
@@ -268,7 +268,7 @@ public class DbSource {
      */
     protected void registerDbMapping(DbMapping dbmap) {
         if (!dbmap.inheritsStorage() && dbmap.getTableName() != null) {
-            dbmappings.put(dbmap.getTableName().toUpperCase(), dbmap);
+            this.dbmappings.put(dbmap.getTableName().toUpperCase(), dbmap);
         }
     }
 
@@ -279,7 +279,7 @@ public class DbSource {
      * @return the matching DbMapping instance
      */
     protected DbMapping getDbMapping(String tablename) {
-        return (DbMapping) dbmappings.get(tablename.toUpperCase());
+        return (DbMapping) this.dbmappings.get(tablename.toUpperCase());
     }
 
     /**
@@ -287,7 +287,7 @@ public class DbSource {
      */
     @Override
     public int hashCode() {
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
@@ -295,6 +295,6 @@ public class DbSource {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof DbSource && subProps.equals(((DbSource) obj).subProps);
+        return obj instanceof DbSource && this.subProps.equals(((DbSource) obj).subProps);
     }
 }

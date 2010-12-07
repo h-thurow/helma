@@ -47,7 +47,7 @@ public class MimePart implements Serializable {
         this.name = normalizeFilename(name);
         this.content = (content == null) ? new byte[0] : content;
         this.contentType = contentType;
-        contentLength = (content == null) ? 0 : content.length;
+        this.contentLength = (content == null) ? 0 : content.length;
     }
 
     /**
@@ -55,11 +55,11 @@ public class MimePart implements Serializable {
      * @param fileItem a commons fileupload file item
      */
     public MimePart(FileItem fileItem) {
-        name = normalizeFilename(fileItem.getName());
-        contentType = fileItem.getContentType();
-        contentLength = (int) fileItem.getSize();
+        this.name = normalizeFilename(fileItem.getName());
+        this.contentType = fileItem.getContentType();
+        this.contentLength = (int) fileItem.getSize();
         if (fileItem.isInMemory()) {
-            content = fileItem.get();
+            this.content = fileItem.get();
         } else {
             this.fileItem = fileItem;
         }
@@ -69,7 +69,7 @@ public class MimePart implements Serializable {
      * @return the content type
      */
     public String getContentType() {
-        return contentType;
+        return this.contentType;
     }
 
     /**
@@ -77,7 +77,7 @@ public class MimePart implements Serializable {
      * @return the content length
      */
     public int getContentLength() {
-        return contentLength;
+        return this.contentLength;
     }
 
     /**
@@ -85,7 +85,7 @@ public class MimePart implements Serializable {
      * @return the file name
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -93,19 +93,19 @@ public class MimePart implements Serializable {
      * @return the mime part content as byte array
      */
     public byte[] getContent() {
-        if (content == null && (fileItem != null || file != null)) {
+        if (this.content == null && (this.fileItem != null || this.file != null)) {
             loadContent();
         }
-        return content;
+        return this.content;
     }
 
     private synchronized void loadContent() {
-        content = new byte[contentLength];
+        this.content = new byte[this.contentLength];
         try {
             InputStream in = getInputStream();
             int read = 0;
-            while (read < contentLength) {
-                int r = in.read(content, read, contentLength - read);
+            while (read < this.contentLength) {
+                int r = in.read(this.content, read, this.contentLength - read);
                 if (r == -1)
                     break;
                 read += r;
@@ -113,7 +113,7 @@ public class MimePart implements Serializable {
             in.close();
         } catch (Exception x) {
             System.err.println(Messages.getString("MimePart.0") + x); //$NON-NLS-1$
-            content = new byte[0];
+            this.content = new byte[0];
         }
     }
 
@@ -123,12 +123,12 @@ public class MimePart implements Serializable {
      * @throws IOException an I/O related error occurred
      */
     public InputStream getInputStream() throws IOException {
-        if (file != null && file.canRead()) {
-            return new FileInputStream(file);
-        } else if (fileItem != null) {
-            return fileItem.getInputStream();
-        } else if (content != null) {
-            return new ByteArrayInputStream(content);
+        if (this.file != null && this.file.canRead()) {
+            return new FileInputStream(this.file);
+        } else if (this.fileItem != null) {
+            return this.fileItem.getInputStream();
+        } else if (this.content != null) {
+            return new ByteArrayInputStream(this.content);
         } else {
             return null;
         }
@@ -141,9 +141,9 @@ public class MimePart implements Serializable {
      * @return the content of the mime part as string
      */
     public String getText() {
-        if ((contentType == null) || contentType.startsWith("text/") //$NON-NLS-1$
-                                  || contentType.startsWith("application/text")) { //$NON-NLS-1$
-            String charset = getSubHeader(contentType, "charset"); //$NON-NLS-1$
+        if ((this.contentType == null) || this.contentType.startsWith("text/") //$NON-NLS-1$
+                                  || this.contentType.startsWith("application/text")) { //$NON-NLS-1$
+            String charset = getSubHeader(this.contentType, "charset"); //$NON-NLS-1$
             byte[] content = getContent();
             if (charset != null) {
                 try {
@@ -151,12 +151,10 @@ public class MimePart implements Serializable {
                 } catch (UnsupportedEncodingException uee) {
                     return new String(content);
                 }
-            } else {
-                return new String(content);
             }
-        } else {
-            return null;
+            return new String(content);
         }
+        return null;
     }
 
 
@@ -165,7 +163,7 @@ public class MimePart implements Serializable {
      * @return the last modified date
      */
     public Date getLastModified() {
-        return lastModified;
+        return this.lastModified;
     }
 
     /**
@@ -181,7 +179,7 @@ public class MimePart implements Serializable {
      * @return the ETag
      */
     public String getETag() {
-        return eTag;
+        return this.eTag;
     }
 
     /**
@@ -217,15 +215,15 @@ public class MimePart implements Serializable {
                 base.mkdirs();
             }
 
-            String filename = name;
+            String filename = this.name;
 
             if (fname != null) {
                 if (fname.indexOf(".") < 0) { //$NON-NLS-1$
                     // check if we can use extension from name
-                    int ndot = (name == null) ? (-1) : name.lastIndexOf("."); //$NON-NLS-1$
+                    int ndot = (this.name == null) ? (-1) : this.name.lastIndexOf("."); //$NON-NLS-1$
 
                     if (ndot > -1) {
-                        filename = fname + name.substring(ndot);
+                        filename = fname + this.name.substring(ndot);
                     } else {
                         filename = fname;
                     }
@@ -235,14 +233,14 @@ public class MimePart implements Serializable {
             }
 
             // set instance variable to the new file
-            file = new File(base, filename);
+            this.file = new File(base, filename);
 
-            if (fileItem != null) {
-                fileItem.write(file);
+            if (this.fileItem != null) {
+                this.fileItem.write(this.file);
                 // null out fileItem, since calling write() may have moved the temp file
-                fileItem = null;
+                this.fileItem = null;
             } else {
-                FileOutputStream fout = new FileOutputStream(file);
+                FileOutputStream fout = new FileOutputStream(this.file);
                 fout.write(getContent());
                 fout.close();
             }

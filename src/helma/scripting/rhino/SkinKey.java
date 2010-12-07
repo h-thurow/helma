@@ -52,7 +52,7 @@ final class SkinKey {
 
         SkinKey k = (SkinKey) what;
 
-        return (type.equals(k.type)) && (id.equals(k.id));
+        return (this.type.equals(k.type)) && (this.id.equals(k.id));
     }
 
     /**
@@ -62,12 +62,12 @@ final class SkinKey {
      */
     @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = (17 + (37 * type.hashCode()) +
-                        (+37 * id.hashCode()));
+        if (this.hashcode == 0) {
+            this.hashcode = (17 + (37 * this.type.hashCode()) +
+                        (+37 * this.id.hashCode()));
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
 }

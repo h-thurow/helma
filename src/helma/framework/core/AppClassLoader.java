@@ -44,11 +44,11 @@ public class AppClassLoader extends URLClassLoader {
      * @return ...
      */
     public String getAppName() {
-        return appname;
+        return this.appname;
     }
 
     @Override
     public String toString() {
-        return "helma.framework.core.AppClassLoader[" + appname + "]";  //$NON-NLS-1$//$NON-NLS-2$
+        return "helma.framework.core.AppClassLoader[" + this.appname + "]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

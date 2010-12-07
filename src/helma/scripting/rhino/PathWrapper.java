@@ -37,7 +37,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Zero arg constructor for creating the PathWrapper prototype.
      */
-    public PathWrapper (RhinoCore core) throws NoSuchMethodException {
+    public PathWrapper (RhinoCore core) {
         this.core = core;
         // create a dummy path object
         this.path = new RequestPath(core.app);
@@ -64,10 +64,10 @@ public class PathWrapper extends ScriptableObject {
      */
     @Override
     public Object get(String name, Scriptable start) {
-        Object obj = path.getByPrototypeName(name);
+        Object obj = this.path.getByPrototypeName(name);
 
         if (obj != null) {
-            return Context.toObject(obj, core.getScope());
+            return Context.toObject(obj, this.core.getScope());
         }
 
         return super.get(name, start);
@@ -78,10 +78,10 @@ public class PathWrapper extends ScriptableObject {
      */
     @Override
     public Object get(int idx, Scriptable start) {
-        Object obj = path.get(idx);
+        Object obj = this.path.get(idx);
 
         if (obj != null) {
-            return Context.toObject(obj, core.getScope());
+            return Context.toObject(obj, this.core.getScope());
         }
 
         return null;
@@ -92,7 +92,7 @@ public class PathWrapper extends ScriptableObject {
      */
     @Override
     public boolean has(String name, Scriptable start) {
-        return path.getByPrototypeName(name) != null;
+        return this.path.getByPrototypeName(name) != null;
     }
 
     /**
@@ -100,7 +100,7 @@ public class PathWrapper extends ScriptableObject {
      */
     @Override
     public boolean has(int index, Scriptable start) {
-        return index >= 0 && index < path.size();
+        return index >= 0 && index < this.path.size();
     }
 
     /**
@@ -108,7 +108,7 @@ public class PathWrapper extends ScriptableObject {
      */
     @Override
     public Object[] getIds() {
-        Object[] ids = new Object[path.size()];
+        Object[] ids = new Object[this.path.size()];
 
         for (int i=0; i<ids.length; i++) {
             ids[i] = new Integer(i);
@@ -121,7 +121,7 @@ public class PathWrapper extends ScriptableObject {
      * Getter for length property.
      */
     public long getLength() {
-        return path.size();
+        return this.path.size();
     }
 
     /**
@@ -129,10 +129,10 @@ public class PathWrapper extends ScriptableObject {
      */
     public String href(Object action) throws UnsupportedEncodingException {
         if (action != null && action != Undefined.instance) {
-            return path.href(action.toString());
+            return this.path.href(action.toString());
         }
 
-        return path.href(null);
+        return this.path.href(null);
     }
     
     /**
@@ -144,7 +144,7 @@ public class PathWrapper extends ScriptableObject {
     public int contains(Object obj) {
         if (obj instanceof Wrapper)
             obj = ((Wrapper) obj).unwrap();
-        return path.indexOf(obj);
+        return this.path.indexOf(obj);
     }
 
     @Override
@@ -154,7 +154,7 @@ public class PathWrapper extends ScriptableObject {
 
     @Override
     public String toString() {
-        return "PathWrapper["+path.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
+        return "PathWrapper["+this.path.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
     }
     
     /**

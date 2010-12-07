@@ -94,8 +94,8 @@ public final class MultiKey implements Key, Serializable {
 
         // storageName is an interned string (by DbMapping, from where we got it)
         // so we can compare by using == instead of the equals method.
-        return (storageName == k.storageName) &&
-                ((parts == k.parts) || parts.equals(k.parts));
+        return (this.storageName == k.storageName) &&
+                ((this.parts == k.parts) || this.parts.equals(k.parts));
     }
 
     /**
@@ -105,13 +105,13 @@ public final class MultiKey implements Key, Serializable {
      */
     @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = (storageName == null) ? (17 + (37 * parts.hashCode()))
-                                             : (17 + (37 * storageName.hashCode()) +
-                                             (+37 * parts.hashCode()));
+        if (this.hashcode == 0) {
+            this.hashcode = (this.storageName == null) ? (17 + (37 * this.parts.hashCode()))
+                                             : (17 + (37 * this.storageName.hashCode()) +
+                                             (+37 * this.parts.hashCode()));
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
@@ -129,7 +129,7 @@ public final class MultiKey implements Key, Serializable {
      * @return the unique storage name for this key's object
      */
     public String getStorageName() {
-        return storageName;
+        return this.storageName;
     }
 
     /**
@@ -148,24 +148,24 @@ public final class MultiKey implements Key, Serializable {
      */
     @Override
     public String toString() {
-        return (storageName == null) ? ("[" + parts + "]") : (storageName + "[" + parts + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
+        return (this.storageName == null) ? ("[" + this.parts + "]") : (this.storageName + "[" + this.parts + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
     }
 
     // We implement write/readObject to set storageName
     // to the interned version of the string.
 
     private void writeObject(ObjectOutputStream stream) throws IOException {
-        stream.writeObject(storageName);
-        stream.writeObject(parts);
+        stream.writeObject(this.storageName);
+        stream.writeObject(this.parts);
     }
 
     private void readObject(ObjectInputStream stream)
                                         throws IOException, ClassNotFoundException {
-        storageName = (String) stream.readObject();
-        parts = (Map) stream.readObject();
+        this.storageName = (String) stream.readObject();
+        this.parts = (Map) stream.readObject();
         // if storageName is not null, set it to the interned version
-        if (storageName != null) {
-            storageName = storageName.intern();
+        if (this.storageName != null) {
+            this.storageName = this.storageName.intern();
         }
     }
 

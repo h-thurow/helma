@@ -19,7 +19,6 @@ package helma.main;
 
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.ajp.Ajp13SocketConnector;
-import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.xml.XmlConfiguration;
 
@@ -47,11 +46,11 @@ public class JettyServer {
     }
 
     private JettyServer(URL url) throws IOException {
-        http = new org.mortbay.jetty.Server();
+        this.http = new org.mortbay.jetty.Server();
 
         try {
             XmlConfiguration config = new XmlConfiguration(url);
-            config.configure(http);
+            config.configure(this.http);
 
             openListeners();
         } catch (IOException e) {
@@ -64,8 +63,8 @@ public class JettyServer {
     private JettyServer(InetSocketAddress webPort, InetSocketAddress ajpPort, Server server)
             throws IOException {
     	
-        http = new org.mortbay.jetty.Server();
-        http.setServer(http);
+        this.http = new org.mortbay.jetty.Server();
+        this.http.setServer(this.http);
         
         // start embedded web server if port is specified
         if (webPort != null) {
@@ -73,17 +72,17 @@ public class JettyServer {
         	conn.setHost(webPort.getAddress().getHostAddress());
         	conn.setPort(webPort.getPort());
         	
-        	http.addConnector(conn);
+        	this.http.addConnector(conn);
         }
 
         // activate the ajp13-listener
         if (ajpPort != null) {
             // create AJP13Listener
-        	ajp13 = new Ajp13SocketConnector();
-        	ajp13.setHost(ajpPort.getAddress().getHostAddress());
-        	ajp13.setPort(ajpPort.getPort());
+        	this.ajp13 = new Ajp13SocketConnector();
+        	this.ajp13.setHost(ajpPort.getAddress().getHostAddress());
+        	this.ajp13.setPort(ajpPort.getPort());
         	
-        	http.addConnector(ajp13);
+        	this.http.addConnector(this.ajp13);
 
             // jetty6 does not support protection of AJP13 connections anymore
             if (server.sysProps.containsKey("allowAJP13")) { //$NON-NLS-1$
@@ -100,32 +99,32 @@ public class JettyServer {
     }
 
     public org.mortbay.jetty.Server getHttpServer() {
-        return http;
+        return this.http;
     }
 
     public void start() throws Exception {
-        http.start();
-        if (ajp13 != null) {
-            ajp13.start();
+        this.http.start();
+        if (this.ajp13 != null) {
+            this.ajp13.start();
         }
     }
 
     public void stop() throws Exception {
-        http.stop();
-        if (ajp13 != null) {
-            ajp13.stop();
+        this.http.stop();
+        if (this.ajp13 != null) {
+            this.ajp13.stop();
         }
     }
 
     public void destroy() {
-        http.destroy();
+        this.http.destroy();
     }
 
     private void openListeners() throws IOException {
         // opening the listener here allows us to run on priviledged port 80 under jsvc
         // even as non-root user, because init() is called with root privileges
         // while start() will be called with the user we will actually run as
-        Connector[] connectors = http.getConnectors();
+        Connector[] connectors = this.http.getConnectors();
         for (int i = 0; i < connectors.length; i++) {
             connectors[i].open();
         }

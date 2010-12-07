@@ -33,26 +33,26 @@ public final class ZipResource extends AbstractResource {
         this.entryName = zipentryName;
         this.repository = repository;
 
-        int lastSlash = entryName.lastIndexOf('/');
+        int lastSlash = this.entryName.lastIndexOf('/');
 
-        shortName = entryName.substring(lastSlash + 1);
-        name = new StringBuffer(repository.getName()).append('/')
-                .append(shortName).toString();
+        this.shortName = this.entryName.substring(lastSlash + 1);
+        this.name = new StringBuffer(repository.getName()).append('/')
+                .append(this.shortName).toString();
 
         // base name is short name with extension cut off
-        int lastDot = shortName.lastIndexOf("."); //$NON-NLS-1$
-        baseName = (lastDot == -1) ? shortName : shortName.substring(0, lastDot);
+        int lastDot = this.shortName.lastIndexOf("."); //$NON-NLS-1$
+        this.baseName = (lastDot == -1) ? this.shortName : this.shortName.substring(0, lastDot);
     }
 
     public long lastModified() {
-        return repository.lastModified();
+        return this.repository.lastModified();
     }
 
     public InputStream getInputStream() throws IOException {
         ZipFile zipfile = null;
         try {
-            zipfile = repository.getZipFile();
-            ZipEntry entry = zipfile.getEntry(entryName);
+            zipfile = this.repository.getZipFile();
+            ZipEntry entry = zipfile.getEntry(this.entryName);
             if (entry == null) {
                 throw new IOException(Messages.getString("ZipResource.0") + this + Messages.getString("ZipResource.1")); //$NON-NLS-1$ //$NON-NLS-2$
             }
@@ -76,8 +76,8 @@ public final class ZipResource extends AbstractResource {
     public boolean exists() {
         ZipFile zipfile = null;
         try {
-            zipfile = repository.getZipFile();
-            return (zipfile.getEntry(entryName) != null);
+            zipfile = this.repository.getZipFile();
+            return (zipfile.getEntry(this.entryName) != null);
         } catch (Exception ex) {
             return false;
         } finally {
@@ -90,8 +90,8 @@ public final class ZipResource extends AbstractResource {
     public String getContent(String encoding) throws IOException {
         ZipFile zipfile = null;
         try {
-            zipfile = repository.getZipFile();
-            ZipEntry entry = zipfile.getEntry(entryName);
+            zipfile = this.repository.getZipFile();
+            ZipEntry entry = zipfile.getEntry(this.entryName);
             if (entry == null) {
                 throw new IOException(Messages.getString("ZipResource.2") + this + Messages.getString("ZipResource.3")); //$NON-NLS-1$ //$NON-NLS-2$
             }
@@ -121,15 +121,15 @@ public final class ZipResource extends AbstractResource {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getShortName() {
-        return shortName;
+        return this.shortName;
     }
 
     public String getBaseName() {
-        return baseName;
+        return this.baseName;
     }
 
     public URL getUrl() {
@@ -141,8 +141,8 @@ public final class ZipResource extends AbstractResource {
     public long getLength() {
         ZipFile zipfile = null;
         try {
-            zipfile = repository.getZipFile();
-            return zipfile.getEntry(entryName).getSize();            
+            zipfile = this.repository.getZipFile();
+            return zipfile.getEntry(this.entryName).getSize();            
         } catch (Exception ex) {
             return 0;
         } finally {
@@ -153,17 +153,17 @@ public final class ZipResource extends AbstractResource {
     }
 
     public Repository getRepository() {
-        return repository;
+        return this.repository;
     }
 
     @Override
     public int hashCode() {
-        return 17 + name.hashCode();
+        return 17 + this.name.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ZipResource && name.equals(((ZipResource) obj).name);
+        return obj instanceof ZipResource && this.name.equals(((ZipResource) obj).name);
     }
 
     @Override

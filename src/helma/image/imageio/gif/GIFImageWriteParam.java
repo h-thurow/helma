@@ -27,8 +27,8 @@ public class GIFImageWriteParam extends ImageWriteParam {
 
     public GIFImageWriteParam(Locale locale) {
         super(locale);
-        canWriteProgressive = true;
-        progressiveMode = MODE_DEFAULT;
+        this.canWriteProgressive = true;
+        this.progressiveMode = MODE_DEFAULT;
     }
 
     public ImageWriteParam getWriteParam(Properties properties) {

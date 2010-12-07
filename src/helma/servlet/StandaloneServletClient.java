@@ -59,24 +59,24 @@ public final class StandaloneServletClient extends AbstractServletClient {
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
 
-        hopDir = init.getInitParameter("hopdir"); //$NON-NLS-1$
+        this.hopDir = init.getInitParameter("hopdir"); //$NON-NLS-1$
 
-        if (hopDir == null) {
+        if (this.hopDir == null) {
             // assume helmaDir to be current directory
-            hopDir = "."; //$NON-NLS-1$
+            this.hopDir = "."; //$NON-NLS-1$
         }
 
-        appName = init.getInitParameter("application"); //$NON-NLS-1$
+        this.appName = init.getInitParameter("application"); //$NON-NLS-1$
 
-        if ((appName == null) || (appName.trim().length() == 0)) {
+        if ((this.appName == null) || (this.appName.trim().length() == 0)) {
             throw new ServletException(Messages.getString("StandaloneServletClient.0")); //$NON-NLS-1$
         }
 
-        appDir = init.getInitParameter("appdir"); //$NON-NLS-1$
+        this.appDir = init.getInitParameter("appdir"); //$NON-NLS-1$
 
-        dbDir = init.getInitParameter("dbdir"); //$NON-NLS-1$
+        this.dbDir = init.getInitParameter("dbdir"); //$NON-NLS-1$
 
-        if ((dbDir == null) || (dbDir.trim().length() == 0)) {
+        if ((this.dbDir == null) || (this.dbDir.trim().length() == 0)) {
             throw new ServletException(Messages.getString("StandaloneServletClient.1")); //$NON-NLS-1$
         }
 
@@ -119,14 +119,14 @@ public final class StandaloneServletClient extends AbstractServletClient {
         }
         
         // add app dir
-        FileRepository appRep = new FileRepository(appDir);
-        log(Messages.getString("StandaloneServletClient.6") + appDir); //$NON-NLS-1$
+        FileRepository appRep = new FileRepository(this.appDir);
+        log(Messages.getString("StandaloneServletClient.6") + this.appDir); //$NON-NLS-1$
         if (!repositoryList.contains(appRep)) {
             repositoryList.add(appRep);
         }
 
-        repositories = new Repository[repositoryList.size()];
-        repositories = (Repository[]) repositoryList.toArray(repositories);
+        this.repositories = new Repository[repositoryList.size()];
+        this.repositories = (Repository[]) repositoryList.toArray(this.repositories);
 
     }
 
@@ -138,11 +138,11 @@ public final class StandaloneServletClient extends AbstractServletClient {
      */
     @Override
     public Application getApplication() {
-        if (app == null) {
+        if (this.app == null) {
             createApp();
         }
 
-        return app;
+        return this.app;
     }
 
     /**
@@ -151,25 +151,25 @@ public final class StandaloneServletClient extends AbstractServletClient {
      */
     protected synchronized void createApp() {
 
-        if (app != null) {
+        if (this.app != null) {
             return;
         }
 
         try {
-            File dbHome = new File(dbDir);
-            File appHome = new File(appDir);
-            File hopHome = new File(hopDir);
+            File dbHome = new File(this.dbDir);
+            File appHome = new File(this.appDir);
+            File hopHome = new File(this.hopDir);
 
             ServerConfig config = new ServerConfig();
             config.setHomeDir(hopHome);
             Server server = new Server(config);
             server.init();
 
-            app = new Application(appName, server, repositories, appHome, dbHome);
-            app.init();
-            app.start();
+            this.app = new Application(this.appName, server, this.repositories, appHome, dbHome);
+            this.app.init();
+            this.app.start();
         } catch (Exception x) {
-            log(Messages.getString("StandaloneServletClient.7") + appName + Messages.getString("StandaloneServletClient.8") + x); //$NON-NLS-1$ //$NON-NLS-2$
+            log(Messages.getString("StandaloneServletClient.7") + this.appName + Messages.getString("StandaloneServletClient.8") + x); //$NON-NLS-1$ //$NON-NLS-2$
             x.printStackTrace();
         }
     }
@@ -180,15 +180,15 @@ public final class StandaloneServletClient extends AbstractServletClient {
      */
     @Override
     public void destroy() {
-        if (app != null) {
+        if (this.app != null) {
             try {
-                app.stop();
+                this.app.stop();
             } catch (Exception x) {
-                log(Messages.getString("StandaloneServletClient.9") + app.getName() + Messages.getString("StandaloneServletClient.10")); //$NON-NLS-1$ //$NON-NLS-2$
+                log(Messages.getString("StandaloneServletClient.9") + this.app.getName() + Messages.getString("StandaloneServletClient.10")); //$NON-NLS-1$ //$NON-NLS-2$
                 x.printStackTrace();
             }
         }
 
-        app = null;
+        this.app = null;
     }
 }

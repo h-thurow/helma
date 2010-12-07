@@ -46,7 +46,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      */
     public Property(Node node) {
         this.node = node;
-        dirty = true;
+        this.dirty = true;
     }
 
     /**
@@ -58,7 +58,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
     public Property(String propname, Node node) {
         this.propname = propname;
         this.node = node;
-        dirty = true;
+        this.dirty = true;
     }
 
     /**
@@ -70,50 +70,50 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      */
     public Property(String propname, Node node, Node valueNode) {
         this(propname, node);
-        type = NODE;
-        value = (valueNode == null) ? null : valueNode.getHandle();
-        dirty = true;
+        this.type = NODE;
+        this.value = (valueNode == null) ? null : valueNode.getHandle();
+        this.dirty = true;
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
         try {
-            propname = in.readUTF();
-            node = (Node) in.readObject();
-            type = in.readInt();
+            this.propname = in.readUTF();
+            this.node = (Node) in.readObject();
+            this.type = in.readInt();
 
-            switch (type) {
+            switch (this.type) {
                 case STRING:
-                    value = in.readObject();
+                    this.value = in.readObject();
 
                     break;
 
                 case BOOLEAN:
-                    value = in.readBoolean() ? Boolean.TRUE : Boolean.FALSE;
+                    this.value = in.readBoolean() ? Boolean.TRUE : Boolean.FALSE;
 
                     break;
 
                 case INTEGER:
-                    value = new Long(in.readLong());
+                    this.value = new Long(in.readLong());
 
                     break;
 
                 case DATE:
-                    value = new Date(in.readLong());
+                    this.value = new Date(in.readLong());
 
                     break;
 
                 case FLOAT:
-                    value = new Double(in.readDouble());
+                    this.value = new Double(in.readDouble());
 
                     break;
 
                 case NODE:
-                    value = in.readObject();
+                    this.value = in.readObject();
 
                     break;
 
                 case JAVAOBJECT:
-                    value = in.readObject();
+                    this.value = in.readObject();
 
                     break;
             }
@@ -123,47 +123,47 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeUTF(propname);
-        out.writeObject(node);
-        out.writeInt(type);
+        out.writeUTF(this.propname);
+        out.writeObject(this.node);
+        out.writeInt(this.type);
 
-        switch (type) {
+        switch (this.type) {
             case STRING:
-                out.writeObject(value);
+                out.writeObject(this.value);
 
                 break;
 
             case BOOLEAN:
-                out.writeBoolean(((Boolean) value).booleanValue());
+                out.writeBoolean(((Boolean) this.value).booleanValue());
 
                 break;
 
             case INTEGER:
-                out.writeLong(((Long) value).longValue());
+                out.writeLong(((Long) this.value).longValue());
 
                 break;
 
             case DATE:
-                out.writeLong(((Date) value).getTime());
+                out.writeLong(((Date) this.value).getTime());
 
                 break;
 
             case FLOAT:
-                out.writeDouble(((Double) value).doubleValue());
+                out.writeDouble(((Double) this.value).doubleValue());
 
                 break;
 
             case NODE:
-                out.writeObject(value);
+                out.writeObject(this.value);
 
                 break;
 
             case JAVAOBJECT:
 
-                if ((value != null) && !(value instanceof Serializable)) {
+                if ((this.value != null) && !(this.value instanceof Serializable)) {
                     out.writeObject(null);
                 } else {
-                    out.writeObject(value);
+                    out.writeObject(this.value);
                 }
 
                 break;
@@ -176,7 +176,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return this property's name
      */
     public String getName() {
-        return propname;
+        return this.propname;
     }
 
     /**
@@ -192,7 +192,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return the property's value in its native class
      */
     public Object getValue() {
-        return value;
+        return this.value;
     }
 
     /**
@@ -201,7 +201,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return the property's type as defined in helma.objectmodel.IProperty.java
      */
     public int getType() {
-        return type;
+        return this.type;
     }
 
     /**
@@ -210,7 +210,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
     protected void setValue(Object value, int type) {
         this.value = value;
         this.type = type;
-        dirty = true;
+        this.dirty = true;
     }
 
     /**
@@ -219,9 +219,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param str ...
      */
     public void setStringValue(String str) {
-        type = STRING;
-        value = str;
-        dirty = true;
+        this.type = STRING;
+        this.value = str;
+        this.dirty = true;
     }
 
     /**
@@ -230,9 +230,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param l ...
      */
     public void setIntegerValue(long l) {
-        type = INTEGER;
-        value = new Long(l);
-        dirty = true;
+        this.type = INTEGER;
+        this.value = new Long(l);
+        this.dirty = true;
     }
 
     /**
@@ -241,9 +241,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param d ...
      */
     public void setFloatValue(double d) {
-        type = FLOAT;
-        value = new Double(d);
-        dirty = true;
+        this.type = FLOAT;
+        this.value = new Double(d);
+        this.dirty = true;
     }
 
     /**
@@ -252,14 +252,14 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param date ...
      */
     public void setDateValue(Date date) {
-        type = DATE;
+        this.type = DATE;
         // normalize from java.sql.* Date subclasses
         if (date != null && date.getClass() != Date.class) {
-            value = new Date(date.getTime());
+            this.value = new Date(date.getTime());
         } else {
-            value = date;
+            this.value = date;
         }
-        dirty = true;
+        this.dirty = true;
     }
 
     /**
@@ -268,9 +268,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param bool ...
      */
     public void setBooleanValue(boolean bool) {
-        type = BOOLEAN;
-        value = bool ? Boolean.TRUE : Boolean.FALSE;
-        dirty = true;
+        this.type = BOOLEAN;
+        this.value = bool ? Boolean.TRUE : Boolean.FALSE;
+        this.dirty = true;
     }
 
     /**
@@ -279,9 +279,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param node ...
      */
     public void setNodeValue(Node node) {
-        type = NODE;
-        value = (node == null) ? null : node.getHandle();
-        dirty = true;
+        this.type = NODE;
+        this.value = (node == null) ? null : node.getHandle();
+        this.dirty = true;
     }
 
     /**
@@ -290,9 +290,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param handle ...
      */
     public void setNodeHandle(NodeHandle handle) {
-        type = NODE;
-        value = handle;
-        dirty = true;
+        this.type = NODE;
+        this.value = handle;
+        this.dirty = true;
     }
 
     /**
@@ -301,8 +301,8 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public NodeHandle getNodeHandle() {
-        if (type == NODE) {
-            return (NodeHandle) value;
+        if (this.type == NODE) {
+            return (NodeHandle) this.value;
         }
 
         return null;
@@ -314,15 +314,15 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param rel the Relation
      */
     public void convertToNodeReference(Relation rel) {
-        if ((value != null) && !(value instanceof NodeHandle)) {
+        if ((this.value != null) && !(this.value instanceof NodeHandle)) {
             if (rel.usesPrimaryKey()) {
-                value = new NodeHandle(new DbKey(rel.otherType, value.toString()));
+                this.value = new NodeHandle(new DbKey(rel.otherType, this.value.toString()));
             } else {
-                value = new NodeHandle(new MultiKey(rel.otherType, rel.getKeyParts(node)));
+                this.value = new NodeHandle(new MultiKey(rel.otherType, rel.getKeyParts(this.node)));
             }
         }
 
-        type = NODE;
+        this.type = NODE;
     }
 
     /**
@@ -331,9 +331,9 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @param obj ...
      */
     public void setJavaObjectValue(Object obj) {
-        type = JAVAOBJECT;
-        value = obj;
-        dirty = true;
+        this.type = JAVAOBJECT;
+        this.value = obj;
+        this.dirty = true;
     }
 
 
@@ -343,26 +343,26 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public String getStringValue() {
-        if (value == null) {
+        if (this.value == null) {
             return null;
         }
 
-        switch (type) {
+        switch (this.type) {
             case STRING:
             case BOOLEAN:
             case INTEGER:
             case FLOAT:
             case JAVAOBJECT:
-                return value.toString();
+                return this.value.toString();
 
             case DATE:
 
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$
 
-                return format.format((Date) value);
+                return format.format((Date) this.value);
 
             case NODE:
-                return ((NodeHandle) value).getID();
+                return ((NodeHandle) this.value).getID();
         }
 
         return ""; //$NON-NLS-1$
@@ -384,16 +384,16 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public long getIntegerValue() {
-        if (type == INTEGER) {
-            return ((Long) value).longValue();
+        if (this.type == INTEGER) {
+            return ((Long) this.value).longValue();
         }
 
-        if (type == FLOAT) {
-            return ((Double) value).longValue();
+        if (this.type == FLOAT) {
+            return ((Double) this.value).longValue();
         }
 
-        if (type == BOOLEAN) {
-            return ((Boolean) value).booleanValue() ? 1 : 0;
+        if (this.type == BOOLEAN) {
+            return ((Boolean) this.value).booleanValue() ? 1 : 0;
         }
 
         try {
@@ -409,12 +409,12 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public double getFloatValue() {
-        if (type == FLOAT) {
-            return ((Double) value).doubleValue();
+        if (this.type == FLOAT) {
+            return ((Double) this.value).doubleValue();
         }
 
-        if (type == INTEGER) {
-            return ((Long) value).doubleValue();
+        if (this.type == INTEGER) {
+            return ((Long) this.value).doubleValue();
         }
 
         try {
@@ -430,8 +430,8 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public Date getDateValue() {
-        if (type == DATE) {
-            return (Date) value;
+        if (this.type == DATE) {
+            return (Date) this.value;
         }
 
         return null;
@@ -443,8 +443,8 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public Timestamp getTimestampValue() {
-        if ((type == DATE) && (value != null)) {
-            return new Timestamp(((Date) value).getTime());
+        if ((this.type == DATE) && (this.value != null)) {
+            return new Timestamp(((Date) this.value).getTime());
         }
 
         return null;
@@ -456,8 +456,8 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public boolean getBooleanValue() {
-        if (type == BOOLEAN) {
-            return ((Boolean) value).booleanValue();
+        if (this.type == BOOLEAN) {
+            return ((Boolean) this.value).booleanValue();
         }
 
         return 0 != getIntegerValue();
@@ -469,10 +469,10 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public INode getNodeValue() {
-        if ((type == NODE) && (value != null)) {
-            NodeHandle nhandle = (NodeHandle) value;
+        if ((this.type == NODE) && (this.value != null)) {
+            NodeHandle nhandle = (NodeHandle) this.value;
 
-            return nhandle.getNode(node.nmgr);
+            return nhandle.getNode(this.node.nmgr);
         }
 
         return null;
@@ -484,8 +484,8 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return ...
      */
     public Object getJavaObjectValue() {
-        if (type == JAVAOBJECT) {
-            return value;
+        if (this.type == JAVAOBJECT) {
+            return this.value;
         }
 
         return null;
@@ -503,29 +503,29 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
         int ptype = p.getType();
         Object pvalue = p.getValue();
 
-        if (type==NODE || ptype==NODE ||
-                type == BOOLEAN || ptype == BOOLEAN) {
-            throw new ClassCastException(Messages.getString("Property.0") + this + Messages.getString("Property.1") + type + Messages.getString("Property.2") + p + Messages.getString("Property.3") + ptype + Messages.getString("Property.4")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        if (this.type==NODE || ptype==NODE ||
+                this.type == BOOLEAN || ptype == BOOLEAN) {
+            throw new ClassCastException(Messages.getString("Property.0") + this + Messages.getString("Property.1") + this.type + Messages.getString("Property.2") + p + Messages.getString("Property.3") + ptype + Messages.getString("Property.4")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
         }
-        if (value==null && pvalue == null) {
+        if (this.value==null && pvalue == null) {
             return 0;
-        } else if (value == null) {
+        } else if (this.value == null) {
             return 1;
         } if (pvalue == null) {
             return -1;
         }
-        if (type != ptype) {
+        if (this.type != ptype) {
             // float/integer sometimes get mixed up in Rhino
-            if ((type == FLOAT && ptype == INTEGER) || (type == INTEGER && ptype == FLOAT))
-                return Double.compare(((Number) value).doubleValue(), ((Number) pvalue).doubleValue());
-            throw new ClassCastException(Messages.getString("Property.5") + this + Messages.getString("Property.6") + type + Messages.getString("Property.7") + p + Messages.getString("Property.8") + ptype + Messages.getString("Property.9")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+            if ((this.type == FLOAT && ptype == INTEGER) || (this.type == INTEGER && ptype == FLOAT))
+                return Double.compare(((Number) this.value).doubleValue(), ((Number) pvalue).doubleValue());
+            throw new ClassCastException(Messages.getString("Property.5") + this + Messages.getString("Property.6") + this.type + Messages.getString("Property.7") + p + Messages.getString("Property.8") + ptype + Messages.getString("Property.9")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 
         }
-        if (!(value instanceof Comparable)) {
-            throw new ClassCastException(Messages.getString("Property.10") + value + Messages.getString("Property.11") + value.getClass() + Messages.getString("Property.12")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (!(this.value instanceof Comparable)) {
+            throw new ClassCastException(Messages.getString("Property.10") + this.value + Messages.getString("Property.11") + this.value.getClass() + Messages.getString("Property.12")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
         // System.err.println("COMPARING: " + value.getClass() + " TO " + pvalue.getClass());
-        return ((Comparable) value).compareTo(pvalue);
+        return ((Comparable) this.value).compareTo(pvalue);
     }
 
     /**
@@ -544,6 +544,6 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
         if (!(obj instanceof Property))
             return false;
         Property p = (Property) obj;
-        return value == null ? p.value == null : value.equals(p.value);
+        return this.value == null ? p.value == null : this.value.equals(p.value);
     }
 }

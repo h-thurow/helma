@@ -17,7 +17,6 @@
 package helma.scripting.rhino.debug;
 
 import helma.framework.ResponseTrans;
-import helma.util.HtmlEncoder;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.debug.*;
 import java.util.ArrayList;
@@ -45,8 +44,8 @@ public class Tracer implements Debugger {
      */
     public DebugFrame getFrame(Context cx, DebuggableScript script) {
         if (script.isFunction()) {
-            frame = new TracerFrame(script, frame);
-            return frame;
+            this.frame = new TracerFrame(script, this.frame);
+            return this.frame;
         }
         return null;
     }
@@ -59,9 +58,8 @@ public class Tracer implements Debugger {
     static String toString(DebuggableScript script) {
         if (script.isFunction()) {
             return script.getSourceName() + ": " + script.getFunctionName(); //$NON-NLS-1$
-        } else {
-            return script.getSourceName();
         }
+        return script.getSourceName();
     }
 
     class TracerFrame implements DebugFrame {
@@ -77,7 +75,7 @@ public class Tracer implements Debugger {
             this.parent = parent;
             if (parent != null) {
                 parent.children.add(this);
-                depth = parent.depth + 1;
+                this.depth = parent.depth + 1;
             }
         }
 
@@ -88,23 +86,23 @@ public class Tracer implements Debugger {
         public void onEnter(Context cx, Scriptable activation, 
                             Scriptable thisObj, Object[] args) {
 
-            time = System.currentTimeMillis();
+            this.time = System.currentTimeMillis();
         }
 
         /**
          *  Called when thrown exception is handled by the function or script.
          */
         public void onExceptionThrown(Context cx, Throwable ex) {
-            res.debug(Messages.getString("Tracer.0") + ex); //$NON-NLS-1$
+            Tracer.this.res.debug(Messages.getString("Tracer.0") + ex); //$NON-NLS-1$
         }
 
         /**
          *  Called when the function or script for this frame is about to return.
          */
         public void onExit(Context cx, boolean byThrow, Object resultOrException) {
-            time = System.currentTimeMillis() - time;
-            frame = parent;
-            if (parent == null)
+            this.time = System.currentTimeMillis() - this.time;
+            Tracer.this.frame = this.parent;
+            if (this.parent == null)
                 render();
         }
 
@@ -121,7 +119,7 @@ public class Tracer implements Debugger {
          *  Called when executed code reaches new line in the source.
          */
         public void onLineChange(Context cx, int lineNumber) {
-            currentLine = lineNumber;
+            this.currentLine = lineNumber;
         }
 
         public void render() {
@@ -130,9 +128,9 @@ public class Tracer implements Debugger {
             // if (time <= 1)
             //     return;            
             StringBuffer b = new StringBuffer(Messages.getString("Tracer.1")); //$NON-NLS-1$
-            for (int i = 0; i < depth; i++)
+            for (int i = 0; i < this.depth; i++)
                 b.append(".&nbsp;"); //$NON-NLS-1$
-            b.append(Tracer.toString(script));
+            b.append(Tracer.toString(this.script));
             b.append("("); //$NON-NLS-1$
 
             /* for (int i = 0; i < args.length; i++) {
@@ -146,13 +144,13 @@ public class Tracer implements Debugger {
             b.append(")"); //$NON-NLS-1$
 
             b.append(" <b>"); //$NON-NLS-1$
-            b.append(time);
+            b.append(this.time);
             b.append(Messages.getString("Tracer.2")); //$NON-NLS-1$
 
-            res.debug(b);
+            Tracer.this.res.debug(b);
 
-            for (int i = 0; i < children.size(); i++)
-                ((TracerFrame) children.get(i)).render();
+            for (int i = 0; i < this.children.size(); i++)
+                ((TracerFrame) this.children.get(i)).render();
         }
     }
 }

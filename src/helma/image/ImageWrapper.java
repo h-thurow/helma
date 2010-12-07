@@ -82,15 +82,15 @@ public class ImageWrapper {
      * @return the Image object as a BufferedImage
      */
     public BufferedImage getBufferedImage() {
-        if (!(image instanceof BufferedImage)) {
-            BufferedImage buffered = new BufferedImage(width, height,
+        if (!(this.image instanceof BufferedImage)) {
+            BufferedImage buffered = new BufferedImage(this.width, this.height,
                 BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = buffered.createGraphics();
-            g2d.drawImage(image, 0, 0, null);
+            g2d.drawImage(this.image, 0, 0, null);
             g2d.dispose();
             setImage(buffered);
         }
-        return (BufferedImage)image;
+        return (BufferedImage)this.image;
     }
 
     /**
@@ -100,12 +100,12 @@ public class ImageWrapper {
      * @return the Graphics object for drawing into this image
      */
     public Graphics2D getGraphics() {
-        if (graphics == null) {
+        if (this.graphics == null) {
             // make sure the image is a BufferedImage and then create a graphics object
             BufferedImage img = getBufferedImage();
-            graphics = img.createGraphics();
+            this.graphics = img.createGraphics();
         }
-        return graphics;
+        return this.graphics;
     }
     
     /**
@@ -115,16 +115,16 @@ public class ImageWrapper {
      */
     protected void setImage(Image img) {
         // flush image and dispose graphics before updating them
-        if (graphics != null) {
-            graphics.dispose();
-            graphics = null;
+        if (this.graphics != null) {
+            this.graphics.dispose();
+            this.graphics = null;
         }
-        if (image != null) {
-            image.flush();
+        if (this.image != null) {
+            this.image.flush();
         }
-        image = img;
-        width = image.getWidth(null);
-        height = image.getHeight(null);
+        this.image = img;
+        this.width = this.image.getWidth(null);
+        this.height = this.image.getHeight(null);
     }
 
     /**
@@ -134,9 +134,9 @@ public class ImageWrapper {
      */
     @Override
     public Object clone() {
-        ImageWrapper wrapper = generator.createImage(this.width,
+        ImageWrapper wrapper = this.generator.createImage(this.width,
             this.height);
-        wrapper.getGraphics().drawImage(image, 0, 0, null);
+        wrapper.getGraphics().drawImage(this.image, 0, 0, null);
         return wrapper;
     }
 
@@ -146,7 +146,7 @@ public class ImageWrapper {
      * @return the image object
      */
     public Image getImage() {
-        return image;
+        return this.image;
     }
 
     /**
@@ -155,20 +155,20 @@ public class ImageWrapper {
      * @return the images's ImageProducer
      */
     public ImageProducer getSource() {
-        return image.getSource();
+        return this.image.getSource();
     }
 
     /**
      * Dispose the Graphics context and null out the image.
      */
     public void dispose() {
-        if (image != null) {
-            image.flush();
-            image = null;
+        if (this.image != null) {
+            this.image.flush();
+            this.image = null;
         }
-        if (graphics != null) {
-            graphics.dispose();
-            graphics = null;
+        if (this.graphics != null) {
+            this.graphics.dispose();
+            this.graphics = null;
         }
     }
 
@@ -260,7 +260,7 @@ public class ImageWrapper {
      */
     public void drawImage(String filename, int x, int y) 
         throws IOException {
-        Image img = generator.read(filename);
+        Image img = this.generator.read(filename);
         if (img != null)
             getGraphics().drawImage(img, x, y, null);
     }
@@ -272,8 +272,7 @@ public class ImageWrapper {
      * @param x ...
      * @param y ...
      */
-    public void drawImage(ImageWrapper image, int x, int y) 
-        throws IOException {
+    public void drawImage(ImageWrapper image, int x, int y) {
         getGraphics().drawImage(image.getImage(), x, y, null);
     }
 
@@ -283,8 +282,7 @@ public class ImageWrapper {
      * @param image ...
      * @param at ...
      */
-    public void drawImage(ImageWrapper image, AffineTransform at) 
-        throws IOException {
+    public void drawImage(ImageWrapper image, AffineTransform at) {
         getGraphics().drawImage(image.getImage(), at, null);
     }
 
@@ -306,7 +304,7 @@ public class ImageWrapper {
      * @return the width of this image
      */
     public int getWidth() {
-        return width;
+        return this.width;
     }
 
     /**
@@ -315,7 +313,7 @@ public class ImageWrapper {
      * @return the height of this image
      */
     public int getHeight() {
-        return height;
+        return this.height;
     }
 
     /**
@@ -328,15 +326,15 @@ public class ImageWrapper {
      */
     public void crop(int x, int y, int w, int h) {
         // do not use the CropFilter any longer:
-        if (image instanceof BufferedImage && x + w <= width && y + h <= height) {
+        if (this.image instanceof BufferedImage && x + w <= this.width && y + h <= this.height) {
             // BufferedImages define their own function for cropping:
-            setImage(((BufferedImage)image).getSubimage(x, y, w, h));
+            setImage(((BufferedImage)this.image).getSubimage(x, y, w, h));
         } else {
             // The internal image will be a BufferedImage after this.
             // Simply create it with the cropped dimensions and draw the image into it:
             BufferedImage buffered = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = buffered.createGraphics();
-            g2d.drawImage(image, -x, -y, null);
+            g2d.drawImage(this.image, -x, -y, null);
             g2d.dispose();
             setImage(buffered);
         }
@@ -366,79 +364,79 @@ public class ImageWrapper {
    public void trim(int x, int y, boolean trimLeft, boolean trimTop, boolean trimRight, boolean trimBottom) {
         BufferedImage bi = this.getBufferedImage();
         int color = bi.getRGB(x, y);
-        int left = 0, top = 0, right = width - 1, bottom = height - 1;
+        int left = 0, top = 0, right = this.width - 1, bottom = this.height - 1;
 
         // create a BufferedImage of only 1 pixel height for fetching the rows of the image in the correct format (ARGB)
         // This speeds up things by more than factor 2, compared to the standard BufferedImage.getRGB solution,
         // which is supposed to be fast too. This is probably the case because drawing to BufferedImages uses 
         // very optimized code which may even be hardware accelerated.
         if (trimTop || trimBottom) {
-            BufferedImage row = new BufferedImage(width, 1, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage row = new BufferedImage(this.width, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = row.createGraphics();
             int pixels[] = ((DataBufferInt)row.getRaster().getDataBuffer()).getData();
             // make sure alpha values do not add up for each row:
             g2d.setComposite(AlphaComposite.Src);
             if (trimTop) {
                 // top:
-                for (top = 0; top < height; top++) {
+                for (top = 0; top < this.height; top++) {
                     g2d.drawImage(bi, null, 0, -top);
                     // now pixels contains the rgb values of the row y!
                     // scan this row now:
-                    for (x = 0; x < width; x++) {
+                    for (x = 0; x < this.width; x++) {
                         if (pixels[x] != color)
                             break;
                     }
-                    if (x < width)
+                    if (x < this.width)
                         break;
                 }
             }
             if (trimBottom) {
                 // bottom:
-                for (bottom = height - 1;  bottom > top; bottom--) {
+                for (bottom = this.height - 1;  bottom > top; bottom--) {
                     g2d.drawImage(bi, null, 0, -bottom);
                     // now pixels contains the rgb values of the row y!
                     // scan this row now:
-                    for (x = 0; x < width; x++) {
+                    for (x = 0; x < this.width; x++) {
                         if (pixels[x] != color)
                             break;
                     }
-                    if (x < width)
+                    if (x < this.width)
                         break;
                 }
             }
             g2d.dispose();
         }
         if (trimLeft || trimRight) {
-            BufferedImage column = new BufferedImage(1, height, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage column = new BufferedImage(1, this.height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = column.createGraphics();
             int pixels[] = ((DataBufferInt)column.getRaster().getDataBuffer()).getData();
             // make sure alpha values do not add up for each row:
             g2d.setComposite(AlphaComposite.Src);
             if (trimLeft) {
                 // left:
-                for (left = 0; left < width; left++) {
+                for (left = 0; left < this.width; left++) {
                     g2d.drawImage(bi, null, -left, 0);
                     // now pixels contains the rgb values of the row y!
                     // scan this row now:
-                    for (y = 0; y < height; y++) {
+                    for (y = 0; y < this.height; y++) {
                         if (pixels[y] != color)
                             break;
                     }
-                    if (y < height)
+                    if (y < this.height)
                         break;
                 }
             }
             if (trimRight) {
                 // right:
-                for (right = width - 1; right > left; right--) {
+                for (right = this.width - 1; right > left; right--) {
                     g2d.drawImage(bi, null, -right, 0);
                     // now pixels contains the rgb values of the row y!
                     // scan this row now:
-                    for (y = 0; y < height; y++) {
+                    for (y = 0; y < this.height; y++) {
                         if (pixels[y] != color)
                             break;
                     }
-                    if (y < height)
+                    if (y < this.height)
                         break;
                 }
             }
@@ -465,10 +463,10 @@ public class ImageWrapper {
         );
 
         AffineTransform at = AffineTransform.getScaleInstance(
-            (double) w / width,
-            (double) h / height
+            (double) w / this.width,
+            (double) h / this.height
         );
-        g2d.drawImage(image, at, null);
+        g2d.drawImage(this.image, at, null);
         g2d.dispose();
         setImage(buffered);
     }
@@ -481,8 +479,8 @@ public class ImageWrapper {
      */
     public void resize(int w, int h) {
         double factor = Math.max(
-            (double) w / width,
-            (double) h / height
+            (double) w / this.width,
+            (double) h / this.height
         );
         // If the image is scaled, used the Graphcis2D method, otherwise use AWT:
         if (factor > 1f) {
@@ -578,7 +576,7 @@ public class ImageWrapper {
      */
     public void saveAs(String filename, float quality, boolean alpha)
         throws IOException {
-        generator.write(this, checkFilename(filename), quality, alpha);
+        this.generator.write(this, checkFilename(filename), quality, alpha);
     }
     
     /**
@@ -590,7 +588,7 @@ public class ImageWrapper {
      */
     public void saveAs(OutputStream out, String mimeType)
         throws IOException {
-        generator.write(this, out, mimeType, -1f, false); // -1 means default quality
+        this.generator.write(this, out, mimeType, -1f, false); // -1 means default quality
     }
     
     /**
@@ -603,7 +601,7 @@ public class ImageWrapper {
      */
     public void saveAs(OutputStream out, String mimeType, float quality)
         throws IOException {
-        generator.write(this, out, mimeType, quality, false);
+        this.generator.write(this, out, mimeType, quality, false);
     }
 
     /**
@@ -617,7 +615,7 @@ public class ImageWrapper {
      */
     public void saveAs(OutputStream out, String mimeType, float quality, boolean alpha)
         throws IOException {
-        generator.write(this, out, mimeType, quality, alpha);
+        this.generator.write(this, out, mimeType, quality, alpha);
     }
     
     /**
@@ -658,8 +656,7 @@ public class ImageWrapper {
         BufferedImage bi = this.getBufferedImage();
         if (bi.getColorModel() instanceof IndexColorModel)
             return bi.getRaster().getSample(x, y, 0);
-        else
-            return bi.getRGB(x, y);
+        return bi.getRGB(x, y);
     }
 
     /**

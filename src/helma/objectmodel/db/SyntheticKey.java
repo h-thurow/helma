@@ -64,8 +64,8 @@ public final class SyntheticKey implements Key, Serializable {
 
         SyntheticKey k = (SyntheticKey) obj;
 
-        return parentKey.equals(k.parentKey) &&
-               ((name == k.name) || name.equals(k.name));
+        return this.parentKey.equals(k.parentKey) &&
+               ((this.name == k.name) || this.name.equals(k.name));
     }
 
     /**
@@ -74,12 +74,12 @@ public final class SyntheticKey implements Key, Serializable {
      */
     @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = 17 + (37 * name.hashCode()) +
-                            (37 * parentKey.hashCode());
+        if (this.hashcode == 0) {
+            this.hashcode = 17 + (37 * this.name.hashCode()) +
+                            (37 * this.parentKey.hashCode());
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
@@ -87,7 +87,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @return the parent key
      */
     public Key getParentKey() {
-        return parentKey;
+        return this.parentKey;
     }
 
     /**
@@ -95,7 +95,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @return the id part
      */
     public String getID() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -112,6 +112,6 @@ public final class SyntheticKey implements Key, Serializable {
      */
     @Override
     public String toString() {
-        return parentKey + "/" + name; //$NON-NLS-1$
+        return this.parentKey + "/" + this.name; //$NON-NLS-1$
     }
 }

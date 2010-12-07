@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 
 import helma.objectmodel.INode;
+import helma.objectmodel.INodeState;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.DbKey;
 import helma.objectmodel.db.Node;
@@ -100,34 +101,33 @@ public class HopObjectCtor extends FunctionObject {
                 System.err.println(Messages.getString("HopObjectCtor.1")+x); //$NON-NLS-1$
                 throw new EvaluatorException(x.toString());
             }
-        } else {
-            INode node = new Node(protoname, protoname,
-                    core.app.getWrappedNodeManager());
-            Scriptable proto = core.getPrototype(protoname);
-            HopObject hobj = new HopObject(protoname, core, node, proto);
-
-            if (proto != null) {
-                Object f = ScriptableObject.getProperty(proto, protoname);
-                if (!(f instanceof Function)) {
-                    // backup compatibility: look up function constructor
-                    f = ScriptableObject.getProperty(proto, "__constructor__"); //$NON-NLS-1$
-                }
-                if (f instanceof Function) {
-                    ((Function) f).call(cx, core.global, hobj, args);
-                }
-            }
-
-            return hobj;
         }
+        INode node = new Node(protoname, protoname,
+                core.app.getWrappedNodeManager());
+        Scriptable proto = core.getPrototype(protoname);
+        HopObject hobj = new HopObject(protoname, core, node, proto);
+
+        if (proto != null) {
+            Object f = ScriptableObject.getProperty(proto, protoname);
+            if (!(f instanceof Function)) {
+                // backup compatibility: look up function constructor
+                f = ScriptableObject.getProperty(proto, "__constructor__"); //$NON-NLS-1$
+            }
+            if (f instanceof Function) {
+                ((Function) f).call(cx, core.global, hobj, args);
+            }
+        }
+
+        return hobj;
     }
 
     @Override
     public Object get(String name, Scriptable start) {
-        if (!initialized && core.isInitialized()) {
+        if (!this.initialized && this.core.isInitialized()) {
             // trigger prototype compilation on static
             // constructor property access
-            initialized = true;
-            core.getPrototype(getFunctionName());
+            this.initialized = true;
+            this.core.getPrototype(getFunctionName());
         }
         return super.get(name, start);
     }
@@ -140,8 +140,8 @@ public class HopObjectCtor extends FunctionObject {
             Scriptable scriptable = (Scriptable) value;
             while (scriptable != null) {
                 Scriptable scope = scriptable.getParentScope();
-                if (scope == protoProperty) {
-                    scriptable.setParentScope(core.global);
+                if (scope == this.protoProperty) {
+                    scriptable.setParentScope(this.core.global);
                     break;
                 }
                 scriptable = scope;
@@ -173,13 +173,13 @@ public class HopObjectCtor extends FunctionObject {
                     HopObjectCtor.this.getFunctionName() :
                     Context.toString(args[1]);
 
-            DbMapping dbmap = core.app.getDbMapping(type);
+            DbMapping dbmap = HopObjectCtor.this.core.app.getDbMapping(type);
             if (dbmap == null)
                 return null;
             Object node = null;
             try {
                 DbKey key = new DbKey(dbmap, Context.toString(args[0]));
-                node = core.app.getNodeManager().getNode(key);
+                node = HopObjectCtor.this.core.app.getNodeManager().getNode(key);
             } catch (Exception x) {
                 return null;
             }
@@ -223,7 +223,7 @@ public class HopObjectCtor extends FunctionObject {
             }
 
             Scriptable desc = (Scriptable) args[0];
-            Properties childmapping = core.scriptableToProperties(desc);
+            Properties childmapping = HopObjectCtor.this.core.scriptableToProperties(desc);
             if (!childmapping.containsKey("collection")) { //$NON-NLS-1$
                 // if contained type isn't defined explicitly limit collection to our own type
                 childmapping.put("collection", HopObjectCtor.this.getFunctionName()); //$NON-NLS-1$
@@ -231,14 +231,14 @@ public class HopObjectCtor extends FunctionObject {
 
             Properties props = new Properties();
             props.put("_children", childmapping); //$NON-NLS-1$
-            DbMapping dbmap = new DbMapping(core.app, null, props, true);
+            DbMapping dbmap = new DbMapping(HopObjectCtor.this.core.app, null, props, true);
             dbmap.update();
 
-            WrappedNodeManager nmgr = core.app.getWrappedNodeManager();
+            WrappedNodeManager nmgr = HopObjectCtor.this.core.app.getWrappedNodeManager();
             Node node = new Node("HopQuery", Long.toString(collectionId++), null, nmgr); //$NON-NLS-1$
             node.setDbMapping(dbmap);
-            node.setState(Node.VIRTUAL);
-            return new HopObject("HopQuery", core, node, core.hopObjectProto); //$NON-NLS-1$
+            node.setState(INodeState.VIRTUAL);
+            return new HopObject("HopQuery", HopObjectCtor.this.core, node, HopObjectCtor.this.core.hopObjectProto); //$NON-NLS-1$
         }
 
         @Override

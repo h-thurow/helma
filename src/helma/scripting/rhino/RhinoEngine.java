@@ -84,10 +84,10 @@ public class RhinoEngine implements ScriptingEngine {
         this.reval = reval;
         initRhinoCore(app);
 
-        context = core.contextFactory.enterContext();
+        this.context = this.core.contextFactory.enterContext();
 
         try {
-            extensionGlobals = new HashMap();
+            this.extensionGlobals = new HashMap();
 
             if (Server.getServer() != null) {
                 Vector extVec = Server.getServer().getExtensions();
@@ -99,7 +99,7 @@ public class RhinoEngine implements ScriptingEngine {
                         HashMap tmpGlobals = ext.initScripting(app, this);
 
                         if (tmpGlobals != null) {
-                            extensionGlobals.putAll(tmpGlobals);
+                            this.extensionGlobals.putAll(tmpGlobals);
                         }
                     } catch (ConfigurationException e) {
                         app.logError(Messages.getString("RhinoEngine.0") + ext.getName(), e); //$NON-NLS-1$
@@ -119,7 +119,7 @@ public class RhinoEngine implements ScriptingEngine {
      * Shut down the scripting engine.
      */
     public void shutdown() {
-        core.shutdown();
+        this.core.shutdown();
     }
 
     /**
@@ -138,13 +138,13 @@ public class RhinoEngine implements ScriptingEngine {
         synchronized (coreMap) {
             WeakReference ref = (WeakReference) coreMap.get(app);
             if (ref != null) {
-                core = (RhinoCore) ref.get();
+                this.core = (RhinoCore) ref.get();
             }
 
-            if (core == null) {
-                core = new RhinoCore(app);
-                core.initialize();
-                coreMap.put(app, new WeakReference(core));
+            if (this.core == null) {
+                this.core = new RhinoCore(app);
+                this.core.initialize();
+                coreMap.put(app, new WeakReference(this.core));
             }
         }
     }
@@ -158,20 +158,20 @@ public class RhinoEngine implements ScriptingEngine {
         // the thread is already set when the RequestEvaluator calls
         // Application.getDataRoot(), which may result in a function invocation
         // (chicken and egg problem, kind of)
-        thread = Thread.currentThread();
-        global = new GlobalObject(core, app, true);
-        context = core.contextFactory.enterContext();
+        this.thread = Thread.currentThread();
+        this.global = new GlobalObject(this.core, this.app, true);
+        this.context = this.core.contextFactory.enterContext();
 
-        if (core.hasTracer) {
-            context.setDebugger(new Tracer(getResponse()), null);
+        if (this.core.hasTracer) {
+            this.context.setDebugger(new Tracer(getResponse()), null);
         } else if (useProfiler()) {
-            context.setDebugger(new Profiler(), null);
+            this.context.setDebugger(new Profiler(), null);
         }
 
         // register the engine with the current thread
         engines.set(this);
         // update prototypes
-        core.updatePrototypes();
+        this.core.updatePrototypes();
     }
 
     /**
@@ -179,13 +179,13 @@ public class RhinoEngine implements ScriptingEngine {
      *  evaluation is entered. The globals parameter contains the global values
      *  to be applied during this execution context.
      */
-    public synchronized void setGlobals(Map globals) throws ScriptingException {
+    public synchronized void setGlobals(Map globals) {
         // remember the current thread as our thread
-        thread = Thread.currentThread();
+        this.thread = Thread.currentThread();
 
         // set globals on the global object
         // add globals from extensions
-        globals.putAll(extensionGlobals);
+        globals.putAll(this.extensionGlobals);
         // loop through global vars and set them
         for (Iterator i = globals.keySet().iterator(); i.hasNext();) {
             String k = (String) i.next();
@@ -197,13 +197,13 @@ public class RhinoEngine implements ScriptingEngine {
             if (v == null) {
                 continue;
             } else if (v instanceof RequestPath) {
-                scriptable = new PathWrapper((RequestPath) v, core);
-                scriptable.setPrototype(core.pathProto);
+                scriptable = new PathWrapper((RequestPath) v, this.core);
+                scriptable.setPrototype(this.core.pathProto);
             } else {
-                scriptable = Context.toObject(v, global);
+                scriptable = Context.toObject(v, this.global);
             }
 
-            global.put(k, global, scriptable);
+            this.global.put(k, this.global, scriptable);
         }
     }
 
@@ -220,16 +220,16 @@ public class RhinoEngine implements ScriptingEngine {
                 if (res != null) {
                     getResponse().debug("<pre>" + result + "</pre>"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
-                app.logEvent(Messages.getString("RhinoEngine.2") + getRequest() + Messages.getString("RhinoEngine.3") + result); //$NON-NLS-1$ //$NON-NLS-2$
+                this.app.logEvent(Messages.getString("RhinoEngine.2") + getRequest() + Messages.getString("RhinoEngine.3") + result); //$NON-NLS-1$ //$NON-NLS-2$
             } catch (Exception x) {
-                app.logError(Messages.getString("RhinoEngine.4") + x, x); //$NON-NLS-1$
+                this.app.logError(Messages.getString("RhinoEngine.4") + x, x); //$NON-NLS-1$
             }
         }
         // unregister the engine threadlocal
         engines.set(null);
         Context.exit();
-        thread = null;
-        global = null;
+        this.thread = null;
+        this.global = null;
     }
 
     /**
@@ -259,7 +259,7 @@ public class RhinoEngine implements ScriptingEngine {
             throw new IllegalArgumentException(Messages.getString("RhinoEngine.6")); //$NON-NLS-1$
         }
         try {
-            Scriptable obj = thisObject == null ? global : Context.toObject(thisObject, global);
+            Scriptable obj = thisObject == null ? this.global : Context.toObject(thisObject, this.global);
             Function func;
             if (function instanceof String) {
                 String funcName = (String) function;
@@ -302,18 +302,18 @@ public class RhinoEngine implements ScriptingEngine {
                     case ARGS_WRAP_DEFAULT:
                         // convert java objects to JavaScript
                         if (args[i] != null) {
-                            args[i] = Context.javaToJS(args[i], global);
+                            args[i] = Context.javaToJS(args[i], this.global);
                         }
                         break;
                     case ARGS_WRAP_XMLRPC:
                         // XML-RPC requires special argument conversion
-                        args[i] = core.processXmlRpcArgument(args[i]);
+                        args[i] = this.core.processXmlRpcArgument(args[i]);
                         break;
                 }
             }
 
             // use Context.call() in order to set the context's factory
-            Object retval = Context.call(core.contextFactory, func, global, obj, args);
+            Object retval = Context.call(this.core.contextFactory, func, this.global, obj, args);
 
             if (retval instanceof Wrapper) {
                 retval = ((Wrapper) retval).unwrap();
@@ -322,7 +322,7 @@ public class RhinoEngine implements ScriptingEngine {
             if ((retval == null) || (retval == Undefined.instance)) {
                 return null;
             } else if (argsWrapMode == ARGS_WRAP_XMLRPC) {
-                return core.processXmlRpcResponse (retval);
+                return this.core.processXmlRpcResponse (retval);
             } else {
                 return retval;
             }
@@ -334,7 +334,7 @@ public class RhinoEngine implements ScriptingEngine {
             throw concur;
         } catch (Exception x) {
             // has the request timed out? If so, throw TimeoutException
-            if (thread != Thread.currentThread()) {
+            if (this.thread != Thread.currentThread()) {
                 throw new TimeoutException();
             }
 
@@ -360,9 +360,9 @@ public class RhinoEngine implements ScriptingEngine {
      */
     public void abort() {
         // current request has been aborted.
-        Thread t = thread;
+        Thread t = this.thread;
         // set thread to null
-        thread = null;
+        this.thread = null;
         if (t != null && t.isAlive()) {
             t.interrupt();
             try {
@@ -380,7 +380,7 @@ public class RhinoEngine implements ScriptingEngine {
     public boolean hasFunction(Object obj, String fname, boolean resolve) {
         if (resolve) {
             if (fname.indexOf('.') > 0) {
-                Scriptable op = obj == null ? global : Context.toObject(obj, global);
+                Scriptable op = obj == null ? this.global : Context.toObject(obj, this.global);
                 String[] path = StringUtils.split(fname, "."); //$NON-NLS-1$
                 for (int i = 0; i < path.length; i++) {
                     Object value = ScriptableObject.getProperty(op, path[i]);
@@ -401,11 +401,11 @@ public class RhinoEngine implements ScriptingEngine {
         // references/child objects just to check for function properties.
         if (obj instanceof INode) {
             String protoname = ((INode) obj).getPrototype();
-            if (protoname != null && core.hasFunction(protoname, fname))
+            if (protoname != null && this.core.hasFunction(protoname, fname))
                 return true;
         }
 
-        Scriptable op = obj == null ? global : Context.toObject(obj, global);
+        Scriptable op = obj == null ? this.global : Context.toObject(obj, this.global);
         return ScriptableObject.getProperty(op, fname) instanceof Callable;
     }
 
@@ -419,7 +419,7 @@ public class RhinoEngine implements ScriptingEngine {
             return ((Map) obj).containsKey(propname);
         }
 
-        String prototypeName = app.getPrototypeName(obj);
+        String prototypeName = this.app.getPrototypeName(obj);
 
         if ("user".equalsIgnoreCase(prototypeName) //$NON-NLS-1$
                 && "password".equalsIgnoreCase(propname)) { //$NON-NLS-1$
@@ -429,14 +429,14 @@ public class RhinoEngine implements ScriptingEngine {
         // if this is a HopObject, check if the property is defined
         // in the type.properties db-mapping.
         if (obj instanceof INode && ! "hopobject".equalsIgnoreCase(prototypeName)) { //$NON-NLS-1$
-            DbMapping dbm = app.getDbMapping(prototypeName);
+            DbMapping dbm = this.app.getDbMapping(prototypeName);
             if (dbm != null) {
                 Relation rel = dbm.propertyToRelation(propname);
                 if (rel != null && (rel.isPrimitive() || rel.isCollection()))
                     return true;
             }
         }
-        Scriptable wrapped = Context.toObject(obj, global);
+        Scriptable wrapped = Context.toObject(obj, this.global);
         return wrapped.has(propname, wrapped);
     }
 
@@ -450,10 +450,10 @@ public class RhinoEngine implements ScriptingEngine {
             return null;
         }
         try {
-            Object prop = core.global.get(propname, global);
+            Object prop = this.core.global.get(propname, this.global);
             if (prop == null
                     || prop == Undefined.instance
-                    || prop == ScriptableObject.NOT_FOUND) {
+                    || prop == Scriptable.NOT_FOUND) {
                 return null;
             } else if (prop instanceof Wrapper) {
                 return ((Wrapper) prop).unwrap();
@@ -463,7 +463,7 @@ public class RhinoEngine implements ScriptingEngine {
                 return (prop instanceof Function) ? null : prop;
             }
         } catch (Exception esx) {
-            app.logError(Messages.getString("RhinoEngine.10") + propname + Messages.getString("RhinoEngine.11") + esx); //$NON-NLS-1$ //$NON-NLS-2$
+            this.app.logError(Messages.getString("RhinoEngine.10") + propname + Messages.getString("RhinoEngine.11") + esx); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
@@ -483,14 +483,14 @@ public class RhinoEngine implements ScriptingEngine {
         }
 
         // use Rhino wrappers and methods to get property
-        Scriptable so = Context.toObject(obj, global);
+        Scriptable so = Context.toObject(obj, this.global);
 
         try {
             Object prop = so.get(propname, so);
 
             if (prop == null
                     || prop == Undefined.instance
-                    || prop == ScriptableObject.NOT_FOUND) {
+                    || prop == Scriptable.NOT_FOUND) {
                 return null;
             } else if (prop instanceof Wrapper) {
                 return ((Wrapper) prop).unwrap();
@@ -500,7 +500,7 @@ public class RhinoEngine implements ScriptingEngine {
                 return (prop instanceof Function) ? null : prop;
             }
         } catch (Exception esx) {
-            app.logError(Messages.getString("RhinoEngine.12") + propname + Messages.getString("RhinoEngine.13") + esx); //$NON-NLS-1$ //$NON-NLS-2$
+            this.app.logError(Messages.getString("RhinoEngine.12") + propname + Messages.getString("RhinoEngine.13") + esx); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
@@ -554,11 +554,11 @@ public class RhinoEngine implements ScriptingEngine {
      * @throws java.io.IOException
      */
     public void serialize(Object obj, OutputStream out) throws IOException {
-        core.contextFactory.enterContext();
+        this.core.contextFactory.enterContext();
         engines.set(this);
         try {
             // use a special ScriptableOutputStream that unwraps Wrappers
-            ScriptableOutputStream sout = new ScriptableOutputStream(out, core.global) {
+            ScriptableOutputStream sout = new ScriptableOutputStream(out, this.core.global) {
                 @Override
                 protected Object replaceObject(Object obj) throws IOException {
                     if (obj instanceof HopObject)
@@ -598,10 +598,10 @@ public class RhinoEngine implements ScriptingEngine {
      * @throws java.io.IOException
      */
     public Object deserialize(InputStream in) throws IOException, ClassNotFoundException {
-        core.contextFactory.enterContext();
+        this.core.contextFactory.enterContext();
         engines.set(this);
         try {
-            ObjectInputStream sin = new ScriptableInputStream(in, core.global) {
+            ObjectInputStream sin = new ScriptableInputStream(in, this.core.global) {
                 @Override
                 protected Object resolveObject(Object obj) throws IOException {
                     if (obj instanceof SerializationProxy) {
@@ -625,13 +625,13 @@ public class RhinoEngine implements ScriptingEngine {
     public void injectCodeResource(String typename, Resource resource) {
         // we activate recording on thread scope to make it forward
         // property puts to the shared scope (bug 504)
-        if (global != null)
-            global.startRecording();
+        if (this.global != null)
+            this.global.startRecording();
         try {
-            core.injectCodeResource(typename, resource);
+            this.core.injectCodeResource(typename, resource);
         } finally {
-            if (global != null)
-                global.stopRecording();
+            if (this.global != null)
+                this.global.stopRecording();
         }
     }
 
@@ -639,14 +639,14 @@ public class RhinoEngine implements ScriptingEngine {
      * Return the application we're running in
      */
     public Application getApplication() {
-        return app;
+        return this.app;
     }
 
     /**
      *  Return the RequestEvaluator owningthis rhino engine.
      */
     public RequestEvaluator getRequestEvaluator() {
-        return reval;
+        return this.reval;
     }
 
     /**
@@ -654,7 +654,7 @@ public class RhinoEngine implements ScriptingEngine {
      *  Proxy method to RequestEvaluator.
      */
     public ResponseTrans getResponse() {
-        return reval.getResponse();
+        return this.reval.getResponse();
     }
 
     /**
@@ -662,7 +662,7 @@ public class RhinoEngine implements ScriptingEngine {
      *  Proxy method to RequestEvaluator.
      */
     public RequestTrans getRequest() {
-        return reval.getRequest();
+        return this.reval.getRequest();
     }
 
     /**
@@ -671,7 +671,7 @@ public class RhinoEngine implements ScriptingEngine {
      * @return this engine's RhinoCore instance
      */
     public RhinoCore getCore() {
-        return core;
+        return this.core;
     }
 
     /**
@@ -686,9 +686,8 @@ public class RhinoEngine implements ScriptingEngine {
 
         if (skinobj instanceof Skin) {
             return (Skin) skinobj;
-        } else {
-            return getSkin(protoName, skinobj.toString());
         }
+        return getSkin(protoName, skinobj.toString());
     }
 
     /**
@@ -714,7 +713,7 @@ public class RhinoEngine implements ScriptingEngine {
             // (strings for directory names and INodes for internal, db-stored skinsets)
             Object[] skinpath = res.getSkinpath();
             RhinoCore.unwrapSkinpath(skinpath);
-            skin = app.getSkin(protoName, skinName, skinpath);
+            skin = this.app.getSkin(protoName, skinName, skinpath);
             res.cacheSkin(key, skin);
         }
         return skin;
@@ -728,10 +727,10 @@ public class RhinoEngine implements ScriptingEngine {
      * @return true if the current request should be profiled
      */
     private boolean useProfiler() {
-        if (!core.hasProfiler) {
+        if (!this.core.hasProfiler) {
             return false;
         }
-        String profilerSession = app.getProperty("rhino.profile.session"); //$NON-NLS-1$
+        String profilerSession = this.app.getProperty("rhino.profile.session"); //$NON-NLS-1$
         if (profilerSession == null || "all".equalsIgnoreCase(profilerSession)) { //$NON-NLS-1$
             return true;
         }

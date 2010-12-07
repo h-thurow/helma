@@ -48,14 +48,14 @@ public class DatabaseObject {
 
     public DatabaseObject(DbSource dbsource) {
         try {
-            connection = dbsource.getConnection ();
-            driverName = dbsource.getDriverName ();
+            this.connection = dbsource.getConnection ();
+            this.driverName = dbsource.getDriverName ();
         } catch (Exception e) {
             // System.err.println("##Cannot find driver class: " + e);
             // e.printStackTrace();
-            lastError = e;
+            this.lastError = e;
         }
-        driverOK = true;
+        this.driverOK = true;
     }
 
     /**
@@ -71,23 +71,23 @@ public class DatabaseObject {
             if (!Driver.class.isAssignableFrom(driverClass)) {
 
                 // System.err.println("##Bad class " + driverClass);
-                lastError = new RuntimeException(Messages.getString("DatabaseObject.0") + driverClass + Messages.getString("DatabaseObject.1")); //$NON-NLS-1$ //$NON-NLS-2$
+                this.lastError = new RuntimeException(Messages.getString("DatabaseObject.0") + driverClass + Messages.getString("DatabaseObject.1")); //$NON-NLS-1$ //$NON-NLS-2$
             }
             driverClass.newInstance(); // may be needed by some drivers, harmless for others
         } catch (ClassNotFoundException e) {
             // System.err.println("##Cannot find driver class: " + e);
             // e.printStackTrace();
-            lastError = e;
+            this.lastError = e;
         } catch (InstantiationException e) {
 
             // System.err.println("##Cannot instantiate driver class: " + e);
             // e.printStackTrace();
-            lastError = e;
+            this.lastError = e;
         } catch (IllegalAccessException e) {
             // ignore as this may happen depending on driver, it may not be severe
             // for example because the instance was created at class initialization time
         }
-        driverOK = true;
+        this.driverOK = true;
     }
 
 
@@ -98,7 +98,7 @@ public class DatabaseObject {
 
     DatabaseObject() {
         this.driverName = null;
-        driverOK = false; // Avoid usage of this object
+        this.driverOK = false; // Avoid usage of this object
     }
 
     public String getClassName() {
@@ -107,10 +107,10 @@ public class DatabaseObject {
 
     @Override
     public String toString() {
-         if (driverName==null) return "[database protoype]"; //$NON-NLS-1$
-         return "[Database: '" + driverName + //$NON-NLS-1$
-                 (driverOK ?
-                     (connection==null ? "' - disconnected] " : " - connected]") //$NON-NLS-1$ //$NON-NLS-2$
+         if (this.driverName==null) return "[database protoype]"; //$NON-NLS-1$
+         return "[Database: '" + this.driverName + //$NON-NLS-1$
+                 (this.driverOK ?
+                     (this.connection==null ? "' - disconnected] " : " - connected]") //$NON-NLS-1$ //$NON-NLS-2$
                  : " - in error]"); //$NON-NLS-1$
     }
 
@@ -120,11 +120,10 @@ public class DatabaseObject {
     }
 
     public Object getLastError() {
-        if (lastError == null) {
+        if (this.lastError == null) {
             return null;
-        } else {
-            return lastError;
         }
+        return this.lastError;
     }
 
 
@@ -137,21 +136,21 @@ public class DatabaseObject {
      * @return  true if successful, false otherwise
      */
     public boolean connect(String url, String userName, String password) {
-        if (!driverOK) {
-            lastError = new SQLException(Messages.getString("DatabaseObject.2")); //$NON-NLS-1$
+        if (!this.driverOK) {
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.2")); //$NON-NLS-1$
             return false;
         }
-        lastError = null;
+        this.lastError = null;
         try {
             if (userName == null) {
-                connection = DriverManager.getConnection(url);
+                this.connection = DriverManager.getConnection(url);
             } else {
-                connection = DriverManager.getConnection(url,userName,password);
+                this.connection = DriverManager.getConnection(url,userName,password);
             }
         } catch(Exception e) {
             // System.err.println("##Cannot connect: " + e);
             // e.printStackTrace();
-            lastError = e;
+            this.lastError = e;
             return false;
         }
         return true;
@@ -164,20 +163,20 @@ public class DatabaseObject {
      * @return  true if successful, false if error during idsconnect
      */
     public boolean disconnect() {
-        if (!driverOK) {
-            lastError = new SQLException(Messages.getString("DatabaseObject.3")); //$NON-NLS-1$
+        if (!this.driverOK) {
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.3")); //$NON-NLS-1$
             return false;
         }
-        lastError = null;
-        if (connection != null) {
+        this.lastError = null;
+        if (this.connection != null) {
              try {
-                connection.close();
-                connection = null;
-                lastError = null;
+                this.connection.close();
+                this.connection = null;
+                this.lastError = null;
            } catch (SQLException e) {
                 // System.err.println("##Cannot disonnect: " + e);
                 // e.printStackTrace();
-                lastError = e;
+                this.lastError = e;
                 return false;
             }
         }
@@ -185,29 +184,29 @@ public class DatabaseObject {
     }
 
     public void release()  {
-        if (driverOK) {
+        if (this.driverOK) {
             disconnect();
         }
     }
 
     public RowSet executeRetrieval(String sql) {
-        if (connection==null) {
-            lastError = new SQLException(Messages.getString("DatabaseObject.4")); //$NON-NLS-1$
+        if (this.connection==null) {
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.4")); //$NON-NLS-1$
             return null;
         }
         Statement statement = null;
         ResultSet resultSet = null;
 
         try {
-            connection.setReadOnly(true);
-            statement = connection.createStatement();
+            this.connection.setReadOnly(true);
+            statement = this.connection.createStatement();
             resultSet = statement.executeQuery(sql);     // will return true if first result is a result set
 
             return new RowSet(sql, this, statement, resultSet);
         } catch (SQLException e) {
             // System.err.println("##Cannot retrieve: " + e);
             // e.printStackTrace();
-            lastError = e;
+            this.lastError = e;
             try {
                 if (statement != null) statement.close();
             } catch (Exception ignored) {
@@ -220,21 +219,21 @@ public class DatabaseObject {
     public int executeCommand(String sql) {
         int count = 0;
 
-        if (connection==null) {
-            lastError = new SQLException(Messages.getString("DatabaseObject.5")); //$NON-NLS-1$
+        if (this.connection==null) {
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.5")); //$NON-NLS-1$
             return -1;
         }
 
         Statement statement = null;
         try {
 
-            connection.setReadOnly(false);
-            statement = connection.createStatement();
+            this.connection.setReadOnly(false);
+            statement = this.connection.createStatement();
             count = statement.executeUpdate(sql);     // will return true if first result is a result set
         } catch (SQLException e) {
             // System.err.println("##Cannot retrieve: " + e);
             // e.printStackTrace();
-            lastError = e;
+            this.lastError = e;
             try {
                 if (statement != null) statement.close();
             } catch (Exception ignored) {
@@ -242,7 +241,7 @@ public class DatabaseObject {
             statement = null;
             return -1;
         }
-        if (statement!=null) try {
+        try {
             statement.close();
         } catch (SQLException e) {
             // ignored
@@ -252,13 +251,13 @@ public class DatabaseObject {
 
     public Object getMetaData()
     {
-      if (databaseMetaData == null)
+      if (this.databaseMetaData == null)
          try {
-            databaseMetaData = connection.getMetaData();
+            this.databaseMetaData = this.connection.getMetaData();
          } catch (SQLException e) {
             // ignored
          }
-      return databaseMetaData;
+      return this.databaseMetaData;
     }
 
     /**
@@ -291,16 +290,16 @@ public class DatabaseObject {
             try {
 
                 this.resultSetMetaData = resultSet.getMetaData();
-                int numcols = resultSetMetaData.getColumnCount();
+                int numcols = this.resultSetMetaData.getColumnCount();
                 //IServer.getLogger().log("$$NEXT : " + numcols);
-                colNames = new Vector(numcols);
+                this.colNames = new Vector(numcols);
                 for (int i=0; i<numcols; i++) {
-                   String colName = resultSetMetaData.getColumnLabel(i+1);
+                   String colName = this.resultSetMetaData.getColumnLabel(i+1);
                    //IServer.getLogger().log("$$COL : " + colName);
-                   colNames.addElement(colName);
+                   this.colNames.addElement(colName);
                 }
             } catch(SQLException e) {
-                colNames = new Vector(); // An empty one
+                this.colNames = new Vector(); // An empty one
                 throw new SQLException(Messages.getString("DatabaseObject.6")+e); //$NON-NLS-1$
 
                 // System.err.println("##Cannot get column names: " + e);
@@ -319,101 +318,97 @@ public class DatabaseObject {
         }
 
         public int getColumnCount() {
-            return colNames.size();
+            return this.colNames.size();
         }
 
         public Object getMetaData()
         {
-          return resultSetMetaData;
+          return this.resultSetMetaData;
         }
 
         public Object getLastError() {
-            if (lastError == null) {
+            if (this.lastError == null) {
                 return null;
-            } else {
-                return lastError;
             }
+            return this.lastError;
         }
 
 
         public void release() {
             try {
-                if (statement!= null) statement.close();
-                if (resultSet != null) resultSet.close();
+                if (this.statement!= null) this.statement.close();
+                if (this.resultSet != null) this.resultSet.close();
             } catch (SQLException e) {
                 // ignored
             }
-            statement = null;
-            resultSet = null;
-            resultSetMetaData = null;
+            this.statement = null;
+            this.resultSet = null;
+            this.resultSetMetaData = null;
         }
 
         public boolean hasMoreRows() {
-            return !lastRowSeen;   // Simplistic implementation
+            return !this.lastRowSeen;   // Simplistic implementation
         }
 
         public String getColumnName(int idx) {
-           if (resultSet == null) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.7")); //$NON-NLS-1$
+           if (this.resultSet == null) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.7")); //$NON-NLS-1$
                 return null;
            }
-            if (idx>0 && idx <=colNames.size()) {
-                return (String) colNames.elementAt(idx-1); // to base 0
-            } else {
-                lastError = new SQLException(Messages.getString("DatabaseObject.8") + idx + //$NON-NLS-1$
-                                            Messages.getString("DatabaseObject.9") +colNames.size()); //$NON-NLS-1$
-                return null;
+            if (idx>0 && idx <=this.colNames.size()) {
+                return (String) this.colNames.elementAt(idx-1); // to base 0
             }
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.8") + idx + //$NON-NLS-1$
+                                        Messages.getString("DatabaseObject.9") +this.colNames.size()); //$NON-NLS-1$
+            return null;
         }
 
 
         public int getColumnDatatypeNumber(int idx) {
-           if (resultSet == null) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.10")); //$NON-NLS-1$
+           if (this.resultSet == null) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.10")); //$NON-NLS-1$
                 return -1;
            }
-            if (idx>0 && idx <=colNames.size()) {
+            if (idx>0 && idx <=this.colNames.size()) {
                 try {
-                    return resultSetMetaData.getColumnType(idx);
+                    return this.resultSetMetaData.getColumnType(idx);
                 } catch (SQLException e) {
-                    lastError = e;
+                    this.lastError = e;
                     return -1;
                 }
-            } else {
-                lastError = new SQLException(Messages.getString("DatabaseObject.11") + idx + //$NON-NLS-1$
-                                            Messages.getString("DatabaseObject.12") +colNames.size()); //$NON-NLS-1$
-                return -1;
             }
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.11") + idx + //$NON-NLS-1$
+                                        Messages.getString("DatabaseObject.12") +this.colNames.size()); //$NON-NLS-1$
+            return -1;
         }
 
 
         public String getColumnDatatypeName(int idx) {
-           if (resultSet == null) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.13")); //$NON-NLS-1$
+           if (this.resultSet == null) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.13")); //$NON-NLS-1$
                 return null;
            }
-            if (idx>0 && idx <=colNames.size()) {
+            if (idx>0 && idx <=this.colNames.size()) {
                 try {
-                    return resultSetMetaData.getColumnTypeName(idx);
+                    return this.resultSetMetaData.getColumnTypeName(idx);
                 } catch (SQLException e) {
-                    lastError = e;
+                    this.lastError = e;
                     return null;
                 }
-            } else {
-                lastError = new SQLException(Messages.getString("DatabaseObject.14") + idx + //$NON-NLS-1$
-                                            Messages.getString("DatabaseObject.15") +colNames.size()); //$NON-NLS-1$
-                return null;
             }
+            this.lastError = new SQLException(Messages.getString("DatabaseObject.14") + idx + //$NON-NLS-1$
+                                        Messages.getString("DatabaseObject.15") +this.colNames.size()); //$NON-NLS-1$
+            return null;
         }
 
 
         public Object getColumnItem(String propertyName) {
-           if (resultSet == null) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.16")); //$NON-NLS-1$
+           if (this.resultSet == null) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.16")); //$NON-NLS-1$
                 return null;
            }
-           if (!firstRowSeen) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.17")); //$NON-NLS-1$
+           if (!this.firstRowSeen) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.17")); //$NON-NLS-1$
                 return null;
            }
            try {
@@ -421,13 +416,13 @@ public class DatabaseObject {
                     int index = Integer.parseInt(propertyName);
                     return getProperty(index);
                 } catch (NumberFormatException e) {
-                    int index = resultSet.findColumn(propertyName);
+                    int index = this.resultSet.findColumn(propertyName);
                     return getProperty(index);
                 }
            } catch (SQLException e) {
               //System.err.println("##Cannot get property '" + propertyName + "' " + e);
               //e.printStackTrace();
-              lastError = e;
+              this.lastError = e;
            }
            return null;
         }
@@ -478,57 +473,56 @@ public class DatabaseObject {
         */
 
         public Object getProperty(int index) {
-            if (!firstRowSeen) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.18")); //$NON-NLS-1$
+            if (!this.firstRowSeen) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.18")); //$NON-NLS-1$
                 return null;
             }
-            if (resultSet == null) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.19")); //$NON-NLS-1$
+            if (this.resultSet == null) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.19")); //$NON-NLS-1$
                 return null;
             }
 
-            lastError = null;
+            this.lastError = null;
             try {
-                int type = resultSetMetaData.getColumnType(index);
+                int type = this.resultSetMetaData.getColumnType(index);
                 switch (type) {
                     case Types.BIT:
                     case Types.BOOLEAN:
-                        return resultSet.getBoolean(index) ? Boolean.TRUE : Boolean.FALSE;
+                        return this.resultSet.getBoolean(index) ? Boolean.TRUE : Boolean.FALSE;
 
                     case Types.TINYINT:
                     case Types.BIGINT:
                     case Types.SMALLINT:
                     case Types.INTEGER:
-                        return new Long(resultSet.getLong(index));
+                        return new Long(this.resultSet.getLong(index));
 
                     case Types.REAL:
                     case Types.FLOAT:
                     case Types.DOUBLE:
-                        return new Double(resultSet.getDouble(index));
+                        return new Double(this.resultSet.getDouble(index));
 
                     case Types.DECIMAL:
                     case Types.NUMERIC:
-                        BigDecimal num = resultSet.getBigDecimal(index);
+                        BigDecimal num = this.resultSet.getBigDecimal(index);
                         if (num == null) {
                             break;
                         }
 
                         if (num.scale() > 0) {
                             return new Double(num.doubleValue());
-                        } else {
-                            return new Long(num.longValue());
                         }
+                        return new Long(num.longValue());
 
                     case Types.VARBINARY:
                     case Types.BINARY:
-                        return resultSet.getString(index);
+                        return this.resultSet.getString(index);
 
                     case Types.LONGVARBINARY:
                     case Types.LONGVARCHAR:
                         try {
-                            return resultSet.getString(index);
+                            return this.resultSet.getString(index);
                         } catch (SQLException x) {
-                            Reader in = resultSet.getCharacterStream(index);
+                            Reader in = this.resultSet.getCharacterStream(index);
                             char[] buffer = new char[2048];
                             int read = 0;
                             int r = 0;
@@ -551,13 +545,13 @@ public class DatabaseObject {
                     case Types.DATE:
                     case Types.TIME:
                     case Types.TIMESTAMP:
-                        return resultSet.getTimestamp(index);
+                        return this.resultSet.getTimestamp(index);
 
                     case Types.NULL:
                         return null;
 
                     case Types.CLOB:
-                        Clob cl = resultSet.getClob(index);
+                        Clob cl = this.resultSet.getClob(index);
                         if (cl == null) {
                             return null;
                         }
@@ -567,14 +561,14 @@ public class DatabaseObject {
                         return String.copyValueOf(c);
 
                     default:
-                        return resultSet.getString(index);
+                        return this.resultSet.getString(index);
                 }
             } catch (SQLException e) {
                 // System.err.println("##Cannot get property: " + e);
                 // e.printStackTrace();
-                lastError = e;
+                this.lastError = e;
             } catch (IOException ioe) {
-                lastError = ioe;
+                this.lastError = ioe;
             }
 
             return null;
@@ -586,10 +580,10 @@ public class DatabaseObject {
          * @return the enumerator - may have 0 length of coulmn names where not found
          */
        public Enumeration getProperties() {
-           if (resultSet == null) {
+           if (this.resultSet == null) {
                 return (new Vector()).elements();
            }
-           return colNames.elements();
+           return this.colNames.elements();
        }
 
 
@@ -600,33 +594,33 @@ public class DatabaseObject {
 
         public boolean next() {
             boolean status = false;
-            if (lastRowSeen) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.20")); //$NON-NLS-1$
+            if (this.lastRowSeen) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.20")); //$NON-NLS-1$
                 return false;
             }
-            if (resultSet == null) {
-                lastError = new SQLException(Messages.getString("DatabaseObject.21")); //$NON-NLS-1$
+            if (this.resultSet == null) {
+                this.lastError = new SQLException(Messages.getString("DatabaseObject.21")); //$NON-NLS-1$
                 return false;
             }
             try {
-                status = resultSet.next();
-                lastError = null;
+                status = this.resultSet.next();
+                this.lastError = null;
             } catch (SQLException e) {
                 // System.err.println("##Cannot do next:" + e);
                 // e.printStackTrace();
-                lastError = e;
+                this.lastError = e;
             }
-            if (status) firstRowSeen = true;
-            else lastRowSeen = true;
+            if (status) this.firstRowSeen = true;
+            else this.lastRowSeen = true;
             return status;
        }
 
         @Override
         public String toString() {
-            return "[RowSet: '"+sql+"'" +  //$NON-NLS-1$//$NON-NLS-2$
-                   (resultSet==null ? " - released]" : //$NON-NLS-1$
-                       (lastRowSeen ? " - at end]" : //$NON-NLS-1$
-                       (firstRowSeen ? "]" : " - at start]")));  //$NON-NLS-1$//$NON-NLS-2$
+            return "[RowSet: '"+this.sql+"'" +  //$NON-NLS-1$//$NON-NLS-2$
+                   (this.resultSet==null ? " - released]" : //$NON-NLS-1$
+                       (this.lastRowSeen ? " - at end]" : //$NON-NLS-1$
+                       (this.firstRowSeen ? "]" : " - at start]")));  //$NON-NLS-1$//$NON-NLS-2$
         }
 
     }

@@ -49,7 +49,7 @@ class ScriptBeanProxy implements SerializationProxy {
      * @return the object represented by this proxy
      */
     public Object getObject(RhinoEngine engine) {
-        return engine.global.get(name, engine.global);
+        return engine.global.get(this.name, engine.global);
     }
 
 }
@@ -63,7 +63,7 @@ class GlobalProxy implements SerializationProxy {
     boolean shared;
 
     GlobalProxy(GlobalObject scope) {
-        shared = !scope.isThreadScope;
+        this.shared = !scope.isThreadScope;
     }
 
     /**
@@ -72,7 +72,7 @@ class GlobalProxy implements SerializationProxy {
      * @return the object represented by this proxy
      */
     public Object getObject(RhinoEngine engine) {
-        return shared ? engine.core.global : engine.global;
+        return this.shared ? engine.core.global : engine.global;
     }
 }
 
@@ -88,19 +88,19 @@ class HopObjectProxy implements SerializationProxy {
     HopObjectProxy(HopObject obj) {
         INode n = obj.getNode();
         if (n == null) {
-            ref = obj.getClassName();
+            this.ref = obj.getClassName();
         } else {
             if (n instanceof Node) {
-                ref = ((Node) n).getHandle();
+                this.ref = ((Node) n).getHandle();
             } else {
-                ref = n;
+                this.ref = n;
             }
         }
-        wrapped = true;
+        this.wrapped = true;
     }
 
     HopObjectProxy(Node node) {
-        ref = node.getHandle();
+        this.ref = node.getHandle();
     }
 
     /**
@@ -109,13 +109,13 @@ class HopObjectProxy implements SerializationProxy {
      * @return the object represented by this proxy
      */
     public Object getObject(RhinoEngine engine) {
-        if (ref instanceof String)
-            return engine.core.getPrototype((String) ref);
-        else if (ref instanceof NodeHandle) {
-            Object n = ((NodeHandle) ref).getNode(engine.app.getWrappedNodeManager());
-            return wrapped ? Context.toObject(n, engine.global) : n;
+        if (this.ref instanceof String)
+            return engine.core.getPrototype((String) this.ref);
+        else if (this.ref instanceof NodeHandle) {
+            Object n = ((NodeHandle) this.ref).getNode(engine.app.getWrappedNodeManager());
+            return this.wrapped ? Context.toObject(n, engine.global) : n;
         }
-        return Context.toObject(ref, engine.global);
+        return Context.toObject(this.ref, engine.global);
     }
 
 }

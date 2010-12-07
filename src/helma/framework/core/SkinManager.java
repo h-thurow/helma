@@ -38,8 +38,8 @@ public final class SkinManager implements FilenameFilter {
      */
     public SkinManager(Application app) {
         this.app = app;
-        skinProperty = app.getProperty("skinProperty", "skin"); //$NON-NLS-1$ //$NON-NLS-2$
-        skinExtension = ".skin"; //$NON-NLS-1$
+        this.skinProperty = app.getProperty("skinProperty", "skin"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.skinExtension = ".skin"; //$NON-NLS-1$
     }
 
     public Skin getSkin(Prototype prototype, String skinname, Object[] skinpath)
@@ -113,10 +113,10 @@ public final class SkinManager implements FilenameFilter {
                 n = (INode) n.getChildElement(skinname);
 
                 if (n != null) {
-                    String skin = n.getString(skinProperty);
+                    String skin = n.getString(this.skinProperty);
 
                     if (skin != null) {
-                        return new Skin(skin, app);
+                        return new Skin(skin, this.app);
                     }
                 }
             }
@@ -125,14 +125,14 @@ public final class SkinManager implements FilenameFilter {
             // retrieve the skin
             StringBuffer b = new StringBuffer(skinset.toString());
             b.append(File.separatorChar).append(prototype).append(File.separatorChar)
-                         .append(skinname).append(skinExtension);
+                         .append(skinname).append(this.skinExtension);
 
             // TODO: check for lower case prototype name for backwards compat
 
             File f = new File(b.toString());
 
             if (f.exists() && f.canRead()) {
-                return Skin.getSkin(new FileResource(f), app);
+                return Skin.getSkin(new FileResource(f), this.app);
             }
         }
 
@@ -145,6 +145,6 @@ public final class SkinManager implements FilenameFilter {
      * Implements java.io.FilenameFilter.accept()
      */
     public boolean accept(File d, String n) {
-        return n.endsWith(skinExtension);
+        return n.endsWith(this.skinExtension);
     }
 }

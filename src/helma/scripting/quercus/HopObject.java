@@ -305,7 +305,7 @@ public class HopObject extends ObjectExtJavaValue {
      * @return The child node or null, if the index was out of range
      */
     public HopObject get(final int index) {
-        return new HopObject(_node.getSubnodeAt(index), this._engine);
+        return new HopObject(this._node.getSubnodeAt(index), this._engine);
     }
 
     /**
@@ -370,7 +370,7 @@ public class HopObject extends ObjectExtJavaValue {
      *         given id
      */
     public HopObject getById(final String id) {
-        return new HopObject(_node.getSubnode(id), this._engine);
+        return new HopObject(this._node.getSubnode(id), this._engine);
     }
 
     /**
@@ -774,15 +774,11 @@ public class HopObject extends ObjectExtJavaValue {
      *            The parameters to provide to the skin
      * @throws ScriptingException
      */
-    private void renderSkin(final Skin skin, final Object[] parameters)
-            throws ScriptingException {
+    private void renderSkin(final Skin skin, final Object[] parameters) {
         try {
             skin.render(this._engine.getRequestEvaluator(), this._node, parameters);
         } catch (final RedirectException e) {
             // ignored by intention
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
@@ -819,9 +815,6 @@ public class HopObject extends ObjectExtJavaValue {
                     parameters);
         } catch (final RedirectException e) {
             // ignored by intention
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
         return ""; //$NON-NLS-1$

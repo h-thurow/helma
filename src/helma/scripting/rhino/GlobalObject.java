@@ -79,8 +79,8 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
                                };
 
         defineFunctionProperties(globalFuncs, GlobalObject.class, DONTENUM | PERMANENT);
-        put("app", this, Context.toObject(new ApplicationBean(app), this)); //$NON-NLS-1$
-        put("Xml", this, Context.toObject(new XmlObject(core), this)); //$NON-NLS-1$
+        put("app", this, Context.toObject(new ApplicationBean(this.app), this)); //$NON-NLS-1$
+        put("Xml", this, Context.toObject(new XmlObject(this.core), this)); //$NON-NLS-1$
         put("global", this, this); //$NON-NLS-1$
         // Define dontEnum() on Object prototype
         String[] objFuncs = { "dontEnum" }; //$NON-NLS-1$
@@ -109,15 +109,14 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     @Override
     public void put(String name, Scriptable start, Object value) {
         // register property for PropertyRecorder interface
-        if (isRecording) {
+        if (this.isRecording) {
             // if during compilation a property is set on the thread scope
             // forward it to the shared scope (bug 504)
-            if (isThreadScope) {
-                core.global.put(name, core.global, value);
+            if (this.isThreadScope) {
+                this.core.global.put(name, this.core.global, value);
                 return;
-            } else {
-                changedProperties.add(name);
             }
+            this.changedProperties.add(name);
         }
         super.put(name, start, value);
     }
@@ -133,11 +132,11 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     @Override
     public Object get(String name, Scriptable start) {
         // register property for PropertyRecorder interface
-        if (isRecording) {
-            changedProperties.add(name);
+        if (this.isRecording) {
+            this.changedProperties.add(name);
         }
         // expose thread scope as global variable "global"
-        if (isThreadScope && "global".equals(name)) { //$NON-NLS-1$
+        if (this.isThreadScope && "global".equals(name)) { //$NON-NLS-1$
             return this;
         }
         return super.get(name, start);
@@ -195,10 +194,9 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     public String getProperty(String propname, Object defvalue) {
         if (defvalue == Undefined.instance) {
-            return app.getProperty(propname);
-        } else {
-            return app.getProperty(propname, toString(defvalue));
+            return this.app.getProperty(propname);
         }
+        return this.app.getProperty(propname, toString(defvalue));
     }
 
     /**
@@ -210,7 +208,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * @return ...
      */
     public boolean authenticate(String user, String pwd) {
-        return app.authenticate(user, pwd);
+        return this.app.authenticate(user, pwd);
     }
 
     /**
@@ -221,7 +219,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * @return a parsed skin object
      */
     public Object createSkin(String str) {
-        return Context.toObject(new Skin(str, app), this);
+        return Context.toObject(new Skin(str, this.app), this);
     }
 
     /**
@@ -234,7 +232,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     public Object getDBConnection(String dbsource) throws Exception {
         if (dbsource == null)
             throw new EvaluatorException(Messages.getString("GlobalObject.0")); //$NON-NLS-1$
-        DbSource dbsrc = app.getDbSource (dbsource);
+        DbSource dbsrc = this.app.getDbSource (dbsource);
         if (dbsrc == null)
             throw new EvaluatorException(Messages.getString("GlobalObject.1")+dbsource+Messages.getString("GlobalObject.2")); //$NON-NLS-1$ //$NON-NLS-2$
         DatabaseObject db = new DatabaseObject (dbsrc);
@@ -282,7 +280,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
                 }
             }
 
-            String httpUserAgent = app.getProperty("httpUserAgent"); //$NON-NLS-1$
+            String httpUserAgent = this.app.getProperty("httpUserAgent"); //$NON-NLS-1$
 
             if (httpUserAgent != null) {
                 con.setRequestProperty("User-Agent", httpUserAgent); //$NON-NLS-1$
@@ -330,7 +328,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
             return Context.toObject(mime, this);
         } catch (Exception x) {
-            app.logError(Messages.getString("GlobalObject.3")+location, x); //$NON-NLS-1$
+            this.app.logError(Messages.getString("GlobalObject.3")+location, x); //$NON-NLS-1$
         }
 
         return null;
@@ -350,7 +348,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
             return Context.toObject(doc, this);
         } catch (Exception x) {
-            app.logError(Messages.getString("GlobalObject.4"),  x); //$NON-NLS-1$
+            this.app.logError(Messages.getString("GlobalObject.4"),  x); //$NON-NLS-1$
         }
 
         return null;
@@ -370,9 +368,9 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
             return Context.toObject(doc, this);
         } catch (IOException iox) {
-            app.logError(Messages.getString("GlobalObject.5"), iox); //$NON-NLS-1$
+            this.app.logError(Messages.getString("GlobalObject.5"), iox); //$NON-NLS-1$
         } catch (SAXException sx) {
-            app.logError(Messages.getString("GlobalObject.6"), sx); //$NON-NLS-1$
+            this.app.logError(Messages.getString("GlobalObject.6"), sx); //$NON-NLS-1$
         }
 
         return null;
@@ -418,7 +416,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             throw ScriptRuntime.constructError("TypeError", //$NON-NLS-1$
                 Messages.getString("GlobalObject.7") + obj); //$NON-NLS-1$
         }
-        return new MapWrapper((Map) obj, core);
+        return new MapWrapper((Map) obj, this.core);
     }
 
     /**
@@ -432,7 +430,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
                 Messages.getString("GlobalObject.8") + obj); //$NON-NLS-1$
         }
         obj = ((MapWrapper) obj).unwrap();
-        return new NativeJavaObject(core.global, obj, Map.class);
+        return new NativeJavaObject(this.core.global, obj, Map.class);
     }
 
     /**
@@ -565,9 +563,8 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
                 if (!(arg instanceof Scriptable) || arg == Undefined.instance)
                 {
                     throw new EvaluatorException(Messages.getString("GlobalObject.9")); //$NON-NLS-1$
-                } else {
-                    throw new EvaluatorException(Messages.getString("GlobalObject.10")); //$NON-NLS-1$
                 }
+                throw new EvaluatorException(Messages.getString("GlobalObject.10")); //$NON-NLS-1$
             }
         }
 
@@ -699,12 +696,12 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             throw new IllegalArgumentException(Messages.getString("GlobalObject.17")); //$NON-NLS-1$
         }
 
-        Prototype proto = core.app.definePrototype(name, core.scriptableToProperties(desc));
-        RhinoCore.TypeInfo type = (RhinoCore.TypeInfo) core.prototypes.get(proto.getLowerCaseName());
+        Prototype proto = this.core.app.definePrototype(name, this.core.scriptableToProperties(desc));
+        RhinoCore.TypeInfo type = (RhinoCore.TypeInfo) this.core.prototypes.get(proto.getLowerCaseName());
         if (type == null) {
-            type = core.initPrototype(proto);
+            type = this.core.initPrototype(proto);
         }
-        core.setParentPrototype(proto, type);
+        this.core.setParentPrototype(proto, type);
         return type.objProto;
     }
 
@@ -722,15 +719,15 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * Tell this PropertyRecorder to start recording changes to properties
      */
     public void startRecording() {
-        changedProperties = new HashSet();
-        isRecording = true;
+        this.changedProperties = new HashSet();
+        this.isRecording = true;
     }
 
     /**
      * Tell this PropertyRecorder to stop recording changes to properties
      */
     public void stopRecording() {
-        isRecording = false;
+        this.isRecording = false;
     }
 
     /**
@@ -740,18 +737,18 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * @return a Set containing the names of changed properties
      */
     public Set getChangeSet() {
-        return changedProperties;
+        return this.changedProperties;
     }
 
     /**
      * Clear the set of changed properties.
      */
     public void clearChangeSet() {
-        changedProperties = null;
+        this.changedProperties = null;
     }
 
     @Override
     public String toString() {
-        return isThreadScope ? "[Thread Scope]" : "[Shared Scope]";  //$NON-NLS-1$//$NON-NLS-2$
+        return this.isThreadScope ? "[Thread Scope]" : "[Shared Scope]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

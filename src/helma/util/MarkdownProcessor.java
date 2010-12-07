@@ -25,7 +25,7 @@ public class MarkdownProcessor {
     // private Logger log = Logger.getLogger(MarkdownProcessor.class);
     private int line;
 
-    private final int
+    private final static int
         // stage 1 states
         NONE = 0, NEWLINE = 1, LINK_ID = 2, LINK_URL = 3,
         // stage 2 states
@@ -64,13 +64,13 @@ public class MarkdownProcessor {
     }
 
     public MarkdownProcessor(File file) throws IOException {
-        length = (int) file.length();
-        chars = new char[length + 2];
+        this.length = (int) file.length();
+        this.chars = new char[this.length + 2];
         FileReader reader = new FileReader(file);
         int read = 0;
         try {
-            while (read < length) {
-                int r = reader.read(chars, read, length - read);
+            while (read < this.length) {
+                int r = reader.read(this.chars, read, this.length - read);
                 if (r == -1)
                     break;
                 read += r;
@@ -78,8 +78,8 @@ public class MarkdownProcessor {
         } finally {
             reader.close();
         }
-        length = read;
-        chars[length] = chars[length + 1] = '\n';
+        this.length = read;
+        this.chars[this.length] = this.chars[this.length + 1] = '\n';
     }
 
     public synchronized String process(String text) {
@@ -88,14 +88,14 @@ public class MarkdownProcessor {
     }
 
     public synchronized String process() {
-        if (result == null) {
-            length = chars.length;
+        if (this.result == null) {
+            this.length = this.chars.length;
             firstPass();
             secondPass();
-            result = buffer.toString();
+            this.result = this.buffer.toString();
             cleanup();
         }
-        return result;
+        return this.result;
     }
 
     public synchronized String processLinkText(String text) {
@@ -104,10 +104,10 @@ public class MarkdownProcessor {
     }
 
     private void init(String text) {
-        length = text.length();
-        chars = new char[length + 2];
-        text.getChars(0, length, chars, 0);
-        chars[length] = chars[length + 1] = '\n';
+        this.length = text.length();
+        this.chars = new char[this.length + 2];
+        text.getChars(0, this.length, this.chars, 0);
+        this.chars[this.length] = this.chars[this.length + 1] = '\n';
     }
 
    /**
@@ -117,7 +117,7 @@ public class MarkdownProcessor {
     * @return a String array with the url as first element and the link title as second.
     */
     protected String[] getLink(String linkId) {
-        String[] link =  (String[]) links.get(linkId);
+        String[] link =  (String[]) this.links.get(linkId);
         if (link == null) {
             link = lookupLink(linkId);
         }
@@ -146,59 +146,59 @@ public class MarkdownProcessor {
      * First pass: extract links definitions and remove them from the source text.
      */
     private synchronized void firstPass() {
-        int state = NEWLINE;
+        int state = MarkdownProcessor.NEWLINE;
         int linestart = 0;
         int indentation = 0;
         int indentationChars = 0;
         String linkId = null;
         String[] linkValue = null;
         StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < this.length; i++) {
             // convert \r\n and \r newlines to \n
-            if (chars[i] == '\r') {
-                if (i < length && chars[i + 1] == '\n') {
-                    System.arraycopy(chars, i + 1, chars, i, (length - i) - 1);
-                    length -= 1;
+            if (this.chars[i] == '\r') {
+                if (i < this.length && this.chars[i + 1] == '\n') {
+                    System.arraycopy(this.chars, i + 1, this.chars, i, (this.length - i) - 1);
+                    this.length -= 1;
                 } else {
-                    chars[i] = '\n';
+                    this.chars[i] = '\n';
                 }
             }
         }
 
-        for (int i = 0; i < length; i++) {
-            char c = chars[i];
+        for (int i = 0; i < this.length; i++) {
+            char c = this.chars[i];
 
             switch (state) {
-                case NEWLINE:
+                case MarkdownProcessor.NEWLINE:
                     if (c == '[' && indentation < 4) {
-                        state = LINK_ID;
+                        state = MarkdownProcessor.LINK_ID;
                     } else if (isSpace(c)) {
                         indentationChars += 1;
                         indentation += (c == '\t') ? 4 : 1;
                     } else if (c == '\n' && indentationChars > 0) {
-                        System.arraycopy(chars, i, chars, i - indentationChars, length - i);
+                        System.arraycopy(this.chars, i, this.chars, i - indentationChars, this.length - i);
                         i -= indentationChars;
-                        length -= indentationChars;
+                        this.length -= indentationChars;
                     } else {
-                        state = NONE;
+                        state = MarkdownProcessor.NONE;
                     }
                     break;
-                case LINK_ID:
+                case MarkdownProcessor.LINK_ID:
                     if (c == ']') {
-                        if (i < length - 1 && chars[i + 1] == ':') {
+                        if (i < this.length - 1 && this.chars[i + 1] == ':') {
                             linkId = buffer.toString();
                             linkValue = new String[2];
-                            state = LINK_URL;
+                            state = MarkdownProcessor.LINK_URL;
                             i++;
                         } else {
-                            state = NONE;
+                            state = MarkdownProcessor.NONE;
                         }
                         buffer.setLength(0);
                     } else {
                         buffer.append(c);
                     }
                     break;
-                case LINK_URL:
+                case MarkdownProcessor.LINK_URL:
                     if (c == '<' && buffer.length() == 0) {
                         continue;
                     } else if ((Character.isWhitespace(c) || c == '>') && buffer.length() > 0) {
@@ -206,46 +206,45 @@ public class MarkdownProcessor {
                         buffer.setLength(0);
                         int j = i + 1;
                         int newlines = c == '\n' ? 1 : 0;
-                        while (j < length && Character.isWhitespace(chars[j])) {
-                            if (chars[j] == '\n') {
+                        while (j < this.length && Character.isWhitespace(this.chars[j])) {
+                            if (this.chars[j] == '\n') {
                                 newlines += 1;
                                 if (newlines > 1) {
                                     break;
-                                } else {
-                                    i = j;
-                                    c = chars[j];
                                 }
+                                i = j;
+                                c = this.chars[j];
                             }
                             j += 1;
                         }
-                        if (j < length && newlines <= 1 && isLinkQuote(chars[j])) {
-                            char quoteChar = chars[j] == '(' ? ')' : chars[j];
+                        if (j < this.length && newlines <= 1 && isLinkQuote(this.chars[j])) {
+                            char quoteChar = this.chars[j] == '(' ? ')' : this.chars[j];
                             int start = j = j + 1;
                             int len = -1;
-                            while (j < length && chars[j] != '\n') {
-                                if (chars[j] == quoteChar) {
+                            while (j < this.length && this.chars[j] != '\n') {
+                                if (this.chars[j] == quoteChar) {
                                     len = j - start;
-                                } else if (len > -1 && !isSpace(chars[j])) {
+                                } else if (len > -1 && !isSpace(this.chars[j])) {
                                     len = -1;
                                 }
                                 j += 1;
                             }
                             if (len > -1) {
-                                linkValue[1] = new String(chars, start, len);
+                                linkValue[1] = new String(this.chars, start, len);
                                 i = j;
-                                c = chars[j];
+                                c = this.chars[j];
                             }
                         }
-                        if (c == '\n' && state != NONE) {
-                            links.put(linkId.toLowerCase(), linkValue);
-                            System.arraycopy(chars, i, chars, linestart, length - i);
-                            length -= (i - linestart);
+                        if (c == '\n' && state != MarkdownProcessor.NONE) {
+                            this.links.put(linkId.toLowerCase(), linkValue);
+                            System.arraycopy(this.chars, i, this.chars, linestart, this.length - i);
+                            this.length -= (i - linestart);
                             i = linestart;
                             buffer.setLength(0);
                             linkId = null;
                         } else {
                             // no valid link title - escape
-                            state = NONE;
+                            state = MarkdownProcessor.NONE;
                         }
                     } else if (!isSpace(c) || buffer.length() > 0) {
                         buffer.append(c);
@@ -253,7 +252,7 @@ public class MarkdownProcessor {
             }
 
             if (c == '\n') {
-                state = NEWLINE;
+                state = MarkdownProcessor.NEWLINE;
                 linestart = i;
                 indentation = indentationChars = 0;
             }
@@ -262,40 +261,40 @@ public class MarkdownProcessor {
     }
 
     private synchronized void secondPass() {
-        state = NEWLINE;
-        stack.add(new BaseElement());
-        buffer = new StringBuilder((int) (length * 1.2));
-        line = 1;
+        this.state = MarkdownProcessor.NEWLINE;
+        this.stack.add(new BaseElement());
+        this.buffer = new StringBuilder((int) (this.length * 1.2));
+        this.line = 1;
         boolean escape = false;
 
-        for (i = 0; i < length; ) {
+        for (this.i = 0; this.i < this.length; ) {
             char c;
 
-            if (state == NEWLINE) {
+            if (this.state == MarkdownProcessor.NEWLINE) {
                 checkBlock(0);
             }
 
             boolean leadingSpaceChars = true;
 
-            while (i < length && chars[i] != '\n') {
+            while (this.i < this.length && this.chars[this.i] != '\n') {
 
-                c = chars[i];
+                c = this.chars[this.i];
                 leadingSpaceChars = leadingSpaceChars && isSpace(c);
 
-                if (state == HTML_BLOCK) {
-                    buffer.append(c);
-                    i += 1;
+                if (this.state == MarkdownProcessor.HTML_BLOCK) {
+                    this.buffer.append(c);
+                    this.i += 1;
                     continue;
                 }
 
                 if (escape) {
-                    buffer.append(c);
+                    this.buffer.append(c);
                     escape = false;
-                    i += 1;
+                    this.i += 1;
                     continue;
                 } else if (c == '\\') {
                     escape = true;
-                    i += 1;
+                    this.i += 1;
                     continue;
                 }
 
@@ -332,78 +331,78 @@ public class MarkdownProcessor {
                         break;
                 }
 
-                if (state == HEADER) {
+                if (this.state == MarkdownProcessor.HEADER) {
                     if (c == '#') {
-                        ((Element) stack.peek()).mod++;
+                        ((Element) this.stack.peek()).mod++;
                     } else {
-                        ((Element) stack.peek()).mod = 0;
+                        ((Element) this.stack.peek()).mod = 0;
                     }
                 }
 
                 if (!leadingSpaceChars) {
-                    buffer.append(c);
+                    this.buffer.append(c);
                 }
-                i += 1;
+                this.i += 1;
 
             }
 
-            while (i < length && chars[i] == '\n') {
+            while (this.i < this.length && this.chars[this.i] == '\n') {
 
-                c = chars[i];
-                line += 1;
+                c = this.chars[this.i];
+                this.line += 1;
 
-                if (state == HTML_BLOCK &&
-                        (i >= length - 1 || chars[i + 1] != '\n')) {
-                    buffer.append(c);
-                    i += 1;
+                if (this.state == MarkdownProcessor.HTML_BLOCK &&
+                        (this.i >= this.length - 1 || this.chars[this.i + 1] != '\n')) {
+                    this.buffer.append(c);
+                    this.i += 1;
                     continue;
                 }
-                if (state == HEADER) {
-                    Element header = (Element) stack.pop();
+                if (this.state == MarkdownProcessor.HEADER) {
+                    Element header = (Element) this.stack.pop();
                     if (header.mod > 0) {
-                        buffer.setLength(buffer.length() - header.mod);
+                        this.buffer.setLength(this.buffer.length() - header.mod);
                     }
                     header.close();
                 }
 
-                int bufLen = buffer.length();
-                boolean markParagraph = bufLen > 0 && buffer.charAt(bufLen - 1) == '\n';
+                int bufLen = this.buffer.length();
+                boolean markParagraph = bufLen > 0 && this.buffer.charAt(bufLen - 1) == '\n';
 
-                if (state == LIST && i < length) {
-                    checkParagraph(listParagraphs);
+                if (this.state == MarkdownProcessor.LIST && this.i < this.length) {
+                    checkParagraph(this.listParagraphs);
                 }
-                if (state == PARAGRAPH && i < length) {
+                if (this.state == MarkdownProcessor.PARAGRAPH && this.i < this.length) {
                     checkParagraph(true);
                     checkHeader();
                 }
 
-                buffer.append(c);
-                state = NEWLINE;
-                lineMarker = buffer.length();
+                this.buffer.append(c);
+                this.state = MarkdownProcessor.NEWLINE;
+                this.lineMarker = this.buffer.length();
 
                 if (markParagraph) {
-                    paragraphStartMarker = lineMarker;
+                    this.paragraphStartMarker = this.lineMarker;
                 }
-                i += 1;
+                this.i += 1;
 
             }
 
         }
-        while (!stack.isEmpty()) {
-            ((Element) stack.pop()).close();
+        while (!this.stack.isEmpty()) {
+            ((Element) this.stack.pop()).close();
         }
     }
 
     private boolean checkBlock(int blockquoteNesting) {
         int indentation = 0;
-        int j = i;
-        while (j < length && isSpace(chars[j])) {
-            indentation += chars[j] == '\t' ? 4 : 1;
+        int j = this.i;
+        while (j < this.length && isSpace(this.chars[j])) {
+            indentation += this.chars[j] == '\t' ? 4 : 1;
             j += 1;
         }
 
-        if (j < length) {
-            char c = chars[j];
+        if (j < this.length) {
+            char c = this.chars[j];
 
             if (checkBlockquote(c, j, indentation, blockquoteNesting)) {
                 return true;
@@ -422,7 +421,7 @@ public class MarkdownProcessor {
             }
 
             if (!checkHtmlBlock(c, j)) {
-                state = stack.search(ListElement.class) != null ? LIST : PARAGRAPH;
+                this.state = this.stack.search(ListElement.class) != null ? MarkdownProcessor.LIST : MarkdownProcessor.PARAGRAPH;
             }
         }
         return false;
@@ -430,46 +429,46 @@ public class MarkdownProcessor {
 
     private boolean checkEmphasis(char c) {
         for (int l = 1; l >= 0; l--) {
-            if (emph[l] != null && emph[l].end == i) {
-                emph[l].close();
-                i += emph[l].mod;
-                emph[l] = null;
+            if (this.emph[l] != null && this.emph[l].end == this.i) {
+                this.emph[l].close();
+                this.i += this.emph[l].mod;
+                this.emph[l] = null;
                 return true;
             }
         }
         if (c == '*' || c == '_') {
             int n = 1;
-            int j = i + 1;
-            while(j < length && chars[j] == c && n <= 3) {
+            int j = this.i + 1;
+            while(j < this.length && this.chars[j] == c && n <= 3) {
                 n += 1;
                 j += 1;
             }
             int found = n;
-            boolean isStartTag = j < length  - 1 && !Character.isWhitespace(chars[j]);
-            if (isStartTag && (emph[0] == null || emph[1] == null)) {
+            boolean isStartTag = j < this.length  - 1 && !Character.isWhitespace(this.chars[j]);
+            if (isStartTag && (this.emph[0] == null || this.emph[1] == null)) {
                 List possibleEndTags = new ArrayList();
                 char lastChar = 0;
                 int count = 0;
                 boolean escape = false;
-                for (int k = j; k <= length; k++) {
-                    if (chars[k] == '\n' && lastChar == '\n') {
+                for (int k = j; k <= this.length; k++) {
+                    if (this.chars[k] == '\n' && lastChar == '\n') {
                         break;
                     }
-                    lastChar = chars[k];
+                    lastChar = this.chars[k];
 
                     if (escape) {
                         escape = false;
                     } else {
-                        if (chars[k] == '\\') {
+                        if (this.chars[k] == '\\') {
                             escape = true;
-                        } else if (chars[k] == '`') {
+                        } else if (this.chars[k] == '`') {
                             k = skipCodeSpan(k);
-                        } else if (chars[k] == '[') {
+                        } else if (this.chars[k] == '[') {
                             k = skipLink(k);
-                        } else if (chars[k] == c) {
+                        } else if (this.chars[k] == c) {
                             count += 1;
                         } else {
-                            if (count > 0 && !Character.isWhitespace(chars[k - count - 1])) {
+                            if (count > 0 && !Character.isWhitespace(this.chars[k - count - 1])) {
                                 // add an int array to possible end tags: [position, nuberOfTokens]
                                 possibleEndTags.add(new int[] {k - count, count});
                             }
@@ -479,9 +478,9 @@ public class MarkdownProcessor {
                 }
 
                 for (int l = 1; l >= 0; l--) {
-                    if (emph[l] == null && n > l) {
-                        emph[l] = checkEmphasisInternal(l + 1, possibleEndTags);
-                        if (emph[l] != null) {
+                    if (this.emph[l] == null && n > l) {
+                        this.emph[l] = checkEmphasisInternal(l + 1, possibleEndTags);
+                        if (this.emph[l] != null) {
                             n -= l + 1;
                         }
                     }
@@ -492,9 +491,9 @@ public class MarkdownProcessor {
             }
             // write out remaining token chars
             for (int m = 0; m < n; m++) {
-                buffer.append(c);
+                this.buffer.append(c);
             }
-            i = j;
+            this.i = j;
             return true;
         }
         return false;
@@ -519,45 +518,43 @@ public class MarkdownProcessor {
             return false;
         }
         int n = 0; // additional backticks to match
-        int j = i + 1;
+        int j = this.i + 1;
         StringBuffer code = new StringBuffer();
-        while(j < length && chars[j] == '`') {
+        while(j < this.length && this.chars[j] == '`') {
             n += 1;
             j += 1;
         }
-        outer: while(j < length) {
-            if (chars[j] == '`') {
+        outer: while(j < this.length) {
+            if (this.chars[j] == '`') {
                 if (n == 0) {
                     break;
-                } else {
-                    if (j + n >= length) {
-                        return false;
+                }
+                if (j + n >= this.length) {
+                    return false;
+                }
+                for (int k = j + 1; k <= j + n; k++) {
+                    if (this.chars[k] != '`') {
+                        break;
+                    } else if (k == j + n) {
+                        j = k;
+                        break outer;
                     }
-                    for (int k = j + 1; k <= j + n; k++) {
-                        if (chars[k] != '`') {
-                            break;
-                        } else if (k == j + n) {
-                            j = k;
-                            break outer;
-                        }
-                    }
-
                 }
             }
-            if (chars[j] == '&') {
+            if (this.chars[j] == '&') {
                 code.append("&amp;"); //$NON-NLS-1$
-            } else if (chars[j] == '<') {
+            } else if (this.chars[j] == '<') {
                 code.append("&lt;"); //$NON-NLS-1$
-            } else if (chars[j] == '>') {
+            } else if (this.chars[j] == '>') {
                 code.append("&gt;"); //$NON-NLS-1$
             } else {
-                code.append(chars[j]);
+                code.append(this.chars[j]);
             }
             j += 1;
         }
-        openTag("code", buffer); //$NON-NLS-1$
-        buffer.append(code.toString().trim()).append("</code>"); //$NON-NLS-1$
-        i = j + 1;
+        openTag("code", this.buffer); //$NON-NLS-1$
+        this.buffer.append(code.toString().trim()).append("</code>"); //$NON-NLS-1$
+        this.i = j + 1;
         return true;
     }
 
@@ -565,25 +562,24 @@ public class MarkdownProcessor {
     private int skipCodeSpan(int start) {
         int n = 0; // additional backticks to match
         int j = start + 1;
-        while(j < length && chars[j] == '`') {
+        while(j < this.length && this.chars[j] == '`') {
             n += 1;
             j += 1;
         }
-        outer: while(j < length) {
-            if (chars[j] == '`') {
+        outer: while(j < this.length) {
+            if (this.chars[j] == '`') {
                 if (n == 0) {
                     break;
-                } else {
-                    if (j + n >= length) {
-                        return start + 1;
-                    }
-                    for (int k = j + 1; k <= j + n; k++) {
-                        if (chars[k] != '`') {
-                            break;
-                        } else if (k == j + n) {
-                            j = k;
-                            break outer;
-                        }
+                }
+                if (j + n >= this.length) {
+                    return start + 1;
+                }
+                for (int k = j + 1; k <= j + n; k++) {
+                    if (this.chars[k] != '`') {
+                        break;
+                    } else if (k == j + n) {
+                        j = k;
+                        break outer;
                     }
                 }
             }
@@ -597,9 +593,9 @@ public class MarkdownProcessor {
         int nesting = 0;
         int j = start + 1;
         char c;
-        while (j < length && (escape || chars[j] != ']' || nesting != 0)) {
-            c = chars[j];
-            if (c == '\n' && chars[j - 1] == '\n') {
+        while (j < this.length && (escape || this.chars[j] != ']' || nesting != 0)) {
+            c = this.chars[j];
+            if (c == '\n' && this.chars[j - 1] == '\n') {
                 return start;
             }
 
@@ -620,46 +616,46 @@ public class MarkdownProcessor {
         int k = j;
         j += 1;
         boolean extraSpace = false;
-        if (j < length && Character.isWhitespace(chars[j])) {
+        if (j < this.length && Character.isWhitespace(this.chars[j])) {
             j += 1;
             extraSpace = true;
         }
-        c = chars[j++];
+        c = this.chars[j++];
         if (c == '[') {
-            while (j < length && chars[j] != ']') {
-                if (chars[j] == '\n') {
+            while (j < this.length && this.chars[j] != ']') {
+                if (this.chars[j] == '\n') {
                     return start;
                 }
                 j += 1;
             }
         } else if (c == '(' && !extraSpace) {
-            while (j < length && chars[j] != ')' && !isSpace(chars[j])) {
-                if (chars[j] == '\n') {
+            while (j < this.length && this.chars[j] != ')' && !isSpace(this.chars[j])) {
+                if (this.chars[j] == '\n') {
                     return start;
                 }
                 j += 1;
             }
-            if (j < length && chars[j] != ')') {
-                while (j < length && chars[j] != ')' && Character.isWhitespace(chars[j])) {
+            if (j < this.length && this.chars[j] != ')') {
+                while (j < this.length && this.chars[j] != ')' && Character.isWhitespace(this.chars[j])) {
                     j += 1;
                 }
-                if (chars[j] == '"') {
+                if (this.chars[j] == '"') {
                     int quoteStart = j = j + 1;
                     int len = -1;
-                    while (j < length && chars[j] != '\n') {
-                        if (chars[j] == '"') {
+                    while (j < this.length && this.chars[j] != '\n') {
+                        if (this.chars[j] == '"') {
                             len = j - quoteStart;
                         } else if (len > -1) {
-                            if (chars[j] == ')') {
+                            if (this.chars[j] == ')') {
                                 break;
-                            } else if (!isSpace(chars[j])) {
+                            } else if (!isSpace(this.chars[j])) {
                                 len = -1;
                             }
                         }
                         j += 1;
                     }
                 }
-                if (chars[j] != ')') {
+                if (this.chars[j] != ')') {
                     return start;
                 }
             }
@@ -670,11 +666,11 @@ public class MarkdownProcessor {
     }
 
     private boolean checkLink(char c) {
-        return checkLinkInternal(c, i + 1, false);
+        return checkLinkInternal(c, this.i + 1, false);
     }
 
     private boolean checkImage() {
-        return checkLinkInternal(chars[i + 1], i + 2,  true);
+        return checkLinkInternal(this.chars[this.i + 1], this.i + 2,  true);
     }
 
     private boolean checkLinkInternal(char c, int j, boolean isImage) {
@@ -686,9 +682,9 @@ public class MarkdownProcessor {
         boolean space = false;
         int nesting = 0;
         boolean needsEncoding = false;
-        while (j < length && (escape || chars[j] != ']' || nesting != 0)) {
-            c = chars[j];
-            if (c == '\n' && chars[j - 1] == '\n') {
+        while (j < this.length && (escape || this.chars[j] != ']' || nesting != 0)) {
+            c = this.chars[j];
+            if (c == '\n' && this.chars[j - 1] == '\n') {
                 return false;
             }
 
@@ -706,7 +702,7 @@ public class MarkdownProcessor {
                     if (c == '*' || c == '_' || c == '`' || c == '[') {
                         needsEncoding = true;
                     }
-                    boolean s = Character.isWhitespace(chars[j]);
+                    boolean s = Character.isWhitespace(this.chars[j]);
                     if (!space || !s) {
                         b.append(s ? ' ' : c);
                     }
@@ -724,17 +720,17 @@ public class MarkdownProcessor {
         // this is weird, but we follow the official markup implementation here:
         // only accept space between link text and link target for [][], not for []()
         boolean extraSpace = false;
-        if (j < length && Character.isWhitespace(chars[j])) {
+        if (j < this.length && Character.isWhitespace(this.chars[j])) {
             j += 1;
             extraSpace = true;
         }
-        c = chars[j++];
+        c = this.chars[j++];
         if (c == '[') {
-            while (j < length && chars[j] != ']') {
-                if (chars[j] == '\n') {
+            while (j < this.length && this.chars[j] != ']') {
+                if (this.chars[j] == '\n') {
                     return false;
                 }
-                b.append(chars[j]);
+                b.append(this.chars[j]);
                 j += 1;
             }
             linkId = b.toString().toLowerCase();
@@ -752,36 +748,36 @@ public class MarkdownProcessor {
             }
         } else if (c == '(' && !extraSpace) {
             link = new String[2];
-            while (j < length && chars[j] != ')' && !isSpace(chars[j])) {
-                if (chars[j] == '\n') {
+            while (j < this.length && this.chars[j] != ')' && !isSpace(this.chars[j])) {
+                if (this.chars[j] == '\n') {
                     return false;
                 }
-                b.append(chars[j]);
+                b.append(this.chars[j]);
                 j += 1;
             }
             link[0] = b.toString();
-            if (j < length && chars[j] != ')') {
-                while (j < length && chars[j] != ')' && Character.isWhitespace(chars[j])) {
+            if (j < this.length && this.chars[j] != ')') {
+                while (j < this.length && this.chars[j] != ')' && Character.isWhitespace(this.chars[j])) {
                     j += 1;
                 }
-                if (chars[j] == '"') {
+                if (this.chars[j] == '"') {
                     int start = j = j + 1;
                     int len = -1;
-                    while (j < length && chars[j] != '\n') {
-                        if (chars[j] == '"') {
+                    while (j < this.length && this.chars[j] != '\n') {
+                        if (this.chars[j] == '"') {
                             len = j - start;
                         } else if (len > -1) {
-                            if (chars[j] == ')') {
-                                link[1] = new String(chars, start, len);
+                            if (this.chars[j] == ')') {
+                                link[1] = new String(this.chars, start, len);
                                 break;
-                            } else if (!isSpace(chars[j])) {
+                            } else if (!isSpace(this.chars[j])) {
                                 len = -1;
                             }
                         }
                         j += 1;
                     }
                 }
-                if (chars[j] != ')') {
+                if (this.chars[j] != ')') {
                     return false;
                 }
             }
@@ -795,27 +791,27 @@ public class MarkdownProcessor {
         }
         b.setLength(0);
         if (isImage) {
-            buffer.append("<img src=\"").append(escapeHtml(link[0])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
-            buffer.append(" alt=\"").append(escapeHtml(text)).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
+            this.buffer.append("<img src=\"").append(escapeHtml(link[0])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
+            this.buffer.append(" alt=\"").append(escapeHtml(text)).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
             if (link[1] != null) {
-                buffer.append(" title=\"").append(escapeHtml(link[1])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
+                this.buffer.append(" title=\"").append(escapeHtml(link[1])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            buffer.append(" />"); //$NON-NLS-1$
+            this.buffer.append(" />"); //$NON-NLS-1$
 
         } else {
-            buffer.append("<a href=\"").append(escapeHtml(link[0])).append("\"");  //$NON-NLS-1$//$NON-NLS-2$
+            this.buffer.append("<a href=\"").append(escapeHtml(link[0])).append("\"");  //$NON-NLS-1$//$NON-NLS-2$
             if (link[1] != null) {
-                buffer.append(" title=\"").append(escapeHtml(link[1])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
+                this.buffer.append(" title=\"").append(escapeHtml(link[1])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            buffer.append(">"); //$NON-NLS-1$
+            this.buffer.append(">"); //$NON-NLS-1$
             if (needsEncoding) {
                 MarkdownProcessor wrapped = new MarkdownProcessor();
-                buffer.append(wrapped.processLinkText(text)).append("</a>"); //$NON-NLS-1$
+                this.buffer.append(wrapped.processLinkText(text)).append("</a>"); //$NON-NLS-1$
             } else {
-                buffer.append(escapeHtml(text)).append("</a>"); //$NON-NLS-1$
+                this.buffer.append(escapeHtml(text)).append("</a>"); //$NON-NLS-1$
             }
         }
-        i = j + 1;
+        this.i = j + 1;
         return true;
     }
 
@@ -823,28 +819,28 @@ public class MarkdownProcessor {
         if (c != '<') {
             return false;
         }
-        int k = i + 1;
+        int k = this.i + 1;
         int j = k;
-        while (j < length && !Character.isWhitespace(chars[j]) && chars[j] != '>') {
+        while (j < this.length && !Character.isWhitespace(this.chars[j]) && this.chars[j] != '>') {
             j += 1;
         }
-        if (chars[j] == '>') {
-            String href = new String(chars, k, j - k);
+        if (this.chars[j] == '>') {
+            String href = new String(this.chars, k, j - k);
             if (href.matches("\\w+:\\S*")) { //$NON-NLS-1$
                 String text = href;
                 if (href.startsWith("mailto:")) { //$NON-NLS-1$
                     text = href.substring(7);
                     href = escapeMailtoUrl(href);
                 }
-                buffer.append("<a href=\"").append(href).append("\">")  //$NON-NLS-1$//$NON-NLS-2$
+                this.buffer.append("<a href=\"").append(href).append("\">")  //$NON-NLS-1$//$NON-NLS-2$
                         .append(text).append("</a>"); //$NON-NLS-1$
-                i = j + 1;
+                this.i = j + 1;
                 return true;
             } else if (href.matches("^.+@.+\\.[a-zA-Z]+$")) { //$NON-NLS-1$
-                buffer.append("<a href=\"") //$NON-NLS-1$
+                this.buffer.append("<a href=\"") //$NON-NLS-1$
                         .append(escapeMailtoUrl("mailto:" + href)).append("\">") //$NON-NLS-1$ //$NON-NLS-2$
                         .append(href).append("</a>"); //$NON-NLS-1$
-                i = j + 1;
+                this.i = j + 1;
                 return true;
             }
         }
@@ -854,13 +850,13 @@ public class MarkdownProcessor {
     private boolean checkList(char c, int j, int indentation, int blockquoteNesting) {
         int nesting = indentation / 4 + blockquoteNesting;
         if (c >= '0' && c <= '9') {
-            while (j < length && chars[j] >= '0' && chars[j] <= '9' ) {
+            while (j < this.length && this.chars[j] >= '0' && this.chars[j] <= '9' ) {
                 j += 1;
             }
-            if (j < length && chars[j] == '.') {
+            if (j < this.length && this.chars[j] == '.') {
                 checkCloseList("ol", nesting); //$NON-NLS-1$
                 checkOpenList("ol", nesting); //$NON-NLS-1$
-                i = j + 1;
+                this.i = j + 1;
                 return true;
             }
         } else if (c == '*' || c == '+' || c == '-') {
@@ -868,10 +864,10 @@ public class MarkdownProcessor {
                 return true;
             }
             j += 1;
-            if (j < length && isSpace(chars[j])) {
+            if (j < this.length && isSpace(this.chars[j])) {
                 checkCloseList("ul", nesting); //$NON-NLS-1$
                 checkOpenList("ul", nesting); //$NON-NLS-1$
-                i = j;
+                this.i = j;
                 return true;
             }
         }
@@ -883,119 +879,118 @@ public class MarkdownProcessor {
     }
 
     private void checkOpenList(String tag, int nesting) {
-        Element list = stack.search(ListElement.class);
+        Element list = this.stack.search(ListElement.class);
         if (list == null || !tag.equals(list.tag) || nesting != list.nesting) {
             list = new ListElement(tag, nesting);
-            stack.push(list);
+            this.stack.push(list);
             list.open();
         } else {
-            stack.closeElementsExclusive(list);
-            buffer.insert(getBufferEnd(), "</li>"); //$NON-NLS-1$
+            this.stack.closeElementsExclusive(list);
+            this.buffer.insert(getBufferEnd(), "</li>"); //$NON-NLS-1$
         }
-        openTag("li", buffer); //$NON-NLS-1$
-        listParagraphs = isParagraphStart();
-        lineMarker = paragraphStartMarker = buffer.length();
-        state = LIST;
+        openTag("li", this.buffer); //$NON-NLS-1$
+        this.listParagraphs = isParagraphStart();
+        this.lineMarker = this.paragraphStartMarker = this.buffer.length();
+        this.state = MarkdownProcessor.LIST;
     }
 
     private void checkCloseList(String tag, int nesting) {
-        Element elem = stack.search(ListElement.class);
+        Element elem = this.stack.search(ListElement.class);
         while (elem != null &&
                 (elem.nesting > nesting ||
                 (elem.nesting == nesting && tag != null && !elem.tag.equals(tag)))) {
-            stack.closeElements(elem);
-            elem = stack.peekNestedElement();
-            lineMarker = paragraphStartMarker = buffer.length();
+            this.stack.closeElements(elem);
+            elem = this.stack.peekNestedElement();
+            this.lineMarker = this.paragraphStartMarker = this.buffer.length();
         }
     }
 
     private boolean checkCodeBlock(char c, int j, int indentation, int blockquoteNesting) {
         int nesting = indentation / 4;
-        int nestedLists = stack.countNestedLists(null);
+        int nestedLists = this.stack.countNestedLists(null);
         Element code;
         if (nesting - nestedLists <= 0) {
-            code = stack.findNestedElement(CodeElement.class, blockquoteNesting + nestedLists);
+            code = this.stack.findNestedElement(CodeElement.class, blockquoteNesting + nestedLists);
             if (code != null) {
-                stack.closeElements(code);
-                lineMarker = paragraphStartMarker = buffer.length();
+                this.stack.closeElements(code);
+                this.lineMarker = this.paragraphStartMarker = this.buffer.length();
             }
             return false;
         }
-        code = stack.isEmpty() ? null : (Element) stack.peek();
+        code = this.stack.isEmpty() ? null : (Element) this.stack.peek();
         if (!(code instanceof CodeElement)) {
             code = new CodeElement(blockquoteNesting + nestedLists);
             code.open();
-            stack.push(code);
+            this.stack.push(code);
         }
         int sub = 4 + nestedLists * 4;
         for (int k = sub; k < indentation; k++) {
-            buffer.append(' ');
+            this.buffer.append(' ');
         }
-        while(j < length && chars[j] != '\n') {
-            if (chars[j] == '&') {
-                buffer.append("&amp;"); //$NON-NLS-1$
-            } else if (chars[j] == '<') {
-                buffer.append("&lt;"); //$NON-NLS-1$
-            } else if (chars[j] == '>') {
-                buffer.append("&gt;"); //$NON-NLS-1$
-            } else if (chars[j] == '\t') {
-                buffer.append("   "); //$NON-NLS-1$
+        while(j < this.length && this.chars[j] != '\n') {
+            if (this.chars[j] == '&') {
+                this.buffer.append("&amp;"); //$NON-NLS-1$
+            } else if (this.chars[j] == '<') {
+                this.buffer.append("&lt;"); //$NON-NLS-1$
+            } else if (this.chars[j] == '>') {
+                this.buffer.append("&gt;"); //$NON-NLS-1$
+            } else if (this.chars[j] == '\t') {
+                this.buffer.append("   "); //$NON-NLS-1$
             } else {
-                buffer.append(chars[j]);
+                this.buffer.append(this.chars[j]);
             }
             j += 1;
         }
-        codeEndMarker = buffer.length();
-        i = j;
-        state = CODE;
+        this.codeEndMarker = this.buffer.length();
+        this.i = j;
+        this.state = MarkdownProcessor.CODE;
         return true;
     }
 
     private boolean checkBlockquote(char c, int j, int indentation, int blockquoteNesting) {
         int nesting = indentation / 4;
-        Element elem = stack.findNestedElement(BlockquoteElement.class, nesting + blockquoteNesting);
-        if (c != '>' && isParagraphStart() || nesting > stack.countNestedLists(elem)) {
-            elem = stack.findNestedElement(BlockquoteElement.class, blockquoteNesting);
+        Element elem = this.stack.findNestedElement(BlockquoteElement.class, nesting + blockquoteNesting);
+        if (c != '>' && isParagraphStart() || nesting > this.stack.countNestedLists(elem)) {
+            elem = this.stack.findNestedElement(BlockquoteElement.class, blockquoteNesting);
             if (elem != null) {
-                stack.closeElements(elem);
-                lineMarker = paragraphStartMarker = buffer.length();
+                this.stack.closeElements(elem);
+                this.lineMarker = this.paragraphStartMarker = this.buffer.length();
             }
             return false;
         }
         nesting +=  blockquoteNesting;
-        elem = stack.findNestedElement(BlockquoteElement.class, nesting);
+        elem = this.stack.findNestedElement(BlockquoteElement.class, nesting);
         if (c == '>') {
-            stack.closeElementsUnlessExists(BlockquoteElement.class, nesting);
+            this.stack.closeElementsUnlessExists(BlockquoteElement.class, nesting);
             if (elem != null && !(elem instanceof BlockquoteElement)) {
-                stack.closeElements(elem);
+                this.stack.closeElements(elem);
                 elem = null;
             }
             if (elem == null || elem.nesting < nesting) {
                 elem = new BlockquoteElement(nesting);
                 elem.open();
-                stack.push(elem);
-                lineMarker = paragraphStartMarker = buffer.length();
+                this.stack.push(elem);
+                this.lineMarker = this.paragraphStartMarker = this.buffer.length();
             } else {
-                lineMarker = buffer.length();
+                this.lineMarker = this.buffer.length();
             }
-            i = isSpace(chars[j+ 1]) ? j + 2 : j + 1;
-            state = NEWLINE;
+            this.i = isSpace(this.chars[j+ 1]) ? j + 2 : j + 1;
+            this.state = MarkdownProcessor.NEWLINE;
             checkBlock(nesting + 1);
             return true;
-        } else {
-            return elem instanceof BlockquoteElement;
         }
+        return elem instanceof BlockquoteElement;
     }
 
 
     private void checkParagraph(boolean paragraphs) {
         int paragraphEndMarker = getBufferEnd();
-        if (paragraphs && paragraphEndMarker > paragraphStartMarker &&
-                (chars[i + 1] == '\n' || buffer.charAt(buffer.length() - 1) == '\n')) {
-            buffer.insert(paragraphEndMarker, "</p>"); //$NON-NLS-1$
-            buffer.insert(paragraphStartMarker, "<p>"); //$NON-NLS-1$
-        } else if (i > 1 && chars[i-1] == ' ' && chars[i-2] == ' ') {
-            buffer.append("<br />"); //$NON-NLS-1$
+        if (paragraphs && paragraphEndMarker > this.paragraphStartMarker &&
+                (this.chars[this.i + 1] == '\n' || this.buffer.charAt(this.buffer.length() - 1) == '\n')) {
+            this.buffer.insert(paragraphEndMarker, "</p>"); //$NON-NLS-1$
+            this.buffer.insert(this.paragraphStartMarker, "<p>"); //$NON-NLS-1$
+        } else if (this.i > 1 && this.chars[this.i-1] == ' ' && this.chars[this.i-2] == ' ') {
+            this.buffer.append("<br />"); //$NON-NLS-1$
         }
     }
 
@@ -1003,14 +998,14 @@ public class MarkdownProcessor {
         if (c == '#') {
             int nesting = 1;
             int k = j + 1;
-            while (k < length && chars[k++] == '#') {
+            while (k < this.length && this.chars[k++] == '#') {
                 nesting += 1;
             }
             HeaderElement header = new HeaderElement(nesting);
             header.open();
-            stack.push(header);
-            state = HEADER;
-            i = k - 1;
+            this.stack.push(header);
+            this.state = MarkdownProcessor.HEADER;
+            this.i = k - 1;
             return true;
         }
         return false;
@@ -1020,12 +1015,12 @@ public class MarkdownProcessor {
         if (c == '<') {
             j += 1;
             int k = j;
-            while (k < length && Character.isLetterOrDigit(chars[k])) {
+            while (k < this.length && Character.isLetterOrDigit(this.chars[k])) {
                 k += 1;
             }
-            String tag = new String(chars, j, k - j).toLowerCase();
+            String tag = new String(this.chars, j, k - j).toLowerCase();
             if (blockTags.contains(tag)) {
-                state = HTML_BLOCK;
+                this.state = MarkdownProcessor.HTML_BLOCK;
                 return true;
             }
         }
@@ -1033,21 +1028,21 @@ public class MarkdownProcessor {
     }
 
     private void checkHeader() {
-        char c = chars[i + 1];
+        char c = this.chars[this.i + 1];
         if (c == '-' || c == '=') {
-            int j = i + 1;
-            while (j < length && chars[j] == c) {
+            int j = this.i + 1;
+            while (j < this.length && this.chars[j] == c) {
                 j++;
             }
-            if (j < length && chars[j] == '\n') {
+            if (j < this.length && this.chars[j] == '\n') {
                 if (c == '=') {
-                    buffer.insert(lineMarker, "<h1>"); //$NON-NLS-1$
-                    buffer.append("</h1>"); //$NON-NLS-1$
+                    this.buffer.insert(this.lineMarker, "<h1>"); //$NON-NLS-1$
+                    this.buffer.append("</h1>"); //$NON-NLS-1$
                 } else {
-                    buffer.insert(lineMarker, "<h2>"); //$NON-NLS-1$
-                    buffer.append("</h2>"); //$NON-NLS-1$
+                    this.buffer.insert(this.lineMarker, "<h2>"); //$NON-NLS-1$
+                    this.buffer.append("</h2>"); //$NON-NLS-1$
                 }
-                i = j;
+                this.i = j;
             }
         }
     }
@@ -1058,26 +1053,26 @@ public class MarkdownProcessor {
         }
         int count = 1;
         int k = j;
-        while (k < length && (isSpace(chars[k]) || chars[k] == c)) {
+        while (k < this.length && (isSpace(this.chars[k]) || this.chars[k] == c)) {
             k += 1;
-            if (chars[k] == c) {
+            if (this.chars[k] == c) {
                  count += 1;
             }
         }
-        if (count >= 3 &&  chars[k] == '\n') {
+        if (count >= 3 &&  this.chars[k] == '\n') {
             checkCloseList(null, nesting - 1);
-            buffer.append("<hr />"); //$NON-NLS-1$
-            i = k;
+            this.buffer.append("<hr />"); //$NON-NLS-1$
+            this.i = k;
             return true;
         }
         return false;
     }
 
     private void cleanup() {
-        links = null;
-        chars = null;
-        buffer = null;
-        stack = null;
+        this.links = null;
+        this.chars = null;
+        this.buffer = null;
+        this.stack = null;
     }
 
     private String escapeHtml(String str) {
@@ -1110,21 +1105,21 @@ public class MarkdownProcessor {
     }
 
     private synchronized String processLinkText() {
-        buffer = new StringBuilder((int) (length * 1.2));
-        line = 1;
+        this.buffer = new StringBuilder((int) (this.length * 1.2));
+        this.line = 1;
         boolean escape = false;
 
-        for (i = 0; i < length; ) {
-            char c = chars[i];
+        for (this.i = 0; this.i < this.length; ) {
+            char c = this.chars[this.i];
 
             if (escape) {
-                buffer.append(c);
+                this.buffer.append(c);
                 escape = false;
-                i += 1;
+                this.i += 1;
                 continue;
             } else if (c == '\\') {
                 escape = true;
-                i += 1;
+                this.i += 1;
                 continue;
             }
             switch (c) {
@@ -1148,10 +1143,10 @@ public class MarkdownProcessor {
                     break;
             }
 
-            buffer.append(c);
-            i += 1;
+            this.buffer.append(c);
+            this.i += 1;
         }
-        return buffer.toString().trim();
+        return this.buffer.toString().trim();
     }
 
     boolean isLinkQuote(char c) {
@@ -1163,12 +1158,12 @@ public class MarkdownProcessor {
     }
 
     boolean isParagraphStart() {
-        return paragraphStartMarker == lineMarker;
+        return this.paragraphStartMarker == this.lineMarker;
     }
 
     int getBufferEnd() {
-        int l = buffer.length();
-        while(l > 0 && buffer.charAt(l - 1) == '\n') {
+        int l = this.buffer.length();
+        while(l > 0 && this.buffer.charAt(l - 1) == '\n') {
             l -= 1;
         }
         return l;
@@ -1241,10 +1236,10 @@ public class MarkdownProcessor {
         private void closeElementsUnlessExists(Class type, int nesting) {
             Element elem = this.findNestedElement(type, nesting);
             if (elem == null) {
-                while(stack.size() > 0) {
+                while(MarkdownProcessor.this.stack.size() > 0) {
                     elem = (Element) this.peek();
                     if (elem != null && elem.nesting >= nesting) {
-                        ((Element) stack.pop()).close();
+                        ((Element) MarkdownProcessor.this.stack.pop()).close();
                     } else {
                         break;
                     }
@@ -1258,11 +1253,11 @@ public class MarkdownProcessor {
         int nesting, mod;
 
         void open() {
-            openTag(tag, buffer);
+            openTag(this.tag, MarkdownProcessor.this.buffer);
         }
 
         void close() {
-            buffer.insert(getBufferEnd(), "</" + tag + ">"); //$NON-NLS-1$ //$NON-NLS-2$
+            MarkdownProcessor.this.buffer.insert(getBufferEnd(), "</" + this.tag + ">"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -1275,7 +1270,7 @@ public class MarkdownProcessor {
 
     class BlockquoteElement extends Element {
         BlockquoteElement(int nesting) {
-            tag = "blockquote"; //$NON-NLS-1$
+            this.tag = "blockquote"; //$NON-NLS-1$
             this.nesting = nesting;
         }
     }
@@ -1287,13 +1282,13 @@ public class MarkdownProcessor {
 
         @Override
         void open() {
-            openTag("pre", buffer); //$NON-NLS-1$
-            openTag("code", buffer); //$NON-NLS-1$
+            openTag("pre", MarkdownProcessor.this.buffer); //$NON-NLS-1$
+            openTag("code", MarkdownProcessor.this.buffer); //$NON-NLS-1$
         }
 
         @Override
         void close() {
-            buffer.insert(codeEndMarker, "</code></pre>"); //$NON-NLS-1$
+            MarkdownProcessor.this.buffer.insert(MarkdownProcessor.this.codeEndMarker, "</code></pre>"); //$NON-NLS-1$
         }
     }
 
@@ -1312,7 +1307,7 @@ public class MarkdownProcessor {
 
         @Override
         void close() {
-            buffer.insert(getBufferEnd(), "</li></" + tag + ">");        }  //$NON-NLS-1$//$NON-NLS-2$
+            MarkdownProcessor.this.buffer.insert(getBufferEnd(), "</li></" + this.tag + ">");        }  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     class Emphasis extends Element {

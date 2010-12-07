@@ -64,18 +64,18 @@ public class DiffusionFilterOp implements BufferedImageOp {
      * @return the current setting
      */
     public boolean getSerpentine() {
-        return serpentine;
+        return this.serpentine;
     }
 
     public void setMatrix(int[] matrix) {
         this.matrix = matrix;
-        sum = 0;
+        this.sum = 0;
         for (int i = 0; i < matrix.length; i++)
-            sum += matrix[i];
+            this.sum += matrix[i];
     }
 
     public int[] getMatrix() {
-        return matrix;
+        return this.matrix;
     }
 
     /**
@@ -103,8 +103,8 @@ public class DiffusionFilterOp implements BufferedImageOp {
         // Same goes for the source image
 
         IndexColorModel icm = (IndexColorModel) dst.getColorModel();
-        colorMap = new int[icm.getMapSize()];
-        icm.getRGBs(colorMap);
+        this.colorMap = new int[icm.getMapSize()];
+        icm.getRGBs(this.colorMap);
 
         int width = src.getWidth();
         int height = src.getHeight();
@@ -128,7 +128,7 @@ public class DiffusionFilterOp implements BufferedImageOp {
         for (int y = 0; y < height; y++, rowIndex += width) {
             g2d.drawImage(src, null, 0, -y);
             // now pixels contains the rgb values of the row y!
-            boolean reverse = serpentine && (y & 1) == 1;
+            boolean reverse = this.serpentine && (y & 1) == 1;
             int direction;
             if (reverse) {
                 index = width - 1;
@@ -147,7 +147,7 @@ public class DiffusionFilterOp implements BufferedImageOp {
                 int idx = findIndex(r1, g1, b1, a1);
                 dstData[rowIndex + index] = (byte) idx;
 
-                int rgb2 = colorMap[idx];
+                int rgb2 = this.colorMap[idx];
                 int a2 = (rgb2 >> 24) & 0xff;
                 int r2 = (rgb2 >> 16) & 0xff;
                 int g2 = (rgb2 >> 8) & 0xff;
@@ -166,16 +166,16 @@ public class DiffusionFilterOp implements BufferedImageOp {
                             if (0 <= jx && jx < width) {
                                 int w;
                                 if (reverse)
-                                    w = matrix[(i + 1) * 3 - j + 1];
+                                    w = this.matrix[(i + 1) * 3 - j + 1];
                                 else
-                                    w = matrix[(i + 1) * 3 + j + 1];
+                                    w = this.matrix[(i + 1) * 3 + j + 1];
                                 if (w != 0) {
                                     int k = reverse ? index - j : index + j;
                                     rgb1 = pixels[k];
-                                    a1 = ((rgb1 >> 24) & 0xff) + ea * w / sum;
-                                    r1 = ((rgb1 >> 16) & 0xff) + er * w / sum;
-                                    g1 = ((rgb1 >> 8) & 0xff) + eg * w / sum;
-                                    b1 = (rgb1 & 0xff) + eb * w / sum;
+                                    a1 = ((rgb1 >> 24) & 0xff) + ea * w / this.sum;
+                                    r1 = ((rgb1 >> 16) & 0xff) + er * w / this.sum;
+                                    g1 = ((rgb1 >> 8) & 0xff) + eg * w / this.sum;
+                                    b1 = (rgb1 & 0xff) + eb * w / this.sum;
                                     pixels[k] =
                                         (clamp(a1) << 24) |
                                         (clamp(r1) << 16) |
@@ -205,8 +205,8 @@ public class DiffusionFilterOp implements BufferedImageOp {
         throws ArrayIndexOutOfBoundsException {
         int idx = 0;
         int dist = Integer.MAX_VALUE;
-        for (int i = 0; i < colorMap.length; i++) {
-            int rgb2 = colorMap[i];
+        for (int i = 0; i < this.colorMap.length; i++) {
+            int rgb2 = this.colorMap[i];
             int da = a1 - ((rgb2 >> 24) & 0xff);
             int dr = r1 - ((rgb2 >> 16) & 0xff);
             int dg = g1 - ((rgb2 >> 8) & 0xff);

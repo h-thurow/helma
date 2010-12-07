@@ -43,7 +43,7 @@ public class DemoExtension extends HelmaExtension {
     public void init(Server server) throws ConfigurationException {
         try {
             // just a demo with the server class itself (which is always there, obviously)
-            Class check = Class.forName("helma.main.Server"); //$NON-NLS-1$
+            Class.forName("helma.main.Server"); //$NON-NLS-1$
         } catch (ClassNotFoundException e) {
             throw new ConfigurationException(Messages.getString("DemoExtension.0")); //$NON-NLS-1$
         }

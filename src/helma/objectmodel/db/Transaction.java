@@ -1,9 +1,6 @@
 package helma.objectmodel.db;
 
-import helma.objectmodel.INode;
-
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Transaction {
 
@@ -17,67 +14,67 @@ public class Transaction {
 	}
 	
 	public void addInsertedNode(Node insertedNode) {
-		insertedNodes.add(insertedNode);
-		dirtyNodes.add(insertedNode);
+		this.insertedNodes.add(insertedNode);
+		this.dirtyNodes.add(insertedNode);
 	}
 	
 	public void addModifiedNode(Node modifiedNode) {
-		modifiedNodes.add(modifiedNode);
-		dirtyNodes.add(modifiedNode);
+		this.modifiedNodes.add(modifiedNode);
+		this.dirtyNodes.add(modifiedNode);
 	}
 	
 	public void addDeletedNode(Node deletedNode) {
-		deletedNodes.add(deletedNode);
-		dirtyNodes.add(deletedNode);
+		this.deletedNodes.add(deletedNode);
+		this.dirtyNodes.add(deletedNode);
 	}
 	
 	public void addUpdatedParentNode(Node updatedParentNode) {
-		updatedParentNodes.add(updatedParentNode);
+		this.updatedParentNodes.add(updatedParentNode);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Node> getInsertedNodes() {
-		return (ArrayList<Node>) insertedNodes.clone();
+		return (ArrayList<Node>) this.insertedNodes.clone();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Node> getModifiedNodes() {
-		return (ArrayList<Node>) modifiedNodes.clone();
+		return (ArrayList<Node>) this.modifiedNodes.clone();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Node> getDeletedNodes() {
-		return (ArrayList<Node>) deletedNodes.clone();
+		return (ArrayList<Node>) this.deletedNodes.clone();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Node> getUpdatedParentNodes() {
-		return (ArrayList<Node>) updatedParentNodes.clone();
+		return (ArrayList<Node>) this.updatedParentNodes.clone();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public ArrayList<Node> getDirtyNodes() {
-		return (ArrayList<Node>) dirtyNodes.clone();
+		return (ArrayList<Node>) this.dirtyNodes.clone();
 	}
 	
 	public int getNumberOfInsertedNodes() {
-		return insertedNodes.size();
+		return this.insertedNodes.size();
 	}
 	
 	public int getNumberOfModifiedNodes() {
-		return modifiedNodes.size();
+		return this.modifiedNodes.size();
 	}
 	
 	public int getNumberOfDeletedNodes() {
-		return deletedNodes.size();
+		return this.deletedNodes.size();
 	}
 	
 	public int getNumberOfDirtyNodes() {
-		return dirtyNodes.size();
+		return this.dirtyNodes.size();
 	}
 	
 	public int getNumberOfUpdatedParentNodes() {
-		return updatedParentNodes.size();
+		return this.updatedParentNodes.size();
 	}
 	
 }

@@ -31,18 +31,18 @@ public class SimplePathElement implements IPathElement {
      *  Constructor for the root element.
      */
     public SimplePathElement() {
-        name = "root"; //$NON-NLS-1$
-        prototype = "root"; //$NON-NLS-1$
-        parent = null;
+        this.name = "root"; //$NON-NLS-1$
+        this.prototype = "root"; //$NON-NLS-1$
+        this.parent = null;
     }
 
     /**
      * Constructor for non-root elements.
      */
     public SimplePathElement(String n, IPathElement p) {
-        name = n;
-        prototype = "hopobject"; //$NON-NLS-1$
-        parent = p;
+        this.name = n;
+        this.prototype = "hopobject"; //$NON-NLS-1$
+        this.parent = p;
     }
 
     /**
@@ -56,14 +56,14 @@ public class SimplePathElement implements IPathElement {
      * Returns this object's parent element
      */
     public IPathElement getParentElement() {
-        return parent;
+        return this.parent;
     }
 
     /**
      * Returns the element name to be used for this object.
      */
     public String getElementName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -71,7 +71,7 @@ public class SimplePathElement implements IPathElement {
      * This will be "root" for the root element and "hopobject for everything else.
      */
     public String getPrototype() {
-        return prototype;
+        return this.prototype;
     }
 
     /**
@@ -79,6 +79,6 @@ public class SimplePathElement implements IPathElement {
      */
     @Override
     public String toString() {
-        return "SimplePathElement " + name; //$NON-NLS-1$
+        return "SimplePathElement " + this.name; //$NON-NLS-1$
     }
 }

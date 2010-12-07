@@ -73,7 +73,7 @@ public abstract class AbstractRepository implements Repository {
      * Get the full name that identifies this repository globally
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -81,7 +81,7 @@ public abstract class AbstractRepository implements Repository {
      * parent repository
      */
     public String getShortName() {
-        return shortName;
+        return this.shortName;
     }
 
     /**
@@ -90,11 +90,10 @@ public abstract class AbstractRepository implements Repository {
      *@see {isScriptRoot()}
      */
     public Repository getRootRepository() {
-        if (parent == null || isScriptRoot()) {
+        if (this.parent == null || isScriptRoot()) {
             return this;
-        } else {
-            return parent.getRootRepository();
         }
+        return this.parent.getRootRepository();
     }
 
     /**
@@ -105,11 +104,11 @@ public abstract class AbstractRepository implements Repository {
     public synchronized Resource getResource(String name) {
         update();
 
-        Resource res = (Resource) resources.get(name);
+        Resource res = (Resource) this.resources.get(name);
         // if resource does not exist, create it
         if (res == null) {
             res = createResource(name);
-            resources.put(name, res);
+            this.resources.put(name, res);
         }
         return res;
     }
@@ -120,7 +119,7 @@ public abstract class AbstractRepository implements Repository {
     public synchronized Iterator getResources() {
         update();
 
-        return resources.values().iterator();
+        return this.resources.values().iterator();
     }
 
     /**
@@ -129,14 +128,14 @@ public abstract class AbstractRepository implements Repository {
     public synchronized Repository[] getRepositories() {
         update();
 
-        return repositories;
+        return this.repositories;
     }
 
     /**
      * Get this repository's parent repository.
      */
     public Repository getParentRepository() {
-        return parent;
+        return this.parent;
     }
 
     /**
@@ -147,10 +146,10 @@ public abstract class AbstractRepository implements Repository {
         update();
 
         ArrayList allResources = new ArrayList();
-        allResources.addAll(resources.values());
+        allResources.addAll(this.resources.values());
 
-        for (int i = 0; i < repositories.length; i++) {
-            allResources.addAll(repositories[i].getAllResources());
+        for (int i = 0; i < this.repositories.length; i++) {
+            allResources.addAll(this.repositories[i].getAllResources());
         }
 
         return allResources;

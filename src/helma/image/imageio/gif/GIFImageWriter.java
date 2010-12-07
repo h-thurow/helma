@@ -32,7 +32,7 @@ public class GIFImageWriter extends ImageWriter {
 
     public GIFImageWriter(GIFImageWriterSpi originatingProvider) {
         super(originatingProvider);
-        encoder = new GIFEncoder();
+        this.encoder = new GIFEncoder();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class GIFImageWriter extends ImageWriter {
             throw new IOException(Messages.getString("GIFImageWriter.3")); //$NON-NLS-1$
         if (!(output instanceof DataOutput))
             throw new IOException(Messages.getString("GIFImageWriter.4")); //$NON-NLS-1$
-        encoder.encode((BufferedImage) ri, (DataOutput) output,
+        this.encoder.encode((BufferedImage) ri, (DataOutput) output,
             param.getProgressiveMode() != ImageWriteParam.MODE_DISABLED, null);
     }
 

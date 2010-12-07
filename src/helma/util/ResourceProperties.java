@@ -21,7 +21,6 @@
 package helma.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import helma.framework.core.*;
@@ -81,7 +80,7 @@ public class ResourceProperties extends Properties {
         // TODO: we can't use TreeSet because we don't have the app's resource comparator
         // Since resources don't implement Comparable, we can't add them to a "naked" TreeSet
         // As a result, resource ordering is random when updating.
-        resources = new LinkedHashSet();
+        this.resources = new LinkedHashSet();
     }
 
     /**
@@ -89,7 +88,7 @@ public class ResourceProperties extends Properties {
      * Resources must be added manually afterwards
      */
     public ResourceProperties(Application app) {
-        resources = new TreeSet(app.getResourceComparator());
+        this.resources = new TreeSet(app.getResourceComparator());
     }
 
     /**
@@ -101,7 +100,7 @@ public class ResourceProperties extends Properties {
     public ResourceProperties(Application app, String resourceName) {
         this.app = app;
         this.resourceName = resourceName;
-        resources = new TreeSet(app.getResourceComparator());
+        this.resources = new TreeSet(app.getResourceComparator());
     }
 
     /**
@@ -148,7 +147,7 @@ public class ResourceProperties extends Properties {
     private ResourceProperties(ResourceProperties parentProperties, String prefix) {
         this.parentProperties = parentProperties;
         this.prefix = prefix;
-        resources = new LinkedHashSet();
+        this.resources = new LinkedHashSet();
         setIgnoreCase(parentProperties.ignoreCase);        
         forceUpdate();
     }
@@ -157,7 +156,7 @@ public class ResourceProperties extends Properties {
      * Updates the properties regardless of an actual need
      */
     private void forceUpdate() {
-        lastChecksum = -1;
+        this.lastChecksum = -1;
         update();
     }
 
@@ -176,8 +175,8 @@ public class ResourceProperties extends Properties {
      * @param resource resource to add
      */
     public void addResource(Resource resource) {
-        if (resource != null && !resources.contains(resource)) {
-            resources.add(resource);
+        if (resource != null && !this.resources.contains(resource)) {
+            this.resources.add(resource);
             forceUpdate();
         }
     }
@@ -188,8 +187,8 @@ public class ResourceProperties extends Properties {
      * @param resource resource to remove
      */
     public void removeResource(Resource resource) {
-        if (resources.contains(resource)) {
-            resources.remove(resource);
+        if (this.resources.contains(resource)) {
+            this.resources.remove(resource);
             forceUpdate();
         }
     }
@@ -199,7 +198,7 @@ public class ResourceProperties extends Properties {
      * @return iterator over the properties' resources
      */
     public Iterator getResources() {
-        return resources.iterator();
+        return this.resources.iterator();
     }
 
     /**
@@ -207,28 +206,28 @@ public class ResourceProperties extends Properties {
      */
     public synchronized void update() {
         // set lastCheck first to reduce risk of recursive calls
-        lastCheck = System.currentTimeMillis();
-        if (getChecksum() != lastChecksum) {
+        this.lastCheck = System.currentTimeMillis();
+        if (getChecksum() != this.lastChecksum) {
             // First collect properties into a temporary collection,
             // in a second step copy over new properties,
             // and in the final step delete properties which have gone.
             ResourceProperties temp = new ResourceProperties();
-            temp.setIgnoreCase(ignoreCase);
+            temp.setIgnoreCase(this.ignoreCase);
 
             // first of all, properties are load from default properties
-            if (defaultProperties != null) {
-                defaultProperties.update();
-                temp.putAll(defaultProperties);
+            if (this.defaultProperties != null) {
+                this.defaultProperties.update();
+                temp.putAll(this.defaultProperties);
             }
 
             // next we try to load properties from the application's
             // repositories, if we belong to any application
-            if (resourceName != null) {
-                Iterator iterator = app.getRepositories().iterator();
+            if (this.resourceName != null) {
+                Iterator iterator = this.app.getRepositories().iterator();
                 while (iterator.hasNext()) {
                     try {
                         Repository repository = (Repository) iterator.next();
-                        Resource res = repository.getResource(resourceName);
+                        Resource res = repository.getResource(this.resourceName);
                         if (res != null && res.exists()) {
 							InputStreamReader reader = new InputStreamReader(
 									res.getInputStream());
@@ -242,14 +241,14 @@ public class ResourceProperties extends Properties {
             }
 
             // if these are subproperties, reload them from the parent properties
-            if (parentProperties != null && prefix != null) {
-                parentProperties.update();
-                Iterator it = parentProperties.entrySet().iterator();
-                int prefixLength = prefix.length();
+            if (this.parentProperties != null && this.prefix != null) {
+                this.parentProperties.update();
+                Iterator it = this.parentProperties.entrySet().iterator();
+                int prefixLength = this.prefix.length();
                 while (it.hasNext()) {
                     Map.Entry entry = (Map.Entry) it.next();
                     String key = entry.getKey().toString();
-                    if (key.regionMatches(ignoreCase, 0, prefix, 0, prefixLength)) {
+                    if (key.regionMatches(this.ignoreCase, 0, this.prefix, 0, prefixLength)) {
                         temp.put(key.substring(prefixLength), entry.getValue());
                     }
                 }
@@ -257,8 +256,8 @@ public class ResourceProperties extends Properties {
             }
 
             // at last we try to load properties from the resource list
-            if (resources != null) {
-                Iterator iterator = resources.iterator();
+            if (this.resources != null) {
+                Iterator iterator = this.resources.iterator();
                 while (iterator.hasNext()) {
                     try {
                         Resource res = (Resource) iterator.next();
@@ -284,10 +283,10 @@ public class ResourceProperties extends Properties {
                 }
             }
             // copy new up-to-date keyMap to ourself
-            keyMap = temp.keyMap;
+            this.keyMap = temp.keyMap;
 
-            lastChecksum = getChecksum();
-            lastCheck = lastModified = System.currentTimeMillis();
+            this.lastChecksum = getChecksum();
+            this.lastCheck = this.lastModified = System.currentTimeMillis();
         }
     }
 
@@ -314,7 +313,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized boolean contains(Object value) {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         return super.contains(value.toString());
@@ -327,14 +326,13 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized boolean containsKey(Object key) {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
-        if (ignoreCase) {
-            return keyMap.containsKey(key.toString().toLowerCase());
-        } else {
-            return super.containsKey(key.toString());
+        if (this.ignoreCase) {
+            return this.keyMap.containsKey(key.toString().toLowerCase());
         }
+        return super.containsKey(key.toString());
     }
 
     /**
@@ -343,7 +341,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized Enumeration elements() {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         return super.elements();
@@ -356,12 +354,12 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized Object get(Object key) {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         String strkey = key.toString();
-        if (ignoreCase) {
-            strkey = keyMap.getProperty(strkey.toLowerCase());
+        if (this.ignoreCase) {
+            strkey = this.keyMap.getProperty(strkey.toLowerCase());
             if (strkey == null)
                 return null;
         }
@@ -373,10 +371,10 @@ public class ResourceProperties extends Properties {
      * @return last modified date
      */
     public long lastModified() {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
-        return lastModified;
+        return this.lastModified;
     }
 
     /**
@@ -386,26 +384,26 @@ public class ResourceProperties extends Properties {
     public long getChecksum() {
         long checksum = 0;
 
-        if (resourceName != null) {
-            Iterator iterator = app.getRepositories().iterator();
+        if (this.resourceName != null) {
+            Iterator iterator = this.app.getRepositories().iterator();
             while (iterator.hasNext()) {
                 Repository repository = (Repository) iterator.next();
-                Resource resource = repository.getResource(resourceName);
+                Resource resource = repository.getResource(this.resourceName);
                 if (resource != null) {
                     checksum += resource.lastModified();
                 }
             }
         }
 
-        if (resources != null) {
-            Iterator iterator = resources.iterator();
+        if (this.resources != null) {
+            Iterator iterator = this.resources.iterator();
             while (iterator.hasNext()) {
                 checksum += ((Resource) iterator.next()).lastModified();
             }
         }
 
-        if (defaultProperties != null) {
-            checksum += defaultProperties.getChecksum();
+        if (this.defaultProperties != null) {
+            checksum += this.defaultProperties.getChecksum();
         }
 
         return checksum;
@@ -420,11 +418,11 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public String getProperty(String key, String defaultValue) {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
-        if (ignoreCase) {
-            key = keyMap.getProperty(key.toLowerCase());
+        if (this.ignoreCase) {
+            key = this.keyMap.getProperty(key.toLowerCase());
             if (key == null)
                 return defaultValue;
         }
@@ -438,11 +436,11 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public String getProperty(String key) {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
-        if (ignoreCase) {
-            key = keyMap.getProperty(key.toLowerCase());
+        if (this.ignoreCase) {
+            key = this.keyMap.getProperty(key.toLowerCase());
             if (key == null)
                 return null;
         }
@@ -455,7 +453,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized boolean isEmpty() {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         return super.isEmpty();
@@ -466,7 +464,7 @@ public class ResourceProperties extends Properties {
      * @return true if case-sensitivity is ignored for keys
      */
     public boolean isIgnoreCase() {
-        return ignoreCase;
+        return this.ignoreCase;
     }
 
     /**
@@ -475,7 +473,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized Enumeration keys() {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         return super.keys();
@@ -487,7 +485,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public Set keySet() {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         return super.keySet();
@@ -505,8 +503,8 @@ public class ResourceProperties extends Properties {
             value = ((String) value).trim();
         }
         String strkey = key.toString();
-        if (ignoreCase) {
-            keyMap.put(strkey.toLowerCase(), strkey);
+        if (this.ignoreCase) {
+            this.keyMap.put(strkey.toLowerCase(), strkey);
         }
         return super.put(strkey, value);
     }
@@ -519,8 +517,8 @@ public class ResourceProperties extends Properties {
     @Override
     public synchronized Object remove(Object key) {
         String strkey = key.toString();
-        if (ignoreCase) {
-            strkey = (String) keyMap.remove(strkey.toLowerCase());
+        if (this.ignoreCase) {
+            strkey = (String) this.keyMap.remove(strkey.toLowerCase());
             if (strkey == null)
                 return null;
         }
@@ -535,7 +533,7 @@ public class ResourceProperties extends Properties {
         if (!super.isEmpty()) {
             throw new RuntimeException(Messages.getString("ResourceProperties.0")); //$NON-NLS-1$
         }
-        ignoreCase = ignore;
+        this.ignoreCase = ignore;
     }
 
     /**
@@ -544,7 +542,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized int size() {
-        if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
+        if ((System.currentTimeMillis() - this.lastCheck) > this.CACHE_TIME) {
             update();
         }
         return super.size();
@@ -555,7 +553,7 @@ public class ResourceProperties extends Properties {
      */
     @Override
     public synchronized void clear() {
-        keyMap.clear();
+        this.keyMap.clear();
         super.clear();
     }
 

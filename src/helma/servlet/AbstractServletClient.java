@@ -31,7 +31,6 @@ import javax.servlet.http.*;
 
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.*;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 
 /**
@@ -87,55 +86,55 @@ public abstract class AbstractServletClient extends HttpServlet {
         // get max size for file uploads per file
         String upstr = init.getInitParameter("uploadLimit"); //$NON-NLS-1$
         try {
-            uploadLimit = (upstr == null) ? 1024 : Integer.parseInt(upstr);
+            this.uploadLimit = (upstr == null) ? 1024 : Integer.parseInt(upstr);
         } catch (NumberFormatException x) {
             log(Messages.getString("AbstractServletClient.0") + upstr); //$NON-NLS-1$
-            uploadLimit = 1024;
+            this.uploadLimit = 1024;
         }
         // get max total upload size
         upstr = init.getInitParameter("totalUploadLimit"); //$NON-NLS-1$
         try {
-            totalUploadLimit = (upstr == null) ? uploadLimit : Integer.parseInt(upstr);
+            this.totalUploadLimit = (upstr == null) ? this.uploadLimit : Integer.parseInt(upstr);
         } catch (NumberFormatException x) {
             log(Messages.getString("AbstractServletClient.1") + upstr); //$NON-NLS-1$
-            totalUploadLimit = uploadLimit;
+            this.totalUploadLimit = this.uploadLimit;
         }
         // soft fail mode for upload errors
-        uploadSoftfail = ("true".equalsIgnoreCase(init.getInitParameter("uploadSoftfail"))); //$NON-NLS-1$ //$NON-NLS-2$
+        this.uploadSoftfail = ("true".equalsIgnoreCase(init.getInitParameter("uploadSoftfail"))); //$NON-NLS-1$ //$NON-NLS-2$
 
         // get cookie domain
-        cookieDomain = init.getInitParameter("cookieDomain"); //$NON-NLS-1$
-        if (cookieDomain != null) {
-            cookieDomain = cookieDomain.toLowerCase();
+        this.cookieDomain = init.getInitParameter("cookieDomain"); //$NON-NLS-1$
+        if (this.cookieDomain != null) {
+            this.cookieDomain = this.cookieDomain.toLowerCase();
         }
 
         // get session cookie name
-        sessionCookieName = init.getInitParameter("sessionCookieName"); //$NON-NLS-1$
-        if (sessionCookieName == null) {
-            sessionCookieName = "HopSession"; //$NON-NLS-1$
+        this.sessionCookieName = init.getInitParameter("sessionCookieName"); //$NON-NLS-1$
+        if (this.sessionCookieName == null) {
+            this.sessionCookieName = "HopSession"; //$NON-NLS-1$
         }
 
         // disable binding session cookie to ip address?
-        protectedSessionCookie = !("false".equalsIgnoreCase(init.getInitParameter("protectedSessionCookie"))); //$NON-NLS-1$ //$NON-NLS-2$
+        this.protectedSessionCookie = !("false".equalsIgnoreCase(init.getInitParameter("protectedSessionCookie"))); //$NON-NLS-1$ //$NON-NLS-2$
 
         // debug mode for printing out detailed error messages
-        debug = ("true".equalsIgnoreCase(init.getInitParameter("debug")));  //$NON-NLS-1$//$NON-NLS-2$
+        this.debug = ("true".equalsIgnoreCase(init.getInitParameter("debug")));  //$NON-NLS-1$//$NON-NLS-2$
 
         // generally disable response caching for clients?
-        caching = !("false".equalsIgnoreCase(init.getInitParameter("caching")));  //$NON-NLS-1$//$NON-NLS-2$
+        this.caching = !("false".equalsIgnoreCase(init.getInitParameter("caching")));  //$NON-NLS-1$//$NON-NLS-2$
 
         // Get random number generator for session ids
         try {
-            random = SecureRandom.getInstance("SHA1PRNG"); //$NON-NLS-1$
-            secureRandom = true;
+            this.random = SecureRandom.getInstance("SHA1PRNG"); //$NON-NLS-1$
+            this.secureRandom = true;
         } catch (NoSuchAlgorithmException nsa) {
-            random = new Random();
-            secureRandom = false;
+            this.random = new Random();
+            this.secureRandom = false;
         }
-        random.setSeed(random.nextLong() ^ System.currentTimeMillis()
+        this.random.setSeed(this.random.nextLong() ^ System.currentTimeMillis()
                                          ^ hashCode()
                                          ^ Runtime.getRuntime().freeMemory());
-        random.nextLong();
+        this.random.nextLong();
 
     }
 
@@ -158,7 +157,7 @@ public abstract class AbstractServletClient extends HttpServlet {
      */
     @Override
     protected void service (HttpServletRequest request, HttpServletResponse response)
-                throws ServletException, IOException {
+                throws IOException {
 
         RequestTrans reqtrans = new RequestTrans(request, response, getPathInfo(request));
 
@@ -180,7 +179,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                         // get Cookies
                         String key = reqCookies[i].getName();
 
-                        if (sessionCookieName.equals(key)) {
+                        if (this.sessionCookieName.equals(key)) {
                             reqtrans.setSession(reqCookies[i].getValue());
                         }
                         reqtrans.setCookie(key, reqCookies[i]);
@@ -191,7 +190,7 @@ public abstract class AbstractServletClient extends HttpServlet {
             }
 
             // get the cookie domain to use for this response, if any.
-            String resCookieDomain = cookieDomain;
+            String resCookieDomain = this.cookieDomain;
 
             if (resCookieDomain != null) {
                 // check if cookieDomain is valid for this response.
@@ -221,7 +220,7 @@ public abstract class AbstractServletClient extends HttpServlet {
             List uploads = null;
             ServletRequestContext reqcx = new ServletRequestContext(request);
 
-            if (ServletFileUpload.isMultipartContent(reqcx)) {
+            if (FileUploadBase.isMultipartContent(reqcx)) {
                 // get session for upload progress monitoring
                 UploadStatus uploadStatus = getApplication().getUploadStatus(reqtrans);
                 try {
@@ -231,7 +230,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                     String message;
                     boolean tooLarge = (upx instanceof FileUploadBase.SizeLimitExceededException);
                     if (tooLarge) {
-                        message = Messages.getString("AbstractServletClient.4") + uploadLimit + Messages.getString("AbstractServletClient.5"); //$NON-NLS-1$ //$NON-NLS-2$
+                        message = Messages.getString("AbstractServletClient.4") + this.uploadLimit + Messages.getString("AbstractServletClient.5"); //$NON-NLS-1$ //$NON-NLS-2$
                     } else {
                         message = upx.getMessage();
                         if (message == null || message.length() == 0) {
@@ -242,7 +241,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                         uploadStatus.setError(message);
                     }
 
-                    if (uploadSoftfail || uploadStatus != null) {
+                    if (this.uploadSoftfail || uploadStatus != null) {
                         reqtrans.set("helma_upload_error", message); //$NON-NLS-1$
                     } else {
                         int errorCode = tooLarge ?
@@ -288,7 +287,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         } catch (Exception x) {
             log(Messages.getString("AbstractServletClient.8"), x); //$NON-NLS-1$
             try {
-                if (debug) {
+                if (this.debug) {
                     sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                               Messages.getString("AbstractServletClient.9") + x); //$NON-NLS-1$
                 } else {
@@ -319,7 +318,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         } else if (hopres.getNotModified()) {
             res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
         } else {
-            if (!hopres.isCacheable() || !caching) {
+            if (!hopres.isCacheable() || !this.caching) {
                 // Disable caching of response.
                 if (isOneDotOne(req.getProtocol())) {
                     // for HTTP 1.1
@@ -547,7 +546,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                                     RequestTrans reqtrans,
                                     String domain) {
         // check if we need to create a session id.
-        if (protectedSessionCookie) {
+        if (this.protectedSessionCookie) {
             // If protected session cookies are enabled we also force a new session
             // if the existing session id doesn't match the client's ip address
             StringBuffer buffer = new StringBuffer();
@@ -577,9 +576,9 @@ public abstract class AbstractServletClient extends HttpServlet {
         Application app = getApplication();
         String id = null;
         while (id == null || app.getSession(id) != null) {
-            long l = secureRandom ?
-                    random.nextLong() : 
-                    random.nextLong() + Runtime.getRuntime().freeMemory() ^ hashCode();
+            long l = this.secureRandom ?
+                    this.random.nextLong() : 
+                    this.random.nextLong() + Runtime.getRuntime().freeMemory() ^ hashCode();
             if (l < 0)
                 l = -l;
             id = prefix + Long.toString(l, 36);
@@ -587,7 +586,7 @@ public abstract class AbstractServletClient extends HttpServlet {
 
         reqtrans.setSession(id);
 
-        StringBuffer buffer = new StringBuffer(sessionCookieName);
+        StringBuffer buffer = new StringBuffer(this.sessionCookieName);
         buffer.append("=").append(id).append("; Path=/");  //$NON-NLS-1$//$NON-NLS-2$
         if (domain != null) {
             // lowercase domain for IE
@@ -652,8 +651,8 @@ public abstract class AbstractServletClient extends HttpServlet {
         DiskFileItemFactory factory = new DiskFileItemFactory();
         FileUpload upload = new FileUpload(factory);
         // use upload limit for individual file size, but also set a limit on overall size
-        upload.setFileSizeMax(uploadLimit * 1024);
-        upload.setSizeMax(totalUploadLimit * 1024);
+        upload.setFileSizeMax(this.uploadLimit * 1024);
+        upload.setSizeMax(this.totalUploadLimit * 1024);
 
         // register upload tracker with user's session
         if (uploadStatus != null) {
@@ -711,7 +710,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         // Parse any posted parameters in the input stream
         if (isFormPost) {
             int max = request.getContentLength();
-            if (max > totalUploadLimit * 1024) {
+            if (max > this.totalUploadLimit * 1024) {
                 throw new IOException(Messages.getString("AbstractServletClient.18")); //$NON-NLS-1$
             }
             int len = 0;

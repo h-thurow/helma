@@ -62,7 +62,7 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public String getName() {
-        return propname;
+        return this.propname;
     }
 
     /**
@@ -71,27 +71,27 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public Object getValue() {
-        switch (type) {
+        switch (this.type) {
             case STRING:
-                return svalue;
+                return this.svalue;
 
             case BOOLEAN:
-                return new Boolean(bvalue);
+                return new Boolean(this.bvalue);
 
             case INTEGER:
-                return new Long(lvalue);
+                return new Long(this.lvalue);
 
             case FLOAT:
-                return new Double(dvalue);
+                return new Double(this.dvalue);
 
             case DATE:
-                return new Date(lvalue);
+                return new Date(this.lvalue);
 
             case NODE:
-                return nvalue;
+                return this.nvalue;
 
             case JAVAOBJECT:
-                return jvalue;
+                return this.jvalue;
         }
 
         return null;
@@ -103,15 +103,15 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setStringValue(String value) {
-        if (type == NODE) {
+        if (this.type == NODE) {
             this.nvalue = null;
         }
 
-        if (type == JAVAOBJECT) {
+        if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
 
-        type = STRING;
+        this.type = STRING;
         this.svalue = value;
     }
 
@@ -121,15 +121,15 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setIntegerValue(long value) {
-        if (type == NODE) {
+        if (this.type == NODE) {
             this.nvalue = null;
         }
 
-        if (type == JAVAOBJECT) {
+        if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
 
-        type = INTEGER;
+        this.type = INTEGER;
         this.lvalue = value;
     }
 
@@ -139,15 +139,15 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setFloatValue(double value) {
-        if (type == NODE) {
+        if (this.type == NODE) {
             this.nvalue = null;
         }
 
-        if (type == JAVAOBJECT) {
+        if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
 
-        type = FLOAT;
+        this.type = FLOAT;
         this.dvalue = value;
     }
 
@@ -157,15 +157,15 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setDateValue(Date value) {
-        if (type == NODE) {
+        if (this.type == NODE) {
             this.nvalue = null;
         }
 
-        if (type == JAVAOBJECT) {
+        if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
 
-        type = DATE;
+        this.type = DATE;
         this.lvalue = value.getTime();
     }
 
@@ -175,15 +175,15 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setBooleanValue(boolean value) {
-        if (type == NODE) {
+        if (this.type == NODE) {
             this.nvalue = null;
         }
 
-        if (type == JAVAOBJECT) {
+        if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
 
-        type = BOOLEAN;
+        this.type = BOOLEAN;
         this.bvalue = value;
     }
 
@@ -193,11 +193,11 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setNodeValue(INode value) {
-        if (type == JAVAOBJECT) {
+        if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
 
-        type = NODE;
+        this.type = NODE;
         this.nvalue = value;
     }
 
@@ -207,11 +207,11 @@ public final class TransientProperty implements IProperty, Serializable {
      * @param value ...
      */
     public void setJavaObjectValue(Object value) {
-        if (type == NODE) {
+        if (this.type == NODE) {
             this.nvalue = null;
         }
 
-        type = JAVAOBJECT;
+        this.type = JAVAOBJECT;
         this.jvalue = value;
     }
 
@@ -221,30 +221,30 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public String getStringValue() {
-        switch (type) {
+        switch (this.type) {
             case STRING:
-                return svalue;
+                return this.svalue;
 
             case BOOLEAN:
-                return "" + bvalue; //$NON-NLS-1$
+                return "" + this.bvalue; //$NON-NLS-1$
 
             case DATE:
 
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$
 
-                return format.format(new Date(lvalue));
+                return format.format(new Date(this.lvalue));
 
             case INTEGER:
-                return Long.toString(lvalue);
+                return Long.toString(this.lvalue);
 
             case FLOAT:
-                return Double.toString(dvalue);
+                return Double.toString(this.dvalue);
 
             case NODE:
-                return nvalue.getName();
+                return this.nvalue.getName();
 
             case JAVAOBJECT:
-                return (jvalue == null) ? null : jvalue.toString();
+                return (this.jvalue == null) ? null : this.jvalue.toString();
         }
 
         return ""; //$NON-NLS-1$
@@ -266,8 +266,8 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public long getIntegerValue() {
-        if (type == INTEGER) {
-            return lvalue;
+        if (this.type == INTEGER) {
+            return this.lvalue;
         }
 
         return 0;
@@ -279,8 +279,8 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public double getFloatValue() {
-        if (type == FLOAT) {
-            return dvalue;
+        if (this.type == FLOAT) {
+            return this.dvalue;
         }
 
         return 0.0;
@@ -292,8 +292,8 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public Date getDateValue() {
-        if (type == DATE) {
-            return new Date(lvalue);
+        if (this.type == DATE) {
+            return new Date(this.lvalue);
         }
 
         return null;
@@ -305,8 +305,8 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public boolean getBooleanValue() {
-        if (type == BOOLEAN) {
-            return bvalue;
+        if (this.type == BOOLEAN) {
+            return this.bvalue;
         }
 
         return false;
@@ -318,8 +318,8 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public INode getNodeValue() {
-        if (type == NODE) {
-            return nvalue;
+        if (this.type == NODE) {
+            return this.nvalue;
         }
 
         return null;
@@ -331,8 +331,8 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public Object getJavaObjectValue() {
-        if (type == JAVAOBJECT) {
-            return jvalue;
+        if (this.type == JAVAOBJECT) {
+            return this.jvalue;
         }
 
         return null;
@@ -344,6 +344,6 @@ public final class TransientProperty implements IProperty, Serializable {
      * @return ...
      */
     public int getType() {
-        return type;
+        return this.type;
     }
 }

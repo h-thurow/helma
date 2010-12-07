@@ -37,7 +37,7 @@ public class CryptFile {
     public CryptFile(File file, CryptFile parentFile) {
         this.file = file;
         this.parentFile = parentFile;
-        users = new Properties();
+        this.users = new Properties();
     }
 
     /**
@@ -49,13 +49,13 @@ public class CryptFile {
      * @return ...
      */
     public boolean authenticate(String username, String pw) {
-        if (file.exists() && (file.lastModified() > lastRead)) {
+        if (this.file.exists() && (this.file.lastModified() > this.lastRead)) {
             readFile();
-        } else if (!file.exists() && (users.size() > 0)) {
-            users.clear();
+        } else if (!this.file.exists() && (this.users.size() > 0)) {
+            this.users.clear();
         }
 
-        String realpw = users.getProperty(username);
+        String realpw = this.users.getProperty(username);
 
         if (realpw != null) {
             try {
@@ -75,8 +75,8 @@ public class CryptFile {
                 return false;
             }
         } else {
-            if (parentFile != null) {
-                return parentFile.authenticate(username, pw);
+            if (this.parentFile != null) {
+                return this.parentFile.authenticate(username, pw);
             }
         }
 
@@ -86,10 +86,10 @@ public class CryptFile {
     private synchronized void readFile() {
         BufferedReader reader = null;
 
-        users = new Properties();
+        this.users = new Properties();
 
         try {
-            reader = new BufferedReader(new FileReader(file));
+            reader = new BufferedReader(new FileReader(this.file));
 
             String line = reader.readLine();
 
@@ -97,7 +97,7 @@ public class CryptFile {
                 StringTokenizer st = new StringTokenizer(line, ":"); //$NON-NLS-1$
 
                 if (st.countTokens() > 1) {
-                    users.put(st.nextToken(), st.nextToken());
+                    this.users.put(st.nextToken(), st.nextToken());
                 }
 
                 line = reader.readLine();
@@ -111,7 +111,7 @@ public class CryptFile {
                 }
             }
 
-            lastRead = System.currentTimeMillis();
+            this.lastRead = System.currentTimeMillis();
         }
     }
 

@@ -96,15 +96,15 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
 
         SAXParser parser = factory.newSAXParser();
 
-        rootNode = helmaNode;
-        currentNode = null;
-        convertedNodes = new HashMap();
-        nodeStack = new Stack();
-        parsingHopObject = true;
+        this.rootNode = helmaNode;
+        this.currentNode = null;
+        this.convertedNodes = new HashMap();
+        this.nodeStack = new Stack();
+        this.parsingHopObject = true;
 
         parser.parse(in, this);
 
-        return rootNode;
+        return this.rootNode;
     }
 
     /**
@@ -122,7 +122,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
                              Attributes atts) throws SAXException {
         // System.err.println ("XML-READ: startElement "+namespaceURI+", "+localName+", "+qName+", "+atts.getValue("id"));
         // discard the first element called xmlroot
-        if ("xmlroot".equals(qName) && (currentNode == null)) { //$NON-NLS-1$
+        if ("xmlroot".equals(qName) && (this.currentNode == null)) { //$NON-NLS-1$
             return;
         }
 
@@ -131,16 +131,16 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
 
         if (id != null) {
             // check if there is a current node.
-            if (currentNode == null) {
+            if (this.currentNode == null) {
                 // If currentNode is null, this is the root node we're parsing.
-                currentNode = rootNode;
+                this.currentNode = this.rootNode;
             } else if ("hop:child".equals(qName)) { //$NON-NLS-1$
                 // it's an anonymous child node
-                nodeStack.push(currentNode);
-                currentNode = currentNode.createNode(null);
+                this.nodeStack.push(this.currentNode);
+                this.currentNode = this.currentNode.createNode(null);
             } else {
                 // it's a named node property
-                nodeStack.push(currentNode);
+                this.nodeStack.push(this.currentNode);
 
                 // property name may be encoded as "propertyname" attribute,
                 // otherwise it is the element name
@@ -150,7 +150,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
                     propName = qName;
                 }
 
-                currentNode = currentNode.createNode(propName);
+                this.currentNode = this.currentNode.createNode(propName);
             }
 
             // set the prototype on the current node and
@@ -158,32 +158,32 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
             String prototype = atts.getValue("prototype"); //$NON-NLS-1$
 
             if (!"".equals(prototype) && !"hopobject".equals(prototype)) { //$NON-NLS-1$ //$NON-NLS-2$
-                currentNode.setPrototype(prototype);
-                currentNode.setDbMapping(nmgr.getDbMapping(prototype));
+                this.currentNode.setPrototype(prototype);
+                this.currentNode.setDbMapping(this.nmgr.getDbMapping(prototype));
             }
 
             String key = id + "-" + prototype; //$NON-NLS-1$
 
-            convertedNodes.put(key, currentNode);
+            this.convertedNodes.put(key, this.currentNode);
 
             return;
         }
 
         // check if we have a currentNode to set properties on,
         // otherwise throw exception.
-        if (currentNode == null) {
+        if (this.currentNode == null) {
             throw new SAXException(Messages.getString("XmlReader.2")); //$NON-NLS-1$
         }
 
         // check if we are inside a HopObject - otherwise throw an exception
-        if (!parsingHopObject) {
+        if (!this.parsingHopObject) {
             throw new SAXException(Messages.getString("XmlReader.3")); //$NON-NLS-1$
         }
 
         // if we got so far, the element is not a hopobject. Set flag to prevent
         // the hopobject stack to be popped when the element
         // is closed.
-        parsingHopObject = false;
+        this.parsingHopObject = false;
 
         // Is it a reference to an already parsed node?
         String idref = atts.getValue("idref"); //$NON-NLS-1$
@@ -193,18 +193,18 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
             // and lying in our cache of parsed nodes.
             String prototyperef = atts.getValue("prototyperef"); //$NON-NLS-1$
             String key = idref + "-" + prototyperef; //$NON-NLS-1$
-            INode n = (INode) convertedNodes.get(key);
+            INode n = (INode) this.convertedNodes.get(key);
 
             // if not a reference to a node we already read, try to
             // resolve against the NodeManager.
             if (n == null) {
-                n = nmgr.getNode(idref, nmgr.getDbMapping(prototyperef));
+                n = this.nmgr.getNode(idref, this.nmgr.getDbMapping(prototyperef));
             }
 
             if (n != null) {
                 if ("hop:child".equals(qName)) { //$NON-NLS-1$
                     // add an already parsed node as child to current node
-                    currentNode.addNode(n);
+                    this.currentNode.addNode(n);
                 } else {
                     // set an already parsed node as node property to current node
                     // property name may be encoded as "propertyname" attribute,
@@ -219,7 +219,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
                         // FIXME: we ought to set parent here, but we're 
                         // dealing with INodes, which don't have a setParent().
                     } else {
-                        currentNode.setNode(propName, n);
+                        this.currentNode.setNode(propName, n);
                     }
                 }
             }
@@ -227,24 +227,24 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
             // It's a primitive property. Remember the property name and type
             // so we can properly parse/interpret the character data when we
             // get it later on.
-            elementType = atts.getValue("type"); //$NON-NLS-1$
+            this.elementType = atts.getValue("type"); //$NON-NLS-1$
 
-            if (elementType == null) {
-                elementType = "string"; //$NON-NLS-1$
+            if (this.elementType == null) {
+                this.elementType = "string"; //$NON-NLS-1$
             }
 
             // property name may be encoded as "propertyname" attribute,
             // otherwise it is the element name
-            elementName = atts.getValue("propertyname"); //$NON-NLS-1$
+            this.elementName = atts.getValue("propertyname"); //$NON-NLS-1$
 
-            if (elementName == null) {
-                elementName = qName;
+            if (this.elementName == null) {
+                this.elementName = qName;
             }
 
-            if (charBuffer == null) {
-                charBuffer = new StringBuffer();
+            if (this.charBuffer == null) {
+                this.charBuffer = new StringBuffer();
             } else {
-                charBuffer.setLength(0);
+                this.charBuffer.setLength(0);
             }
         }
     }
@@ -259,12 +259,11 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
      * @throws SAXException ...
      */
     @Override
-    public void characters(char[] ch, int start, int length)
-                    throws SAXException {
+    public void characters(char[] ch, int start, int length) {
         // System.err.println ("CHARACTERS: "+new String (ch, start, length));
         // append chars to char buffer
-        if (elementType != null) {
-            charBuffer.append(ch, start, length);
+        if (this.elementType != null) {
+            this.charBuffer.append(ch, start, length);
         }
     }
 
@@ -278,46 +277,45 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
      * @throws SAXException ...
      */
     @Override
-    public void endElement(String namespaceURI, String localName, String qName)
-                    throws SAXException {
-        if (elementType != null) {
-            String charValue = charBuffer.toString();
+    public void endElement(String namespaceURI, String localName, String qName) {
+        if (this.elementType != null) {
+            String charValue = this.charBuffer.toString();
 
-            charBuffer.setLength(0);
+            this.charBuffer.setLength(0);
 
-            if ("boolean".equals(elementType)) { //$NON-NLS-1$
+            if ("boolean".equals(this.elementType)) { //$NON-NLS-1$
                 if ("true".equals(charValue)) { //$NON-NLS-1$
-                    currentNode.setBoolean(elementName, true);
+                    this.currentNode.setBoolean(this.elementName, true);
                 } else {
-                    currentNode.setBoolean(elementName, false);
+                    this.currentNode.setBoolean(this.elementName, false);
                 }
-            } else if ("date".equals(elementType)) { //$NON-NLS-1$
+            } else if ("date".equals(this.elementType)) { //$NON-NLS-1$
                 SimpleDateFormat format = new SimpleDateFormat(DATEFORMAT);
 
                 try {
                     Date date = format.parse(charValue);
 
-                    currentNode.setDate(elementName, date);
+                    this.currentNode.setDate(this.elementName, date);
                 } catch (ParseException e) {
-                    currentNode.setString(elementName, charValue);
+                    this.currentNode.setString(this.elementName, charValue);
                 }
-            } else if ("float".equals(elementType)) { //$NON-NLS-1$
-                currentNode.setFloat(elementName, (new Double(charValue)).doubleValue());
-            } else if ("integer".equals(elementType)) { //$NON-NLS-1$
-                currentNode.setInteger(elementName, (new Long(charValue)).longValue());
+            } else if ("float".equals(this.elementType)) { //$NON-NLS-1$
+                this.currentNode.setFloat(this.elementName, (new Double(charValue)).doubleValue());
+            } else if ("integer".equals(this.elementType)) { //$NON-NLS-1$
+                this.currentNode.setInteger(this.elementName, (new Long(charValue)).longValue());
             } else {
-                currentNode.setString(elementName, charValue);
+                this.currentNode.setString(this.elementName, charValue);
             }
 
-            elementName = null;
-            elementType = null;
+            this.elementName = null;
+            this.elementType = null;
             charValue = null;
         }
 
-        if (parsingHopObject && !nodeStack.isEmpty()) {
-            currentNode = (INode) nodeStack.pop();
+        if (this.parsingHopObject && !this.nodeStack.isEmpty()) {
+            this.currentNode = (INode) this.nodeStack.pop();
         } else {
-            parsingHopObject = true; // the next element end tag closes a hopobject again
+            this.parsingHopObject = true; // the next element end tag closes a hopobject again
         }
     }
 }

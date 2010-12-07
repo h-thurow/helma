@@ -29,54 +29,54 @@ public class UploadStatus implements Serializable {
     long lastModified;
 
     public UploadStatus() {
-        lastModified = System.currentTimeMillis();
+        this.lastModified = System.currentTimeMillis();
     }
 
     public void update(long bytesRead, long contentLength, int itemsRead) {
         this.current = bytesRead;
         this.total = contentLength;
         this.itemsRead = itemsRead;
-        lastModified = System.currentTimeMillis();
+        this.lastModified = System.currentTimeMillis();
     }
 
     public void setError(String error) {
         this.error = error;
-        lastModified = System.currentTimeMillis();
+        this.lastModified = System.currentTimeMillis();
     }
 
     public String getError() {
-        return error;
+        return this.error;
     }
 
     public long getCurrent() {
-        return current;
+        return this.current;
     }
 
     public long getTotal() {
-        return total;
+        return this.total;
     }
 
     public int getItemsRead() {
-        return itemsRead;
+        return this.itemsRead;
     }
 
     public boolean isDisposable() {
         // Make upload status disposable if it hasn't been modified for the last
         // 10 minutes, regardless of whether the upload has finished or not
-        return System.currentTimeMillis() - lastModified > 60000;
+        return System.currentTimeMillis() - this.lastModified > 60000;
     }
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer("{current: ").append(current) //$NON-NLS-1$
-                .append(", total: ").append(total) //$NON-NLS-1$
-                .append(", itemsRead: ").append(itemsRead) //$NON-NLS-1$
+        StringBuffer buffer = new StringBuffer("{current: ").append(this.current) //$NON-NLS-1$
+                .append(", total: ").append(this.total) //$NON-NLS-1$
+                .append(", itemsRead: ").append(this.itemsRead) //$NON-NLS-1$
                 .append(", error: "); //$NON-NLS-1$
-        if (error == null) {
+        if (this.error == null) {
             buffer.append("null"); //$NON-NLS-1$
         } else {
             buffer.append("\""); //$NON-NLS-1$
-            buffer.append(error.replaceAll("\"", "\\\\\"")); //$NON-NLS-1$ //$NON-NLS-2$
+            buffer.append(this.error.replaceAll("\"", "\\\\\"")); //$NON-NLS-1$ //$NON-NLS-2$
             buffer.append("\""); //$NON-NLS-1$
         }
         return buffer.append("}").toString(); //$NON-NLS-1$

@@ -36,7 +36,7 @@ public class XmlIDGenerator {
      */
     public XmlIDGenerator() {
         this.counter = 0L;
-        dirty = false;
+        this.dirty = false;
     }
 
     /**
@@ -44,32 +44,32 @@ public class XmlIDGenerator {
      */
     public XmlIDGenerator(long value) {
         this.counter = value;
-        dirty = false;
+        this.dirty = false;
     }
 
     /**
      * Delivers a unique id and increases counter by 1.
      */
     public synchronized String newID() {
-        counter += 1L;
-        dirty = true;
+        this.counter += 1L;
+        this.dirty = true;
 
-        return Long.toString(counter);
+        return Long.toString(this.counter);
     }
 
     /**
      * Set the counter to a new value
      */
     protected synchronized void setValue(long value) {
-        counter = value;
-        dirty = true;
+        this.counter = value;
+        this.dirty = true;
     }
 
     /**
      * Get the current counter  value
      */
     public long getValue() {
-        return counter;
+        return this.counter;
     }
 
     /**
@@ -77,7 +77,7 @@ public class XmlIDGenerator {
      */
     @Override
     public String toString() {
-        return "IDGenerator[counter=" + counter + ",dirty=" + dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "IDGenerator[counter=" + this.counter + ",dirty=" + this.dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**

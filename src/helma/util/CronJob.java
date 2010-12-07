@@ -244,12 +244,12 @@ public class CronJob {
             else
                 return 0;
         }
+        @SuppressWarnings("unused")
         public boolean equals (Object o1, Object o2) {
             if (o1!=null) {
                 return o1.equals (o2);
-            } else {
-                return false;
             }
+            return false;
         }
 
         });
@@ -432,12 +432,12 @@ public class CronJob {
    */
    public CronJob (String name) {
       this.name = name;
-      year = new HashSet (all);
-      month = new HashSet (all);
-      day = new HashSet (all);
-      weekday = new HashSet (all);
-      hour = new HashSet (all);
-      minute = new HashSet (all);
+      this.year = new HashSet (all);
+      this.month = new HashSet (all);
+      this.day = new HashSet (all);
+      this.weekday = new HashSet (all);
+      this.hour = new HashSet (all);
+      this.minute = new HashSet (all);
    }
 
   /**
@@ -451,27 +451,27 @@ public class CronJob {
 
     // try and short-circuit as fast as possible.
     Integer theYear = new Integer(cal.get(Calendar.YEAR));
-    if (!year.contains(ALL_VALUE) && !year.contains(theYear))
+    if (!this.year.contains(ALL_VALUE) && !this.year.contains(theYear))
       return false;
 
     Integer theMonth = new Integer(cal.get(Calendar.MONTH));
-    if (!month.contains(ALL_VALUE) && !month.contains(theMonth))
+    if (!this.month.contains(ALL_VALUE) && !this.month.contains(theMonth))
       return false;
 
     Integer theDay = new Integer(cal.get(Calendar.DAY_OF_MONTH));
-    if (!day.contains(ALL_VALUE) && !day.contains(theDay))
+    if (!this.day.contains(ALL_VALUE) && !this.day.contains(theDay))
       return false;
 
     Integer theWeekDay = new Integer(cal.get(Calendar.DAY_OF_WEEK));
-    if (!weekday.contains(ALL_VALUE) && !weekday.contains(theWeekDay))
+    if (!this.weekday.contains(ALL_VALUE) && !this.weekday.contains(theWeekDay))
       return false;
 
     Integer theHour = new Integer(cal.get(Calendar.HOUR_OF_DAY));
-    if (!hour.contains(ALL_VALUE) && !hour.contains(theHour))
+    if (!this.hour.contains(ALL_VALUE) && !this.hour.contains(theHour))
       return false;
 
     Integer theMinute = new Integer(cal.get(Calendar.MINUTE));
-    if (!minute.contains(ALL_VALUE) && !minute.contains(theMinute))
+    if (!this.minute.contains(ALL_VALUE) && !this.minute.contains(theMinute))
       return false;
 
     return true;
@@ -742,7 +742,7 @@ public class CronJob {
   @Override
 public String toString ()
   {
-    return "[CronJob " + name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+    return "[CronJob " + this.name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
   }
 
 }

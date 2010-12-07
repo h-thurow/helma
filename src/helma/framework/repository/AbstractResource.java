@@ -29,7 +29,7 @@ public abstract class AbstractResource implements Resource {
      * @param res the overloaded resource
      */
     public void setOverloadedResource(Resource res) {
-        overloaded = res;
+        this.overloaded = res;
     }
 
     /**
@@ -38,6 +38,6 @@ public abstract class AbstractResource implements Resource {
      * @return the overloaded resource
      */
     public Resource getOverloadedResource() {
-        return overloaded;
+        return this.overloaded;
     }
 }
