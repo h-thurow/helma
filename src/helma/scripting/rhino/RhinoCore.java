@@ -340,7 +340,7 @@ public final class RhinoCore implements ScopeProvider {
      *  before. Others will be updated/compiled on demand.
      */
     public synchronized void updatePrototypes() throws IOException {
-        if ((System.currentTimeMillis() - lastUpdate) < 1000L + updateSnooze) {
+        if ((System.currentTimeMillis() - lastUpdate) < 1000L + updateSnooze + Long.parseLong(app.getProperty("updateDelay", "0"))) {
             return;
         }
 
