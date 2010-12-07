@@ -97,9 +97,9 @@ public class Timer {
             long now = System.currentTimeMillis();
 
             if (end == 0L) {
-                return (" + " + (now - start) + " " + name);
+                return (" + " + (now - start) + " " + name); //$NON-NLS-1$ //$NON-NLS-2$
             } else {
-                return ("   " + (end - start) + " " + name);
+                return ("   " + (end - start) + " " + name); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
     }

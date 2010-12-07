@@ -94,8 +94,8 @@ public final class RequestEvaluator implements Runnable {
 
     protected synchronized void initScriptingEngine() {
         if (scriptingEngine == null) {
-            String engineClassName = app.getProperty("scriptingEngine",
-                                                     "helma.scripting.rhino.RhinoEngine");
+            String engineClassName = app.getProperty("scriptingEngine", //$NON-NLS-1$
+                                                     "helma.scripting.rhino.RhinoEngine"); //$NON-NLS-1$
             try {
                 app.setCurrentRequestEvaluator(this);
                 Class clazz = app.getClassLoader().loadClass(engineClassName);
@@ -109,11 +109,11 @@ public final class RequestEvaluator implements Runnable {
                     t = ((InvocationTargetException) x).getTargetException();
                 }
 
-                app.logEvent("******************************************");
-                app.logEvent("*** Error creating scripting engine: ");
-                app.logEvent("*** " + t.toString());
-                app.logEvent("******************************************");
-                app.logError("Error creating scripting engine", t);
+                app.logEvent(Messages.getString("RequestEvaluator.0")); //$NON-NLS-1$
+                app.logEvent(Messages.getString("RequestEvaluator.1")); //$NON-NLS-1$
+                app.logEvent(Messages.getString("RequestEvaluator.2") + t.toString()); //$NON-NLS-1$
+                app.logEvent(Messages.getString("RequestEvaluator.3")); //$NON-NLS-1$
+                app.logError(Messages.getString("RequestEvaluator.4"), t); //$NON-NLS-1$
 
                 // null out invalid scriptingEngine
                 scriptingEngine = null;
@@ -160,10 +160,10 @@ public final class RequestEvaluator implements Runnable {
                 // request path object
                 RequestPath requestPath = new RequestPath(app);
 
-                String txname = req.getMethod() + ":" + req.getPath();
+                String txname = req.getMethod() + ":" + req.getPath(); //$NON-NLS-1$
                 Log eventLog = app.getEventLog();
                 if (eventLog.isDebugEnabled()) {
-                    eventLog.debug(txname + " starting");
+                    eventLog.debug(txname + Messages.getString("RequestEvaluator.5")); //$NON-NLS-1$
                 }
 
                 int tries = 0;
@@ -206,12 +206,12 @@ public final class RequestEvaluator implements Runnable {
                             }
                         } else if (function != null && functionName == null) {
                             // only internal requests may pass a function instead of a function name
-                            throw new IllegalStateException("No function name in non-internal request ");
+                            throw new IllegalStateException(Messages.getString("RequestEvaluator.6")); //$NON-NLS-1$
                         }
 
                         // Update transaction name in case we're processing an error
                         if (error != null) {
-                            txname = "error:" + txname;
+                            txname = "error:" + txname; //$NON-NLS-1$
                         }
 
                         // begin transaction
@@ -244,8 +244,8 @@ public final class RequestEvaluator implements Runnable {
 
                                             // do not reset the requestPath so error handler can use the original one
                                             // get error handler action
-                                            String errorAction = app.props.getProperty("error",
-                                                    "error");
+                                            String errorAction = app.props.getProperty("error", //$NON-NLS-1$
+                                                    "error"); //$NON-NLS-1$
 
                                             action = getAction(currentElement, errorAction, req);
 
@@ -253,24 +253,24 @@ public final class RequestEvaluator implements Runnable {
                                                 throw new RuntimeException(error);
                                             }
                                         } else if ((req.getPath() == null) ||
-                                                "".equals(req.getPath().trim())) {
+                                                "".equals(req.getPath().trim())) { //$NON-NLS-1$
                                             currentElement = root;
                                             requestPath.add(null, currentElement);
 
                                             action = getAction(currentElement, null, req);
 
                                             if (action == null) {
-                                                throw new NotFoundException("Action not found");
+                                                throw new NotFoundException(Messages.getString("RequestEvaluator.7")); //$NON-NLS-1$
                                             }
                                         } else {
                                             // march down request path...
                                             StringTokenizer st = new StringTokenizer(req.getPath(),
-                                                    "/");
+                                                    "/"); //$NON-NLS-1$
                                             int ntokens = st.countTokens();
 
                                             // limit path to < 50 tokens
                                             if (ntokens > 50) {
-                                                throw new RuntimeException("Path too long");
+                                                throw new RuntimeException(Messages.getString("RequestEvaluator.8")); //$NON-NLS-1$
                                             }
 
                                             String[] pathItems = new String[ntokens];
@@ -283,7 +283,7 @@ public final class RequestEvaluator implements Runnable {
 
                                             for (int i = 0; i < ntokens; i++) {
                                                 if (currentElement == null) {
-                                                    throw new NotFoundException("Object not found.");
+                                                    throw new NotFoundException(Messages.getString("RequestEvaluator.9")); //$NON-NLS-1$
                                                 }
 
                                                 if (pathItems[i].length() == 0) {
@@ -292,7 +292,7 @@ public final class RequestEvaluator implements Runnable {
 
                                                 // if we're at the last element of the path,
                                                 // try to interpret it as action name.
-                                                if (i == (ntokens - 1) && !req.getPath().endsWith("/")) {
+                                                if (i == (ntokens - 1) && !req.getPath().endsWith("/")) { //$NON-NLS-1$
                                                     action = getAction(currentElement, pathItems[i], req);
                                                 }
 
@@ -309,7 +309,7 @@ public final class RequestEvaluator implements Runnable {
                                             }
 
                                             if (currentElement == null) {
-                                                throw new NotFoundException("Object not found.");
+                                                throw new NotFoundException(Messages.getString("RequestEvaluator.10")); //$NON-NLS-1$
                                             }
 
                                             if (action == null) {
@@ -317,7 +317,7 @@ public final class RequestEvaluator implements Runnable {
                                             }
 
                                             if (action == null) {
-                                                throw new NotFoundException("Action not found");
+                                                throw new NotFoundException(Messages.getString("RequestEvaluator.11")); //$NON-NLS-1$
                                             }
                                         }
                                     } catch (NotFoundException notfound) {
@@ -332,8 +332,8 @@ public final class RequestEvaluator implements Runnable {
                                         // specified in the property file.
                                         res.setStatus(404);
 
-                                        String notFoundAction = app.props.getProperty("notfound",
-                                                "notfound");
+                                        String notFoundAction = app.props.getProperty("notfound", //$NON-NLS-1$
+                                                "notfound"); //$NON-NLS-1$
 
                                         currentElement = root;
                                         action = getAction(currentElement, notFoundAction, req);
@@ -385,7 +385,7 @@ public final class RequestEvaluator implements Runnable {
                                     // try calling onRequest() function on object before
                                     // calling the actual action
                                     scriptingEngine.invoke(currentElement,
-                                            "onRequest",
+                                            "onRequest", //$NON-NLS-1$
                                             EMPTY_ARGS,
                                             ScriptingEngine.ARGS_WRAP_DEFAULT,
                                             false);
@@ -421,7 +421,7 @@ public final class RequestEvaluator implements Runnable {
                                     // try calling onResponse() function on object before
                                     // calling the actual action
                                     scriptingEngine.invoke(currentElement,
-                                            "onResponse",
+                                            "onResponse", //$NON-NLS-1$
                                             EMPTY_ARGS,
                                             ScriptingEngine.ARGS_WRAP_DEFAULT,
                                             false);
@@ -448,7 +448,7 @@ public final class RequestEvaluator implements Runnable {
                                     currentElement = root;
 
                                     if (functionName.indexOf('.') > -1) {
-                                        StringTokenizer st = new StringTokenizer(functionName, ".");
+                                        StringTokenizer st = new StringTokenizer(functionName, "."); //$NON-NLS-1$
                                         int cnt = st.countTokens();
 
                                         for (int i = 1; i < cnt; i++) {
@@ -457,8 +457,8 @@ public final class RequestEvaluator implements Runnable {
                                         }
 
                                         if (currentElement == null) {
-                                            throw new NotFoundException("Method name \"" +
-                                                    function + "\" could not be resolved.");
+                                            throw new NotFoundException(Messages.getString("RequestEvaluator.12") + //$NON-NLS-1$
+                                                    function + Messages.getString("RequestEvaluator.13")); //$NON-NLS-1$
                                         }
 
                                         functionName = st.nextToken();
@@ -490,7 +490,7 @@ public final class RequestEvaluator implements Runnable {
                                         return;
                                     }
                                     abortTransaction();
-                                    app.logError(txname + " " + error, x);
+                                    app.logError(txname + " " + error, x); //$NON-NLS-1$
 
                                     // If the transactor thread has been killed by the invoker thread we don't have to
                                     // bother for the error message, just quit.
@@ -526,7 +526,7 @@ public final class RequestEvaluator implements Runnable {
                                         return;
                                     }
                                     abortTransaction();
-                                    app.logError(txname + " " + error, x);
+                                    app.logError(txname + " " + error, x); //$NON-NLS-1$
 
                                     // If the transactor thread has been killed by the invoker thread we don't have to
                                     // bother for the error message, just quit.
@@ -581,7 +581,7 @@ public final class RequestEvaluator implements Runnable {
                             abortTransaction();
 
                             // error in error action. use traditional minimal error message
-                            res.reportError("Application too busy, please try again later");
+                            res.reportError(Messages.getString("RequestEvaluator.14")); //$NON-NLS-1$
                             done = true;
                         }
                     } catch (Throwable x) {
@@ -610,7 +610,7 @@ public final class RequestEvaluator implements Runnable {
                             done = false;
                             error = x;
 
-                            app.logError(txname + " " + error, x);
+                            app.logError(txname + " " + error, x); //$NON-NLS-1$
 
                             if (req.isXmlRpc()) {
                                 // if it's an XML-RPC exception immediately generate error response
@@ -682,7 +682,7 @@ public final class RequestEvaluator implements Runnable {
 
         if ((thread == null) || !thread.isAlive()) {
             // app.logEvent ("Starting Thread");
-            thread = new Thread(app.threadgroup, this, app.getName() + "-" + (++threadId));
+            thread = new Thread(app.threadgroup, this, app.getName() + "-" + (++threadId)); //$NON-NLS-1$
             thread.setContextClassLoader(app.getClassLoader());
             thread.start();
         } else {
@@ -748,7 +748,7 @@ public final class RequestEvaluator implements Runnable {
                 scriptingEngine.abort();
             }
 
-            app.logEvent("Request timeout for thread " + t);
+            app.logEvent(Messages.getString("RequestEvaluator.15") + t); //$NON-NLS-1$
 
             reqtype = NONE;
 
@@ -781,7 +781,7 @@ public final class RequestEvaluator implements Runnable {
 
         if (reqtype != NONE && stopTransactor()) {
             res.reset();
-            res.reportError("Request timed out");
+            res.reportError(Messages.getString("RequestEvaluator.16")); //$NON-NLS-1$
         }
 
         session.commit(this, app.sessionMgr);
@@ -833,7 +833,7 @@ public final class RequestEvaluator implements Runnable {
         wait(app.requestTimeout);
 
         if (reqtype != NONE && stopTransactor()) {
-            exception = new RuntimeException("Request timed out");
+            exception = new RuntimeException(Messages.getString("RequestEvaluator.17")); //$NON-NLS-1$
         }
 
         // reset res for garbage collection (res.data may hold reference to evaluator)
@@ -867,7 +867,7 @@ public final class RequestEvaluator implements Runnable {
         wait();
 
         if (reqtype != NONE && stopTransactor()) {
-            exception = new RuntimeException("Request timed out");
+            exception = new RuntimeException(Messages.getString("RequestEvaluator.18")); //$NON-NLS-1$
         }
 
         // reset res for garbage collection (res.data may hold reference to evaluator)
@@ -939,7 +939,7 @@ public final class RequestEvaluator implements Runnable {
             wait(timeout);
 
         if (reqtype != NONE && stopTransactor()) {
-            exception = new RuntimeException("Request timed out");
+            exception = new RuntimeException(Messages.getString("RequestEvaluator.19")); //$NON-NLS-1$
         }
 
         // reset res for garbage collection (res.data may hold reference to evaluator)
@@ -979,7 +979,7 @@ public final class RequestEvaluator implements Runnable {
     private synchronized void initObjects(Object function, int reqtype, String reqtypeName) {
         this.reqtype = reqtype;
         String functionName = function instanceof String ?
-                (String) function : "<function>";
+                (String) function : "<function>"; //$NON-NLS-1$
         req = new RequestTrans(reqtypeName, functionName);
         session = new Session(functionName, app);
         res = new ResponseTrans(app, req);
@@ -997,12 +997,12 @@ public final class RequestEvaluator implements Runnable {
                 throws ScriptingException {
         HashMap globals = new HashMap();
 
-        globals.put("root", root);
-        globals.put("session", new SessionBean(session));
-        globals.put("req", new RequestBean(req));
-        globals.put("res", new ResponseBean(res));
-        globals.put("app", new ApplicationBean(app));
-        globals.put("path", requestPath);
+        globals.put("root", root); //$NON-NLS-1$
+        globals.put("session", new SessionBean(session)); //$NON-NLS-1$
+        globals.put("req", new RequestBean(req)); //$NON-NLS-1$
+        globals.put("res", new ResponseBean(res)); //$NON-NLS-1$
+        globals.put("app", new ApplicationBean(app)); //$NON-NLS-1$
+        globals.put("path", requestPath); //$NON-NLS-1$
 
         // enter execution context
         scriptingEngine.setGlobals(globals);
@@ -1017,8 +1017,8 @@ public final class RequestEvaluator implements Runnable {
      * @throws ScriptingException
      */
     private Object getChildElement(Object obj, String name) throws ScriptingException {
-        if (scriptingEngine.hasFunction(obj, "getChildElement", false)) {
-            return scriptingEngine.invoke(obj, "getChildElement", new Object[] {name},
+        if (scriptingEngine.hasFunction(obj, "getChildElement", false)) { //$NON-NLS-1$
+            return scriptingEngine.invoke(obj, "getChildElement", new Object[] {name}, //$NON-NLS-1$
                                           ScriptingEngine.ARGS_WRAP_DEFAULT, false);
         }
 
@@ -1051,16 +1051,16 @@ public final class RequestEvaluator implements Runnable {
             return null;
 
         if (action == null)
-            action = "main";
+            action = "main"; //$NON-NLS-1$
 
-        StringBuffer buffer = new StringBuffer(action).append("_action");
+        StringBuffer buffer = new StringBuffer(action).append("_action"); //$NON-NLS-1$
         // record length so we can check without method
         // afterwards for GET, POST, HEAD requests
         int length = buffer.length();
 
         if (req.checkXmlRpc()) {
             // append _methodname
-            buffer.append("_xmlrpc");
+            buffer.append("_xmlrpc"); //$NON-NLS-1$
             if (scriptingEngine.hasFunction(obj, buffer.toString(), false)) {
                 // handle as XML-RPC request
                 req.setMethod(RequestTrans.XMLRPC);
@@ -1083,9 +1083,9 @@ public final class RequestEvaluator implements Runnable {
         }
 
         // if no method specified or "ordinary" request try action without method
-        if (method == null || "GET".equalsIgnoreCase(method) ||
-                              "POST".equalsIgnoreCase(method) ||
-                              "HEAD".equalsIgnoreCase(method)) {
+        if (method == null || "GET".equalsIgnoreCase(method) || //$NON-NLS-1$
+                              "POST".equalsIgnoreCase(method) || //$NON-NLS-1$
+                              "HEAD".equalsIgnoreCase(method)) { //$NON-NLS-1$
             if (scriptingEngine.hasFunction(obj, buffer.toString(), false))
                 return buffer.toString();
         }
@@ -1141,8 +1141,8 @@ public final class RequestEvaluator implements Runnable {
 
     private String missingFunctionMessage(Object obj, String funcName) {
         if (obj == null)
-            return "Function " + funcName + " not defined in global scope";
+            return Messages.getString("RequestEvaluator.20") + funcName + Messages.getString("RequestEvaluator.21"); //$NON-NLS-1$ //$NON-NLS-2$
         else
-            return "Function " + funcName + " not defined for " + obj;
+            return Messages.getString("RequestEvaluator.22") + funcName + Messages.getString("RequestEvaluator.23") + obj; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

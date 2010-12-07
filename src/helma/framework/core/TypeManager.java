@@ -31,11 +31,11 @@ import java.util.*;
  * applications and updates the evaluators if anything has changed.
  */
 public final class TypeManager {
-    final static String[] standardTypes = { "User", "Global", "Root", "HopObject" };
-    final static String templateExtension = ".hsp";
-    final static String scriptExtension = ".js";
-    final static String actionExtension = ".hac";
-    final static String skinExtension = ".skin";
+    final static String[] standardTypes = { "User", "Global", "Root", "HopObject" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    final static String templateExtension = ".hsp"; //$NON-NLS-1$
+    final static String scriptExtension = ".js"; //$NON-NLS-1$
+    final static String actionExtension = ".hac"; //$NON-NLS-1$
+    final static String skinExtension = ".skin"; //$NON-NLS-1$
 
     private Application app;
     // map of prototypes
@@ -69,12 +69,12 @@ public final class TypeManager {
         lastRepoScan = new HashMap();
         // split ignore dirs list and add to hash set
         if (ignore != null) {
-            String[] arr = StringUtils.split(ignore, ",");
+            String[] arr = StringUtils.split(ignore, ","); //$NON-NLS-1$
             for (int i=0; i<arr.length; i++)
                 ignoreDirs.add(arr[i].trim());
         }
 
-        URL helmajar = TypeManager.class.getResource("/");
+        URL helmajar = TypeManager.class.getResource("/"); //$NON-NLS-1$
 
         if (helmajar == null) {
             // Helma classes are in jar file, get helma.jar URL
@@ -82,7 +82,7 @@ public final class TypeManager {
 
             for (int i = 0; i < urls.length; i++) {
                 String url = urls[i].toString().toLowerCase();
-                if (url.endsWith("helma.jar")) {
+                if (url.endsWith("helma.jar")) { //$NON-NLS-1$
                     helmajar = urls[i];
                     break;
                 }
@@ -134,7 +134,7 @@ public final class TypeManager {
             if (ignoreDirs.contains(list[i].getShortName())) {
                 // jump this repository
                 if (app.debug) {
-                    app.logEvent("Repository " + list[i].getName() + " ignored");
+                    app.logEvent(Messages.getString("TypeManager.0") + list[i].getName() + Messages.getString("TypeManager.1")); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 continue;
             }
@@ -166,7 +166,7 @@ public final class TypeManager {
             // check for jar files to add to class loader
             Resource resource = (Resource) resources.next();
             String name = resource.getName();
-            if (name.endsWith(".jar")) {
+            if (name.endsWith(".jar")) { //$NON-NLS-1$
                 if (!jarfiles.contains(name)) {
                     jarfiles.add(name);
                     try {
@@ -197,9 +197,9 @@ public final class TypeManager {
             }
         }
 
-        boolean debug = "true".equalsIgnoreCase(app.getProperty("helma.debugTypeManager"));
+        boolean debug = "true".equalsIgnoreCase(app.getProperty("helma.debugTypeManager")); //$NON-NLS-1$ //$NON-NLS-2$
         if (debug) {
-            System.err.println("Starting CHECK loop in " + Thread.currentThread());
+            System.err.println(Messages.getString("TypeManager.2") + Thread.currentThread()); //$NON-NLS-1$
         }
 
         // loop through prototypes and check if type.properties needs updates
@@ -209,7 +209,7 @@ public final class TypeManager {
             Prototype proto = (Prototype) i.next();
 
             if (debug) {
-                System.err.println("CHECK: " + proto.getName() + " in " + Thread.currentThread());
+                System.err.println(Messages.getString("TypeManager.3") + proto.getName() + Messages.getString("TypeManager.4") + Thread.currentThread()); //$NON-NLS-1$ //$NON-NLS-2$
             }            
 
             // update prototype's type mapping
@@ -226,7 +226,7 @@ public final class TypeManager {
             }
         }
         if (debug) {
-            System.err.println("Finished CHECK in " + Thread.currentThread());
+            System.err.println(Messages.getString("TypeManager.5") + Thread.currentThread()); //$NON-NLS-1$
         }
     }
 
@@ -298,8 +298,8 @@ public final class TypeManager {
      * @return the newly created prototype
      */
     public synchronized Prototype createPrototype(String typename, Repository repository, Map typeProps) {
-        if ("true".equalsIgnoreCase(app.getProperty("helma.debugTypeManager"))) {
-            System.err.println("CREATE: " + typename + " from " + repository + " in " + Thread.currentThread());
+        if ("true".equalsIgnoreCase(app.getProperty("helma.debugTypeManager"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            System.err.println(Messages.getString("TypeManager.6") + typename + Messages.getString("TypeManager.7") + repository + Messages.getString("TypeManager.8") + Thread.currentThread()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             // Thread.dumpStack();
         }
         Prototype proto = new Prototype(typename, repository, app, typeProps);

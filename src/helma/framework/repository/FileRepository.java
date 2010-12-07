@@ -72,7 +72,7 @@ public class FileRepository extends AbstractRepository {
         if (!directory.exists()) {
             create();
         } else if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("File " + directory + " is not a directory");
+            throw new IllegalArgumentException(Messages.getString("FileRepository.0") + directory + Messages.getString("FileRepository.1")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         if (parent == null) {
@@ -157,7 +157,7 @@ public class FileRepository extends AbstractRepository {
                 if (list[i].isDirectory()) {
                     // a nested directory aka child file repository
                     newRepositories.add(new FileRepository(list[i], this));
-                } else if (list[i].getName().endsWith(".zip")) {
+                } else if (list[i].getName().endsWith(".zip")) { //$NON-NLS-1$
                     // a nested zip repository
                     newRepositories.add(new ZipRepository(list[i], this));
                 } else if (list[i].isFile()) {
@@ -197,6 +197,6 @@ public class FileRepository extends AbstractRepository {
     }
 
     public String toString() {
-        return new StringBuffer("FileRepository[").append(name).append("]").toString();
+        return new StringBuffer("FileRepository[").append(name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

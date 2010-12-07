@@ -63,19 +63,19 @@ public final class NodeManager {
     public void init(File dbHome, Properties props)
             throws DatabaseException, ClassNotFoundException,
                    IllegalAccessException, InstantiationException {
-        String cacheImpl = props.getProperty("cacheimpl", "helma.util.CacheMap");
+        String cacheImpl = props.getProperty("cacheimpl", "helma.util.CacheMap");  //$NON-NLS-1$//$NON-NLS-2$
 
         cache = (ObjectCache) Class.forName(cacheImpl).newInstance();
         cache.init(app);
 
-        String idgenImpl = props.getProperty("idGeneratorImpl");
+        String idgenImpl = props.getProperty("idGeneratorImpl"); //$NON-NLS-1$
 
         if (idgenImpl != null) {
             idgen = (IDGenerator) Class.forName(idgenImpl).newInstance();
             idgen.init(app);
         }
 
-        logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));
+        logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));  //$NON-NLS-1$//$NON-NLS-2$
 
         db = new XmlDatabase();
         db.init(dbHome, app);
@@ -108,7 +108,7 @@ public final class NodeManager {
     public void updateProperties(Properties props) {
         // notify the cache about the properties update
         cache.updateProperties(props);
-        logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));
+        logSql = "true".equalsIgnoreCase(props.getProperty("logsql"));  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     /**
@@ -350,9 +350,9 @@ public final class NodeManager {
         try {
             // We need to reach deap into helma.framework.core to invoke onInit(),
             // but the functionality is really worth it.
-            reval.invokeDirectFunction(node, "onInit", RequestEvaluator.EMPTY_ARGS);
+            reval.invokeDirectFunction(node, "onInit", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
         } catch (Exception x) {
-            app.logError("Error invoking onInit()", x);
+            app.logError(Messages.getString("NodeManager.0"), x); //$NON-NLS-1$
         }
         return node;
     }
@@ -435,15 +435,15 @@ public final class NodeManager {
     public void exportNode(Node node, DbSource dbs) 
                     throws SQLException, ClassNotFoundException {
         if (node == null) {
-            throw new IllegalArgumentException("Node can't be null in exportNode");
+            throw new IllegalArgumentException(Messages.getString("NodeManager.1")); //$NON-NLS-1$
         }
         
         DbMapping dbm = node.getDbMapping();
         
         if (dbs == null) {
-            throw new IllegalArgumentException("DbSource can't be null in exportNode");
+            throw new IllegalArgumentException(Messages.getString("NodeManager.2")); //$NON-NLS-1$
         } else if ((dbm == null) || !dbm.isRelational()) {
-            throw new IllegalArgumentException("Can't export into non-relational database");
+            throw new IllegalArgumentException(Messages.getString("NodeManager.3")); //$NON-NLS-1$
         } else {
             insertRelationalNode(node, dbm, dbs.getConnection());
         }
@@ -455,13 +455,13 @@ public final class NodeManager {
     public void exportNode(Node node, DbMapping dbm)
                     throws SQLException, ClassNotFoundException {
         if (node == null) {
-            throw new IllegalArgumentException("Node can't be null in exportNode");
+            throw new IllegalArgumentException(Messages.getString("NodeManager.4")); //$NON-NLS-1$
         }
 
         if (dbm == null) {
-            throw new IllegalArgumentException("DbMapping can't be null in exportNode");
+            throw new IllegalArgumentException(Messages.getString("NodeManager.5")); //$NON-NLS-1$
         } else if (!dbm.isRelational()) {
-            throw new IllegalArgumentException("Can't export into non-relational database");
+            throw new IllegalArgumentException(Messages.getString("NodeManager.6")); //$NON-NLS-1$
         } else {
             insertRelationalNode(node, dbm, dbm.getConnection());
         }
@@ -474,7 +474,7 @@ public final class NodeManager {
                 throws ClassNotFoundException, SQLException {
 
         if (con == null) {
-            throw new NullPointerException("Error inserting relational node: Connection is null");
+            throw new NullPointerException(Messages.getString("NodeManager.7")); //$NON-NLS-1$
         }
 
         // set connection to write mode
@@ -518,7 +518,7 @@ public final class NodeManager {
         } finally {
             if (logSql) {
                 long logTimeStop = java.lang.System.currentTimeMillis();
-                logSqlStatement("SQL INSERT", dbm.getTableName(),
+                logSqlStatement("SQL INSERT", dbm.getTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, insertString);
             }
             if (stmt != null) {
@@ -538,10 +538,10 @@ public final class NodeManager {
             // but the functionality is really worth it.
             RequestEvaluator reval = app.getCurrentRequestEvaluator();
             if (reval != null) {
-                reval.invokeDirectFunction(node, "onPersist", RequestEvaluator.EMPTY_ARGS);
+                reval.invokeDirectFunction(node, "onPersist", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
             }
         } catch (Exception x) {
-            app.logError("Error invoking onPersist()", x);
+            app.logError(Messages.getString("NodeManager.8"), x); //$NON-NLS-1$
         }
     }
     
@@ -600,13 +600,13 @@ public final class NodeManager {
                 }
 
                 if (comma) {
-                    b.append(", ");
+                    b.append(", "); //$NON-NLS-1$
                 } else {
                     comma = true;
                 }
 
                 b.append(rel.getDbField());
-                b.append(" = ?");
+                b.append(" = ?"); //$NON-NLS-1$
             }
 
             // if no columns were updated, return false
@@ -614,7 +614,7 @@ public final class NodeManager {
                 return false;
             }
 
-            b.append(" WHERE ");
+            b.append(" WHERE "); //$NON-NLS-1$
             dbm.appendCondition(b, dbm.getIDField(), node.getID());
 
             Connection con = dbm.getConnection();
@@ -650,7 +650,7 @@ public final class NodeManager {
             } finally {
                 if (logSql) {
                     long logTimeStop = System.currentTimeMillis();
-                    logSqlStatement("SQL UPDATE", dbm.getTableName(),
+                    logSqlStatement("SQL UPDATE", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, b.toString());
                 }
                 if (stmt != null) {
@@ -688,10 +688,10 @@ public final class NodeManager {
         } else {
             Statement st = null;
             long logTimeStart = logSql ? System.currentTimeMillis() : 0;
-            String str = new StringBuffer("DELETE FROM ").append(dbm.getTableName())
-                                                         .append(" WHERE ")
+            String str = new StringBuffer("DELETE FROM ").append(dbm.getTableName()) //$NON-NLS-1$
+                                                         .append(" WHERE ") //$NON-NLS-1$
                                                          .append(dbm.getIDField())
-                                                         .append(" = ")
+                                                         .append(" = ") //$NON-NLS-1$
                                                          .append(node.getID())
                                                          .toString();
 
@@ -707,7 +707,7 @@ public final class NodeManager {
             } finally {
                 if (logSql) {
                     long logTimeStop = System.currentTimeMillis();
-                    logSqlStatement("SQL DELETE", dbm.getTableName(),
+                    logSqlStatement("SQL DELETE", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, str);
                 }
                 if (st != null) {
@@ -745,10 +745,10 @@ public final class NodeManager {
             return generateEmbeddedID(map);
         }
         String idMethod = map.getIDgen();
-        if (idMethod == null || "[max]".equalsIgnoreCase(idMethod) || map.isMySQL()) {
+        if (idMethod == null || "[max]".equalsIgnoreCase(idMethod) || map.isMySQL()) { //$NON-NLS-1$
             // use select max as id generator
             return generateMaxID(map);
-        } else if ("[hop]".equalsIgnoreCase(idMethod)) {
+        } else if ("[hop]".equalsIgnoreCase(idMethod)) { //$NON-NLS-1$
             // use embedded db id generator
             return generateEmbeddedID(map);
         } else {
@@ -772,8 +772,8 @@ public final class NodeManager {
         String retval = null;
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
-        String q = new StringBuffer("SELECT MAX(").append(map.getIDField())
-                                                  .append(") FROM ")
+        String q = new StringBuffer("SELECT MAX(").append(map.getIDField()) //$NON-NLS-1$
+                                                  .append(") FROM ") //$NON-NLS-1$
                                                   .append(map.getTableName())
                                                   .toString();
 
@@ -800,7 +800,7 @@ public final class NodeManager {
         } finally {
             if (logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_MAX", map.getTableName(),
+                logSqlStatement("SQL SELECT_MAX", map.getTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, q);
             }
             if (stmt != null) {
@@ -820,13 +820,13 @@ public final class NodeManager {
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
         String q;
         if (map.isOracle()) {
-            q = new StringBuffer("SELECT ").append(map.getIDgen())
-                    .append(".nextval FROM dual").toString();
+            q = new StringBuffer("SELECT ").append(map.getIDgen()) //$NON-NLS-1$
+                    .append(".nextval FROM dual").toString(); //$NON-NLS-1$
         } else if (map.isPostgreSQL() || map.isH2()) {
-            q = new StringBuffer("SELECT nextval('")
-                    .append(map.getIDgen()).append("')").toString();
+            q = new StringBuffer("SELECT nextval('") //$NON-NLS-1$
+                    .append(map.getIDgen()).append("')").toString(); //$NON-NLS-1$
         } else {
-            throw new RuntimeException("Unable to generate sequence: unknown DB");
+            throw new RuntimeException(Messages.getString("NodeManager.9")); //$NON-NLS-1$
         }
 
         try {
@@ -839,14 +839,14 @@ public final class NodeManager {
             ResultSet rs = stmt.executeQuery(q);
 
             if (!rs.next()) {
-                throw new SQLException("Error creating ID from Sequence: empty recordset");
+                throw new SQLException(Messages.getString("NodeManager.10")); //$NON-NLS-1$
             }
 
             retval = rs.getString(1);
         } finally {
             if (logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_NEXTVAL", map.getTableName(),
+                logSqlStatement("SQL SELECT_NEXTVAL", map.getTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, q);
             }
             if (stmt != null) {
@@ -868,7 +868,7 @@ public final class NodeManager {
         DbMapping type = rel == null ? null : rel.otherType;
         if (type == null || !type.isRelational()) {
             // this should never be called for embedded nodes
-            throw new RuntimeException("getNodeIDs called for non-relational node " + home);
+            throw new RuntimeException(Messages.getString("NodeManager.11") + home); //$NON-NLS-1$
         }
         List retval = new ArrayList();
 
@@ -887,7 +887,7 @@ public final class NodeManager {
 
             if (home.getSubnodeRelation() != null) {
                 // subnode relation was explicitly set
-                query = b.append(" ").append(home.getSubnodeRelation()).toString();
+                query = b.append(" ").append(home.getSubnodeRelation()).toString(); //$NON-NLS-1$
             } else {
                 // let relation object build the query
                 rel.buildQuery(b, home, true, false);
@@ -932,7 +932,7 @@ public final class NodeManager {
         } finally {
             if (logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_IDS", type.getTableName(),
+                logSqlStatement("SQL SELECT_IDS", type.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
             }
             if (stmt != null) {
@@ -957,7 +957,7 @@ public final class NodeManager {
 
         if ((rel == null) || (rel.otherType == null) || !rel.otherType.isRelational()) {
             // this should never be called for embedded nodes
-            throw new RuntimeException("getNodes called for non-relational node " +
+            throw new RuntimeException(Messages.getString("NodeManager.12") + //$NON-NLS-1$
                                        home);
         }
 
@@ -1010,7 +1010,7 @@ public final class NodeManager {
         } finally {
             if (logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_ALL", dbm.getTableName(),
+                logSqlStatement("SQL SELECT_ALL", dbm.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
             }
             if (stmt != null) {
@@ -1062,18 +1062,18 @@ public final class NodeManager {
                 long logTimeStart = logSql ? System.currentTimeMillis() : 0;
 
                 try {
-                    StringBuffer b = dbm.getSelect(null).append(" WHERE ");
+                    StringBuffer b = dbm.getSelect(null).append(" WHERE "); //$NON-NLS-1$
                     String idfield = (rel.groupby != null) ? rel.groupby : dbm.getIDField();
                     String[] ids = (String[]) missing.toArray(new String[missing.size()]);
 
                     dbm.appendCondition(b, idfield, ids);
-                    dbm.addJoinConstraints(b, " AND ");
+                    dbm.addJoinConstraints(b, " AND "); //$NON-NLS-1$
 
                     if (rel.groupby != null) {
-                        rel.renderConstraints(b, home, " AND ");
+                        rel.renderConstraints(b, home, " AND "); //$NON-NLS-1$
 
                         if (rel.order != null) {
-                            b.append(" ORDER BY ");
+                            b.append(" ORDER BY "); //$NON-NLS-1$
                             b.append(rel.order);
                         }
                     }
@@ -1150,11 +1150,11 @@ public final class NodeManager {
                     }
 
                 } catch (Exception x) {
-                    app.logError("Error in prefetchNodes()", x);
+                    app.logError(Messages.getString("NodeManager.13"), x); //$NON-NLS-1$
                 } finally {
                     if (logSql) {
                         long logTimeStop = System.currentTimeMillis();
-                        logSqlStatement("SQL SELECT_PREFETCH", dbm.getTableName(),
+                        logSqlStatement("SQL SELECT_PREFETCH", dbm.getTableName(), //$NON-NLS-1$
                                         logTimeStart, logTimeStop, query);
                     }
                     if (stmt != null) {
@@ -1176,7 +1176,7 @@ public final class NodeManager {
         DbMapping type = rel == null ? null : rel.otherType;
         if (type == null || !type.isRelational()) {
             // this should never be called for embedded nodes
-            throw new RuntimeException("countNodes called for non-relational node " + home);
+            throw new RuntimeException(Messages.getString("NodeManager.14") + home); //$NON-NLS-1$
         }
         int retval = 0;
         Connection con = type.getConnection();
@@ -1192,7 +1192,7 @@ public final class NodeManager {
 
             if (home.getSubnodeRelation() != null) {
                 // use the manually set subnoderelation of the home node
-                query = b.append(" ").append(home.getSubnodeRelation()).toString();
+                query = b.append(" ").append(home.getSubnodeRelation()).toString(); //$NON-NLS-1$
             } else {
                 // let relation object build the query
                 rel.buildQuery(b, home, false, true);
@@ -1210,7 +1210,7 @@ public final class NodeManager {
         } finally {
             if (logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_COUNT", type.getTableName(),
+                logSqlStatement("SQL SELECT_COUNT", type.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
             }
             if (stmt != null) {
@@ -1232,7 +1232,7 @@ public final class NodeManager {
         DbMapping type = rel == null ? null : rel.otherType;
         if (type == null || !type.isRelational()) {
             // this should never be called for embedded nodes
-            throw new RuntimeException("getPropertyNames called for non-relational node " + home);
+            throw new RuntimeException(Messages.getString("NodeManager.15") + home); //$NON-NLS-1$
         }
         Vector retval = new Vector();
 
@@ -1250,7 +1250,7 @@ public final class NodeManager {
             StringBuffer b = rel.getNamesSelect();
 
             if (home.getSubnodeRelation() != null) {
-                b.append(" ").append(home.getSubnodeRelation());
+                b.append(" ").append(home.getSubnodeRelation()); //$NON-NLS-1$
             } else {
                 // let relation object build the query
                 rel.buildQuery(b, home, true, false);
@@ -1272,7 +1272,7 @@ public final class NodeManager {
         } finally {
             if (logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_ACCESSNAMES", type.getTableName(),
+                logSqlStatement("SQL SELECT_ACCESSNAMES", type.getTableName(), //$NON-NLS-1$
                         logTimeStart, logTimeStop, query);
             }
 
@@ -1319,9 +1319,9 @@ public final class NodeManager {
                 DbColumn[] columns = dbm.getColumns();
                 Relation[] joins = dbm.getJoins();
                 
-                StringBuffer b = dbm.getSelect(null).append("WHERE ");
+                StringBuffer b = dbm.getSelect(null).append("WHERE "); //$NON-NLS-1$
                 dbm.appendCondition(b, idfield, kstr);
-                dbm.addJoinConstraints(b, " AND ");
+                dbm.addJoinConstraints(b, " AND "); //$NON-NLS-1$
                 query = b.toString();
 
                 ResultSet rs = stmt.executeQuery(query);
@@ -1334,12 +1334,12 @@ public final class NodeManager {
                 fetchJoinedNodes(rs, joins, columns.length);
 
                 if (rs.next()) {
-                    app.logError("Warning: More than one value returned for query " + query);
+                    app.logError(Messages.getString("NodeManager.16") + query); //$NON-NLS-1$
                 }
             } finally {
                 if (logSql) {
                     long logTimeStop = System.currentTimeMillis();
-                    logSqlStatement("SQL SELECT_BYKEY", dbm.getTableName(),
+                    logSqlStatement("SQL SELECT_BYKEY", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, query);
                 }
                 if (stmt != null) {
@@ -1395,16 +1395,16 @@ public final class NodeManager {
 
                 if (home.getSubnodeRelation() != null && !rel.isComplexReference()) {
                     // combine our key with the constraints in the manually set subnode relation
-                    b.append(" WHERE ");
+                    b.append(" WHERE "); //$NON-NLS-1$
                     dbm.appendCondition(b, rel.accessName, kstr);
                     // add join contraints in case this is an old oracle style join
-                    dbm.addJoinConstraints(b, " AND ");
+                    dbm.addJoinConstraints(b, " AND "); //$NON-NLS-1$
                     // add potential constraints from manually set subnodeRelation
                     String subrel = home.getSubnodeRelation().trim();
                     if (subrel.length() > 5) {
-                        b.append(" AND (");
+                        b.append(" AND ("); //$NON-NLS-1$
                         b.append(subrel.substring(5).trim());
-                        b.append(")");
+                        b.append(")"); //$NON-NLS-1$
                     }
                 } else {
                     rel.buildQuery(b, home, dbm, kstr, false, false);
@@ -1425,13 +1425,13 @@ public final class NodeManager {
                 fetchJoinedNodes(rs, joins, columns.length);
 
                 if (rs.next()) {
-                    app.logError("Warning: More than one value returned for query " + query);
+                    app.logError(Messages.getString("NodeManager.17") + query); //$NON-NLS-1$
                 }
 
             } finally {
                 if (logSql) {
                     long logTimeStop = System.currentTimeMillis();
-                    logSqlStatement("SQL SELECT_BYRELATION", dbm.getTableName(),
+                    logSqlStatement("SQL SELECT_BYRELATION", dbm.getTableName(), //$NON-NLS-1$
                                     logTimeStart, logTimeStop, query);
                 }
                 if (stmt != null) {
@@ -1474,9 +1474,9 @@ public final class NodeManager {
 
                     if (dbmap == null) {
                         // invalid prototype name!
-                        app.logError("No prototype defined for prototype mapping \""
-                                + protoName + "\" - Using default prototype \""
-                                + dbm.getTypeName() + "\".");
+                        app.logError(Messages.getString("NodeManager.18") //$NON-NLS-1$
+                                + protoName + Messages.getString("NodeManager.19") //$NON-NLS-1$
+                                + dbm.getTypeName() + Messages.getString("NodeManager.20")); //$NON-NLS-1$
                         dbmap = dbm;
                         protoName = dbmap.getTypeName();
                     }
@@ -1812,8 +1812,8 @@ public final class NodeManager {
                             stmt.setBinaryStream(stmtNumber, bout, buf.length);
                         }
                     } else {
-                        throw new SQLException("expected byte[] for binary column '" +
-                                p.getName() + "', found " + b.getClass());
+                        throw new SQLException(Messages.getString("NodeManager.21") + //$NON-NLS-1$
+                                p.getName() + Messages.getString("NodeManager.22") + b.getClass()); //$NON-NLS-1$
                     }
 
                     break;
@@ -1867,16 +1867,16 @@ public final class NodeManager {
                                  long logTimeStart, long logTimeStop, String statement) {
         // init sql-log if necessary
         if (sqlLog == null) {
-            String sqlLogName = app.getProperty("sqlLog", "helma."+app.getName()+".sql");
+            String sqlLogName = app.getProperty("sqlLog", "helma."+app.getName()+".sql");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
             sqlLog = LogFactory.getLog(sqlLogName);
         }
 
         sqlLog.info(new StringBuffer().append(type)
-                                      .append(" ")
+                                      .append(" ") //$NON-NLS-1$
                                       .append(table)
-                                      .append(" ")
+                                      .append(" ") //$NON-NLS-1$
                                       .append((logTimeStop - logTimeStart))
-                                      .append(": ")
+                                      .append(": ") //$NON-NLS-1$
                                       .append(statement)
                                       .toString());
     }

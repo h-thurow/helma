@@ -73,7 +73,7 @@ public class Session implements Serializable {
         this.app = app;
         this.uid = null;
         this.userHandle = null;
-        cacheNode = new TransientNode("session");
+        cacheNode = new TransientNode("session"); //$NON-NLS-1$
         cacheLastModified = cacheNode.lastModified();
         // HACK - decrease timestamp by 1 to notice modifications
         // taking place immediately after object creation
@@ -127,11 +127,11 @@ public class Session implements Serializable {
                 if (reval != null) {
                     Node userNode = userHandle.getNode(app.nmgr.safe);
                     if (userNode != null)
-                        reval.invokeDirectFunction(userNode, "onLogout", new Object[] {sessionId});
+                        reval.invokeDirectFunction(userNode, "onLogout", new Object[] {sessionId}); //$NON-NLS-1$
                 }
             } catch (Exception x) {
                 // errors should already be logged by request evaluator, but you never know
-                app.logError("Error in onLogout", x);
+                app.logError(Messages.getString("Session.0"), x); //$NON-NLS-1$
             } finally {
                 // do log out
                 userHandle = null;
@@ -182,7 +182,7 @@ public class Session implements Serializable {
      */
     public void setCacheNode(INode node) {
         if (node == null) {
-            throw new NullPointerException("cache node is null");
+            throw new NullPointerException(Messages.getString("Session.1")); //$NON-NLS-1$
         }
         this.cacheNode = node;
         this.cacheLastModified = cacheNode.lastModified();
@@ -290,9 +290,9 @@ public class Session implements Serializable {
      */
     public String toString() {
         if (uid != null) {
-            return "[Session for user " + uid + "]";
+            return "[Session for user " + uid + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         } else {
-            return "[Anonymous Session]";
+            return "[Anonymous Session]"; //$NON-NLS-1$
         }
     }
 

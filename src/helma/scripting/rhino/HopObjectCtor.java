@@ -47,10 +47,10 @@ public class HopObjectCtor extends FunctionObject {
 
     static {
         try {
-            hopObjCtor = HopObjectCtor.class.getMethod("jsConstructor", new Class[] {
+            hopObjCtor = HopObjectCtor.class.getMethod("jsConstructor", new Class[] { //$NON-NLS-1$
                 Context.class, Object[].class, Function.class, Boolean.TYPE });
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Error getting HopObjectCtor.jsConstructor()");
+            throw new RuntimeException(Messages.getString("HopObjectCtor.0")); //$NON-NLS-1$
         }
     }
 
@@ -67,8 +67,8 @@ public class HopObjectCtor extends FunctionObject {
         this.core = core;
         this.protoProperty = prototype;
         addAsConstructor(core.global, prototype);
-        defineProperty("getById", new GetById(core.global), attr);
-        defineProperty("getCollection", new HopCollection(core.global), attr);
+        defineProperty("getById", new GetById(core.global), attr); //$NON-NLS-1$
+        defineProperty("getCollection", new HopCollection(core.global), attr); //$NON-NLS-1$
     }
 
     /**
@@ -97,7 +97,7 @@ public class HopObjectCtor extends FunctionObject {
                 Object obj = cnst.newInstance(args);
                 return Context.toObject(obj, core.global);
             } catch (Exception x) {
-                System.err.println("Error in Java constructor: "+x);
+                System.err.println(Messages.getString("HopObjectCtor.1")+x); //$NON-NLS-1$
                 throw new EvaluatorException(x.toString());
             }
         } else {
@@ -110,7 +110,7 @@ public class HopObjectCtor extends FunctionObject {
                 Object f = ScriptableObject.getProperty(proto, protoname);
                 if (!(f instanceof Function)) {
                     // backup compatibility: look up function constructor
-                    f = ScriptableObject.getProperty(proto, "__constructor__");
+                    f = ScriptableObject.getProperty(proto, "__constructor__"); //$NON-NLS-1$
                 }
                 if (f instanceof Function) {
                     ((Function) f).call(cx, core.global, hobj, args);
@@ -163,7 +163,7 @@ public class HopObjectCtor extends FunctionObject {
          */
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             if (args.length < 1 || args.length > 2)
-                throw new IllegalArgumentException("Wrong number of arguments in getById()");
+                throw new IllegalArgumentException(Messages.getString("HopObjectCtor.2")); //$NON-NLS-1$
             // If second argument is provided, use it as type name.
             // Otherwise, use our own type name.
             String type = args.length == 1 ?
@@ -210,29 +210,29 @@ public class HopObjectCtor extends FunctionObject {
 
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             if (args.length != 1) {
-                throw new IllegalArgumentException("Wrong number of arguments in definePrototype()");
+                throw new IllegalArgumentException(Messages.getString("HopObjectCtor.3")); //$NON-NLS-1$
             }
             if (!(args[0] instanceof Scriptable)) {
-                throw new IllegalArgumentException("Second argument to HopObject.definePrototype() must be Object");
+                throw new IllegalArgumentException(Messages.getString("HopObjectCtor.4")); //$NON-NLS-1$
             }
 
             Scriptable desc = (Scriptable) args[0];
             Properties childmapping = core.scriptableToProperties(desc);
-            if (!childmapping.containsKey("collection")) {
+            if (!childmapping.containsKey("collection")) { //$NON-NLS-1$
                 // if contained type isn't defined explicitly limit collection to our own type
-                childmapping.put("collection", HopObjectCtor.this.getFunctionName());
+                childmapping.put("collection", HopObjectCtor.this.getFunctionName()); //$NON-NLS-1$
             }
 
             Properties props = new Properties();
-            props.put("_children", childmapping);
+            props.put("_children", childmapping); //$NON-NLS-1$
             DbMapping dbmap = new DbMapping(core.app, null, props, true);
             dbmap.update();
 
             WrappedNodeManager nmgr = core.app.getWrappedNodeManager();
-            Node node = new Node("HopQuery", Long.toString(collectionId++), null, nmgr);
+            Node node = new Node("HopQuery", Long.toString(collectionId++), null, nmgr); //$NON-NLS-1$
             node.setDbMapping(dbmap);
             node.setState(Node.VIRTUAL);
-            return new HopObject("HopQuery", core, node, core.hopObjectProto);
+            return new HopObject("HopQuery", core, node, core.hopObjectProto); //$NON-NLS-1$
         }
 
         public int getArity() {

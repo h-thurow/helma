@@ -99,7 +99,7 @@ public class CryptResource {
             String line = reader.readLine();
 
             while (line != null) {
-                StringTokenizer st = new StringTokenizer(line, ":");
+                StringTokenizer st = new StringTokenizer(line, ":"); //$NON-NLS-1$
 
                 if (st.countTokens() > 1) {
                     users.put(st.nextToken(), st.nextToken());

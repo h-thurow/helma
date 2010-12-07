@@ -58,7 +58,7 @@ public final class WrappedNodeManager {
     public Node getNode(Key key) {
         Transactor tx = checkLocalTransactor();
         try {
-            beginLocalTransaction(tx, "getNode");
+            beginLocalTransaction(tx, "getNode"); //$NON-NLS-1$
             Node node = nmgr.getNode(key);
             commitLocalTransaction(tx);
             return node;
@@ -67,8 +67,8 @@ public final class WrappedNodeManager {
             return null;
         } catch (Exception x) {
             abortLocalTransaction(tx);
-            nmgr.app.logError("Error retrieving Node for " + key, x);
-            throw new RuntimeException("Error retrieving Node", x);
+            nmgr.app.logError(Messages.getString("WrappedNodeManager.0") + key, x); //$NON-NLS-1$
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.1"), x); //$NON-NLS-1$
         }
     }
 
@@ -83,7 +83,7 @@ public final class WrappedNodeManager {
     public Node getNode(Node home, String id, Relation rel) {
         Transactor tx = checkLocalTransactor();
         try {
-            beginLocalTransaction(tx, "getNode");
+            beginLocalTransaction(tx, "getNode"); //$NON-NLS-1$
             Node node = nmgr.getNode(home, id, rel);
             commitLocalTransaction(tx);
             return node;
@@ -92,8 +92,8 @@ public final class WrappedNodeManager {
             return null;
         } catch (Exception x) {
             abortLocalTransaction(tx);
-            nmgr.app.logError("Error retrieving Node \"" + id + "\" from " + home, x);
-            throw new RuntimeException("Error retrieving Node", x);
+            nmgr.app.logError(Messages.getString("WrappedNodeManager.2") + id + Messages.getString("WrappedNodeManager.3") + home, x); //$NON-NLS-1$ //$NON-NLS-2$
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.4"), x); //$NON-NLS-1$
         }
     }
 
@@ -108,13 +108,13 @@ public final class WrappedNodeManager {
     public List getNodes(Node home, Relation rel) {
         Transactor tx = checkLocalTransactor();
         try {
-            beginLocalTransaction(tx, "getNodes");
+            beginLocalTransaction(tx, "getNodes"); //$NON-NLS-1$
             List list = nmgr.getNodes(home, rel);
             commitLocalTransaction(tx);
             return list;
         } catch (Exception x) {
             abortLocalTransaction(tx);
-            throw new RuntimeException("Error retrieving Nodes", x);
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.5"), x); //$NON-NLS-1$
         }
     }
 
@@ -130,7 +130,7 @@ public final class WrappedNodeManager {
         try {
             return nmgr.getNodeIDs(home, rel);
         } catch (Exception x) {
-            throw new RuntimeException("Error retrieving NodeIDs", x);
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.6"), x); //$NON-NLS-1$
         }
     }
 
@@ -157,7 +157,7 @@ public final class WrappedNodeManager {
         try {
             return nmgr.countNodes(home, rel);
         } catch (Exception x) {
-            throw new RuntimeException("Error counting Nodes", x);
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.7"), x); //$NON-NLS-1$
         }
     }
 
@@ -166,7 +166,7 @@ public final class WrappedNodeManager {
         try {
             nmgr.prefetchNodes(node, rel, list, start, length);
         } catch (Exception x) {
-            throw new RuntimeException("Error prefetching nodes", x);
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.8"), x); //$NON-NLS-1$
         }
     }
 
@@ -178,12 +178,12 @@ public final class WrappedNodeManager {
     public void deleteNode(Node node) {
         Transactor tx = checkLocalTransactor();
         try {
-            beginLocalTransaction(tx, "deleteNode");
+            beginLocalTransaction(tx, "deleteNode"); //$NON-NLS-1$
             nmgr.deleteNode(node);
             commitLocalTransaction(tx);
         } catch (Exception x) {
             abortLocalTransaction(tx);
-            throw new RuntimeException("Error deleting Node", x);
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.9"), x); //$NON-NLS-1$
         }
     }
 
@@ -199,7 +199,7 @@ public final class WrappedNodeManager {
         try {
             return nmgr.getPropertyNames(home, rel);
         } catch (Exception x) {
-            throw new RuntimeException("Error retrieving property names ", x);
+            throw new RuntimeException(Messages.getString("WrappedNodeManager.10"), x); //$NON-NLS-1$
         }
     }
 
@@ -268,7 +268,7 @@ public final class WrappedNodeManager {
     public Node getRootNode() {
         Transactor tx = checkLocalTransactor();
         try {
-            beginLocalTransaction(tx, "getRootNode");
+            beginLocalTransaction(tx, "getRootNode"); //$NON-NLS-1$
             Node node = nmgr.getRootNode();
             commitLocalTransaction(tx);
             return node;
@@ -327,7 +327,7 @@ public final class WrappedNodeManager {
             try {
                 tx.begin(name);
             } catch (Exception x) {
-                nmgr.app.logError("Error in beginLocalTransaction", x);
+                nmgr.app.logError(Messages.getString("WrappedNodeManager.11"), x); //$NON-NLS-1$
             }
         }
     }
@@ -337,7 +337,7 @@ public final class WrappedNodeManager {
             try {
                 tx.commit();
             } catch (Exception x) {
-                nmgr.app.logError("Error in commitLocalTransaction", x);                
+                nmgr.app.logError(Messages.getString("WrappedNodeManager.12"), x);                 //$NON-NLS-1$
             }
         }
     }
@@ -347,7 +347,7 @@ public final class WrappedNodeManager {
             try {
                 tx.abort();
             } catch (Exception x) {
-                nmgr.app.logError("Error in abortLocalTransaction", x);
+                nmgr.app.logError(Messages.getString("WrappedNodeManager.13"), x); //$NON-NLS-1$
             }
         }
     }

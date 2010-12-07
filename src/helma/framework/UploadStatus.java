@@ -67,18 +67,18 @@ public class UploadStatus implements Serializable {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer("{current: ").append(current)
-                .append(", total: ").append(total)
-                .append(", itemsRead: ").append(itemsRead)
-                .append(", error: ");
+        StringBuffer buffer = new StringBuffer("{current: ").append(current) //$NON-NLS-1$
+                .append(", total: ").append(total) //$NON-NLS-1$
+                .append(", itemsRead: ").append(itemsRead) //$NON-NLS-1$
+                .append(", error: "); //$NON-NLS-1$
         if (error == null) {
-            buffer.append("null");
+            buffer.append("null"); //$NON-NLS-1$
         } else {
-            buffer.append("\"");
-            buffer.append(error.replaceAll("\"", "\\\\\""));
-            buffer.append("\"");
+            buffer.append("\""); //$NON-NLS-1$
+            buffer.append(error.replaceAll("\"", "\\\\\"")); //$NON-NLS-1$ //$NON-NLS-2$
+            buffer.append("\""); //$NON-NLS-1$
         }
-        return buffer.append("}").toString();
+        return buffer.append("}").toString(); //$NON-NLS-1$
     }
 
 }

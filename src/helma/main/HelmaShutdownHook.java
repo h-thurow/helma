@@ -29,7 +29,7 @@ public class HelmaShutdownHook extends Thread {
      *
      */
     public void run() {
-        System.err.println("Shutting down Helma - please stand by...");
+        System.err.println(Messages.getString("HelmaShutdownHook.0")); //$NON-NLS-1$
 
         Server server = Server.getServer();
         if (server != null) {

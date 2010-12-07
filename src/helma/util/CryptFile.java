@@ -94,7 +94,7 @@ public class CryptFile {
             String line = reader.readLine();
 
             while (line != null) {
-                StringTokenizer st = new StringTokenizer(line, ":");
+                StringTokenizer st = new StringTokenizer(line, ":"); //$NON-NLS-1$
 
                 if (st.countTokens() > 1) {
                     users.put(st.nextToken(), st.nextToken());
@@ -121,8 +121,8 @@ public class CryptFile {
      * @param args ...
      */
     public static void main(String[] args) {
-        CryptFile cf = new CryptFile(new File("passwd"), null);
+        CryptFile cf = new CryptFile(new File("passwd"), null); //$NON-NLS-1$
 
-        System.err.println(cf.authenticate("hns", "asdf"));
+        System.err.println(cf.authenticate("hns", "asdf")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

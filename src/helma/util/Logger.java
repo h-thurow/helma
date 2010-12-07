@@ -38,7 +38,7 @@ public class Logger implements Log {
     String canonicalName;
 
     // fields for date rendering and caching
-    static DateFormat dformat = new SimpleDateFormat("[yyyy/MM/dd HH:mm:ss] ");
+    static DateFormat dformat = new SimpleDateFormat("[yyyy/MM/dd HH:mm:ss] "); //$NON-NLS-1$
     static long dateLastRendered;
     static String dateCache;
 
@@ -79,18 +79,18 @@ public class Logger implements Log {
      * Get loglevel from System properties
      */
      private void init() {
-        String level = System.getProperty("helma.loglevel");
-        if ("trace".equalsIgnoreCase(level))
+        String level = System.getProperty("helma.loglevel"); //$NON-NLS-1$
+        if ("trace".equalsIgnoreCase(level)) //$NON-NLS-1$
             logLevel = TRACE;
-        else if ("debug".equalsIgnoreCase(level))
+        else if ("debug".equalsIgnoreCase(level)) //$NON-NLS-1$
             logLevel = DEBUG;
-        else if ("info".equalsIgnoreCase(level))
+        else if ("info".equalsIgnoreCase(level)) //$NON-NLS-1$
             logLevel = INFO;
-        else if ("warn".equalsIgnoreCase(level))
+        else if ("warn".equalsIgnoreCase(level)) //$NON-NLS-1$
             logLevel = WARN;
-        else if ("error".equalsIgnoreCase(level))
+        else if ("error".equalsIgnoreCase(level)) //$NON-NLS-1$
             logLevel = ERROR;
-        else if ("fatal".equalsIgnoreCase(level))
+        else if ("fatal".equalsIgnoreCase(level)) //$NON-NLS-1$
             logLevel = FATAL;
     }
 
@@ -114,9 +114,9 @@ public class Logger implements Log {
      * Return a string representation of this Logger
      */
     public String toString() {
-        return new StringBuffer(getClass().getName()).append("[")
-                .append(canonicalName).append(",").append(logLevel)
-                .append("]").toString();
+        return new StringBuffer(getClass().getName()).append("[") //$NON-NLS-1$
+                .append(canonicalName).append(",").append(logLevel) //$NON-NLS-1$
+                .append("]").toString(); //$NON-NLS-1$
     }
 
     /**
@@ -142,9 +142,9 @@ public class Logger implements Log {
         // add a safety net so we don't grow indefinitely even if writer thread
         // has gone. the 2000 entries threshold is somewhat arbitrary. 
         if (entries.size() < 2000) {
-            String message = msg == null ? "null" : msg.toString();
+            String message = msg == null ? "null" : msg.toString(); //$NON-NLS-1$
             Thread thread = Thread.currentThread();
-            String threadId = "[" + thread.getName() + "] ";
+            String threadId = "[" + thread.getName() + "] ";  //$NON-NLS-1$//$NON-NLS-2$
             entries.add(new Entry(dateCache, level, message, threadId, exception));
         }
     }
@@ -180,8 +180,8 @@ public class Logger implements Log {
                 // more than 1000 entries queued plus exception - something
                 // is definitely wrong with this logger. Write a message to std err and
                 // discard queued log entries.
-                System.err.println("Error writing log file " + this + ": " + x);
-                System.err.println("Discarding " + size + " log entries.");
+                System.err.println(Messages.getString("Logger.0") + this + Messages.getString("Logger.1") + x); //$NON-NLS-1$ //$NON-NLS-2$
+                System.err.println(Messages.getString("Logger.2") + size + Messages.getString("Logger.3")); //$NON-NLS-1$ //$NON-NLS-2$
                 entries.clear();
             }
         }
@@ -229,62 +229,62 @@ public class Logger implements Log {
 
     public void trace(Object parm1) {
         if (logLevel <= TRACE)
-            log("[TRACE] ", parm1, null);
+            log(Messages.getString("Logger.4"), parm1, null); //$NON-NLS-1$
     }
 
     public void trace(Object parm1, Throwable parm2) {
         if (logLevel <= TRACE)
-            log("[TRACE] ", parm1, parm2);
+            log(Messages.getString("Logger.5"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void debug(Object parm1) {
         if (logLevel <= DEBUG)
-            log("[DEBUG] ", parm1, null);
+            log(Messages.getString("Logger.6"), parm1, null); //$NON-NLS-1$
     }
 
     public void debug(Object parm1, Throwable parm2) {
         if (logLevel <= DEBUG)
-            log("[DEBUG] ", parm1, parm2);
+            log(Messages.getString("Logger.7"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void info(Object parm1) {
         if (logLevel <= INFO)
-            log("[INFO] ", parm1, null);
+            log(Messages.getString("Logger.8"), parm1, null); //$NON-NLS-1$
     }
 
     public void info(Object parm1, Throwable parm2) {
         if (logLevel <= INFO)
-            log("[INFO] ", parm1, parm2);
+            log(Messages.getString("Logger.9"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void warn(Object parm1) {
         if (logLevel <= WARN)
-            log("[WARN] ", parm1, null);
+            log(Messages.getString("Logger.10"), parm1, null); //$NON-NLS-1$
     }
 
     public void warn(Object parm1, Throwable parm2) {
         if (logLevel <= WARN)
-            log("[WARN] ", parm1, parm2);
+            log(Messages.getString("Logger.11"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void error(Object parm1) {
         if (logLevel <= ERROR)
-            log("[ERROR] ", parm1, null);
+            log(Messages.getString("Logger.12"), parm1, null); //$NON-NLS-1$
     }
 
     public void error(Object parm1, Throwable parm2) {
         if (logLevel <= ERROR)
-            log("[ERROR] ", parm1, parm2);
+            log(Messages.getString("Logger.13"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void fatal(Object parm1) {
         if (logLevel <= FATAL)
-            log("[FATAL] ", parm1, null);
+            log(Messages.getString("Logger.14"), parm1, null); //$NON-NLS-1$
     }
 
     public void fatal(Object parm1, Throwable parm2) {
         if (logLevel <= FATAL)
-            log("[FATAL] ", parm1, parm2);
+            log(Messages.getString("Logger.15"), parm1, parm2); //$NON-NLS-1$
     }
 
     // utility method to get the stack trace from a Throwable as string

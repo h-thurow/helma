@@ -226,11 +226,11 @@ public final class TransientProperty implements IProperty, Serializable {
                 return svalue;
 
             case BOOLEAN:
-                return "" + bvalue;
+                return "" + bvalue; //$NON-NLS-1$
 
             case DATE:
 
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$
 
                 return format.format(new Date(lvalue));
 
@@ -247,7 +247,7 @@ public final class TransientProperty implements IProperty, Serializable {
                 return (jvalue == null) ? null : jvalue.toString();
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**

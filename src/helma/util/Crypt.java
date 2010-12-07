@@ -559,9 +559,9 @@ public class Crypt {
    public static final String crypt(String salt, String original)
    {
       while(salt.length() < 2)
-         salt += "A";
+         salt += "A"; //$NON-NLS-1$
 
-      StringBuffer buffer = new StringBuffer("             ");
+      StringBuffer buffer = new StringBuffer("             "); //$NON-NLS-1$
 
       char charZero = salt.charAt(0);
       char charOne  = salt.charAt(1);
@@ -621,8 +621,8 @@ public class Crypt {
       {
          System.out.println
          (
-            "[" + args[0] + "] [" + args[1] + "] => [" +
-            Crypt.crypt(args[0], args[1]) + "]"
+            "[" + args[0] + "] [" + args[1] + "] => [" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            Crypt.crypt(args[0], args[1]) + "]" //$NON-NLS-1$
          );
       }
    }

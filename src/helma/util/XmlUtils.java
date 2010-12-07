@@ -77,7 +77,7 @@ public class XmlUtils {
         } else if (obj instanceof Reader) {
             doc = parser.parse(new InputSource((Reader) obj));
         } else {
-            throw new RuntimeException("Unrecognized argument to parseXml: " + obj);
+            throw new RuntimeException(Messages.getString("XmlUtils.0") + obj); //$NON-NLS-1$
         }
 
         doc.normalize();
@@ -96,10 +96,10 @@ public class XmlUtils {
     public static HTMLDocument parseHtml(Object obj)
                               throws IOException, SAXException {
         try {
-            Class.forName("org.apache.html.dom.HTMLDocumentImpl");
+            Class.forName("org.apache.html.dom.HTMLDocumentImpl"); //$NON-NLS-1$
         } catch (Throwable notfound) {
-            throw new RuntimeException("Couldn't load Xerces HTML DOM classes. " +
-                "Make sure you have xercesImpl.jar and xml-apis.jar in your classpath.");
+            throw new RuntimeException(Messages.getString("XmlUtils.1") + //$NON-NLS-1$
+                Messages.getString("XmlUtils.2")); //$NON-NLS-1$
         }
 
         if (obj instanceof String) {
@@ -116,7 +116,7 @@ public class XmlUtils {
         } else if (obj instanceof Reader) {
             return getHtmlDocument((Reader) obj);
         } else {
-            throw new RuntimeException("Unrecognized argument to parseHtml: " + obj);
+            throw new RuntimeException(Messages.getString("XmlUtils.3") + obj); //$NON-NLS-1$
         }
     }
 

@@ -51,7 +51,7 @@ public class Logging extends LogFactory {
      *  helma.logdir system property.
      */
     public Logging() {
-        logdir = System.getProperty("helma.logdir", "log");
+        logdir = System.getProperty("helma.logdir", "log"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -61,17 +61,17 @@ public class Logging extends LogFactory {
      */
     public Log getInstance(String logname) {
         if (logname == null) {
-            throw new LogConfigurationException("No logname specified!");
+            throw new LogConfigurationException(Messages.getString("Logging.0")); //$NON-NLS-1$
         }
         // normalize log name
-        logname = logname.replaceAll("[^\\w\\d\\.]", "");
-        if ("console".equals(logdir)) {
-            if (logname.startsWith("org.mortbay."))
+        logname = logname.replaceAll("[^\\w\\d\\.]", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        if ("console".equals(logdir)) { //$NON-NLS-1$
+            if (logname.startsWith("org.mortbay.")) //$NON-NLS-1$
                 return getConsoleLog().getSedatedLog();
             else
                 return getConsoleLog();
         } else {
-            if (logname.startsWith("org.mortbay."))
+            if (logname.startsWith("org.mortbay.")) //$NON-NLS-1$
                 return getFileLog(logname).getSedatedLog();
             else
                 return getFileLog(logname);
@@ -115,7 +115,7 @@ public class Logging extends LogFactory {
     }
 
     public Object getAttribute(String name) {
-        if ("logdir".equals(name)) {
+        if ("logdir".equals(name)) { //$NON-NLS-1$
             return logdir;
         }
         return null;
@@ -196,7 +196,7 @@ public class Logging extends LogFactory {
                     files.add(file);
                 }
             } catch (IOException io) {
-                System.err.println("Error rotating log " + log.getName() + ": " +
+                System.err.println(Messages.getString("Logging.1") + log.getName() + Messages.getString("Logging.2") + //$NON-NLS-1$ //$NON-NLS-2$
                                     io.toString());
             }
         }
@@ -267,7 +267,7 @@ public class Logging extends LogFactory {
                             log.closeFile();
                         }
                     } catch (Exception x) {
-                        System.err.println("Error in Logger main loop: " + x);
+                        System.err.println(Messages.getString("Logging.3") + x); //$NON-NLS-1$
                     }
                 }
 

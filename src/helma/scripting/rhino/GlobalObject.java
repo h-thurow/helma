@@ -69,21 +69,21 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     public void init() {
         String[] globalFuncs = {
-                                   "renderSkin", "renderSkinAsString", "getProperty",
-                                   "authenticate", "createSkin", "format", "encode",
-                                   "encodeXml", "encodeForm", "stripTags", "formatParagraphs",
-                                   "getXmlDocument", "getHtmlDocument", "seal",
-                                   "getDBConnection", "getURL", "write", "writeln",
-                                   "serialize", "deserialize", "defineLibraryScope",
-                                   "wrapJavaMap", "unwrapJavaMap", "toJava", "definePrototype"
+                                   "renderSkin", "renderSkinAsString", "getProperty", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                   "authenticate", "createSkin", "format", "encode",   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$
+                                   "encodeXml", "encodeForm", "stripTags", "formatParagraphs",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                                   "getXmlDocument", "getHtmlDocument", "seal",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+                                   "getDBConnection", "getURL", "write", "writeln", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                                   "serialize", "deserialize", "defineLibraryScope",   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+                                   "wrapJavaMap", "unwrapJavaMap", "toJava", "definePrototype"  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
                                };
 
         defineFunctionProperties(globalFuncs, GlobalObject.class, DONTENUM | PERMANENT);
-        put("app", this, Context.toObject(new ApplicationBean(app), this));
-        put("Xml", this, Context.toObject(new XmlObject(core), this));
-        put("global", this, this);
+        put("app", this, Context.toObject(new ApplicationBean(app), this)); //$NON-NLS-1$
+        put("Xml", this, Context.toObject(new XmlObject(core), this)); //$NON-NLS-1$
+        put("global", this, this); //$NON-NLS-1$
         // Define dontEnum() on Object prototype
-        String[] objFuncs = { "dontEnum" };
+        String[] objFuncs = { "dontEnum" }; //$NON-NLS-1$
         ScriptableObject objproto = (ScriptableObject) getObjectPrototype(this);
         objproto.defineFunctionProperties(objFuncs, GlobalObject.class, DONTENUM | PERMANENT);
     }
@@ -94,7 +94,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * @return the class name for the global object
      */
     public String getClassName() {
-        return "GlobalObject";
+        return "GlobalObject"; //$NON-NLS-1$
     }
 
     /**
@@ -134,7 +134,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             changedProperties.add(name);
         }
         // expose thread scope as global variable "global"
-        if (isThreadScope && "global".equals(name)) {
+        if (isThreadScope && "global".equals(name)) { //$NON-NLS-1$
             return this;
         }
         return super.get(name, start);
@@ -151,7 +151,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     public boolean renderSkin(Object skinobj, Object paramobj)
             throws UnsupportedEncodingException, IOException {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
-        Skin skin = engine.toSkin(skinobj, "global");
+        Skin skin = engine.toSkin(skinobj, "global"); //$NON-NLS-1$
 
         if (skin != null) {
             skin.render(engine.reval, null, 
@@ -172,14 +172,14 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     public String renderSkinAsString(Object skinobj, Object paramobj)
             throws UnsupportedEncodingException, IOException {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
-        Skin skin = engine.toSkin(skinobj, "global");
+        Skin skin = engine.toSkin(skinobj, "global"); //$NON-NLS-1$
 
         if (skin != null) {
             return skin.renderAsString(engine.reval, null,
                     (paramobj == Undefined.instance) ? null : paramobj);
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -230,10 +230,10 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     public Object getDBConnection(String dbsource) throws Exception {
         if (dbsource == null)
-            throw new EvaluatorException("Wrong number of arguments in getDBConnection(dbsource)");
+            throw new EvaluatorException(Messages.getString("GlobalObject.0")); //$NON-NLS-1$
         DbSource dbsrc = app.getDbSource (dbsource);
         if (dbsrc == null)
-            throw new EvaluatorException("DbSource "+dbsource+" does not exist");
+            throw new EvaluatorException(Messages.getString("GlobalObject.1")+dbsource+Messages.getString("GlobalObject.2")); //$NON-NLS-1$ //$NON-NLS-2$
         DatabaseObject db = new DatabaseObject (dbsrc);
         return Context.toObject(db, this);
     }
@@ -261,28 +261,28 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             if (condition != null && condition != Undefined.instance) {
                 if (condition instanceof Scriptable) {
                     Scriptable scr = (Scriptable) condition;
-                    if ("Date".equals(scr.getClassName())) {
+                    if ("Date".equals(scr.getClassName())) { //$NON-NLS-1$
                         Date date = new Date((long) ScriptRuntime.toNumber(scr));
 
                         con.setIfModifiedSince(date.getTime());
 
-                        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz",
+                        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", //$NON-NLS-1$
                                                                    Locale.UK);
 
-                        format.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        con.setRequestProperty("If-Modified-Since", format.format(date));
+                        format.setTimeZone(TimeZone.getTimeZone("GMT")); //$NON-NLS-1$
+                        con.setRequestProperty("If-Modified-Since", format.format(date)); //$NON-NLS-1$
                     }else {
-                        con.setRequestProperty("If-None-Match", scr.toString());
+                        con.setRequestProperty("If-None-Match", scr.toString()); //$NON-NLS-1$
                     }
                 } else {
-                    con.setRequestProperty("If-None-Match", condition.toString());
+                    con.setRequestProperty("If-None-Match", condition.toString()); //$NON-NLS-1$
                 }
             }
 
-            String httpUserAgent = app.getProperty("httpUserAgent");
+            String httpUserAgent = app.getProperty("httpUserAgent"); //$NON-NLS-1$
 
             if (httpUserAgent != null) {
-                con.setRequestProperty("User-Agent", httpUserAgent);
+                con.setRequestProperty("User-Agent", httpUserAgent); //$NON-NLS-1$
             }
 
             if (timeout != null && timeout != Undefined.instance) {
@@ -296,7 +296,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             String filename = url.getFile();
             String contentType = con.getContentType();
             long lastmod = con.getLastModified();
-            String etag = con.getHeaderField("ETag");
+            String etag = con.getHeaderField("ETag"); //$NON-NLS-1$
             int length = con.getContentLength();
             int resCode = 0;
 
@@ -327,7 +327,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
             return Context.toObject(mime, this);
         } catch (Exception x) {
-            app.logError("Error getting URL "+location, x);
+            app.logError(Messages.getString("GlobalObject.3")+location, x); //$NON-NLS-1$
         }
 
         return null;
@@ -347,7 +347,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
             return Context.toObject(doc, this);
         } catch (Exception x) {
-            app.logError("Error creating XML document",  x);
+            app.logError(Messages.getString("GlobalObject.4"),  x); //$NON-NLS-1$
         }
 
         return null;
@@ -367,9 +367,9 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
             return Context.toObject(doc, this);
         } catch (IOException iox) {
-            app.logError("Error creating HTML document", iox);
+            app.logError(Messages.getString("GlobalObject.5"), iox); //$NON-NLS-1$
         } catch (SAXException sx) {
-            app.logError("Error creating HTML document", sx);
+            app.logError(Messages.getString("GlobalObject.6"), sx); //$NON-NLS-1$
         }
 
         return null;
@@ -410,8 +410,8 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             obj = ((Wrapper) obj).unwrap();
         }
         if (!(obj instanceof Map)) {
-            throw ScriptRuntime.constructError("TypeError",
-                "Invalid argument to wrapMap(): " + obj);
+            throw ScriptRuntime.constructError("TypeError", //$NON-NLS-1$
+                Messages.getString("GlobalObject.7") + obj); //$NON-NLS-1$
         }
         return new MapWrapper((Map) obj, core);
     }
@@ -423,8 +423,8 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     public Object unwrapJavaMap(Object obj) {
         if (!(obj instanceof MapWrapper)) {
-            throw ScriptRuntime.constructError("TypeError",
-                "Invalid argument to unwrapMap(): " + obj);
+            throw ScriptRuntime.constructError("TypeError", //$NON-NLS-1$
+                Messages.getString("GlobalObject.8") + obj); //$NON-NLS-1$
         }
         obj = ((MapWrapper) obj).unwrap();
         return new NativeJavaObject(core.global, obj, Map.class);
@@ -449,7 +449,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             obj = ((Wrapper) obj).unwrap();
         } else if (obj instanceof Scriptable) {
             String className = ((Scriptable) obj).getClassName();
-            if ("Date".equals(className)) {
+            if ("Date".equals(className)) { //$NON-NLS-1$
                 return new NativeJavaObject(this,
                         new Date((long) ScriptRuntime.toNumber(obj)), null);
             }
@@ -518,7 +518,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
         int l = str.length();
 
         if (l == 0) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         // try to make stringbuffer large enough from the start
@@ -559,9 +559,9 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
             {
                 if (!(arg instanceof Scriptable) || arg == Undefined.instance)
                 {
-                    throw new EvaluatorException("seal() can only be applied to Objects");
+                    throw new EvaluatorException(Messages.getString("GlobalObject.9")); //$NON-NLS-1$
                 } else {
-                    throw new EvaluatorException("seal() can only be applied to Objects");
+                    throw new EvaluatorException(Messages.getString("GlobalObject.10")); //$NON-NLS-1$
                 }
             }
         }
@@ -622,8 +622,8 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     {
         if (args.length < 2) {
             throw Context.reportRuntimeError(
-                "Expected an object to serialize and a filename to write " +
-                "the serialization to");
+                Messages.getString("GlobalObject.11") + //$NON-NLS-1$
+                Messages.getString("GlobalObject.12")); //$NON-NLS-1$
         }
         Object obj = args[0];
         File file = new File(Context.toString(args[1])).getAbsoluteFile();
@@ -650,7 +650,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     {
         if (args.length < 1) {
             throw Context.reportRuntimeError(
-                "Expected a filename to read the serialization from");
+                Messages.getString("GlobalObject.13")); //$NON-NLS-1$
         }
         File file = new File(Context.toString(args[0])).getAbsoluteFile();
         FileInputStream fis = new FileInputStream(file);
@@ -668,12 +668,12 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     public static Object dontEnum (Context cx, Scriptable thisObj, 
                                    Object[] args, Function funObj) {
         if (!(thisObj instanceof ScriptableObject)) {
-            throw new EvaluatorException("dontEnum() called on non-ScriptableObject");
+            throw new EvaluatorException(Messages.getString("GlobalObject.14")); //$NON-NLS-1$
         }
         ScriptableObject obj = (ScriptableObject) thisObj;
         for (int i=0; i<args.length; i++) {
             if (!(args[i] instanceof String)) {
-                throw new EvaluatorException("dontEnum() called with non-String argument");
+                throw new EvaluatorException(Messages.getString("GlobalObject.15")); //$NON-NLS-1$
             }
             String str = (String) args[i];
             if (obj.has(str, obj)) {
@@ -687,10 +687,10 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
 
     public Object definePrototype(String name, Scriptable desc) {
         if (name == null) {
-            throw new IllegalArgumentException("First argument to definePrototype() must be String");
+            throw new IllegalArgumentException(Messages.getString("GlobalObject.16")); //$NON-NLS-1$
         }
         if (desc == null) {
-            throw new IllegalArgumentException("Second argument to definePrototype() must be Object");
+            throw new IllegalArgumentException(Messages.getString("GlobalObject.17")); //$NON-NLS-1$
         }
 
         Prototype proto = core.app.definePrototype(name, core.scriptableToProperties(desc));
@@ -745,6 +745,6 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     }
 
     public String toString() {
-        return isThreadScope ? "[Thread Scope]" : "[Shared Scope]";
+        return isThreadScope ? "[Thread Scope]" : "[Shared Scope]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

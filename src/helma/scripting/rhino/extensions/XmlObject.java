@@ -67,15 +67,15 @@ public class XmlObject {
                   throws IOException {
         // we definitly need a node
         if (node == null) {
-            throw new RuntimeException("First argument in Xml.write() is not an hopobject");
+            throw new RuntimeException(Messages.getString("XmlObject.0")); //$NON-NLS-1$
         }
 
         if (file == null) {
-            throw new RuntimeException("Second argument file name must not be null");
+            throw new RuntimeException(Messages.getString("XmlObject.1")); //$NON-NLS-1$
         }
 
-        File tmpFile = new File(file + ".tmp." + XmlWriter.generateID());
-        XmlWriter writer = new XmlWriter(tmpFile, "UTF-8");
+        File tmpFile = new File(file + ".tmp." + XmlWriter.generateID()); //$NON-NLS-1$
+        XmlWriter writer = new XmlWriter(tmpFile, "UTF-8"); //$NON-NLS-1$
 
         writer.setDatabaseMode(dbmode);
         writer.write(node);
@@ -86,7 +86,7 @@ public class XmlObject {
             finalFile.delete();
         }
         tmpFile.renameTo(finalFile);
-        core.getApplication().logEvent("wrote xml to " + finalFile.getAbsolutePath());
+        core.getApplication().logEvent(Messages.getString("XmlObject.2") + finalFile.getAbsolutePath()); //$NON-NLS-1$
 
         return true;
     }
@@ -114,11 +114,11 @@ public class XmlObject {
     public String writeToString(INode node, boolean dbmode) throws IOException {
         // we definitly need a node
         if (node == null) {
-            throw new RuntimeException("First argument in Xml.write() is not an hopobject");
+            throw new RuntimeException(Messages.getString("XmlObject.3")); //$NON-NLS-1$
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        XmlWriter writer = new XmlWriter(out, "UTF-8");
+        XmlWriter writer = new XmlWriter(out, "UTF-8"); //$NON-NLS-1$
 
         // in case we ever want to limit serialization depth...
         // if (arguments.length > 1 && arguments[1] instanceof ESNumber)
@@ -126,7 +126,7 @@ public class XmlObject {
         writer.setDatabaseMode(dbmode);
         writer.write(node);
         writer.flush();
-        return out.toString("UTF-8");
+        return out.toString("UTF-8"); //$NON-NLS-1$
     }
 
     /**
@@ -149,7 +149,7 @@ public class XmlObject {
      */
     public Object read(String file, INode node) throws RuntimeException {
         if (file == null) {
-            throw new RuntimeException("Missing arguments in Xml.read()");
+            throw new RuntimeException(Messages.getString("XmlObject.4")); //$NON-NLS-1$
         }
 
         if (node == null) {
@@ -163,7 +163,7 @@ public class XmlObject {
 
             return core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load XML parser:" + e);
+            throw new RuntimeException(Messages.getString("XmlObject.5") + e); //$NON-NLS-1$
         } catch (Exception f) {
             throw new RuntimeException(f.toString());
         }
@@ -191,7 +191,7 @@ public class XmlObject {
     public Object readFromString(String str, INode node)
                           throws RuntimeException {
         if (str == null) {
-            throw new RuntimeException("Missing arguments in Xml.read()");
+            throw new RuntimeException(Messages.getString("XmlObject.6")); //$NON-NLS-1$
         }
 
         if (node == null) {
@@ -205,7 +205,7 @@ public class XmlObject {
 
             return core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load XML parser:" + e);
+            throw new RuntimeException(Messages.getString("XmlObject.7") + e); //$NON-NLS-1$
         } catch (Exception f) {
             f.printStackTrace();
             throw new RuntimeException(f.toString());
@@ -234,7 +234,7 @@ public class XmlObject {
      */
     public Object get(String url, String conversionRules) {
         if (url == null) {
-            throw new RuntimeException("Xml.get() needs a location as an argument");
+            throw new RuntimeException(Messages.getString("XmlObject.8")); //$NON-NLS-1$
         }
 
         try {
@@ -252,7 +252,7 @@ public class XmlObject {
 
             return core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load dom-capable xml parser.");
+            throw new RuntimeException(Messages.getString("XmlObject.9")); //$NON-NLS-1$
         }
     }
 
@@ -278,7 +278,7 @@ public class XmlObject {
      */
     public Object getFromString(String str, String conversionRules) {
         if (str == null) {
-            throw new RuntimeException("Xml.getFromString() needs an XML string as parameter");
+            throw new RuntimeException(Messages.getString("XmlObject.10")); //$NON-NLS-1$
         }
 
         try {
@@ -295,7 +295,7 @@ public class XmlObject {
 
             return core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load dom-capable xml parser.");
+            throw new RuntimeException(Messages.getString("XmlObject.11")); //$NON-NLS-1$
         }
     }
 

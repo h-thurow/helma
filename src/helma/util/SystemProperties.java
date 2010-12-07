@@ -143,8 +143,8 @@ public final class SystemProperties extends Properties {
 				reader = new FileReader(file);
 				load(reader);
 			} catch (Exception x) {
-				System.err.println("Error reading properties from file " + file
-						+ ": " + x);
+				System.err.println(Messages.getString("SystemProperties.0") + file //$NON-NLS-1$
+						+ ": " + x); //$NON-NLS-1$
 			} finally {
 				try {
 					reader.close();
@@ -343,7 +343,7 @@ public final class SystemProperties extends Properties {
      */
     public void setIgnoreCase(boolean ignore) {
         if (!super.isEmpty()) {
-            throw new RuntimeException("setIgnoreCase() can only be called on empty Properties");
+            throw new RuntimeException(Messages.getString("SystemProperties.1")); //$NON-NLS-1$
         }
         ignoreCase = ignore;
     }

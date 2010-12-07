@@ -47,10 +47,10 @@ public final class EmbeddedServletClient extends AbstractServletClient {
      */
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
-        appName = init.getInitParameter("application");
+        appName = init.getInitParameter("application"); //$NON-NLS-1$
 
         if (appName == null) {
-            throw new ServletException("Application name not set in init parameters");
+            throw new ServletException(Messages.getString("EmbeddedServletClient.0")); //$NON-NLS-1$
         }
     }
 

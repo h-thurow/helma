@@ -153,7 +153,7 @@ static public byte[] decode(char[] data)
     // if there is STILL something wrong we just have to throw up now!
     if( index != out.length)
     {
-        throw new Error("Miscalculated data length (wrote " + index + " instead of " + out.length + ")");
+        throw new Error(Messages.getString("Base64.0") + index + Messages.getString("Base64.1") + out.length + Messages.getString("Base64.2")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     return out;
@@ -164,7 +164,7 @@ static public byte[] decode(char[] data)
 // code characters for values 0..63
 //
 static private char[] alphabet =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=" //$NON-NLS-1$
         .toCharArray();
 
 //
@@ -193,18 +193,18 @@ public static void main(String[] args)
     boolean decode = false;
 
     if (args.length == 0) {
-        System.out.println("usage:  java Base64 [-d[ecode]] filename");
+        System.out.println(Messages.getString("Base64.3")); //$NON-NLS-1$
         System.exit(0);
     }
     for (int i=0; i<args.length; i++) {
-        if ("-decode".equalsIgnoreCase(args[i])) decode = true;
-        else if ("-d".equalsIgnoreCase(args[i])) decode = true;
+        if ("-decode".equalsIgnoreCase(args[i])) decode = true; //$NON-NLS-1$
+        else if ("-d".equalsIgnoreCase(args[i])) decode = true; //$NON-NLS-1$
     }
 
     String filename = args[args.length-1];
     File file = new File(filename);
     if (!file.exists()) {
-        System.out.println("Error:  file '" + filename + "' doesn't exist!");
+        System.out.println(Messages.getString("Base64.4") + filename + Messages.getString("Base64.5")); //$NON-NLS-1$ //$NON-NLS-2$
         System.exit(0);
     }
 

@@ -628,7 +628,7 @@ public class ImageWrapper {
         BufferedImage bi = this.getBufferedImage();
         ColorModel cm = bi.getColorModel();
         if (!(cm instanceof IndexColorModel))
-            throw new RuntimeException("Image is not indexed!");
+            throw new RuntimeException(Messages.getString("ImageWrapper.0")); //$NON-NLS-1$
         IndexColorModel icm = (IndexColorModel) cm;
         int mapSize = icm.getMapSize();
         byte reds[] = new byte[mapSize];
@@ -672,7 +672,7 @@ public class ImageWrapper {
         File file = new File(filename).getAbsoluteFile();
         File parent = file.getParentFile();
         if (parent != null && !parent.exists() && !parent.mkdirs()) {
-            throw new IOException("Error creating directories for " + filename);
+            throw new IOException(Messages.getString("ImageWrapper.1") + filename); //$NON-NLS-1$
         }
         return file.getPath();
     }

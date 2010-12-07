@@ -32,7 +32,7 @@ final class SkinKey {
      * make a key for a persistent Object, describing its datasource and id.
      */
     public SkinKey(String type, String id) {
-        this.type = type == null ? "" : type;
+        this.type = type == null ? "" : type; //$NON-NLS-1$
         this.id = id;
     }
 

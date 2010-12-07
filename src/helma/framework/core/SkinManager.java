@@ -38,8 +38,8 @@ public final class SkinManager implements FilenameFilter {
      */
     public SkinManager(Application app) {
         this.app = app;
-        skinProperty = app.getProperty("skinProperty", "skin");
-        skinExtension = ".skin";
+        skinProperty = app.getProperty("skinProperty", "skin"); //$NON-NLS-1$ //$NON-NLS-2$
+        skinExtension = ".skin"; //$NON-NLS-1$
     }
 
     public Skin getSkin(Prototype prototype, String skinname, Object[] skinpath)

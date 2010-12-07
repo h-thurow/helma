@@ -37,17 +37,17 @@ public class RequestTrans implements Serializable {
     static final long serialVersionUID = 5398880083482000580L;
 
     // HTTP methods
-    public final static String GET = "GET";
-    public final static String POST = "POST";
-    public final static String DELETE = "DELETE";
-    public final static String HEAD = "HEAD";
-    public final static String OPTIONS = "OPTIONS";
-    public final static String PUT = "PUT";
-    public final static String TRACE = "TRACE";
+    public final static String GET = "GET"; //$NON-NLS-1$
+    public final static String POST = "POST"; //$NON-NLS-1$
+    public final static String DELETE = "DELETE"; //$NON-NLS-1$
+    public final static String HEAD = "HEAD"; //$NON-NLS-1$
+    public final static String OPTIONS = "OPTIONS"; //$NON-NLS-1$
+    public final static String PUT = "PUT"; //$NON-NLS-1$
+    public final static String TRACE = "TRACE"; //$NON-NLS-1$
     // Helma pseudo-methods
-    public final static String XMLRPC = "XMLRPC";
-    public final static String EXTERNAL = "EXTERNAL";
-    public final static String INTERNAL = "INTERNAL";
+    public final static String XMLRPC = "XMLRPC"; //$NON-NLS-1$
+    public final static String EXTERNAL = "EXTERNAL"; //$NON-NLS-1$
+    public final static String INTERNAL = "INTERNAL"; //$NON-NLS-1$
 
     // the servlet request and response, may be null
     final HttpServletRequest request;
@@ -86,7 +86,7 @@ public class RequestTrans implements Serializable {
     private String httpUsername;
     private String httpPassword;
 
-    static private final Pattern paramPattern = Pattern.compile("\\[(.+?)\\]");
+    static private final Pattern paramPattern = Pattern.compile("\\[(.+?)\\]"); //$NON-NLS-1$
 
     /**
      *  Create a new Request transmitter with an empty data map.
@@ -113,18 +113,18 @@ public class RequestTrans implements Serializable {
         startTime = System.currentTimeMillis();
 
         // do standard HTTP variables
-        String header = request.getHeader("Host");
+        String header = request.getHeader("Host"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_host", header.toLowerCase());
+            values.put("http_host", header.toLowerCase()); //$NON-NLS-1$
         }
 
-        header = request.getHeader("Referer");
+        header = request.getHeader("Referer"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_referer", header);
+            values.put("http_referer", header); //$NON-NLS-1$
         }
 
         try {
-            long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+            long ifModifiedSince = request.getDateHeader("If-Modified-Since"); //$NON-NLS-1$
             if (ifModifiedSince > -1) {
                setIfModifiedSince(ifModifiedSince);
             }
@@ -132,29 +132,29 @@ public class RequestTrans implements Serializable {
             // not a date header
         }
 
-        header = request.getHeader("If-None-Match");
+        header = request.getHeader("If-None-Match"); //$NON-NLS-1$
         if (header != null) {
             setETags(header);
         }
 
         header = request.getRemoteAddr();
         if (header != null) {
-            values.put("http_remotehost", header);
+            values.put("http_remotehost", header); //$NON-NLS-1$
         }
 
-        header = request.getHeader("User-Agent");
+        header = request.getHeader("User-Agent"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_browser", header);
+            values.put("http_browser", header); //$NON-NLS-1$
         }
 
-        header = request.getHeader("Accept-Language");
+        header = request.getHeader("Accept-Language"); //$NON-NLS-1$
         if (header != null) {
-            values.put("http_language", header);
+            values.put("http_language", header); //$NON-NLS-1$
         }
 
-        header = request.getHeader("authorization");
+        header = request.getHeader("authorization"); //$NON-NLS-1$
         if (header != null) {
-            values.put("authorization", header);
+            values.put("authorization", header); //$NON-NLS-1$
         }
     }
 
@@ -164,16 +164,16 @@ public class RequestTrans implements Serializable {
      * @return true if this might be an XML-RPC request.
      */
     public synchronized boolean checkXmlRpc() {
-        if ("POST".equalsIgnoreCase(method)) {
+        if ("POST".equalsIgnoreCase(method)) { //$NON-NLS-1$
             String contentType = request.getContentType();
             if (contentType == null) {
                 return false;
             }
-            int semi = contentType.indexOf(";");
+            int semi = contentType.indexOf(";"); //$NON-NLS-1$
             if (semi > -1) {
                 contentType = contentType.substring(0, semi);
             }
-            return "text/xml".equalsIgnoreCase(contentType.trim());
+            return "text/xml".equalsIgnoreCase(contentType.trim()); //$NON-NLS-1$
         }
         return false;
     }
@@ -464,7 +464,7 @@ public class RequestTrans implements Serializable {
      * Set the request's action.
      */
     public void setAction(String action) {
-        int suffix = action.lastIndexOf("_action");
+        int suffix = action.lastIndexOf("_action"); //$NON-NLS-1$
         this.action = suffix > -1 ? action.substring(0, suffix) : action;
     }
 
@@ -519,8 +519,8 @@ public class RequestTrans implements Serializable {
      * @param etagHeader ...
      */
     public void setETags(String etagHeader) {
-        if (etagHeader.indexOf(",") > -1) {
-            StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n");
+        if (etagHeader.indexOf(",") > -1) { //$NON-NLS-1$
+            StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n"); //$NON-NLS-1$
             while (st.hasMoreTokens())
                 etags.add(st.nextToken());
         } else {
@@ -562,9 +562,9 @@ public class RequestTrans implements Serializable {
             return httpUsername;
         }
 
-        String auth = (String) get("authorization");
+        String auth = (String) get("authorization"); //$NON-NLS-1$
 
-        if ((auth == null) || "".equals(auth)) {
+        if ((auth == null) || "".equals(auth)) { //$NON-NLS-1$
             return null;
         }
 
@@ -583,9 +583,9 @@ public class RequestTrans implements Serializable {
             return httpPassword;
         }
 
-        String auth = (String) get("authorization");
+        String auth = (String) get("authorization"); //$NON-NLS-1$
 
-        if ((auth == null) || "".equals(auth)) {
+        if ((auth == null) || "".equals(auth)) { //$NON-NLS-1$
             return null;
         }
 
@@ -601,11 +601,11 @@ public class RequestTrans implements Serializable {
 
         StringTokenizer tok;
 
-        if (auth.startsWith("Basic ")) {
+        if (auth.startsWith("Basic ")) { //$NON-NLS-1$
             tok = new StringTokenizer(new String(Base64.decode((auth.substring(6)).toCharArray())),
-                                      ":");
+                                      ":"); //$NON-NLS-1$
         } else {
-            tok = new StringTokenizer(new String(Base64.decode(auth.toCharArray())), ":");
+            tok = new StringTokenizer(new String(Base64.decode(auth.toCharArray())), ":"); //$NON-NLS-1$
         }
 
         try {
@@ -622,7 +622,7 @@ public class RequestTrans implements Serializable {
     }
 
     public String toString() {
-        return method + ":" + path;
+        return method + ":" + path; //$NON-NLS-1$
     }
 
     class ParameterMap extends SystemMap {
@@ -645,7 +645,7 @@ public class RequestTrans implements Serializable {
             if (key instanceof String) {
                 String name = (String) key;
                 int bracket = name.indexOf('[');
-                if (bracket > -1 && name.endsWith("]")) {
+                if (bracket > -1 && name.endsWith("]")) { //$NON-NLS-1$
                     Matcher matcher = paramPattern.matcher(name);
                     String partName = name.substring(0, bracket);
                     return putInternal(partName, matcher, value);
@@ -653,7 +653,7 @@ public class RequestTrans implements Serializable {
             }
             Object previous = super.get(key);
             if (previous != null && (previous instanceof Map || value instanceof Map))
-                throw new RuntimeException("Conflicting HTTP Parameters for '" + key + "'");
+                throw new RuntimeException(Messages.getString("RequestTrans.0") + key + Messages.getString("RequestTrans.1")); //$NON-NLS-1$ //$NON-NLS-2$
             return super.put(key, value);
         }
 
@@ -667,13 +667,13 @@ public class RequestTrans implements Serializable {
                     map = new ParameterMap();
                     super.put(name, map);
                 } else {
-                    throw new RuntimeException("Conflicting HTTP Parameters for '" + name + "'");
+                    throw new RuntimeException(Messages.getString("RequestTrans.2") + name + Messages.getString("RequestTrans.3")); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 String partName = matcher.group(1);
                 return map.putInternal(partName, matcher, value);
             }
             if (previous != null && (previous instanceof Map || value instanceof Map))
-                throw new RuntimeException("Conflicting HTTP Parameters for '" + name + "'");
+                throw new RuntimeException(Messages.getString("RequestTrans.4") + name + Messages.getString("RequestTrans.5")); //$NON-NLS-1$ //$NON-NLS-2$
             return super.put(name, value);
         }
 
@@ -681,10 +681,10 @@ public class RequestTrans implements Serializable {
             if (key instanceof String) {
                 Object value = super.get(key);
                 String name = (String) key;
-                if (name.endsWith("_array") && value == null) {
+                if (name.endsWith("_array") && value == null) { //$NON-NLS-1$
                     value = super.get(name.substring(0, name.length() - 6));
                     return value instanceof Object[] ? value : null;
-                } else if (name.endsWith("_cookie") && value == null) {
+                } else if (name.endsWith("_cookie") && value == null) { //$NON-NLS-1$
                     value = super.get(name.substring(0, name.length() - 7));
                     return value instanceof Cookie ? value : null;
                 } else if (value instanceof Object[]) {

@@ -302,7 +302,7 @@ public class ResourceProperties extends Properties {
      */
     public ResourceProperties getSubProperties(String prefix) {
         if (prefix == null) {
-            throw new NullPointerException("prefix");
+            throw new NullPointerException("prefix"); //$NON-NLS-1$
         }
         return new ResourceProperties(this, prefix);
     }
@@ -522,7 +522,7 @@ public class ResourceProperties extends Properties {
      */
     public void setIgnoreCase(boolean ignore) {
         if (!super.isEmpty()) {
-            throw new RuntimeException("setIgnoreCase() can only be called on empty Properties");
+            throw new RuntimeException(Messages.getString("ResourceProperties.0")); //$NON-NLS-1$
         }
         ignoreCase = ignore;
     }

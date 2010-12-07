@@ -42,9 +42,9 @@ public class DemoExtension extends HelmaExtension {
     public void init(Server server) throws ConfigurationException {
         try {
             // just a demo with the server class itself (which is always there, obviously)
-            Class check = Class.forName("helma.main.Server");
+            Class check = Class.forName("helma.main.Server"); //$NON-NLS-1$
         } catch (ClassNotFoundException e) {
-            throw new ConfigurationException("helma-library not present in classpath. make sure helma.jar is included. get it from http://www.helma.org/");
+            throw new ConfigurationException(Messages.getString("DemoExtension.0")); //$NON-NLS-1$
         }
     }
 
@@ -56,7 +56,7 @@ public class DemoExtension extends HelmaExtension {
      * @throws ConfigurationException ...
      */
     public void applicationStarted(Application app) throws ConfigurationException {
-        app.logEvent("DemoExtension init with app " + app.getName());
+        app.logEvent(Messages.getString("DemoExtension.1") + app.getName()); //$NON-NLS-1$
     }
 
     /**
@@ -65,7 +65,7 @@ public class DemoExtension extends HelmaExtension {
      * @param app ...
      */
     public void applicationStopped(Application app) {
-        app.logEvent("DemoExtension stopped on app " + app.getName());
+        app.logEvent(Messages.getString("DemoExtension.2") + app.getName()); //$NON-NLS-1$
     }
 
     /**
@@ -74,7 +74,7 @@ public class DemoExtension extends HelmaExtension {
      * @param app ...
      */
     public void applicationUpdated(Application app) {
-        app.logEvent("DemoExtension updated on app " + app.getName());
+        app.logEvent(Messages.getString("DemoExtension.3") + app.getName()); //$NON-NLS-1$
     }
 
     /**
@@ -90,17 +90,17 @@ public class DemoExtension extends HelmaExtension {
     public HashMap initScripting(Application app, ScriptingEngine engine)
                           throws ConfigurationException {
         if (!(engine instanceof RhinoEngine)) {
-            throw new ConfigurationException("scripting engine " + engine.toString() +
-                                             " not supported in DemoExtension");
+            throw new ConfigurationException(Messages.getString("DemoExtension.4") + engine.toString() + //$NON-NLS-1$
+                                             Messages.getString("DemoExtension.5")); //$NON-NLS-1$
         }
 
-        app.logEvent("initScripting DemoExtension with " + app.getName() + " and " +
+        app.logEvent(Messages.getString("DemoExtension.6") + app.getName() + Messages.getString("DemoExtension.7") + //$NON-NLS-1$ //$NON-NLS-2$
                      engine.toString());
 
         // initialize prototypes and global vars here
         HashMap globals = new HashMap();
 
-        globals.put("demo", Server.getServer());
+        globals.put("demo", Server.getServer()); //$NON-NLS-1$
 
         return globals;
     }
@@ -111,6 +111,6 @@ public class DemoExtension extends HelmaExtension {
      * @return ...
      */
     public String getName() {
-        return "DemoExtension";
+        return "DemoExtension"; //$NON-NLS-1$
     }
 }

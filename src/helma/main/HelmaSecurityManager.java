@@ -37,8 +37,8 @@ public class HelmaSecurityManager extends SecurityManager {
     private final static HashSet forbidden = new HashSet();
 
     static {
-        forbidden.add("exitVM");
-        forbidden.add("setSecurityManager");
+        forbidden.add("exitVM"); //$NON-NLS-1$
+        forbidden.add("setSecurityManager"); //$NON-NLS-1$
     }
 
     /**
@@ -54,7 +54,7 @@ public class HelmaSecurityManager extends SecurityManager {
                 for (int i = 0; i < classes.length; i++) {
                     if (classes[i].getClassLoader() instanceof AppClassLoader) {
                         throw new SecurityException(p.getName() +
-                                                    " not allowed for application code");
+                                                    Messages.getString("HelmaSecurityManager.0")); //$NON-NLS-1$
                     }
                 }
             }
@@ -102,7 +102,7 @@ public class HelmaSecurityManager extends SecurityManager {
 
         for (int i = 0; i < classes.length; i++) {
             if (classes[i].getClassLoader() instanceof AppClassLoader) {
-                throw new SecurityException("operation not allowed for application code");
+                throw new SecurityException(Messages.getString("HelmaSecurityManager.1")); //$NON-NLS-1$
             }
         }
     }

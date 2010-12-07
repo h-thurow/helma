@@ -357,7 +357,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
 
             case DATE:
 
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$
 
                 return format.format((Date) value);
 
@@ -365,7 +365,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
                 return ((NodeHandle) value).getID();
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -504,7 +504,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
 
         if (type==NODE || ptype==NODE ||
                 type == BOOLEAN || ptype == BOOLEAN) {
-            throw new ClassCastException("uncomparable values " + this + "(" + type + ") : " + p + "(" + ptype + ")");
+            throw new ClassCastException(Messages.getString("Property.0") + this + Messages.getString("Property.1") + type + Messages.getString("Property.2") + p + Messages.getString("Property.3") + ptype + Messages.getString("Property.4")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
         }
         if (value==null && pvalue == null) {
             return 0;
@@ -517,11 +517,11 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
             // float/integer sometimes get mixed up in Rhino
             if ((type == FLOAT && ptype == INTEGER) || (type == INTEGER && ptype == FLOAT))
                 return Double.compare(((Number) value).doubleValue(), ((Number) pvalue).doubleValue());
-            throw new ClassCastException("uncomparable values " + this + "(" + type + ") : " + p + "(" + ptype + ")");
+            throw new ClassCastException(Messages.getString("Property.5") + this + Messages.getString("Property.6") + type + Messages.getString("Property.7") + p + Messages.getString("Property.8") + ptype + Messages.getString("Property.9")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 
         }
         if (!(value instanceof Comparable)) {
-            throw new ClassCastException("uncomparable value " + value + "(" + value.getClass() + ")");
+            throw new ClassCastException(Messages.getString("Property.10") + value + Messages.getString("Property.11") + value.getClass() + Messages.getString("Property.12")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
         // System.err.println("COMPARING: " + value.getClass() + " TO " + pvalue.getClass());
         return ((Comparable) value).compareTo(pvalue);

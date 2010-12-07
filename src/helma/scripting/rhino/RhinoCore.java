@@ -119,29 +119,29 @@ public final class RhinoCore implements ScopeProvider {
      */
     protected synchronized void initialize() {
 
-        hasDebugger = "true".equalsIgnoreCase(app.getProperty("rhino.debug"));
-        hasTracer = "true".equalsIgnoreCase(app.getProperty("rhino.trace"));
-        hasProfiler = "true".equalsIgnoreCase(app.getProperty("rhino.profile"));
+        hasDebugger = "true".equalsIgnoreCase(app.getProperty("rhino.debug"));  //$NON-NLS-1$//$NON-NLS-2$
+        hasTracer = "true".equalsIgnoreCase(app.getProperty("rhino.trace"));  //$NON-NLS-1$//$NON-NLS-2$
+        hasProfiler = "true".equalsIgnoreCase(app.getProperty("rhino.profile")); //$NON-NLS-1$ //$NON-NLS-2$
 
         // Set default optimization level according to whether debugger is on
         if (hasDebugger || hasTracer || hasProfiler) {
             optLevel = -1;
         } else {
-            String opt = app.getProperty("rhino.optlevel");
+            String opt = app.getProperty("rhino.optlevel"); //$NON-NLS-1$
             if (opt != null) {
                 try {
                     optLevel = Integer.parseInt(opt);
                 } catch (Exception ignore) {
-                    app.logError("Invalid rhino optlevel: " + opt);
+                    app.logError(Messages.getString("RhinoCore.0") + opt); //$NON-NLS-1$
                 }
             }
         }
-        String v = app.getProperty("rhino.languageVersion");
+        String v = app.getProperty("rhino.languageVersion"); //$NON-NLS-1$
         if (v != null) {
             try {
                 languageVersion = Integer.parseInt(v);
             } catch (Exception ignore) {
-                app.logError("Invalid rhino.languageVersion: " + v);
+                app.logError(Messages.getString("RhinoCore.1") + v); //$NON-NLS-1$
             }
         }
         wrapper = new WrapMaker();
@@ -162,26 +162,26 @@ public final class RhinoCore implements ScopeProvider {
             hopObjectProto =  HopObject.init(this);
             // use lazy loaded constructors for all extension objects that
             // adhere to the ScriptableObject.defineClass() protocol
-            new LazilyLoadedCtor(global, "File",
-                    "helma.scripting.rhino.extensions.FileObject", false);
-            new LazilyLoadedCtor(global, "Ftp",
-                    "helma.scripting.rhino.extensions.FtpObject", false);
-            new LazilyLoadedCtor(global, "Image",
-                    "helma.scripting.rhino.extensions.ImageObject", false);
-            new LazilyLoadedCtor(global, "Remote",
-                    "helma.scripting.rhino.extensions.XmlRpcObject", false);
+            new LazilyLoadedCtor(global, "File", //$NON-NLS-1$
+                    "helma.scripting.rhino.extensions.FileObject", false); //$NON-NLS-1$
+            new LazilyLoadedCtor(global, "Ftp", //$NON-NLS-1$
+                    "helma.scripting.rhino.extensions.FtpObject", false); //$NON-NLS-1$
+            new LazilyLoadedCtor(global, "Image", //$NON-NLS-1$
+                    "helma.scripting.rhino.extensions.ImageObject", false); //$NON-NLS-1$
+            new LazilyLoadedCtor(global, "Remote", //$NON-NLS-1$
+                    "helma.scripting.rhino.extensions.XmlRpcObject", false); //$NON-NLS-1$
             MailObject.init(global, app.getProperties());
             JSAdapter.init(context, global, false);
 
             // add some convenience functions to string, date and number prototypes
-            Scriptable stringProto = ScriptableObject.getClassPrototype(global, "String");
-            stringProto.put("trim", stringProto, new StringTrim());
+            Scriptable stringProto = ScriptableObject.getClassPrototype(global, "String"); //$NON-NLS-1$
+            stringProto.put("trim", stringProto, new StringTrim()); //$NON-NLS-1$
 
-            Scriptable dateProto = ScriptableObject.getClassPrototype(global, "Date");
-            dateProto.put("format", dateProto, new DateFormat());
+            Scriptable dateProto = ScriptableObject.getClassPrototype(global, "Date"); //$NON-NLS-1$
+            dateProto.put("format", dateProto, new DateFormat()); //$NON-NLS-1$
 
-            Scriptable numberProto = ScriptableObject.getClassPrototype(global, "Number");
-            numberProto.put("format", numberProto, new NumberFormat());
+            Scriptable numberProto = ScriptableObject.getClassPrototype(global, "Number"); //$NON-NLS-1$
+            numberProto.put("format", numberProto, new NumberFormat()); //$NON-NLS-1$
 
             Collection protos = app.getPrototypes();
             for (Iterator i = protos.iterator(); i.hasNext();) {
@@ -192,10 +192,10 @@ public final class RhinoCore implements ScopeProvider {
             // always fully initialize global prototype, because
             // we always need it and there's no chance to trigger
             // creation on demand.
-            getPrototype("global");
+            getPrototype("global"); //$NON-NLS-1$
 
         } catch (Exception e) {
-            app.logError("Cannot initialize interpreter", e);
+            app.logError(Messages.getString("RhinoCore.2"), e); //$NON-NLS-1$
             throw new RuntimeException(e.getMessage(), e);
         } finally {
             Context.exit();
@@ -223,7 +223,7 @@ public final class RhinoCore implements ScopeProvider {
                 debugger.attachTo(contextFactory);
             }
         } catch (Exception x) {
-            app.logError("Error setting up debugger", x);
+            app.logError(Messages.getString("RhinoCore.3"), x); //$NON-NLS-1$
         }
     }
 
@@ -245,9 +245,9 @@ public final class RhinoCore implements ScopeProvider {
         // if prototype info doesn't exist (i.e. is a standard prototype
         // built by HopExtension), create it.
         if (op == null) {
-            if ("global".equals(lowerCaseName)) {
+            if ("global".equals(lowerCaseName)) { //$NON-NLS-1$
                 op = global;
-            } else if ("hopobject".equals(lowerCaseName)) {
+            } else if ("hopobject".equals(lowerCaseName)) { //$NON-NLS-1$
                 op = hopObjectProto;
             } else {
                 op = new HopObject(name, this);
@@ -258,12 +258,12 @@ public final class RhinoCore implements ScopeProvider {
         // Register a constructor for all types except global.
         // This will first create a new prototyped HopObject and then calls
         // the actual (scripted) constructor on it.
-        if (!"global".equals(lowerCaseName)) {
+        if (!"global".equals(lowerCaseName)) { //$NON-NLS-1$
             try {
                 new HopObjectCtor(name, this, op);
                 op.setParentScope(global);
             } catch (Exception x) {
-                app.logError("Error adding ctor for " + name,  x);
+                app.logError(Messages.getString("RhinoCore.4") + name,  x); //$NON-NLS-1$
             }
         }
 
@@ -286,7 +286,7 @@ public final class RhinoCore implements ScopeProvider {
         setParentPrototype(prototype, type);
 
         type.error = null;
-        if ("global".equals(prototype.getLowerCaseName())) {
+        if ("global".equals(prototype.getLowerCaseName())) { //$NON-NLS-1$
             globalError = null;
         }
 
@@ -313,7 +313,7 @@ public final class RhinoCore implements ScopeProvider {
         String name = prototype.getName();
         String lowerCaseName = prototype.getLowerCaseName();
 
-        if (!"global".equals(lowerCaseName) && !"hopobject".equals(lowerCaseName)) {
+        if (!"global".equals(lowerCaseName) && !"hopobject".equals(lowerCaseName)) { //$NON-NLS-1$ //$NON-NLS-2$
 
             // get the prototype's prototype if possible and necessary
             TypeInfo parentType = null;
@@ -326,7 +326,7 @@ public final class RhinoCore implements ScopeProvider {
 
             if (parentType == null && !app.isJavaPrototype(name)) {
                 // FIXME: does this ever occur?
-                parentType = getPrototypeInfo("hopobject");
+                parentType = getPrototypeInfo("hopobject"); //$NON-NLS-1$
             }
 
             type.setParentType(parentType);
@@ -340,7 +340,7 @@ public final class RhinoCore implements ScopeProvider {
      *  before. Others will be updated/compiled on demand.
      */
     public synchronized void updatePrototypes() throws IOException {
-        if ((System.currentTimeMillis() - lastUpdate) < 1000L + updateSnooze + Long.parseLong(app.getProperty("updateDelay", "0"))) {
+        if ((System.currentTimeMillis() - lastUpdate) < 1000L + updateSnooze + Long.parseLong(app.getProperty("updateDelay", "0"))) { //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
 
@@ -356,7 +356,7 @@ public final class RhinoCore implements ScopeProvider {
 
         HashSet checked = new HashSet(protos.size() * 2);
 
-        TypeInfo type = (TypeInfo) prototypes.get("global");
+        TypeInfo type = (TypeInfo) prototypes.get("global"); //$NON-NLS-1$
 
         if (type != null) {
             updatePrototype(type, checked);
@@ -543,7 +543,7 @@ public final class RhinoCore implements ScopeProvider {
         if (arg instanceof Date) {
             Date d = (Date) arg;
             Object[] args = { new Long(d.getTime()) };
-            return Context.getCurrentContext().newObject(global, "Date", args);
+            return Context.getCurrentContext().newObject(global, "Date", args); //$NON-NLS-1$
         }
         return Context.toObject(arg, global);
     }
@@ -572,7 +572,7 @@ public final class RhinoCore implements ScopeProvider {
             return ht;
         } else if (arg instanceof NativeArray) {
             NativeArray na = (NativeArray) arg;
-            Number n = (Number) na.get("length", na);
+            Number n = (Number) na.get("length", na); //$NON-NLS-1$
             int l = n.intValue();
             Vector retval = new Vector(l);
             for (int i=0; i<l; i++) {
@@ -610,7 +610,7 @@ public final class RhinoCore implements ScopeProvider {
             return ht;
         } else if (arg instanceof Scriptable) {
             Scriptable s = (Scriptable) arg;
-            if ("Date".equals(s.getClassName())) {
+            if ("Date".equals(s.getClassName())) { //$NON-NLS-1$
                 return new Date((long) ScriptRuntime.toNumber(s));
             }
         }
@@ -680,8 +680,8 @@ public final class RhinoCore implements ScopeProvider {
 
                 // if not found, fall back to HopObject prototype
                 if (op == null) {
-                    protoname = "HopObject";
-                    op = getValidPrototype("HopObject");
+                    protoname = "HopObject"; //$NON-NLS-1$
+                    op = getValidPrototype("HopObject"); //$NON-NLS-1$
                 }
             }
 
@@ -711,8 +711,8 @@ public final class RhinoCore implements ScopeProvider {
 
             // no prototype found for this node
             if (op == null) {
-                protoName = "HopObject";
-                op = getValidPrototype("HopObject");
+                protoName = "HopObject"; //$NON-NLS-1$
+                op = getValidPrototype("HopObject"); //$NON-NLS-1$s
             }
             hobj = new HopObject(protoName, this, handle, op);
         }
@@ -725,7 +725,7 @@ public final class RhinoCore implements ScopeProvider {
             throws UnsupportedEncodingException, IOException {
         // check if the app.properties specify a href-function to post-process the
         // basic href.
-        String hrefFunction = app.getProperty("hrefFunction", null);
+        String hrefFunction = app.getProperty("hrefFunction", null); //$NON-NLS-1$
 
         if (hrefFunction != null) {
 
@@ -745,12 +745,12 @@ public final class RhinoCore implements ScopeProvider {
                                                ScriptingEngine.ARGS_WRAP_DEFAULT,
                                                false);
                     } catch (ScriptingException x) {
-                        throw new EvaluatorException("Error in hrefFunction: " + x);
+                        throw new EvaluatorException(Messages.getString("RhinoCore.5") + x); //$NON-NLS-1$
                     }
 
                     if (result == null) {
-                        throw new EvaluatorException("hrefFunction " + hrefFunction +
-                                                       " returned null");
+                        throw new EvaluatorException(Messages.getString("RhinoCore.6") + hrefFunction + //$NON-NLS-1$
+                                                       Messages.getString("RhinoCore.7")); //$NON-NLS-1$
                     }
 
                     href = result.toString();
@@ -764,7 +764,7 @@ public final class RhinoCore implements ScopeProvider {
 
         // check if the app.properties specify a href-skin to post-process the
         // basic href.
-        String hrefSkin = app.getProperty("hrefSkin", null);
+        String hrefSkin = app.getProperty("hrefSkin", null); //$NON-NLS-1$
 
         if (hrefSkin != null) {
             // we need to post-process the href with a skin for this application
@@ -783,7 +783,7 @@ public final class RhinoCore implements ScopeProvider {
 
                 if (skin != null) {
                     Scriptable param = Context.getCurrentContext().newObject(global);
-                    param.put("path", param, href);
+                    param.put("path", param, href); //$NON-NLS-1$
                     href = skin.renderAsString(eng.getRequestEvaluator(), handler, param).trim();
                     break;
                 }
@@ -872,20 +872,20 @@ public final class RhinoCore implements ScopeProvider {
         Resource previousCurrentResource = app.getCurrentCodeResource();
         app.setCurrentCodeResource(code);
 
-        String encoding = app.getProperty("sourceCharset");
+        String encoding = app.getProperty("sourceCharset"); //$NON-NLS-1$
 
         try {
             Scriptable op = type.objProto;
             // do the update, evaluating the file
-            if (sourceName.endsWith(".js")) {
+            if (sourceName.endsWith(".js")) { //$NON-NLS-1$
                 reader = encoding == null ?
                         new InputStreamReader(code.getInputStream()) :
                         new InputStreamReader(code.getInputStream(), encoding);
                 cx.evaluateReader(op, reader, sourceName, 1, null);
-            } else if (sourceName.endsWith(".hac")) {
+            } else if (sourceName.endsWith(".hac")) { //$NON-NLS-1$
                 reader = new StringReader(HacHspConverter.convertHac(code, encoding));
                 cx.evaluateReader(op, reader, sourceName, 0, null);
-            } else if (sourceName.endsWith(".hsp")) {
+            } else if (sourceName.endsWith(".hsp")) { //$NON-NLS-1$
                 reader = new StringReader(HacHspConverter.convertHsp(code, encoding));
                 cx.evaluateReader(op, reader, sourceName, 0, null);
                 reader = new StringReader(HacHspConverter.convertHspAsString(code, encoding));
@@ -894,14 +894,14 @@ public final class RhinoCore implements ScopeProvider {
 
         } catch (Exception e) {
             ScriptingException sx = new ScriptingException(e.getMessage(), e);
-            app.logError("Error parsing file " + sourceName, sx);
+            app.logError(Messages.getString("RhinoCore.8") + sourceName, sx); //$NON-NLS-1$
             // mark prototype as broken
             if (type.error == null) {
                 type.error = e.getMessage();
                 if (type.error == null) {
                     type.error = e.toString();
                 }
-                if ("global".equals(type.frameworkProto.getLowerCaseName())) {
+                if ("global".equals(type.frameworkProto.getLowerCaseName())) { //$NON-NLS-1$
                     globalError = type.error;
                 }
                 wrappercache.clear();
@@ -1006,13 +1006,13 @@ public final class RhinoCore implements ScopeProvider {
                     // renewed in this compilation
                     compiledProperties.removeAll(changedProperties);
 
-                    boolean isGlobal = "global".equals(frameworkProto.getLowerCaseName());
+                    boolean isGlobal = "global".equals(frameworkProto.getLowerCaseName()); //$NON-NLS-1$s
 
                     Iterator it = compiledProperties.iterator();
                     while (it.hasNext()) {
                         String key = (String) it.next();
                         if (isGlobal && (prototypes.containsKey(key.toLowerCase())
-                                || "JavaPackage".equals(key))) {
+                                || "JavaPackage".equals(key))) { //$NON-NLS-1$
                             // avoid removing HopObject constructor
                             predefinedProperties.add(key);
                             continue;
@@ -1021,7 +1021,7 @@ public final class RhinoCore implements ScopeProvider {
                             objProto.setAttributes(key, 0);
                             objProto.delete(key);
                         } catch (Exception px) {
-                            app.logEvent("Error unsetting property "+key+" on "+
+                            app.logEvent(Messages.getString("RhinoCore.9")+key+Messages.getString("RhinoCore.10")+ //$NON-NLS-1$ //$NON-NLS-2$
                                     frameworkProto.getName());
                         }
                     }
@@ -1039,14 +1039,14 @@ public final class RhinoCore implements ScopeProvider {
             Context cx = Context.getCurrentContext();
             try {
                 Object fObj = ScriptableObject.getProperty(objProto,
-                                                           "onCodeUpdate");
+                                                           "onCodeUpdate"); //$NON-NLS-1$
                 if (fObj instanceof Function) {
                     Object[] args = {frameworkProto.getName()};
                     ((Function) fObj).call(cx, global, objProto, args);
                 }
             } catch (Exception x) {
-                app.logError("Exception in "+frameworkProto.getName()+
-                             ".onCodeUpdate(): " + x, x);
+                app.logError(Messages.getString("RhinoCore.11")+frameworkProto.getName()+ //$NON-NLS-1$
+                             Messages.getString("RhinoCore.12") + x, x); //$NON-NLS-1$
             }
         }
 
@@ -1088,7 +1088,7 @@ public final class RhinoCore implements ScopeProvider {
         }
 
         public String toString() {
-            return ("TypeInfo[" + frameworkProto + "," + new Date(lastUpdate) + "]");
+            return ("TypeInfo[" + frameworkProto + "," + new Date(lastUpdate) + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 
@@ -1121,7 +1121,7 @@ public final class RhinoCore implements ScopeProvider {
             if (obj instanceof Date) {
                 Object[] args = { new Long(((Date) obj).getTime()) };
                 try {
-                    return cx.newObject(global, "Date", args);
+                    return cx.newObject(global, "Date", args); //$NON-NLS-1$
                  } catch (JavaScriptException nafx) {
                     return obj;
                 }
@@ -1173,7 +1173,7 @@ public final class RhinoCore implements ScopeProvider {
                     if (locale instanceof Locale) {
                         df = new SimpleDateFormat(args[0].toString(), (Locale) locale);
                     } else {
-                        throw new IllegalArgumentException("Second argument to Date.format() not a java.util.Locale: " +
+                        throw new IllegalArgumentException(Messages.getString("RhinoCore.13") + //$NON-NLS-1$
                                                             locale.getClass());
                     }
                 } else {
@@ -1194,7 +1194,7 @@ public final class RhinoCore implements ScopeProvider {
             if (args.length > 0 && args[0] != Undefined.instance) {
                 df = new DecimalFormat(args[0].toString());
             } else {
-                df = new DecimalFormat("#,##0.00");
+                df = new DecimalFormat("#,##0.00"); //$NON-NLS-1$
             }
             return df.format(ScriptRuntime.toNumber(thisObj));
         }
@@ -1202,7 +1202,7 @@ public final class RhinoCore implements ScopeProvider {
 
     class HelmaContextFactory extends ContextFactory {
 
-        final boolean strictVars = "true".equalsIgnoreCase(app.getProperty("strictVars"));
+        final boolean strictVars = "true".equalsIgnoreCase(app.getProperty("strictVars")); //$NON-NLS-1$ //$NON-NLS-2$
 
         protected void onContextCreated(Context cx) {
             cx.setWrapFactory(wrapper);
@@ -1211,7 +1211,7 @@ public final class RhinoCore implements ScopeProvider {
             if (Context.isValidLanguageVersion(languageVersion)) {
                 cx.setLanguageVersion(languageVersion);
             } else {
-                app.logError("Unsupported rhino.languageVersion: " + languageVersion);
+                app.logError(Messages.getString("RhinoCore.14") + languageVersion); //$NON-NLS-1$
             }
             // Set up visual debugger if rhino.debug = true
             if (hasDebugger)
@@ -1242,7 +1242,7 @@ public final class RhinoCore implements ScopeProvider {
         protected void observeInstructionCount(Context cx, int instructionCount) {
             RhinoEngine engine = RhinoEngine.getRhinoEngine();
             if (engine != null && engine.thread != Thread.currentThread()) {
-                throw new EvaluatorException("Request timed out");
+                throw new EvaluatorException(Messages.getString("RhinoCore.15")); //$NON-NLS-1$
             }
         }
     }

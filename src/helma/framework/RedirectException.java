@@ -34,7 +34,7 @@ public class RedirectException extends Error {
      * @param url the URL
      */
     public RedirectException(String url) {
-        super("Redirection Request to " + url);
+        super(Messages.getString("RedirectException.0") + url); //$NON-NLS-1$
         this.url = url;
     }
 

@@ -56,7 +56,7 @@ public class MailObject extends ScriptableObject implements Serializable {
 
     MimeMessage message;
     Multipart multipart;
-    String multipartType = "mixed";
+    String multipartType = "mixed"; //$NON-NLS-1$
     StringBuffer buffer;
     int status;
 
@@ -88,7 +88,7 @@ public class MailObject extends ScriptableObject implements Serializable {
      *  Overrides abstract method in ScriptableObject
      */
     public String getClassName() {
-        return "Mail";
+        return "Mail"; //$NON-NLS-1$
     }
 
     /**
@@ -97,19 +97,19 @@ public class MailObject extends ScriptableObject implements Serializable {
      */
     protected Session getSession() {
         if (props == null) {
-            throw new NullPointerException("getSession() called on non-prototype MailObject");
+            throw new NullPointerException(Messages.getString("MailObject.0")); //$NON-NLS-1$
         }
 
         // set the mail encoding system property if it isn't set. Necessary
         // on Macs, where we otherwise get charset=MacLatin
         // http://java.sun.com/products/javamail/javadocs/overview-summary.html
-        System.setProperty("mail.mime.charset",
-                           props.getProperty("mail.charset", "ISO-8859-15"));
+        System.setProperty("mail.mime.charset", //$NON-NLS-1$
+                           props.getProperty("mail.charset", "ISO-8859-15"));  //$NON-NLS-1$//$NON-NLS-2$
 
         // get the host property - first try "mail.host", then "smtp" property
-        String newHost = props.getProperty("mail.host");
+        String newHost = props.getProperty("mail.host"); //$NON-NLS-1$
         if (newHost == null) {
-            newHost = props.getProperty("smtp");
+            newHost = props.getProperty("smtp"); //$NON-NLS-1$
         }
 
         // has the host changed?
@@ -123,7 +123,7 @@ public class MailObject extends ScriptableObject implements Serializable {
             // explicitly set, otherwise we'll go with the system default.
             Properties sessionProps = new Properties();
             if (host != null) {
-                sessionProps.put("mail.smtp.host", host);
+                sessionProps.put("mail.smtp.host", host); //$NON-NLS-1$
             }
 
             session = Session.getInstance(sessionProps);
@@ -137,7 +137,7 @@ public class MailObject extends ScriptableObject implements Serializable {
      */
     public static MailObject mailObjCtor(Context cx, Object[] args,
                 Function ctorObj, boolean inNewExpr) {
-        MailObject proto = (MailObject) ctorObj.get("prototype", ctorObj);
+        MailObject proto = (MailObject) ctorObj.get("prototype", ctorObj); //$NON-NLS-1$
         return new MailObject(proto.getSession());
     }
 
@@ -150,23 +150,23 @@ public class MailObject extends ScriptableObject implements Serializable {
         proto.setPrototype(getObjectPrototype(scope));
         Member ctorMember = null;
         for (int i=0; i<methods.length; i++) {
-            if ("mailObjCtor".equals(methods[i].getName())) {
+            if ("mailObjCtor".equals(methods[i].getName())) { //$NON-NLS-1$
                 ctorMember = methods[i];
                 break;
             }
         }
-        FunctionObject ctor = new FunctionObject("Mail", ctorMember, scope);
+        FunctionObject ctor = new FunctionObject("Mail", ctorMember, scope); //$NON-NLS-1$
         ctor.addAsConstructor(scope, proto);
-        ctor.put("props", ctor, props);
+        ctor.put("props", ctor, props); //$NON-NLS-1$
         String[] mailFuncs = {
-                "addBCC", "addCC", "addPart", "addText", "addTo",
-                "send", "setFrom", "setSubject", "setText", "setTo",
-                "setReplyTo", "setMultipartType", "getMultipartType" };
+                "addBCC", "addCC", "addPart", "addText", "addTo",   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$ //$NON-NLS-5$
+                "send", "setFrom", "setSubject", "setText", "setTo", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                "setReplyTo", "setMultipartType", "getMultipartType" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         try {
             proto.defineFunctionProperties(mailFuncs, MailObject.class, 0);
-            proto.defineProperty("status", MailObject.class, 0);
+            proto.defineProperty("status", MailObject.class, 0); //$NON-NLS-1$
         } catch (Exception ignore) {
-            System.err.println ("Error defining function properties: "+ignore);
+            System.err.println (Messages.getString("MailObject.1")+ignore); //$NON-NLS-1$
         }
     }
 
@@ -245,7 +245,7 @@ public class MailObject extends ScriptableObject implements Serializable {
     public void addPart(Object obj, Object filename) {
         try {
             if (obj == null || obj == Undefined.instance) {
-                throw new IOException("mail.addPart called with wrong number of arguments.");
+                throw new IOException(Messages.getString("MailObject.2")); //$NON-NLS-1$
             }
 
             if (multipart == null) {
@@ -260,7 +260,7 @@ public class MailObject extends ScriptableObject implements Serializable {
             }
 
             if (obj instanceof String) {
-                part.setContent(obj.toString(), "text/plain");
+                part.setContent(obj.toString(), "text/plain"); //$NON-NLS-1$
             } else if (obj instanceof File) {
                 FileDataSource source = new FileDataSource((File) obj);
 
@@ -284,7 +284,7 @@ public class MailObject extends ScriptableObject implements Serializable {
 
             multipart.addBodyPart(part);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.addPart(): "+mx);
+            System.err.println(Messages.getString("MailObject.3")+mx); //$NON-NLS-1$
             setStatus(MIMEPART);
         }
 
@@ -303,7 +303,7 @@ public class MailObject extends ScriptableObject implements Serializable {
         try {
             message.setSubject(MimeUtility.encodeWord(subject.toString()));
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.setSubject(): "+mx);
+            System.err.println(Messages.getString("MailObject.4")+mx); //$NON-NLS-1$
             setStatus(SUBJECT);
         }
     }
@@ -315,7 +315,7 @@ public class MailObject extends ScriptableObject implements Serializable {
      */
     public void setReplyTo(String addstr) {
         try {
-            if (addstr.indexOf("@") < 0) {
+            if (addstr.indexOf("@") < 0) { //$NON-NLS-1$
                 throw new AddressException();
             }
 
@@ -324,7 +324,7 @@ public class MailObject extends ScriptableObject implements Serializable {
             replyTo[0] = new InternetAddress(addstr);
             message.setReplyTo(replyTo);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.setReplyTo(): "+mx);
+            System.err.println(Messages.getString("MailObject.5")+mx); //$NON-NLS-1$
             setStatus(REPLYTO);
         }
     }
@@ -337,7 +337,7 @@ public class MailObject extends ScriptableObject implements Serializable {
      */
     public void setFrom(String addstr, Object name) {
         try {
-            if (addstr.indexOf("@") < 0) {
+            if (addstr.indexOf("@") < 0) { //$NON-NLS-1$
                 throw new AddressException();
             }
 
@@ -352,7 +352,7 @@ public class MailObject extends ScriptableObject implements Serializable {
 
             message.setFrom(address);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.setFrom(): "+mx);
+            System.err.println(Messages.getString("MailObject.6")+mx); //$NON-NLS-1$
             setStatus(FROM);
         }
     }
@@ -368,7 +368,7 @@ public class MailObject extends ScriptableObject implements Serializable {
         try {
             addRecipient(addstr, name, Message.RecipientType.TO);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.setTo(): "+mx);
+            System.err.println(Messages.getString("MailObject.7")+mx); //$NON-NLS-1$
             setStatus(TO);
         }
 
@@ -385,7 +385,7 @@ public class MailObject extends ScriptableObject implements Serializable {
         try {
             addRecipient(addstr, name, Message.RecipientType.TO);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.addTO(): "+mx);
+            System.err.println(Messages.getString("MailObject.8")+mx); //$NON-NLS-1$
             setStatus(TO);
         }
 
@@ -401,7 +401,7 @@ public class MailObject extends ScriptableObject implements Serializable {
         try {
             addRecipient(addstr, name, Message.RecipientType.CC);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.addCC(): "+mx);
+            System.err.println(Messages.getString("MailObject.9")+mx); //$NON-NLS-1$
             setStatus(CC);
         }
     }
@@ -416,7 +416,7 @@ public class MailObject extends ScriptableObject implements Serializable {
         try {
             addRecipient(addstr, name, Message.RecipientType.BCC);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.addBCC(): "+mx);
+            System.err.println(Messages.getString("MailObject.10")+mx); //$NON-NLS-1$
             setStatus(BCC);
         }
     }
@@ -435,7 +435,7 @@ public class MailObject extends ScriptableObject implements Serializable {
     private void addRecipient(String addstr,
                               Object name,
                               Message.RecipientType type) throws Exception {
-        if (addstr.indexOf("@") < 0) {
+        if (addstr.indexOf("@") < 0) { //$NON-NLS-1$
             throw new AddressException();
         }
 
@@ -458,7 +458,7 @@ public class MailObject extends ScriptableObject implements Serializable {
     public void send() {
         // only send message if everything's ok
         if (status != OK) {
-            System.err.println("Error sending mail. Status="+status);
+            System.err.println(Messages.getString("MailObject.11")+status); //$NON-NLS-1$
         }
         try {
             if (buffer != null) {
@@ -467,7 +467,7 @@ public class MailObject extends ScriptableObject implements Serializable {
                 if (multipart != null) {
                     MimeBodyPart part = new MimeBodyPart();
 
-                    part.setContent(buffer.toString(), "text/plain");
+                    part.setContent(buffer.toString(), "text/plain"); //$NON-NLS-1$
                     multipart.addBodyPart(part, 0);
                     message.setContent(multipart);
                 } else {
@@ -476,12 +476,12 @@ public class MailObject extends ScriptableObject implements Serializable {
             } else if (multipart != null) {
                 message.setContent(multipart);
             } else {
-                message.setText("");
+                message.setText(""); //$NON-NLS-1$
             }
 
             Transport.send(message);
         } catch (Exception mx) {
-            System.err.println("Error in MailObject.send(): "+mx);
+            System.err.println(Messages.getString("MailObject.12")+mx); //$NON-NLS-1$
             setStatus(SEND);
         }
     }

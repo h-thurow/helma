@@ -93,7 +93,7 @@ public class DiffusionFilterOp implements BufferedImageOp {
 
         // Otherwise check that the provided dest is an indexed image
         else if (dst.getType() != BufferedImage.TYPE_BYTE_INDEXED) {
-            throw new IllegalArgumentException("Wrong Destination Buffer type");
+            throw new IllegalArgumentException(Messages.getString("DiffusionFilterOp.0")); //$NON-NLS-1$
         }
 
         DataBufferByte dstBuffer = (DataBufferByte) dst.getRaster().getDataBuffer();

@@ -30,7 +30,7 @@ public class HacHspConverter {
 
     public static String convertHac(Resource action, String encoding)
             throws IOException {
-        String functionName = action.getBaseName().replace('.', '_') + "_action";
+        String functionName = action.getBaseName().replace('.', '_') + "_action"; //$NON-NLS-1$
         return composeFunction(functionName, null, action.getContent(encoding));
     }
 
@@ -39,36 +39,36 @@ public class HacHspConverter {
         String functionName = template.getBaseName().replace('.', '_');
         String body = processHspBody(template.getContent(encoding));
         return composeFunction(functionName,
-                               "arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10",
+                               "arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10", //$NON-NLS-1$
                                body);
     }
 
     public static String convertHspAsString(Resource template, String encoding)
             throws IOException {
-        String functionName = template.getBaseName().replace('.', '_') + "_as_string";
+        String functionName = template.getBaseName().replace('.', '_') + "_as_string"; //$NON-NLS-1$
         String body = processHspBody(template.getContent(encoding));
         return composeFunction(functionName,
-                               "arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10",
-                               "res.pushStringBuffer(); " + body +
-                               "\r\nreturn res.popStringBuffer();\r\n");
+                               "arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10", //$NON-NLS-1$
+                               "res.pushStringBuffer(); " + body + //$NON-NLS-1$
+                               "\r\nreturn res.popStringBuffer();\r\n"); //$NON-NLS-1$
     }
 
     static String composeFunction(String funcname, String args, String body) {
-        if ((body == null) || "".equals(body.trim())) {
-            body = ";\r\n";
+        if ((body == null) || "".equals(body.trim())) { //$NON-NLS-1$
+            body = ";\r\n"; //$NON-NLS-1$
         } else {
-            body = body + "\r\n";
+            body = body + "\r\n"; //$NON-NLS-1$
         }
 
-        StringBuffer f = new StringBuffer("function ");
+        StringBuffer f = new StringBuffer("function "); //$NON-NLS-1$
 
         f.append(funcname);
-        f.append(" (");
+        f.append(" ("); //$NON-NLS-1$
         if (args != null)
             f.append(args);
-        f.append(") {");
+        f.append(") {"); //$NON-NLS-1$
         f.append(body);
-        f.append("}");
+        f.append("}"); //$NON-NLS-1$
 
         return f.toString();
     }
@@ -79,7 +79,7 @@ public class HacHspConverter {
         int l = cnt.length;
 
         if (l == 0) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         // if last character is whitespace, swallow it.
@@ -125,36 +125,36 @@ public class HacHspConverter {
         for (int k = 0; k < nparts; k++) {
             HspBodyPart nextPart = (HspBodyPart) partBuffer.get(k);
 
-            if (nextPart.isStatic || nextPart.content.trim().startsWith("=")) {
+            if (nextPart.isStatic || nextPart.content.trim().startsWith("=")) { //$NON-NLS-1$
                 // check for <%= ... %> statements
                 if (!nextPart.isStatic) {
                     nextPart.content = nextPart.content.trim().substring(1).trim();
 
                     // cut trailing ";"
-                    while (nextPart.content.endsWith(";"))
+                    while (nextPart.content.endsWith(";")) //$NON-NLS-1$
                         nextPart.content = nextPart.content.substring(0,
                                                                       nextPart.content.length() -
                                                                       1);
                 }
 
-                StringTokenizer st = new StringTokenizer(nextPart.content, "\r\n", true);
+                StringTokenizer st = new StringTokenizer(nextPart.content, "\r\n", true); //$NON-NLS-1$
                 String nextLine = st.hasMoreTokens() ? st.nextToken() : null;
 
                 // count newLines we "swallow", see explanation below
                 int newLineCount = 0;
 
-                templateBody.append("res.write (");
+                templateBody.append("res.write ("); //$NON-NLS-1$
 
                 if (nextPart.isStatic) {
-                    templateBody.append("\"");
+                    templateBody.append("\""); //$NON-NLS-1$
                 }
 
                 while (nextLine != null) {
-                    if ("\n".equals(nextLine)) {
+                    if ("\n".equals(nextLine)) { //$NON-NLS-1$
                         // append a CRLF
                         newLineCount++;
-                        templateBody.append("\\r\\n");
-                    } else if (!"\r".equals(nextLine)) {
+                        templateBody.append("\\r\\n"); //$NON-NLS-1$
+                    } else if (!"\r".equals(nextLine)) { //$NON-NLS-1$
                         try {
                             StringReader lineReader = new StringReader(nextLine);
                             int c = lineReader.read();
@@ -176,22 +176,22 @@ public class HacHspConverter {
                 }
 
                 if (nextPart.isStatic) {
-                    templateBody.append("\"");
+                    templateBody.append("\""); //$NON-NLS-1$
                 }
 
-                templateBody.append("); ");
+                templateBody.append("); "); //$NON-NLS-1$
 
                 // append the number of lines we have "swallowed" into
                 // one write statement, so error messages will *approximately*
                 // give correct line numbers.
                 for (int i = 0; i < newLineCount; i++) {
-                    templateBody.append("\r\n");
+                    templateBody.append("\r\n"); //$NON-NLS-1$
                 }
             } else {
                 templateBody.append(nextPart.content);
 
-                if (!nextPart.content.trim().endsWith(";")) {
-                    templateBody.append(";");
+                if (!nextPart.content.trim().endsWith(";")) { //$NON-NLS-1$
+                    templateBody.append(";"); //$NON-NLS-1$
                 }
             }
         }
@@ -216,7 +216,7 @@ public class HacHspConverter {
         }
 
         public String toString() {
-            return "Template.Part [" + content + "," + isStatic + "]";
+            return "Template.Part [" + content + "," + isStatic + "]";   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
         }
     }
 }

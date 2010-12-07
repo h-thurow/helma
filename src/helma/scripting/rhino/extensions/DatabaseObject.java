@@ -71,7 +71,7 @@ public class DatabaseObject {
             if (!Driver.class.isAssignableFrom(driverClass)) {
 
                 // System.err.println("##Bad class " + driverClass);
-                lastError = new RuntimeException("Class " + driverClass + " is not a JDBC driver");
+                lastError = new RuntimeException(Messages.getString("DatabaseObject.0") + driverClass + Messages.getString("DatabaseObject.1")); //$NON-NLS-1$ //$NON-NLS-2$
             }
             driverClass.newInstance(); // may be needed by some drivers, harmless for others
         } catch (ClassNotFoundException e) {
@@ -102,20 +102,20 @@ public class DatabaseObject {
     }
 
     public String getClassName() {
-        return "DatabaseObject";
+        return "DatabaseObject"; //$NON-NLS-1$
     }
 
     public String toString() {
-         if (driverName==null) return "[database protoype]";
-         return "[Database: '" + driverName +
+         if (driverName==null) return "[database protoype]"; //$NON-NLS-1$
+         return "[Database: '" + driverName + //$NON-NLS-1$
                  (driverOK ?
-                     (connection==null ? "' - disconnected] " : " - connected]")
-                 : " - in error]");
+                     (connection==null ? "' - disconnected] " : " - connected]") //$NON-NLS-1$ //$NON-NLS-2$
+                 : " - in error]"); //$NON-NLS-1$
     }
 
     public String toDetailString() {
-        return "ES:[Object: builtin " + this.getClass().getName() + ":" +
-            this.toString() + "]";
+        return "ES:[Object: builtin " + this.getClass().getName() + ":" +  //$NON-NLS-1$//$NON-NLS-2$
+            this.toString() + "]"; //$NON-NLS-1$
     }
 
     public Object getLastError() {
@@ -137,7 +137,7 @@ public class DatabaseObject {
      */
     public boolean connect(String url, String userName, String password) {
         if (!driverOK) {
-            lastError = new SQLException("Driver not initialized properly - cannot connect");
+            lastError = new SQLException(Messages.getString("DatabaseObject.2")); //$NON-NLS-1$
             return false;
         }
         lastError = null;
@@ -164,7 +164,7 @@ public class DatabaseObject {
      */
     public boolean disconnect() {
         if (!driverOK) {
-            lastError = new SQLException("Driver not initialized properly - cannot disconnect");
+            lastError = new SQLException(Messages.getString("DatabaseObject.3")); //$NON-NLS-1$
             return false;
         }
         lastError = null;
@@ -191,7 +191,7 @@ public class DatabaseObject {
 
     public RowSet executeRetrieval(String sql) {
         if (connection==null) {
-            lastError = new SQLException("JDBC driver not connected");
+            lastError = new SQLException(Messages.getString("DatabaseObject.4")); //$NON-NLS-1$
             return null;
         }
         Statement statement = null;
@@ -220,7 +220,7 @@ public class DatabaseObject {
         int count = 0;
 
         if (connection==null) {
-            lastError = new SQLException("JDBC driver not connected");
+            lastError = new SQLException(Messages.getString("DatabaseObject.5")); //$NON-NLS-1$
             return -1;
         }
 
@@ -282,10 +282,10 @@ public class DatabaseObject {
             this.statement = statement;
             this.resultSet = resultSet;
 
-            if (sql==null) throw new NullPointerException("sql");
-            if (resultSet==null) throw new NullPointerException("resultSet");
-            if (statement==null) throw new NullPointerException("statement");
-            if (database==null) throw new NullPointerException("database");
+            if (sql==null) throw new NullPointerException("sql"); //$NON-NLS-1$
+            if (resultSet==null) throw new NullPointerException("resultSet"); //$NON-NLS-1$
+            if (statement==null) throw new NullPointerException("statement"); //$NON-NLS-1$
+            if (database==null) throw new NullPointerException("database"); //$NON-NLS-1$
 
             try {
 
@@ -300,7 +300,7 @@ public class DatabaseObject {
                 }
             } catch(SQLException e) {
                 colNames = new Vector(); // An empty one
-                throw new SQLException("Could not get column names: "+e);
+                throw new SQLException(Messages.getString("DatabaseObject.6")+e); //$NON-NLS-1$
 
                 // System.err.println("##Cannot get column names: " + e);
                 // e.printStackTrace();
@@ -309,12 +309,12 @@ public class DatabaseObject {
 
 
         public String getClassName() {
-            return "RowSet";
+            return "RowSet"; //$NON-NLS-1$
         }
 
         public String toDetailString() {
-            return "ES:[Object: builtin " + this.getClass().getName() + ":" +
-                this.toString() + "]";
+            return "ES:[Object: builtin " + this.getClass().getName() + ":" + //$NON-NLS-1$ //$NON-NLS-2$
+                this.toString() + "]"; //$NON-NLS-1$
         }
 
         public int getColumnCount() {
@@ -353,14 +353,14 @@ public class DatabaseObject {
 
         public String getColumnName(int idx) {
            if (resultSet == null) {
-                lastError = new SQLException("Attempt to access a released result set");
+                lastError = new SQLException(Messages.getString("DatabaseObject.7")); //$NON-NLS-1$
                 return null;
            }
             if (idx>0 && idx <=colNames.size()) {
                 return (String) colNames.elementAt(idx-1); // to base 0
             } else {
-                lastError = new SQLException("Column index (base 1) " + idx +
-                                            " out of range, max: " +colNames.size());
+                lastError = new SQLException(Messages.getString("DatabaseObject.8") + idx + //$NON-NLS-1$
+                                            Messages.getString("DatabaseObject.9") +colNames.size()); //$NON-NLS-1$
                 return null;
             }
         }
@@ -368,7 +368,7 @@ public class DatabaseObject {
 
         public int getColumnDatatypeNumber(int idx) {
            if (resultSet == null) {
-                lastError = new SQLException("Attempt to access a released result set");
+                lastError = new SQLException(Messages.getString("DatabaseObject.10")); //$NON-NLS-1$
                 return -1;
            }
             if (idx>0 && idx <=colNames.size()) {
@@ -379,8 +379,8 @@ public class DatabaseObject {
                     return -1;
                 }
             } else {
-                lastError = new SQLException("Column index (base 1) " + idx +
-                                            " out of range, max: " +colNames.size());
+                lastError = new SQLException(Messages.getString("DatabaseObject.11") + idx + //$NON-NLS-1$
+                                            Messages.getString("DatabaseObject.12") +colNames.size()); //$NON-NLS-1$
                 return -1;
             }
         }
@@ -388,7 +388,7 @@ public class DatabaseObject {
 
         public String getColumnDatatypeName(int idx) {
            if (resultSet == null) {
-                lastError = new SQLException("Attempt to access a released result set");
+                lastError = new SQLException(Messages.getString("DatabaseObject.13")); //$NON-NLS-1$
                 return null;
            }
             if (idx>0 && idx <=colNames.size()) {
@@ -399,8 +399,8 @@ public class DatabaseObject {
                     return null;
                 }
             } else {
-                lastError = new SQLException("Column index (base 1) " + idx +
-                                            " out of range, max: " +colNames.size());
+                lastError = new SQLException(Messages.getString("DatabaseObject.14") + idx + //$NON-NLS-1$
+                                            Messages.getString("DatabaseObject.15") +colNames.size()); //$NON-NLS-1$
                 return null;
             }
         }
@@ -408,11 +408,11 @@ public class DatabaseObject {
 
         public Object getColumnItem(String propertyName) {
            if (resultSet == null) {
-                lastError = new SQLException("Attempt to access a released result set");
+                lastError = new SQLException(Messages.getString("DatabaseObject.16")); //$NON-NLS-1$
                 return null;
            }
            if (!firstRowSeen) {
-                lastError = new SQLException("Attempt to access data before the first row is read");
+                lastError = new SQLException(Messages.getString("DatabaseObject.17")); //$NON-NLS-1$
                 return null;
            }
            try {
@@ -478,11 +478,11 @@ public class DatabaseObject {
 
         public Object getProperty(int index) {
             if (!firstRowSeen) {
-                lastError = new SQLException("Attempt to access data before the first row is read");
+                lastError = new SQLException(Messages.getString("DatabaseObject.18")); //$NON-NLS-1$
                 return null;
             }
             if (resultSet == null) {
-                lastError = new SQLException("Attempt to access a released result set");
+                lastError = new SQLException(Messages.getString("DatabaseObject.19")); //$NON-NLS-1$
                 return null;
             }
 
@@ -593,18 +593,18 @@ public class DatabaseObject {
 
 
         public String[] getSpecialPropertyNames() {
-            return new String[] {"length"};
+            return new String[] {"length"}; //$NON-NLS-1$
         }
 
 
         public boolean next() {
             boolean status = false;
             if (lastRowSeen) {
-                lastError = new SQLException("Attempt to access a next row after last row has been returned");
+                lastError = new SQLException(Messages.getString("DatabaseObject.20")); //$NON-NLS-1$
                 return false;
             }
             if (resultSet == null) {
-                lastError = new SQLException("Attempt to access a released result set");
+                lastError = new SQLException(Messages.getString("DatabaseObject.21")); //$NON-NLS-1$
                 return false;
             }
             try {
@@ -621,10 +621,10 @@ public class DatabaseObject {
        }
 
         public String toString() {
-            return "[RowSet: '"+sql+"'" +
-                   (resultSet==null ? " - released]" :
-                       (lastRowSeen ? " - at end]" :
-                       (firstRowSeen ? "]" : " - at start]")));
+            return "[RowSet: '"+sql+"'" +  //$NON-NLS-1$//$NON-NLS-2$
+                   (resultSet==null ? " - released]" : //$NON-NLS-1$
+                       (lastRowSeen ? " - at end]" : //$NON-NLS-1$
+                       (firstRowSeen ? "]" : " - at start]")));  //$NON-NLS-1$//$NON-NLS-2$
         }
 
     }

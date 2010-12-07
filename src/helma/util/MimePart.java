@@ -112,7 +112,7 @@ public class MimePart implements Serializable {
             }
             in.close();
         } catch (Exception x) {
-            System.err.println("Error in MimePart.loadContent(): " + x);
+            System.err.println(Messages.getString("MimePart.0") + x); //$NON-NLS-1$
             content = new byte[0];
         }
     }
@@ -141,9 +141,9 @@ public class MimePart implements Serializable {
      * @return the content of the mime part as string
      */
     public String getText() {
-        if ((contentType == null) || contentType.startsWith("text/")
-                                  || contentType.startsWith("application/text")) {
-            String charset = getSubHeader(contentType, "charset");
+        if ((contentType == null) || contentType.startsWith("text/") //$NON-NLS-1$
+                                  || contentType.startsWith("application/text")) { //$NON-NLS-1$
+            String charset = getSubHeader(contentType, "charset"); //$NON-NLS-1$
             byte[] content = getContent();
             if (charset != null) {
                 try {
@@ -220,9 +220,9 @@ public class MimePart implements Serializable {
             String filename = name;
 
             if (fname != null) {
-                if (fname.indexOf(".") < 0) {
+                if (fname.indexOf(".") < 0) { //$NON-NLS-1$
                     // check if we can use extension from name
-                    int ndot = (name == null) ? (-1) : name.lastIndexOf(".");
+                    int ndot = (name == null) ? (-1) : name.lastIndexOf("."); //$NON-NLS-1$
 
                     if (ndot > -1) {
                         filename = fname + name.substring(ndot);
@@ -249,7 +249,7 @@ public class MimePart implements Serializable {
             // return file name
             return filename;
         } catch (Exception x) {
-            System.err.println("Error in MimePart.writeToFile(): " + x);            
+            System.err.println(Messages.getString("MimePart.1") + x);             //$NON-NLS-1$
             return null;
         }
     }
@@ -263,11 +263,11 @@ public class MimePart implements Serializable {
             return null;
         }
 
-        StringTokenizer headerTokenizer = new StringTokenizer(header, ";");
+        StringTokenizer headerTokenizer = new StringTokenizer(header, ";"); //$NON-NLS-1$
 
         while (headerTokenizer.hasMoreTokens()) {
             String token = headerTokenizer.nextToken().trim();
-            int i = token.indexOf("=");
+            int i = token.indexOf("="); //$NON-NLS-1$
 
             if (i > 0) {
                 String hname = token.substring(0, i).trim();

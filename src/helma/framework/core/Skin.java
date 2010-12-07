@@ -119,7 +119,7 @@ public final class Skin {
     }
 
     public static Skin getSkin(Resource res, Application app) throws IOException {
-        String encoding = app.getProperty("skinCharset");
+        String encoding = app.getProperty("skinCharset"); //$NON-NLS-1$
         Reader reader;
         if (encoding == null) {
             reader = new InputStreamReader(res.getInputStream());
@@ -244,7 +244,7 @@ public final class Skin {
      */
     public String renderAsString(RequestEvaluator reval, Object thisObject, Object paramObject)
                 throws RedirectException, UnsupportedEncodingException {
-        String result = "";
+        String result = ""; //$NON-NLS-1$
         ResponseTrans res = reval.getResponse();
         res.pushBuffer(null);
         try {
@@ -263,7 +263,7 @@ public final class Skin {
                 throws RedirectException, UnsupportedEncodingException {
         // check for endless skin recursion
         if (++reval.skinDepth > 50) {
-            throw new RuntimeException("Recursive skin invocation suspected");
+            throw new RuntimeException(Messages.getString("Skin.0")); //$NON-NLS-1$
         }
 
         ResponseTrans res = reval.getResponse();
@@ -276,7 +276,7 @@ public final class Skin {
 
         // register param object, remember previous one to reset afterwards
         Map handlers = res.getMacroHandlers();
-        Object previousParam = handlers.put("param", paramObject);
+        Object previousParam = handlers.put("param", paramObject); //$NON-NLS-1$
         Skin previousSkin = res.switchActiveSkin(parentSkin);
 
         try {
@@ -304,9 +304,9 @@ public final class Skin {
             reval.skinDepth--;
             res.switchActiveSkin(previousSkin);
             if (previousParam == null) {
-                handlers.remove("param");
+                handlers.remove("param"); //$NON-NLS-1$
             } else {
-                handlers.put("param", previousParam);
+                handlers.put("param", previousParam); //$NON-NLS-1$
             }
         }
     }
@@ -390,31 +390,31 @@ public final class Skin {
                 end = Math.min(length, i);
             }
 
-            path = StringUtils.split(name, ".");
+            path = StringUtils.split(name, "."); //$NON-NLS-1$
             if (path.length <= 1) {
                 handlerType = HANDLER_GLOBAL;
             } else {
                 String handlerName = path[0];
-                if ("this".equalsIgnoreCase(handlerName)) {
+                if ("this".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
                     handlerType = HANDLER_THIS;
-                } else if ("response".equalsIgnoreCase(handlerName)) {
+                } else if ("response".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
                     handlerType = HANDLER_RESPONSE;
-                } else if ("request".equalsIgnoreCase(handlerName)) {
+                } else if ("request".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
                     handlerType = HANDLER_REQUEST;
-                } else if ("session".equalsIgnoreCase(handlerName)) {
+                } else if ("session".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
                     handlerType = HANDLER_SESSION;
-                } else if ("param".equalsIgnoreCase(handlerName)) {
+                } else if ("param".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
                     handlerType = HANDLER_PARAM;
                 }
             }
 
-            if (".extends".equals(name)) {
+            if (".extends".equals(name)) { //$NON-NLS-1$
                 if (parentSkin != Skin.this) {
-                    throw new RuntimeException("Found .extends in subskin");
+                    throw new RuntimeException(Messages.getString("Skin.1")); //$NON-NLS-1$
                 }
                 if (positionalParams == null || positionalParams.size() < 1
                         || !(positionalParams.get(0) instanceof String)) {
-                    throw new RuntimeException(".extends requires an unnamed string parameter");
+                    throw new RuntimeException(Messages.getString("Skin.2")); //$NON-NLS-1$
                 }
                 extendz = (String) positionalParams.get(0);
                 isCommentMacro = true; // don't render
@@ -465,7 +465,7 @@ public final class Skin {
                         b.append(source[i]);
                         escape = false;
 
-                        if (state == PARSE_MACRONAME && "//".equals(b.toString())) {
+                        if (state == PARSE_MACRONAME && "//".equals(b.toString())) { //$NON-NLS-1$
                             isCommentMacro = true;
                             // just continue parsing the macro as this is the only way
                             // to correctly catch embedded macros - see bug 588
@@ -597,7 +597,7 @@ public final class Skin {
             }
 
             if (state != PARSE_DONE) {
-                app.logError("Unterminated Macro Tag: " +this);
+                app.logError(Messages.getString("Skin.3") +this); //$NON-NLS-1$
             }
 
             return i + 2;
@@ -624,27 +624,27 @@ public final class Skin {
                 return;
             }
             // check if this is parameter is relevant to us
-            if ("prefix".equals(name)) {
+            if ("prefix".equals(name)) { //$NON-NLS-1$
                 standardParams.prefix = value;
-            } else if ("suffix".equals(name)) {
+            } else if ("suffix".equals(name)) { //$NON-NLS-1$
                 standardParams.suffix = value;
-            } else if ("encoding".equals(name)) {
-                if ("html".equals(value)) {
+            } else if ("encoding".equals(name)) { //$NON-NLS-1$
+                if ("html".equals(value)) { //$NON-NLS-1$
                     encoding = ENCODE_HTML;
-                } else if ("xml".equals(value)) {
+                } else if ("xml".equals(value)) { //$NON-NLS-1$
                     encoding = ENCODE_XML;
-                } else if ("form".equals(value)) {
+                } else if ("form".equals(value)) { //$NON-NLS-1$
                     encoding = ENCODE_FORM;
-                } else if ("url".equals(value)) {
+                } else if ("url".equals(value)) { //$NON-NLS-1$
                     encoding = ENCODE_URL;
-                } else if ("all".equals(value)) {
+                } else if ("all".equals(value)) { //$NON-NLS-1$
                     encoding = ENCODE_ALL;
                 } else {
-                    app.logEvent("Unrecognized encoding in skin macro: " + value);
+                    app.logEvent(Messages.getString("Skin.4") + value); //$NON-NLS-1$
                 }
-            } else if ("default".equals(name)) {
+            } else if ("default".equals(name)) { //$NON-NLS-1$
                 standardParams.defaultValue = value;
-            } else if ("failmode".equals(name)) {
+            } else if ("failmode".equals(name)) { //$NON-NLS-1$
                 standardParams.setFailMode(value);
             }
 
@@ -664,7 +664,7 @@ public final class Skin {
             }
 
             if ((sandbox != null) && !sandbox.contains(name)) {
-                throw new MacroException("Macro not allowed in sandbox: " + name);
+                throw new MacroException(Messages.getString("Skin.5") + name); //$NON-NLS-1$
             }
 
             Object handler = null;
@@ -681,7 +681,7 @@ public final class Skin {
                 // if so, the macro evaluates to the function. Otherwise,
                 // a property/field with the name is used, if defined.
                 String propName = path[path.length - 1];
-                String funcName = resolveFunctionName(handler, propName + "_macro", engine);
+                String funcName = resolveFunctionName(handler, propName + "_macro", engine); //$NON-NLS-1$
 
                 // remember length of response buffer before calling macro
                 StringBuffer buffer = cx.reval.getResponse().getBuffer();
@@ -710,19 +710,19 @@ public final class Skin {
                 } else {
                     if (handlerType == HANDLER_RESPONSE) {
                         // some special handling for response handler
-                        if ("message".equals(propName))
+                        if ("message".equals(propName)) //$NON-NLS-1$
                             value = cx.reval.getResponse().getMessage();
-                        else if ("error".equals(propName))
+                        else if ("error".equals(propName)) //$NON-NLS-1$
                             value = cx.reval.getResponse().getErrorMessage();
                         if (value != null)
                             return filter(value, cx);
                     }
                     // display error message unless onUnhandledMacro is defined or silent failmode is on
                     if (!engine.hasProperty(handler, propName)) {
-                        if (engine.hasFunction(handler, "onUnhandledMacro", false)) {
+                        if (engine.hasFunction(handler, "onUnhandledMacro", false)) { //$NON-NLS-1$
                             Object[] arguments = prepareArguments(1, cx);
                             arguments[0] = propName;
-                            value = cx.reval.invokeDirectFunction(handler,  "onUnhandledMacro", arguments);
+                            value = cx.reval.invokeDirectFunction(handler,  "onUnhandledMacro", arguments); //$NON-NLS-1$
                             // if macro has a filter chain and didn't return anything, use output
                             // as filter argument.
                             if (asObject && value == null && buffer.length() > bufLength) {
@@ -730,7 +730,7 @@ public final class Skin {
                                 buffer.setLength(bufLength);
                             }
                         } else if (standardParams.verboseFailmode(handler, engine)) {
-                            throw new MacroException("Unhandled macro: " + name);
+                            throw new MacroException(Messages.getString("Skin.6") + name); //$NON-NLS-1$
                         }
                     } else {
                         value = engine.getProperty(handler, propName);
@@ -738,7 +738,7 @@ public final class Skin {
                     return filter(value, cx);
                 }
             } else if (standardParams.verboseFailmode(handler, engine)) {
-                throw new MacroException("Unhandled macro: " + name);
+                throw new MacroException(Messages.getString("Skin.7") + name); //$NON-NLS-1$
             }
             return filter(null, cx);
         }
@@ -756,7 +756,7 @@ public final class Skin {
                 writeResponse(value, cx.reval, stdParams, true);
                 return res.popString();
             } else if (stdParams.defaultValue != null &&
-                    (value == null || "".equals(value))) {
+                    (value == null || "".equals(value))) { //$NON-NLS-1$
                 return stdParams.defaultValue;
             } else {
                 return value;
@@ -813,16 +813,16 @@ public final class Skin {
                 throw timeout;
             } catch (MacroException mx) {
                 String msg = mx.getMessage();
-                cx.reval.getResponse().write(" [" + msg + "] ");
+                cx.reval.getResponse().write(" [" + msg + "] "); //$NON-NLS-1$ //$NON-NLS-2$
                 app.logError(msg);
             } catch (Exception x) {
                 String msg = x.getMessage();
                 if ((msg == null) || (msg.length() < 10)) {
                     msg = x.toString();
                 }
-                msg = new StringBuffer("Macro error in ").append(name)
-                        .append(": ").append(msg).toString();
-                cx.reval.getResponse().write(" [" + msg + "] ");
+                msg = new StringBuffer(Messages.getString("Skin.8")).append(name) //$NON-NLS-1$
+                        .append(": ").append(msg).toString(); //$NON-NLS-1$
+                cx.reval.getResponse().write(" [" + msg + "] ");  //$NON-NLS-1$//$NON-NLS-2$
                 app.logError(msg, x);
             }
         }
@@ -841,9 +841,9 @@ public final class Skin {
                 throws Exception {
 
             if (name == null) {
-                throw new MacroException("Empty macro filter");
+                throw new MacroException(Messages.getString("Skin.9")); //$NON-NLS-1$
             } else if (sandbox != null && !sandbox.contains(name)) {
-                throw new MacroException("Macro not allowed in sandbox: " + name);
+                throw new MacroException(Messages.getString("Skin.10") + name); //$NON-NLS-1$
             }
             Object handlerObject = null;
 
@@ -852,7 +852,7 @@ public final class Skin {
                 handlerObject = resolvePath(handlerObject, cx.reval);
             }
 
-            String propName = path[path.length - 1] + "_filter";
+            String propName = path[path.length - 1] + "_filter"; //$NON-NLS-1$
             String funcName = resolveFunctionName(handlerObject, propName,
                     cx.reval.scriptingEngine);
 
@@ -865,7 +865,7 @@ public final class Skin {
 
                 return filter(retval, cx);
             } else {
-                throw new MacroException("Undefined macro filter: " + name);
+                throw new MacroException(Messages.getString("Skin.11") + name); //$NON-NLS-1$
             }
         }
 
@@ -904,7 +904,7 @@ public final class Skin {
         private Object resolvePath(Object handler, RequestEvaluator reval) throws Exception {
             for (int i = 1; i < path.length - 1; i++) {
                 Object[] arguments = {path[i]};
-                Object next = reval.invokeDirectFunction(handler, "getMacroHandler", arguments);
+                Object next = reval.invokeDirectFunction(handler, "getMacroHandler", arguments); //$NON-NLS-1$
                 if (next != null) {
                     handler = next;
                 } else if (!reval.scriptingEngine.isTypedObject(handler)) {
@@ -930,7 +930,7 @@ public final class Skin {
                     for (int i = 0; i < macroPath.length; i++) {
                         String path = macroPath[i];
                         String funcName = path == null || path.length() == 0 ?
-                                functionName : path + "." + functionName;
+                                functionName : path + "." + functionName; //$NON-NLS-1$
                         if (engine.hasFunction(null, funcName, true))
                             return funcName;
                     }
@@ -951,7 +951,7 @@ public final class Skin {
             String text;
             StringBuffer buffer = reval.getResponse().getBuffer();
 
-            if (value == null || "".equals(value)) {
+            if (value == null || "".equals(value)) { //$NON-NLS-1$
                 if (useDefault) {
                     text = (String) stdParams.defaultValue;
                 } else {
@@ -1007,7 +1007,7 @@ public final class Skin {
         }
 
         public String toString() {
-            return "[Macro: " + name + "]";
+            return "[Macro: " + name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         /**
@@ -1061,9 +1061,9 @@ public final class Skin {
         }
 
         void readFrom(Map map) {
-            prefix = map.get("prefix");
-            suffix = map.get("suffix");
-            defaultValue = map.get("default");
+            prefix = map.get("prefix"); //$NON-NLS-1$
+            suffix = map.get("suffix"); //$NON-NLS-1$
+            defaultValue = map.get("default"); //$NON-NLS-1$
         }
 
         boolean containsMacros() {
@@ -1073,12 +1073,12 @@ public final class Skin {
         }
 
         void setFailMode(Object value) {
-            if ("silent".equals(value))
+            if ("silent".equals(value)) //$NON-NLS-1$
                 failmode = FAIL_SILENT;
-            else if ("verbose".equals(value))
+            else if ("verbose".equals(value)) //$NON-NLS-1$
                 failmode = FAIL_VERBOSE;
             else if (value != null)
-                app.logEvent("unrecognized failmode value: " + value);
+                app.logEvent(Messages.getString("Skin.12") + value); //$NON-NLS-1$
         }
 
         boolean verboseFailmode(Object handler, ScriptingEngine engine) {

@@ -156,9 +156,9 @@ public final class NodeHandle implements INodeState, Serializable {
      */
     public String toString() {
         if (node != null) {
-            return "NodeHandle[transient:" + node + "]";
+            return "NodeHandle[transient:" + node + "]";  //$NON-NLS-1$//$NON-NLS-2$
         } else {
-            return "NodeHandle[" + key + "]";
+            return "NodeHandle[" + key + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

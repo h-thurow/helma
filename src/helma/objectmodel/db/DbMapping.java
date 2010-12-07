@@ -136,7 +136,7 @@ public final class DbMapping {
         if (parentTypeName != null) {
             parentMapping = app.getDbMapping(parentTypeName);
             if (parentMapping == null) {
-                throw new IllegalArgumentException("Unknown parent mapping: " + parentTypeName);
+                throw new IllegalArgumentException(Messages.getString("DbMapping.0") + parentTypeName); //$NON-NLS-1$
             }
         }
     }
@@ -185,21 +185,21 @@ public final class DbMapping {
      * dbsource.
      */
     private void readBasicProperties() {
-        tableName = props.getProperty("_table");
-        dbSourceName = props.getProperty("_db");
+        tableName = props.getProperty("_table"); //$NON-NLS-1$
+        dbSourceName = props.getProperty("_db"); //$NON-NLS-1$
 
         if (dbSourceName != null) {
             dbSource = app.getDbSource(dbSourceName);
 
             if (dbSource == null) {
-                app.logError("Data Source for prototype " + typename +
-                             " does not exist: " + dbSourceName);
-                app.logError("Accessing or storing a " + typename +
-                             " object will cause an error.");
+                app.logError(Messages.getString("DbMapping.1") + typename + //$NON-NLS-1$
+                             Messages.getString("DbMapping.2") + dbSourceName); //$NON-NLS-1$
+                app.logError(Messages.getString("DbMapping.3") + typename + //$NON-NLS-1$
+                             Messages.getString("DbMapping.4")); //$NON-NLS-1$
             } else if (tableName == null) {
-                app.logError("No table name specified for prototype " + typename);
-                app.logError("Accessing or storing a " + typename +
-                             " object will cause an error.");
+                app.logError(Messages.getString("DbMapping.5") + typename); //$NON-NLS-1$
+                app.logError(Messages.getString("DbMapping.6") + typename + //$NON-NLS-1$
+                             Messages.getString("DbMapping.7")); //$NON-NLS-1$
 
                 // mark mapping as invalid by nulling the dbSource field
                 dbSource = null;
@@ -220,17 +220,17 @@ public final class DbMapping {
     public synchronized void update() {
         // read in properties
         readBasicProperties();
-        idgen = props.getProperty("_idgen");
+        idgen = props.getProperty("_idgen"); //$NON-NLS-1$
         // if id field is null, we assume "ID" as default. We don't set it
         // however, so that if null we check the parent prototype first.
-        idField = props.getProperty("_id");
-        nameField = props.getProperty("_name");
-        protoField = props.getProperty("_prototype");
+        idField = props.getProperty("_id"); //$NON-NLS-1$
+        nameField = props.getProperty("_name"); //$NON-NLS-1$
+        protoField = props.getProperty("_prototype"); //$NON-NLS-1$
 
-        parentSetting = props.getProperty("_parent");
+        parentSetting = props.getProperty("_parent"); //$NON-NLS-1$
         if (parentSetting != null) {
             // comma-separated list of properties to be used as parent
-            StringTokenizer st = new StringTokenizer(parentSetting, ",;");
+            StringTokenizer st = new StringTokenizer(parentSetting, ",;"); //$NON-NLS-1$
             parentInfo = new ParentInfo[st.countTokens()];
 
             for (int i = 0; i < parentInfo.length; i++) {
@@ -244,13 +244,13 @@ public final class DbMapping {
                 ((ResourceProperties) props).lastModified() : System.currentTimeMillis();
 
         // see if this prototype extends (inherits from) any other prototype
-        String extendsProto = props.getProperty("_extends");
+        String extendsProto = props.getProperty("_extends"); //$NON-NLS-1$
 
         if (extendsProto != null) {
             parentMapping = app.getDbMapping(extendsProto);
             if (parentMapping == null) {
-                app.logError("Parent mapping for prototype " + typename +
-                             " does not exist: " + extendsProto);
+                app.logError(Messages.getString("DbMapping.8") + typename + //$NON-NLS-1$
+                             Messages.getString("DbMapping.9") + extendsProto); //$NON-NLS-1$
             } else {
                 if (parentMapping.needsUpdate()) {
                     parentMapping.update();
@@ -272,12 +272,12 @@ public final class DbMapping {
         }
 
         if (inheritsStorage() && getPrototypeField() == null) {
-            app.logError("No _prototype mapping in extended prototype " + typename);
-            app.logError("Objects fetched from db will have base prototype " + extendsProto);
+            app.logError(Messages.getString("DbMapping.10") + typename); //$NON-NLS-1$
+            app.logError(Messages.getString("DbMapping.11") + extendsProto); //$NON-NLS-1$
         }
 
         // check if there is an extension-id specified inside the type.properties
-        extensionId = props.getProperty("_extensionId", typename);
+        extensionId = props.getProperty("_extensionId", typename); //$NON-NLS-1$
         registerExtension(extensionId, typename);
 
         // set the parent prototype in the corresponding Prototype object!
@@ -285,14 +285,14 @@ public final class DbMapping {
         // ourself because DbMapping.update() may be called by other code than
         // the TypeManager.
         if (typename != null &&
-                !"global".equalsIgnoreCase(typename) &&
-                !"hopobject".equalsIgnoreCase(typename)) {
+                !"global".equalsIgnoreCase(typename) && //$NON-NLS-1$
+                !"hopobject".equalsIgnoreCase(typename)) { //$NON-NLS-1$
             Prototype proto = app.getPrototypeByName(typename);
             if (proto != null) {
                 if (extendsProto != null) {
                     proto.setParentPrototype(app.getPrototypeByName(extendsProto));
                 } else if (!app.isJavaPrototype(typename)) {
-                    proto.setParentPrototype(app.getPrototypeByName("hopobject"));
+                    proto.setParentPrototype(app.getPrototypeByName("hopobject")); //$NON-NLS-1$
                 }
             }
         }
@@ -313,7 +313,7 @@ public final class DbMapping {
                 String propName = (String) entry.getKey();
 
                 // ignore internal properties (starting with "_") and sub-options (containing a ".")
-                if (!propName.startsWith("_") && propName.indexOf(".") < 0) {
+                if (!propName.startsWith("_") && propName.indexOf(".") < 0) { //$NON-NLS-1$ //$NON-NLS-2$
                     Object propValue = entry.getValue();
 
                     // check if a relation for this propery already exists. If so, reuse it
@@ -332,7 +332,7 @@ public final class DbMapping {
                         // if so, primitive relations get precendence to references
                         if (old != null) {
                             if (rel.isPrimitive() && old.isPrimitive()) {
-                                app.logEvent("Duplicate mapping for " + typename + "." + rel.columnName);
+                                app.logEvent(Messages.getString("DbMapping.12") + typename + "." + rel.columnName);  //$NON-NLS-1$//$NON-NLS-2$
                             } else if (rel.isReference() && old.isPrimitive()) {
                                 // if a column is used both in a primitive and a reference mapping,
                                 // use primitive mapping as primary one and mark reference as
@@ -354,7 +354,7 @@ public final class DbMapping {
                     // app.logEvent ("Mapping "+propName+" -> "+dbField);
                 }
             } catch (Exception x) {
-                app.logEvent("Error in type.properties: " + x.getMessage());
+                app.logEvent(Messages.getString("DbMapping.13") + x.getMessage()); //$NON-NLS-1$
             }
         }
 
@@ -364,16 +364,16 @@ public final class DbMapping {
         joins = new Relation[joinList.size()];
         joins = (Relation[]) joinList.toArray(joins);
 
-        Object subnodeMapping = props.get("_children");
+        Object subnodeMapping = props.get("_children"); //$NON-NLS-1$
 
         if (subnodeMapping != null) {
             try {
                 // check if subnode relation already exists. If so, reuse it
                 if (subRelation == null) {
-                    subRelation = new Relation("_children", this);
+                    subRelation = new Relation("_children", this); //$NON-NLS-1$
                 }
 
-                subRelation.update(subnodeMapping, getSubProperties("_children"));
+                subRelation.update(subnodeMapping, getSubProperties("_children")); //$NON-NLS-1$
 
                 // if subnodes are accessed via access name or group name,
                 // the subnode relation is also the property relation.
@@ -383,7 +383,7 @@ public final class DbMapping {
                     propRelation = null;
                 }
             } catch (Exception x) {
-                app.logEvent("Error reading _subnodes relation for " + typename + ": " +
+                app.logEvent(Messages.getString("DbMapping.14") + typename + ": " +  //$NON-NLS-1$//$NON-NLS-2$
                              x.getMessage());
 
                 // subRelation = null;
@@ -471,12 +471,12 @@ public final class DbMapping {
             if (parentMapping != null) {
                 return parentMapping.getConnection();
             } else {
-                throw new SQLException("Tried to get Connection from non-relational embedded data source.");
+                throw new SQLException(Messages.getString("DbMapping.15")); //$NON-NLS-1$
             }
         }
 
         if (tableName == null) {
-            throw new SQLException("Invalid DbMapping, _table not specified: " + this);
+            throw new SQLException(Messages.getString("DbMapping.16") + this); //$NON-NLS-1$
         }
 
         // if dbSource was previously not available, check again
@@ -485,7 +485,7 @@ public final class DbMapping {
         }
 
         if (dbSource == null) {
-            throw new SQLException("Datasource not defined or unable to load driver: " + dbSourceName + ".");
+            throw new SQLException(Messages.getString("DbMapping.17") + dbSourceName + ".");  //$NON-NLS-1$//$NON-NLS-2$
         }
 
         return dbSource.getConnection();
@@ -565,7 +565,7 @@ public final class DbMapping {
             return parentMapping.getIDField();
         }
 
-        return (idField == null) ? "ID" : idField;
+        return (idField == null) ? "ID" : idField; //$NON-NLS-1$
     }
 
     /**
@@ -908,7 +908,7 @@ public final class DbMapping {
      */
     public WrappedNodeManager getWrappedNodeManager() {
         if (app == null) {
-            throw new RuntimeException("Can't get node manager from internal db mapping");
+            throw new RuntimeException(Messages.getString("DbMapping.18")); //$NON-NLS-1$
         }
 
         return app.getWrappedNodeManager();
@@ -930,7 +930,7 @@ public final class DbMapping {
     public synchronized DbColumn[] getColumns()
                                        throws ClassNotFoundException, SQLException {
         if (!isRelational()) {
-            throw new SQLException("Can't get columns for non-relational data mapping " + this);
+            throw new SQLException(Messages.getString("DbMapping.19") + this); //$NON-NLS-1$
         }
 
         // Use local variable cols to avoid synchronization (schema may be nulled elsewhere)
@@ -942,15 +942,15 @@ public final class DbMapping {
             String table = getTableName();
 
             if (table == null) {
-                throw new SQLException("Table name is null in getColumns() for " + this);
+                throw new SQLException(Messages.getString("DbMapping.20") + this); //$NON-NLS-1$
             }
 
-            ResultSet rs = stmt.executeQuery(new StringBuffer("SELECT * FROM ").append(table)
-                                                                               .append(" WHERE 1 = 0")
+            ResultSet rs = stmt.executeQuery(new StringBuffer("SELECT * FROM ").append(table) //$NON-NLS-1$
+                                                                               .append(" WHERE 1 = 0") //$NON-NLS-1$
                                                                                .toString());
 
             if (rs == null) {
-                throw new SQLException("Error retrieving columns for " + this);
+                throw new SQLException(Messages.getString("DbMapping.21") + this); //$NON-NLS-1$
             }
 
             ResultSetMetaData meta = rs.getMetaData();
@@ -1026,29 +1026,29 @@ public final class DbMapping {
             return new StringBuffer(sel);
         }
 
-        StringBuffer s = new StringBuffer("SELECT ");
+        StringBuffer s = new StringBuffer("SELECT "); //$NON-NLS-1$
 
         if (rel != null && rel.queryHints != null) {
-            s.append(rel.queryHints).append(" ");
+            s.append(rel.queryHints).append(" "); //$NON-NLS-1$
         }
 
         String table = getTableName();
 
         // all columns from the main table
         s.append(table);
-        s.append(".*");
+        s.append(".*"); //$NON-NLS-1$
 
         for (int i = 0; i < joins.length; i++) {
             if (!joins[i].otherType.isRelational()) {
                 continue;
             }
-            s.append(", ");
+            s.append(", "); //$NON-NLS-1$
             s.append(Relation.JOIN_PREFIX);
             s.append(joins[i].propName);
-            s.append(".*");
+            s.append(".*"); //$NON-NLS-1$
         }
 
-        s.append(" FROM ");
+        s.append(" FROM "); //$NON-NLS-1$
 
         s.append(table);
 
@@ -1056,7 +1056,7 @@ public final class DbMapping {
             rel.appendAdditionalTables(s);
         }
 
-        s.append(" ");
+        s.append(" "); //$NON-NLS-1$
 
         for (int i = 0; i < joins.length; i++) {
             if (!joins[i].otherType.isRelational()) {
@@ -1065,19 +1065,19 @@ public final class DbMapping {
             if (isOracle) {
                 // generate an old-style oracle left join - see
                 // http://www.praetoriate.com/oracle_tips_outer_joins.htm
-                s.append(", ");
+                s.append(", "); //$NON-NLS-1$
                 s.append(joins[i].otherType.getTableName());
-                s.append(" ");
+                s.append(" "); //$NON-NLS-1$
                 s.append(Relation.JOIN_PREFIX);
                 s.append(joins[i].propName);
-                s.append(" ");
+                s.append(" "); //$NON-NLS-1$
             } else {
-                s.append("LEFT OUTER JOIN ");
+                s.append("LEFT OUTER JOIN "); //$NON-NLS-1$
                 s.append(joins[i].otherType.getTableName());
-                s.append(" ");
+                s.append(" "); //$NON-NLS-1$
                 s.append(Relation.JOIN_PREFIX);
                 s.append(joins[i].propName);
-                s.append(" ON ");
+                s.append(" ON "); //$NON-NLS-1$
                 joins[i].renderJoinConstraints(s, isOracle);
             }
         }
@@ -1103,10 +1103,10 @@ public final class DbMapping {
             return ins;
         }
 
-        StringBuffer b1 = new StringBuffer("INSERT INTO ");
-        StringBuffer b2 = new StringBuffer(" ) VALUES ( ");
+        StringBuffer b1 = new StringBuffer("INSERT INTO "); //$NON-NLS-1$
+        StringBuffer b2 = new StringBuffer(" ) VALUES ( "); //$NON-NLS-1$
         b1.append(getTableName());
-        b1.append(" ( ");
+        b1.append(" ( "); //$NON-NLS-1$
 
         DbColumn[] cols = getColumns();
         boolean needsComma = false;
@@ -1114,17 +1114,17 @@ public final class DbMapping {
         for (int i = 0; i < cols.length; i++) {
             if (cols[i].isMapped()) {
                 if (needsComma) {
-                    b1.append(", ");
-                    b2.append(", ");
+                    b1.append(", "); //$NON-NLS-1$
+                    b2.append(", "); //$NON-NLS-1$
                 }
                 b1.append(cols[i].getName());
-                b2.append("?");
+                b2.append("?"); //$NON-NLS-1$
                 needsComma = true;
             }
         }
 
         b1.append(b2.toString());
-        b1.append(" )");
+        b1.append(" )"); //$NON-NLS-1$
 
         // cache rendered string for later calls.
         ins = insertString = b1.toString();
@@ -1145,10 +1145,10 @@ public final class DbMapping {
             return new StringBuffer(upd);
         }
 
-        StringBuffer s = new StringBuffer("UPDATE ");
+        StringBuffer s = new StringBuffer("UPDATE "); //$NON-NLS-1$
 
         s.append(getTableName());
-        s.append(" SET ");
+        s.append(" SET "); //$NON-NLS-1$
 
         // cache rendered string for later calls.
         updateString = s.toString();
@@ -1191,7 +1191,7 @@ public final class DbMapping {
             }
             s.append(prefix);
             joins[i].renderJoinConstraints(s, isOracle);
-            prefix = " AND ";
+            prefix = " AND "; //$NON-NLS-1$
         }
     }
 
@@ -1262,9 +1262,9 @@ public final class DbMapping {
      */
     public String toString() {
         if (typename == null) {
-            return "[unspecified internal DbMapping]";
+            return "[unspecified internal DbMapping]"; //$NON-NLS-1$
         } else {
-            return ("[" + app.getName() + "." + typename + "]");
+            return ("[" + app.getName() + "." + typename + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
         }
     }
 
@@ -1483,10 +1483,10 @@ public final class DbMapping {
         if (props.get(prefix) instanceof Properties) {
             return (Properties) props.get(prefix);
         } else if (props instanceof ResourceProperties) {
-            return ((ResourceProperties) props).getSubProperties(prefix + ".");
+            return ((ResourceProperties) props).getSubProperties(prefix + "."); //$NON-NLS-1$
         } else {
             Properties subprops = new Properties();
-            prefix = prefix + ".";
+            prefix = prefix + "."; //$NON-NLS-1$
             Iterator it = props.entrySet().iterator();
             int prefixLength = prefix.length();
             while (it.hasNext()) {
@@ -1526,24 +1526,24 @@ public final class DbMapping {
             return;
         }
         if (column.indexOf('(') == -1 && column.indexOf('.') == -1) {
-            q.append(getTableName()).append(".");
+            q.append(getTableName()).append("."); //$NON-NLS-1$
         }
-        q.append(column).append(" in (");
+        q.append(column).append(" in ("); //$NON-NLS-1$
 
         if (needsQuotes(column)) {
             for (int i = 0; i < values.length; i++) {
                 if (i > 0)
-                    q.append(", ");
-                q.append("'").append(escapeString(values[i])).append("'");
+                    q.append(", "); //$NON-NLS-1$
+                q.append("'").append(escapeString(values[i])).append("'");  //$NON-NLS-1$//$NON-NLS-2$
             }
         } else {
             for (int i = 0; i < values.length; i++) {
                 if (i > 0)
-                    q.append(", ");
+                    q.append(", "); //$NON-NLS-1$
                 q.append(checkNumber(values[i]));
             }
         }
-        q.append(")");
+        q.append(")"); //$NON-NLS-1$
     }
 
     /**
@@ -1557,12 +1557,12 @@ public final class DbMapping {
     protected void appendCondition(StringBuffer q, String column, String val)
             throws SQLException, ClassNotFoundException {
         if (column.indexOf('(') == -1 && column.indexOf('.') == -1) {
-            q.append(getTableName()).append(".");
+            q.append(getTableName()).append("."); //$NON-NLS-1$
         }
-        q.append(column).append(" = ");
+        q.append(column).append(" = "); //$NON-NLS-1$
         
         if (needsQuotes(column)) {
-            q.append("'").append(escapeString(val)).append("'");
+            q.append("'").append(escapeString(val)).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         } else {
             q.append(checkNumber(val));
         }
@@ -1579,7 +1579,7 @@ public final class DbMapping {
         String str = value == null ? null : value.toString();        
         if (str == null) {
             return null;
-        } else if (str.indexOf("'") < 0) {
+        } else if (str.indexOf("'") < 0) { //$NON-NLS-1$
             return str;
         }
 
@@ -1609,11 +1609,11 @@ public final class DbMapping {
             return null;
         } else {
             str = str.trim();
-            if (str.matches("(?:\\+|\\-)??\\d+(?:\\.\\d+)??")) {
+            if (str.matches("(?:\\+|\\-)??\\d+(?:\\.\\d+)??")) { //$NON-NLS-1$
                 return str;
             }
         }
-        throw new IllegalArgumentException("Illegal numeric literal: " + str);
+        throw new IllegalArgumentException(Messages.getString("DbMapping.22") + str); //$NON-NLS-1$
     }
 
     /**

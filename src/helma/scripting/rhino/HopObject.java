@@ -102,7 +102,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         int attributes = DONTENUM | PERMANENT;
 
         // create prototype object
-        HopObject proto = new HopObject("HopObject", core);
+        HopObject proto = new HopObject("HopObject", core); //$NON-NLS-1$
         proto.setPrototype(getObjectPrototype(core.global));
 
         // install JavaScript methods and properties
@@ -110,13 +110,13 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         for (int i=0; i<methods.length; i++) {
             String methodName = methods[i].getName();
 
-            if (methodName.startsWith("jsFunction_")) {
+            if (methodName.startsWith("jsFunction_")) { //$NON-NLS-1$
                 methodName = methodName.substring(11);
                 FunctionObject func = new FunctionObject(methodName,
                                                          methods[i], proto);
                 proto.defineProperty(methodName, func, attributes);
 
-            } else if (methodName.startsWith("jsGet_")) {
+            } else if (methodName.startsWith("jsGet_")) { //$NON-NLS-1$
                 methodName = methodName.substring(6);
                 proto.defineProperty(methodName, null, methods[i],
                                          null, attributes);
@@ -144,7 +144,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     public void defineProperty(String propertyName, Object value,
                                int attributes)
     {
-        if ("constructor".equals(propertyName))
+        if ("constructor".equals(propertyName)) //$NON-NLS-1$
             put(propertyName, this, value);
         else
             super.defineProperty(propertyName, value, attributes);
@@ -290,7 +290,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                     (paramobj == Undefined.instance) ? null : paramobj);
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -386,7 +386,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public boolean jsFunction_set(Object id, Object value) {
         if (id == Undefined.instance || value == Undefined.instance) {
-            throw new EvaluatorException("HopObject.set() called with wrong number of arguments");
+            throw new EvaluatorException(Messages.getString("HopObject.0")); //$NON-NLS-1$
         }
         if (proxy == null) {
             return false;
@@ -394,7 +394,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
 
         if (id instanceof Number) {
              if (!(value instanceof HopObject)) {
-                throw new EvaluatorException("Can only set HopObjects as child objects in HopObject.set()");
+                throw new EvaluatorException(Messages.getString("HopObject.1")); //$NON-NLS-1$
             }
 
             INode node = getNode();
@@ -503,7 +503,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         int length = (int) ScriptRuntime.toNumber(lengthArg);
 
         if (start < 0 || length < 0) {
-            throw new EvaluatorException("Arguments must not be negative in HopObject.list(start, length)");
+            throw new EvaluatorException(Messages.getString("HopObject.2")); //$NON-NLS-1$
         }
 
         Node node = (Node) getNode();
@@ -584,16 +584,16 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     public boolean jsFunction_remove(Object arg) {
         // shield off usage of old deprecated version taking an argument
         if (arg != Undefined.instance) {
-            System.err.println(" *************  WARNING  *************************");
-            System.err.println(" The version of HopObject.remove(child) you were ");
-            System.err.println(" trying to use has been deprecated. Please use ");
-            System.err.println("      hopobj.removeChild(child)");
-            System.err.println(" to remove a child object from a collection without");
-            System.err.println(" deleting it, or ");
-            System.err.println("      hopobj.remove()");
-            System.err.println(" without argument to delete the object itself.");
-            System.err.println(" *************************************************");
-            throw new RuntimeException("Caught deprecated usage of HopObject.remove(child)");
+            System.err.println(Messages.getString("HopObject.3")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.4")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.5")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.6")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.7")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.8")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.9")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.10")); //$NON-NLS-1$
+            System.err.println(Messages.getString("HopObject.11")); //$NON-NLS-1$
+            throw new RuntimeException(Messages.getString("HopObject.12")); //$NON-NLS-1$
         }
 
         INode node = getNode();
@@ -722,8 +722,8 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         if (proxy == null) {
             // redirect the scripted constructor to __constructor__,
             // constructor is set to the native constructor method.
-            if ("constructor".equals(name) && value instanceof NativeFunction) {
-                name = "__constructor__";
+            if ("constructor".equals(name) && value instanceof NativeFunction) { //$NON-NLS-1$
+                name = "__constructor__"; //$NON-NLS-1$
             }
             // register property for PropertyRecorder interface
             if (isRecording) {
@@ -751,7 +751,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         } else {
             INode node = getNode();
 
-            if ("subnodeRelation".equals(name)) {
+            if ("subnodeRelation".equals(name)) { //$NON-NLS-1$
                 node.setSubnodeRelation(value == null ? null : value.toString());
             }
 
@@ -764,13 +764,13 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             } else if (value instanceof Scriptable) {
                 Scriptable s = (Scriptable) value;
                 String className = s.getClassName();
-                if ("Date".equals(className)) {
+                if ("Date".equals(className)) { //$NON-NLS-1$
                     node.setDate(name, new Date((long) ScriptRuntime.toNumber(s)));
-                } else if ("String".equals(className)) {
+                } else if ("String".equals(className)) { //$NON-NLS-1$
                     node.setString(name, ScriptRuntime.toString(s));
-                } else if ("Number".equals(className)) {
+                } else if ("Number".equals(className)) { //$NON-NLS-1$
                     node.setFloat(name, ScriptRuntime.toNumber(s));
-                } else if ("Boolean".equals(className)) {
+                } else if ("Boolean".equals(className)) { //$NON-NLS-1$
                     node.setBoolean(name, ScriptRuntime.toBoolean(s));
                 } else {
                     node.setJavaObject(name, s);
@@ -855,7 +855,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                     return value;
             }
 
-            if ("subnodeRelation".equals(name)) {
+            if ("subnodeRelation".equals(name)) { //$NON-NLS-1$
                 return node.getSubnodeRelation();
             }
 
@@ -880,7 +880,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                     } else {
                         Object[] args = { new Long(d.getTime()) };
                         try {
-                            return cx.newObject(core.global, "Date", args);
+                            return cx.newObject(core.global, "Date", args); //$NON-NLS-1$
                         } catch (JavaScriptException nafx) {
                             return null;
                         }
@@ -918,44 +918,44 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     }
 
     private Object getInternalProperty(INode node, String name) {
-        if ("__id__".equals(name) || "_id".equals(name)) {
+        if ("__id__".equals(name) || "_id".equals(name)) { //$NON-NLS-1$ //$NON-NLS-2$
             return node.getID();
         }
 
-        if ("__proto__".equals(name)) {
+        if ("__proto__".equals(name)) { //$NON-NLS-1$
             return getPrototype(); // prototype object
         }
 
-        if ("__prototype__".equals(name) || "_prototype".equals(name)) {
+        if ("__prototype__".equals(name) || "_prototype".equals(name)) {  //$NON-NLS-1$//$NON-NLS-2$
             return node.getPrototype(); // prototype name
         }
 
-        if ("__parent__".equals(name) || "_parent".equals(name)) {
+        if ("__parent__".equals(name) || "_parent".equals(name)) {  //$NON-NLS-1$//$NON-NLS-2$
             return core.getNodeWrapper(node.getParent());
         }
 
         // some more internal properties
-        if ("__name__".equals(name)) {
+        if ("__name__".equals(name)) { //$NON-NLS-1$
             return node.getName();
         }
 
-        if ("__path__".equals(name)) {
+        if ("__path__".equals(name)) { //$NON-NLS-1$
             return node.getPath();
         }
 
-        if ("__hash__".equals(name)) {
+        if ("__hash__".equals(name)) { //$NON-NLS-1$
             return Integer.toString(node.hashCode());
         }
 
-        if ("__node__".equals(name)) {
+        if ("__node__".equals(name)) { //$NON-NLS-1$
             return new NativeJavaObject(core.global, node, null);
         }
 
-        if ("__created__".equalsIgnoreCase(name)) {
+        if ("__created__".equalsIgnoreCase(name)) { //$NON-NLS-1$
             return new Date(node.created());
         }
 
-        if ("__lastmodified__".equalsIgnoreCase(name)) {
+        if ("__lastmodified__".equalsIgnoreCase(name)) { //$NON-NLS-1$
             return new Date(node.lastModified());
         }
 
@@ -1061,9 +1061,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public String toString() {
         if (proxy == null) {
-            return "[HopObject prototype " + className + "]";
+            return "[HopObject prototype " + className + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         } else {
-            return "[HopObject " + proxy.getNode().getName() + "]";
+            return "[HopObject " + proxy.getNode().getName() + "]";  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 
@@ -1124,8 +1124,8 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                         if (className == null || !className.equals(protoname)) {
                             Scriptable proto = core.getValidPrototype(protoname);
                             if (proto == null) {
-                                protoname = "HopObject";
-                                proto = core.getValidPrototype("HopObject");
+                                protoname = "HopObject"; //$NON-NLS-1$
+                                proto = core.getValidPrototype("HopObject"); //$NON-NLS-1$
                             }
                             className = protoname;
                             setPrototype(proto);

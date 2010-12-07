@@ -52,7 +52,7 @@ public abstract class AbstractServletClient extends HttpServlet {
     String cookieDomain;
 
     // cookie name for session cookies
-    String sessionCookieName = "HopSession";
+    String sessionCookieName = "HopSession"; //$NON-NLS-1$
 
     // this tells us whether to bind session cookies to client ip subnets
     // so they can't be easily used from other ip addresses when hijacked
@@ -84,48 +84,48 @@ public abstract class AbstractServletClient extends HttpServlet {
         super.init(init);
 
         // get max size for file uploads per file
-        String upstr = init.getInitParameter("uploadLimit");
+        String upstr = init.getInitParameter("uploadLimit"); //$NON-NLS-1$
         try {
             uploadLimit = (upstr == null) ? 1024 : Integer.parseInt(upstr);
         } catch (NumberFormatException x) {
-            log("Bad number format for uploadLimit: " + upstr);
+            log(Messages.getString("AbstractServletClient.0") + upstr); //$NON-NLS-1$
             uploadLimit = 1024;
         }
         // get max total upload size
-        upstr = init.getInitParameter("totalUploadLimit");
+        upstr = init.getInitParameter("totalUploadLimit"); //$NON-NLS-1$
         try {
             totalUploadLimit = (upstr == null) ? uploadLimit : Integer.parseInt(upstr);
         } catch (NumberFormatException x) {
-            log("Bad number format for totalUploadLimit: " + upstr);
+            log(Messages.getString("AbstractServletClient.1") + upstr); //$NON-NLS-1$
             totalUploadLimit = uploadLimit;
         }
         // soft fail mode for upload errors
-        uploadSoftfail = ("true".equalsIgnoreCase(init.getInitParameter("uploadSoftfail")));
+        uploadSoftfail = ("true".equalsIgnoreCase(init.getInitParameter("uploadSoftfail"))); //$NON-NLS-1$ //$NON-NLS-2$
 
         // get cookie domain
-        cookieDomain = init.getInitParameter("cookieDomain");
+        cookieDomain = init.getInitParameter("cookieDomain"); //$NON-NLS-1$
         if (cookieDomain != null) {
             cookieDomain = cookieDomain.toLowerCase();
         }
 
         // get session cookie name
-        sessionCookieName = init.getInitParameter("sessionCookieName");
+        sessionCookieName = init.getInitParameter("sessionCookieName"); //$NON-NLS-1$
         if (sessionCookieName == null) {
-            sessionCookieName = "HopSession";
+            sessionCookieName = "HopSession"; //$NON-NLS-1$
         }
 
         // disable binding session cookie to ip address?
-        protectedSessionCookie = !("false".equalsIgnoreCase(init.getInitParameter("protectedSessionCookie")));
+        protectedSessionCookie = !("false".equalsIgnoreCase(init.getInitParameter("protectedSessionCookie"))); //$NON-NLS-1$ //$NON-NLS-2$
 
         // debug mode for printing out detailed error messages
-        debug = ("true".equalsIgnoreCase(init.getInitParameter("debug")));
+        debug = ("true".equalsIgnoreCase(init.getInitParameter("debug")));  //$NON-NLS-1$//$NON-NLS-2$
 
         // generally disable response caching for clients?
-        caching = !("false".equalsIgnoreCase(init.getInitParameter("caching")));
+        caching = !("false".equalsIgnoreCase(init.getInitParameter("caching")));  //$NON-NLS-1$//$NON-NLS-2$
 
         // Get random number generator for session ids
         try {
-            random = SecureRandom.getInstance("SHA1PRNG");
+            random = SecureRandom.getInstance("SHA1PRNG"); //$NON-NLS-1$
             secureRandom = true;
         } catch (NoSuchAlgorithmException nsa) {
             random = new Random();
@@ -183,7 +183,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                         }
                         reqtrans.setCookie(key, reqCookies[i]);
                     } catch (Exception badCookie) {
-                        log("Error setting cookie", badCookie);
+                        log(Messages.getString("AbstractServletClient.2"), badCookie); //$NON-NLS-1$
                     }
                 }
             }
@@ -195,13 +195,13 @@ public abstract class AbstractServletClient extends HttpServlet {
                 // check if cookieDomain is valid for this response.
                 // (note: cookieDomain is guaranteed to be lower case)
                 // check for x-forwarded-for header, fix for bug 443
-                String proxiedHost = request.getHeader("x-forwarded-host");
+                String proxiedHost = request.getHeader("x-forwarded-host"); //$NON-NLS-1$
                 if (proxiedHost != null) {
                     if (proxiedHost.toLowerCase().indexOf(resCookieDomain) == -1) {
                         resCookieDomain = null;
                     }
                 } else {
-                    String host = (String) reqtrans.get("http_host");
+                    String host = (String) reqtrans.get("http_host"); //$NON-NLS-1$
                     // http_host is guaranteed to be lower case 
                     if (host != null && host.indexOf(resCookieDomain) == -1) {
                         resCookieDomain = null;
@@ -225,11 +225,11 @@ public abstract class AbstractServletClient extends HttpServlet {
                 try {
                     uploads = parseUploads(reqcx, reqtrans, uploadStatus, encoding);
                 } catch (Exception upx) {
-                    log("Error in file upload", upx);
+                    log(Messages.getString("AbstractServletClient.3"), upx); //$NON-NLS-1$
                     String message;
                     boolean tooLarge = (upx instanceof FileUploadBase.SizeLimitExceededException);
                     if (tooLarge) {
-                        message = "File upload size exceeds limit of " + uploadLimit + " kB";
+                        message = Messages.getString("AbstractServletClient.4") + uploadLimit + Messages.getString("AbstractServletClient.5"); //$NON-NLS-1$ //$NON-NLS-2$
                     } else {
                         message = upx.getMessage();
                         if (message == null || message.length() == 0) {
@@ -241,12 +241,12 @@ public abstract class AbstractServletClient extends HttpServlet {
                     }
 
                     if (uploadSoftfail || uploadStatus != null) {
-                        reqtrans.set("helma_upload_error", message);
+                        reqtrans.set("helma_upload_error", message); //$NON-NLS-1$
                     } else {
                         int errorCode = tooLarge ?
                                 HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE:
                                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-                        sendError(response, errorCode, "Error in file upload: " + message);
+                        sendError(response, errorCode, Messages.getString("AbstractServletClient.6") + message); //$NON-NLS-1$
                         return;
                     }
                 }
@@ -273,29 +273,29 @@ public abstract class AbstractServletClient extends HttpServlet {
 
                 for (int i = 0; i < resCookies.length; i++)
                     try {
-                        Cookie c = resCookies[i].getCookie("/", resCookieDomain);
+                        Cookie c = resCookies[i].getCookie("/", resCookieDomain); //$NON-NLS-1$
 
                         response.addCookie(c);
                     } catch (Exception x) {
-                        getApplication().logEvent("Error adding cookie: " + x);
+                        getApplication().logEvent(Messages.getString("AbstractServletClient.7") + x); //$NON-NLS-1$
                     }
             }
 
             // write response
             writeResponse(request, response, reqtrans, restrans);
         } catch (Exception x) {
-            log("Exception in execute", x);
+            log(Messages.getString("AbstractServletClient.8"), x); //$NON-NLS-1$
             try {
                 if (debug) {
                     sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                              "Server error: " + x);
+                              Messages.getString("AbstractServletClient.9") + x); //$NON-NLS-1$
                 } else {
                     sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                              "The server encountered an error while processing your request. " +
-                              "Please check back later.");
+                              Messages.getString("AbstractServletClient.10") + //$NON-NLS-1$
+                              Messages.getString("AbstractServletClient.11")); //$NON-NLS-1$
                 }
             } catch (IOException iox) {
-                log("Exception in sendError", iox);
+                log(Messages.getString("AbstractServletClient.12"), iox); //$NON-NLS-1$
             }
         }
     }
@@ -309,7 +309,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         }
 
         if (hopres.getETag() != null) {
-            res.setHeader("ETag", hopres.getETag());
+            res.setHeader("ETag", hopres.getETag()); //$NON-NLS-1$
         }
 
         if (hopres.getRedirect() != null) {
@@ -321,17 +321,17 @@ public abstract class AbstractServletClient extends HttpServlet {
                 // Disable caching of response.
                 if (isOneDotOne(req.getProtocol())) {
                     // for HTTP 1.1
-                    res.setHeader("Cache-Control",
-                                  "no-cache, no-store, must-revalidate, max-age=0");
+                    res.setHeader("Cache-Control", //$NON-NLS-1$
+                                  "no-cache, no-store, must-revalidate, max-age=0"); //$NON-NLS-1$
                 } else {
                     // for HTTP 1.0
-                    res.setDateHeader("Expires", System.currentTimeMillis() - 10000);
-                    res.setHeader("Pragma", "no-cache");
+                    res.setDateHeader("Expires", System.currentTimeMillis() - 10000); //$NON-NLS-1$
+                    res.setHeader("Pragma", "no-cache"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             }
 
             if (hopres.getRealm() != null) {
-                res.setHeader("WWW-Authenticate", "Basic realm=\"" + hopres.getRealm() + "\"");
+                res.setHeader("WWW-Authenticate", "Basic realm=\"" + hopres.getRealm() + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
 
             if (hopres.getStatus() > 0) {
@@ -341,13 +341,13 @@ public abstract class AbstractServletClient extends HttpServlet {
             // set last-modified header to now
             long modified = hopres.getLastModified();
             if (modified > -1) {
-                res.setDateHeader("Last-Modified", modified);
+                res.setDateHeader("Last-Modified", modified); //$NON-NLS-1$
             }
 
             res.setContentLength(hopres.getContentLength());
             res.setContentType(hopres.getContentType());
 
-            if (!"HEAD".equalsIgnoreCase(req.getMethod())) {
+            if (!"HEAD".equalsIgnoreCase(req.getMethod())) { //$NON-NLS-1$
                 byte[] content = hopres.getContent();
                 if (content != null) {
                     try {
@@ -355,7 +355,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                         out.write(content);
                         out.flush();
                     } catch (Exception iox) {
-                        log("Exception in writeResponse: " + iox);
+                        log(Messages.getString("AbstractServletClient.13") + iox); //$NON-NLS-1$
                     }
                 }
             }
@@ -369,21 +369,21 @@ public abstract class AbstractServletClient extends HttpServlet {
         }
         response.reset();
         response.setStatus(code);
-        response.setContentType("text/html");
+        response.setContentType("text/html"); //$NON-NLS-1$
 
-        if (!"true".equalsIgnoreCase(getApplication().getProperty("suppressErrorPage"))) {
+        if (!"true".equalsIgnoreCase(getApplication().getProperty("suppressErrorPage"))) { //$NON-NLS-1$ //$NON-NLS-2$
             Writer writer = response.getWriter();
 
-            writer.write("<html><body><h3>");
-            writer.write("Error in application ");
+            writer.write("<html><body><h3>"); //$NON-NLS-1$
+            writer.write(Messages.getString("AbstractServletClient.14")); //$NON-NLS-1$
             try {
                 writer.write(getApplication().getName());
             } catch (Exception besafe) {
                 // ignore
             }
-            writer.write("</h3>");
+            writer.write("</h3>"); //$NON-NLS-1$
             writer.write(message);
-            writer.write("</body></html>");
+            writer.write("</body></html>"); //$NON-NLS-1$
             writer.flush();
         }
     }
@@ -391,34 +391,34 @@ public abstract class AbstractServletClient extends HttpServlet {
     void sendRedirect(HttpServletRequest req, HttpServletResponse res, String url, int status) {
         String location = url;
 
-        if (url.indexOf("://") == -1) {
+        if (url.indexOf("://") == -1) { //$NON-NLS-1$
             // need to transform a relative URL into an absolute one
             String scheme = req.getScheme();
             StringBuffer loc = new StringBuffer(scheme);
 
-            loc.append("://");
+            loc.append("://"); //$NON-NLS-1$
             loc.append(req.getServerName());
 
             int p = req.getServerPort();
 
             // check if we need to include server port
             if ((p > 0) &&
-                    (("http".equals(scheme) && (p != 80)) ||
-                    ("https".equals(scheme) && (p != 443)))) {
-                loc.append(":");
+                    (("http".equals(scheme) && (p != 80)) || //$NON-NLS-1$
+                    ("https".equals(scheme) && (p != 443)))) { //$NON-NLS-1$
+                loc.append(":"); //$NON-NLS-1$
                 loc.append(p);
             }
 
-            if (!url.startsWith("/")) {
+            if (!url.startsWith("/")) { //$NON-NLS-1$
                 String requri = req.getRequestURI();
-                int lastSlash = requri.lastIndexOf("/");
+                int lastSlash = requri.lastIndexOf("/"); //$NON-NLS-1$
 
                 if (lastSlash == (requri.length() - 1)) {
                     loc.append(requri);
                 } else if (lastSlash > -1) {
                     loc.append(requri.substring(0, lastSlash + 1));
                 } else {
-                    loc.append("/");
+                    loc.append("/"); //$NON-NLS-1$
                 }
             }
 
@@ -436,8 +436,8 @@ public abstract class AbstractServletClient extends HttpServlet {
             res.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
         }
 
-        res.setContentType("text/html");
-        res.setHeader("Location", location);
+        res.setContentType("text/html"); //$NON-NLS-1$
+        res.setHeader("Location", location); //$NON-NLS-1$
     }
 
     /**
@@ -448,13 +448,13 @@ public abstract class AbstractServletClient extends HttpServlet {
                      ResponseTrans hopres) throws IOException {
         String forward = hopres.getForward();
         // Jetty 5.1 bails at forward paths without leading slash, so fix it
-        if (!forward.startsWith("/")) {
-            forward = "/" + forward;
+        if (!forward.startsWith("/")) { //$NON-NLS-1$
+            forward = "/" + forward; //$NON-NLS-1$
         }
         ServletContext cx = getServletConfig().getServletContext();
         String path = cx.getRealPath(forward);
         if (path == null) {
-            throw new IOException("Resource " + forward + " not found");
+            throw new IOException(Messages.getString("AbstractServletClient.15") + forward + Messages.getString("AbstractServletClient.16")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         File file = new File(path);
@@ -470,7 +470,7 @@ public abstract class AbstractServletClient extends HttpServlet {
 
         InputStream in = cx.getResourceAsStream(forward);
         if (in == null) {
-            throw new IOException("Can't read " + path);
+            throw new IOException(Messages.getString("AbstractServletClient.17") + path); //$NON-NLS-1$
         }
         try {
             OutputStream out = res.getOutputStream();
@@ -512,11 +512,11 @@ public abstract class AbstractServletClient extends HttpServlet {
             checksum[i] = (byte) (n);
             n >>>= 8;
         }
-        String etag = "\"" + new String(Base64.encode(checksum)) + "\"";
-        res.setHeader("ETag", etag);
-        String etagHeader = req.getHeader("If-None-Match");
+        String etag = "\"" + new String(Base64.encode(checksum)) + "\"";  //$NON-NLS-1$//$NON-NLS-2$
+        res.setHeader("ETag", etag); //$NON-NLS-1$
+        String etagHeader = req.getHeader("If-None-Match"); //$NON-NLS-1$
         if (etagHeader != null) {
-            StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n");
+            StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
                 if (etag.equals(st.nextToken())) {
                     return true;
@@ -527,11 +527,11 @@ public abstract class AbstractServletClient extends HttpServlet {
         // conditional GET for embedded images and stuff, check last modified date.
         // date headers don't do milliseconds, round to seconds
         long lastModified = (file.lastModified() / 1000) * 1000;
-        long ifModifiedSince = req.getDateHeader("If-Modified-Since");
+        long ifModifiedSince = req.getDateHeader("If-Modified-Since"); //$NON-NLS-1$
         if (lastModified == ifModifiedSince) {
             return true;
         }
-        res.setDateHeader("Last-Modified", lastModified);
+        res.setDateHeader("Last-Modified", lastModified); //$NON-NLS-1$
         return false;
     }
 
@@ -550,13 +550,13 @@ public abstract class AbstractServletClient extends HttpServlet {
             // if the existing session id doesn't match the client's ip address
             StringBuffer buffer = new StringBuffer();
             addIPAddress(buffer, request.getRemoteAddr());
-            addIPAddress(buffer, request.getHeader("X-Forwarded-For"));
-            addIPAddress(buffer, request.getHeader("Client-ip"));
+            addIPAddress(buffer, request.getHeader("X-Forwarded-For")); //$NON-NLS-1$
+            addIPAddress(buffer, request.getHeader("Client-ip")); //$NON-NLS-1$
             if (reqtrans.getSession() == null || !reqtrans.getSession().startsWith(buffer.toString())) {
                 createSession(response, buffer.toString(), reqtrans, domain);
             }
         } else if (reqtrans.getSession() == null) {
-            createSession(response, "", reqtrans, domain);
+            createSession(response, "", reqtrans, domain); //$NON-NLS-1$
         }
     }
 
@@ -586,18 +586,18 @@ public abstract class AbstractServletClient extends HttpServlet {
         reqtrans.setSession(id);
 
         StringBuffer buffer = new StringBuffer(sessionCookieName);
-        buffer.append("=").append(id).append("; Path=/");
+        buffer.append("=").append(id).append("; Path=/");  //$NON-NLS-1$//$NON-NLS-2$
         if (domain != null) {
             // lowercase domain for IE
-            buffer.append("; Domain=").append(domain.toLowerCase());
+            buffer.append("; Domain=").append(domain.toLowerCase()); //$NON-NLS-1$
         }
-        if (!"false".equalsIgnoreCase(app.getProperty("httpOnlySessionCookie"))) {
-            buffer.append("; HttpOnly");
+        if (!"false".equalsIgnoreCase(app.getProperty("httpOnlySessionCookie"))) {  //$NON-NLS-1$//$NON-NLS-2$
+            buffer.append("; HttpOnly"); //$NON-NLS-1$
         }
-        if ("true".equalsIgnoreCase(app.getProperty("secureSessionCookie"))) {
-            buffer.append("; Secure");
+        if ("true".equalsIgnoreCase(app.getProperty("secureSessionCookie"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            buffer.append("; Secure"); //$NON-NLS-1$
         }
-        response.addHeader("Set-Cookie", buffer.toString());
+        response.addHeader("Set-Cookie", buffer.toString()); //$NON-NLS-1$
     }
 
     /**
@@ -687,9 +687,9 @@ public abstract class AbstractServletClient extends HttpServlet {
         // check if there are any parameters before we get started
         String queryString = request.getQueryString();
         String contentType = request.getContentType();
-        boolean isFormPost = "post".equals(request.getMethod().toLowerCase())
+        boolean isFormPost = "post".equals(request.getMethod().toLowerCase()) //$NON-NLS-1$
                 && contentType != null
-                && contentType.toLowerCase().startsWith("application/x-www-form-urlencoded");
+                && contentType.toLowerCase().startsWith("application/x-www-form-urlencoded"); //$NON-NLS-1$
 
         if (queryString == null && !isFormPost) {
             return;
@@ -710,7 +710,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         if (isFormPost) {
             int max = request.getContentLength();
             if (max > totalUploadLimit * 1024) {
-                throw new IOException("Exceeded Upload limit");
+                throw new IOException(Messages.getString("AbstractServletClient.18")); //$NON-NLS-1$
             }
             int len = 0;
             byte[] buf = new byte[max];
@@ -812,9 +812,9 @@ public abstract class AbstractServletClient extends HttpServlet {
                 // Store any residual bytes in req.data.http_post_remainder
                 value = new String(data, 0, ox, encoding);
                 if (isPost) {
-                    putMapEntry(map, "http_post_remainder", value);
+                    putMapEntry(map, "http_post_remainder", value); //$NON-NLS-1$
                 } else {
-                    putMapEntry(map, "http_get_remainder", value);
+                    putMapEntry(map, "http_get_remainder", value); //$NON-NLS-1$
                 }
             }
         }
@@ -845,19 +845,19 @@ public abstract class AbstractServletClient extends HttpServlet {
         if (protocol == null) {
             return false;
         }
-        return protocol.endsWith("1.1");
+        return protocol.endsWith("1.1"); //$NON-NLS-1$
     }
 
     String getPathInfo(HttpServletRequest req)
             throws UnsupportedEncodingException {
-        StringTokenizer t = new StringTokenizer(req.getContextPath(), "/");
+        StringTokenizer t = new StringTokenizer(req.getContextPath(), "/"); //$NON-NLS-1$
         int prefixTokens = t.countTokens();
 
-        t = new StringTokenizer(req.getServletPath(), "/");
+        t = new StringTokenizer(req.getServletPath(), "/"); //$NON-NLS-1$
         prefixTokens += t.countTokens();
 
         String uri = req.getRequestURI();
-        t = new StringTokenizer(uri, "/");
+        t = new StringTokenizer(uri, "/"); //$NON-NLS-1$
 
         int uriTokens = t.countTokens();
         StringBuffer pathbuffer = new StringBuffer();
@@ -879,7 +879,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         }
 
         // append trailing "/" if it is contained in original URI
-        if (uri.endsWith("/"))
+        if (uri.endsWith("/")) //$NON-NLS-1$
             pathbuffer.append('/');
 
         return pathbuffer.toString();
@@ -890,6 +890,6 @@ public abstract class AbstractServletClient extends HttpServlet {
      * @return the servlet info
      */
     public String getServletInfo() {
-        return "Helma Servlet Client";
+        return Messages.getString("AbstractServletClient.19"); //$NON-NLS-1$
     }
 }

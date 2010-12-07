@@ -66,7 +66,7 @@ public class FileObject extends ScriptableObject {
     public static FileObject fileObjCtor(Context cx, Object[] args,
                 Function ctorObj, boolean inNewExpr) {
         if (args.length == 0 || args[0] == Undefined.instance) {
-            throw new IllegalArgumentException("File constructor called without argument");
+            throw new IllegalArgumentException(Messages.getString("FileObject.0")); //$NON-NLS-1$
         }
         if (args.length < 2 || args[1] == Undefined.instance) {
             return new FileObject(args[0].toString());
@@ -80,62 +80,62 @@ public class FileObject extends ScriptableObject {
         proto.setPrototype(getObjectPrototype(scope));
         Member ctorMember = null;
         for (int i=0; i<methods.length; i++) {
-            if ("fileObjCtor".equals(methods[i].getName())) {
+            if ("fileObjCtor".equals(methods[i].getName())) { //$NON-NLS-1$
                 ctorMember = methods[i];
                 break;
             }
         }
-        FunctionObject ctor = new FunctionObject("File", ctorMember, scope);
+        FunctionObject ctor = new FunctionObject("File", ctorMember, scope); //$NON-NLS-1$
         ctor.addAsConstructor(scope, proto);
         String[] fileFuncs = {
-                                "toString",
-                                "getName",
-                                "getParent",
-                                "isAbsolute",
-                                "write",
-                                "remove",
-                                "list",
-                                "flush",
-                                "writeln",
-                                "close",
-                                "getPath",
-                                "open",
-                                "error",
-                                "canRead",
-                                "canWrite",
-                                "exists",
-                                "getAbsolutePath",
-                                "getLength",
-                                "isDirectory",
-                                "isFile",
-                                "lastModified",
-                                "mkdir",
-                                "renameTo",
-                                "eof",
-                                "isOpened",
-                                "readln",
-                                "clearError",
-                                "readAll"
+                                "toString", //$NON-NLS-1$
+                                "getName", //$NON-NLS-1$
+                                "getParent", //$NON-NLS-1$
+                                "isAbsolute", //$NON-NLS-1$
+                                "write", //$NON-NLS-1$
+                                "remove", //$NON-NLS-1$
+                                "list", //$NON-NLS-1$
+                                "flush", //$NON-NLS-1$
+                                "writeln", //$NON-NLS-1$
+                                "close", //$NON-NLS-1$
+                                "getPath", //$NON-NLS-1$
+                                "open", //$NON-NLS-1$
+                                "error", //$NON-NLS-1$
+                                "canRead", //$NON-NLS-1$
+                                "canWrite", //$NON-NLS-1$
+                                "exists", //$NON-NLS-1$
+                                "getAbsolutePath", //$NON-NLS-1$
+                                "getLength", //$NON-NLS-1$
+                                "isDirectory", //$NON-NLS-1$
+                                "isFile", //$NON-NLS-1$
+                                "lastModified", //$NON-NLS-1$
+                                "mkdir", //$NON-NLS-1$
+                                "renameTo", //$NON-NLS-1$
+                                "eof", //$NON-NLS-1$
+                                "isOpened", //$NON-NLS-1$
+                                "readln", //$NON-NLS-1$
+                                "clearError", //$NON-NLS-1$
+                                "readAll" //$NON-NLS-1$
                                };
         try {
             proto.defineFunctionProperties(fileFuncs, FileObject.class, 0);
         } catch (Exception ignore) {
-            System.err.println ("Error defining function properties: "+ignore);
+            System.err.println (Messages.getString("FileObject.1")+ignore); //$NON-NLS-1$
         }
     }
 
     public String getClassName() {
-        return "File";
+        return "File"; //$NON-NLS-1$
     }
 
     public String toString() {
-         if (file==null) return "<null>";
+         if (file==null) return "<null>"; //$NON-NLS-1$
          return file.toString();
     }
 
     public String toDetailString() {
-        return "ES:[Object: builtin " + this.getClass().getName() + ":" +
-            ((file == null) ? "null" : file.toString()) + "]";
+        return "ES:[Object: builtin " + this.getClass().getName() + ":" + //$NON-NLS-1$ //$NON-NLS-2$
+            ((file == null) ? "null" : file.toString()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     protected void setError(Throwable e) {
@@ -149,11 +149,11 @@ public class FileObject extends ScriptableObject {
 
     public boolean open() {
         if (readerWriter != null) {
-            setError(new IllegalStateException("File already open"));
+            setError(new IllegalStateException(Messages.getString("FileObject.2"))); //$NON-NLS-1$
             return false;
         }
         if (file == null) {
-            setError(new IllegalArgumentException("Uninitialized File object"));
+            setError(new IllegalArgumentException(Messages.getString("FileObject.3"))); //$NON-NLS-1$
             return false;
         }
 
@@ -198,11 +198,11 @@ public class FileObject extends ScriptableObject {
    
     public boolean write(Object what) {
         if (readerWriter == null) {
-            setError(new IllegalStateException("File not opened"));
+            setError(new IllegalStateException(Messages.getString("FileObject.4"))); //$NON-NLS-1$
             return false;
         }
         if (! (readerWriter instanceof PrintWriter)) {
-            setError(new IllegalStateException("File not opened for writing"));
+            setError(new IllegalStateException(Messages.getString("FileObject.5"))); //$NON-NLS-1$
             return false;
         }
         PrintWriter writer = (PrintWriter) readerWriter;
@@ -215,11 +215,11 @@ public class FileObject extends ScriptableObject {
 
     public boolean writeln(Object what) {
         if (readerWriter == null) {
-            setError(new IllegalStateException("File not opened"));
+            setError(new IllegalStateException(Messages.getString("FileObject.6"))); //$NON-NLS-1$
             return false;
         }
         if (! (readerWriter instanceof PrintWriter)) {
-            setError(new IllegalStateException("File not opened for writing"));
+            setError(new IllegalStateException(Messages.getString("FileObject.7"))); //$NON-NLS-1$
             return false;
         }
         PrintWriter writer = (PrintWriter) readerWriter;
@@ -232,11 +232,11 @@ public class FileObject extends ScriptableObject {
 
     public String readln() {
         if (readerWriter == null) {
-            setError(new IllegalStateException("File not opened"));
+            setError(new IllegalStateException(Messages.getString("FileObject.8"))); //$NON-NLS-1$
             return null;
         }
         if (! (readerWriter instanceof BufferedReader)) {
-            setError(new IllegalStateException("File not opened for reading"));
+            setError(new IllegalStateException(Messages.getString("FileObject.9"))); //$NON-NLS-1$
             return null;
         }
         if (atEOF) {
@@ -265,11 +265,11 @@ public class FileObject extends ScriptableObject {
 
     public boolean eof() {
         if (readerWriter == null) {
-            setError(new IllegalStateException("File not opened"));
+            setError(new IllegalStateException(Messages.getString("FileObject.10"))); //$NON-NLS-1$
             return true;
         }
         if (! (readerWriter instanceof BufferedReader)) {
-            setError(new IllegalStateException("File not opened for read"));
+            setError(new IllegalStateException(Messages.getString("FileObject.11"))); //$NON-NLS-1$
             return true;
         }
         if (atEOF) return true;
@@ -287,7 +287,7 @@ public class FileObject extends ScriptableObject {
 
     public boolean isFile() {
         if (file == null) {
-            setError(new IllegalArgumentException("Uninitialized File object"));
+            setError(new IllegalArgumentException(Messages.getString("FileObject.12"))); //$NON-NLS-1$
             return false;
         }
         return file.isFile();
@@ -295,7 +295,7 @@ public class FileObject extends ScriptableObject {
 
     public boolean isDirectory() {
         if (file == null) {
-            setError(new IllegalArgumentException("Uninitialized File object"));
+            setError(new IllegalArgumentException(Messages.getString("FileObject.13"))); //$NON-NLS-1$
             return false;
         }
         return file.isDirectory();
@@ -303,7 +303,7 @@ public class FileObject extends ScriptableObject {
 
     public boolean flush() {
         if (readerWriter == null) {
-            setError(new IllegalStateException("File not opened"));
+            setError(new IllegalStateException(Messages.getString("FileObject.14"))); //$NON-NLS-1$
             return false;
         }
         if (readerWriter instanceof Writer) {
@@ -314,7 +314,7 @@ public class FileObject extends ScriptableObject {
                  return false;
              }
         } else {
-              setError(new IllegalStateException("File not opened for write"));
+              setError(new IllegalStateException(Messages.getString("FileObject.15"))); //$NON-NLS-1$
               return false; // not supported by reader
         }
         return true;
@@ -323,7 +323,7 @@ public class FileObject extends ScriptableObject {
    
     public double getLength() {
        if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.16"))); //$NON-NLS-1$
            return -1;
        }
        return file.length();
@@ -331,7 +331,7 @@ public class FileObject extends ScriptableObject {
   
     public double lastModified() {
        if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.17"))); //$NON-NLS-1$
            return (double) 0L;
        }
        return (double) file.lastModified();
@@ -339,12 +339,12 @@ public class FileObject extends ScriptableObject {
   
     public String error() {
       if (lastError == null) {
-          return "";
+          return ""; //$NON-NLS-1$
       } else {
           String exceptionName = lastError.getClass().getName();
-          int l = exceptionName.lastIndexOf(".");
+          int l = exceptionName.lastIndexOf("."); //$NON-NLS-1$
           if (l>0) exceptionName = exceptionName.substring(l+1);
-          return exceptionName +": " + lastError.getMessage();
+          return exceptionName +": " + lastError.getMessage(); //$NON-NLS-1$
       }
     }
    
@@ -354,11 +354,11 @@ public class FileObject extends ScriptableObject {
    
     public boolean remove() {
        if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.18"))); //$NON-NLS-1$
            return false;
        }
        if (readerWriter != null) {
-           setError(new IllegalStateException("An openened file cannot be removed"));
+           setError(new IllegalStateException(Messages.getString("FileObject.19"))); //$NON-NLS-1$
            return false;
        }
        return file.delete();
@@ -366,19 +366,19 @@ public class FileObject extends ScriptableObject {
    
     public boolean renameTo(FileObject toFile) {
        if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized source File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.20"))); //$NON-NLS-1$
            return false;
        }
        if (toFile.file == null) {
-           setError(new IllegalArgumentException("Uninitialized target File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.21"))); //$NON-NLS-1$
            return false;
        }
        if (readerWriter != null) {
-           setError(new IllegalStateException("An openened file cannot be renamed"));
+           setError(new IllegalStateException(Messages.getString("FileObject.22"))); //$NON-NLS-1$
            return false;
        }
        if (toFile.readerWriter!=null) {
-           setError(new IllegalStateException("You cannot rename to an openened file"));
+           setError(new IllegalStateException(Messages.getString("FileObject.23"))); //$NON-NLS-1$
            return false;
        }
        return file.renameTo(toFile.file);
@@ -386,7 +386,7 @@ public class FileObject extends ScriptableObject {
    
     public boolean canRead() {
         if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.24"))); //$NON-NLS-1$
            return false;
         }
         return file.canRead();
@@ -394,7 +394,7 @@ public class FileObject extends ScriptableObject {
     
     public boolean canWrite() {
         if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
+           setError(new IllegalArgumentException(Messages.getString("FileObject.25"))); //$NON-NLS-1$
            return false;
         }
         return file.canWrite();
@@ -402,38 +402,38 @@ public class FileObject extends ScriptableObject {
     
     public String getParent() {
         if (file == null) {
-            setError(new IllegalArgumentException("Uninitialized File object"));
-            return "";
+            setError(new IllegalArgumentException(Messages.getString("FileObject.26"))); //$NON-NLS-1$
+            return ""; //$NON-NLS-1$
         }
         String parent = file.getParent();
-        return (parent==null ? "" : parent);
+        return (parent==null ? "" : parent); //$NON-NLS-1$
     }
     
     public String getName() {
         if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
-           return "";
+           setError(new IllegalArgumentException(Messages.getString("FileObject.27"))); //$NON-NLS-1$
+           return ""; //$NON-NLS-1$
         }
         String name = file.getName();
-        return (name==null ? "" : name);
+        return (name==null ? "" : name); //$NON-NLS-1$
     }
     
     public String getPath() {
         if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
-           return "";
+           setError(new IllegalArgumentException(Messages.getString("FileObject.28"))); //$NON-NLS-1$
+           return ""; //$NON-NLS-1$
         }
         String path = file.getPath();
-        return (path==null ? "" : path);
+        return (path==null ? "" : path); //$NON-NLS-1$
     }
     
     public String getAbsolutePath() {
         if (file == null) {
-           setError(new IllegalArgumentException("Uninitialized File object"));
-           return "";
+           setError(new IllegalArgumentException(Messages.getString("FileObject.29"))); //$NON-NLS-1$
+           return ""; //$NON-NLS-1$
         }
         String absolutPath = file.getAbsolutePath();
-        return (absolutPath==null ? "" : absolutPath);
+        return (absolutPath==null ? "" : absolutPath); //$NON-NLS-1$
     }
     
     public boolean isAbsolute() {
@@ -458,22 +458,22 @@ public class FileObject extends ScriptableObject {
     public String readAll() {
         // Open the file for readAll
         if (readerWriter != null) {
-            setError(new IllegalStateException("File already open"));
+            setError(new IllegalStateException(Messages.getString("FileObject.30"))); //$NON-NLS-1$
             return null;
         }
         if (file == null) {
-            setError(new IllegalArgumentException("Uninitialized File object"));
+            setError(new IllegalArgumentException(Messages.getString("FileObject.31"))); //$NON-NLS-1$
             return null;
         }
         try{ 
            if (file.exists()) {
                readerWriter = new BufferedReader(new FileReader(file));
            } else {
-               setError(new IllegalStateException("File does not exist"));
+               setError(new IllegalStateException(Messages.getString("FileObject.32"))); //$NON-NLS-1$
                return null;
            }
            if(!file.isFile()) {
-               setError(new IllegalStateException("File is not a regular file"));
+               setError(new IllegalStateException(Messages.getString("FileObject.33"))); //$NON-NLS-1$
                return null;
            }
 
@@ -486,7 +486,7 @@ public class FileObject extends ScriptableObject {
                   break;
               }
               buffer.append(line);
-              buffer.append("\n");  // EcmaScript EOL
+              buffer.append("\n");  // EcmaScript EOL //$NON-NLS-1$
            }
 
            

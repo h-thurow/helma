@@ -197,7 +197,7 @@ public class ResponseBean implements Serializable {
      * @param key the name of the cookie to be discarded
      */
     public void unsetCookie(String key) {
-        res.setCookie(key, "", 0, null, null);
+        res.setCookie(key, "", 0, null, null); //$NON-NLS-1$
     }
 
     /**
@@ -249,7 +249,7 @@ public class ResponseBean implements Serializable {
      * @return string representation
      */
     public String toString() {
-        return "[Response]";
+        return "[Response]"; //$NON-NLS-1$
     }
 
     // property-related methods

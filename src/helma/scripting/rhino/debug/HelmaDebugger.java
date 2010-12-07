@@ -51,7 +51,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
     }
 
     void createTreeNode(String sourceName, Dim.SourceInfo sourceInfo) {
-        String[] path = StringUtils.split(sourceName, ":/\\");
+        String[] path = StringUtils.split(sourceName, ":/\\"); //$NON-NLS-1$
         DebuggerTreeNode node = treeRoot;
         DebuggerTreeNode newNode = null;
         int start = Math.max(0, path.length - 3);
@@ -254,7 +254,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             currentSourceUrl = sourceName;
             Vector functions = new Vector();
             SourceInfo si = sourceInfo(sourceName);
-            String[] lines = si.source().split("\\r\\n|\\r|\\n");
+            String[] lines = si.source().split("\\r\\n|\\r|\\n"); //$NON-NLS-1$
             int length = si.functionSourcesTop();
             for (int i = 0; i < length; i++) {
                 FunctionSource src = si.functionSource(i);
@@ -271,15 +271,15 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
 
         FunctionSource src;
         String name;
-        String line = "";
+        String line = ""; //$NON-NLS-1$
 
         FunctionItem(FunctionSource src, String[] lines) {
             this.src = src;
             name = src.name();
-            if ("".equals(name)) {
+            if ("".equals(name)) { //$NON-NLS-1$
                 try {
                     line = lines[src.firstLine() - 1];
-                    int f = line.indexOf("function") - 1;
+                    int f = line.indexOf("function") - 1; //$NON-NLS-1$
                     StringBuffer b = new StringBuffer();
                     boolean assignment = false;
                     while (f-- > 0) {
@@ -292,10 +292,10 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
                         else if (!Character.isWhitespace(c) || b.length() > 0)
                             break;
                     }
-                    name = b.length() > 0 ? b.reverse().toString() : "<anonymous>";
+                    name = b.length() > 0 ? b.reverse().toString() : "<anonymous>"; //$NON-NLS-1$
                 } catch (Exception x) {
                     // fall back to default name
-                    name = "<anonymous>";
+                    name = "<anonymous>"; //$NON-NLS-1$
                 }
             }
         }

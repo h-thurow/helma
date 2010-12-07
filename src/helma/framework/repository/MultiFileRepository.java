@@ -74,7 +74,7 @@ public class MultiFileRepository extends FileRepository {
                 if (list[i].isDirectory()) {
                     // a nested directory aka child file repository
                     newRepositories.add(new FileRepository(list[i], this));
-                } else if (list[i].getName().endsWith(".zip")) {
+                } else if (list[i].getName().endsWith(".zip")) { //$NON-NLS-1$
                     // a nested zip repository
                     newRepositories.add(new ZipRepository(list[i], this));
                 }
@@ -109,6 +109,6 @@ public class MultiFileRepository extends FileRepository {
      * @return String
      */
     public String toString() {
-        return new StringBuffer("MultiFileRepository[").append(name).append("]").toString();
+        return new StringBuffer("MultiFileRepository[").append(name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

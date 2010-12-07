@@ -41,7 +41,7 @@ public class JimiGenerator extends ImageGenerator {
      */
     protected boolean write(ImageWrapper wrapper, String type, OutputStream out, float quality, boolean alpha) throws IOException {
         try {
-            if ("gif".equals(type)) {
+            if ("gif".equals(type)) { //$NON-NLS-1$
                 // sun's jimi package doesn't encode gifs, use helma's encoder instead
                 DataOutputStream dataOut = new DataOutputStream(out);
                 GIFEncoder encoder = new GIFEncoder();
@@ -53,7 +53,7 @@ public class JimiGenerator extends ImageGenerator {
 
                 JimiImage source = Jimi.createRasterImage(wrapper.getSource());
                 JimiEncoder encoder = null;
-                if ("jpg".equals(type) || "jpeg".equals(type)) {
+                if ("jpg".equals(type) || "jpeg".equals(type)) {  //$NON-NLS-1$//$NON-NLS-2$
                     // JPEG
                     encoder = new JPGEncoder();
                     // the quality value does mean something here and can be specified:
@@ -62,7 +62,7 @@ public class JimiGenerator extends ImageGenerator {
                         options.setQuality(Math.round(quality * 100));
                         source.setOptions(options);
                     }
-                } else if ("png".equals(type)) {
+                } else if ("png".equals(type)) { //$NON-NLS-1$
                     // PNG
                     encoder = new PNGEncoder();
                     // the alpha parameter does mean something here:
@@ -128,9 +128,9 @@ public class JimiGenerator extends ImageGenerator {
      */
     public void write(ImageWrapper wrapper, OutputStream out, String mimeType, float quality, boolean alpha) throws IOException {
         // determine the type from the mime type by taking away image/ and image/x-
-        if (mimeType.startsWith("image/")) {
+        if (mimeType.startsWith("image/")) { //$NON-NLS-1$
             String type = mimeType.substring(6);
-            if (type.startsWith("x-"))
+            if (type.startsWith("x-")) //$NON-NLS-1$
                 type = type.substring(2);
             boolean written = false;
             try {

@@ -50,9 +50,9 @@ public class ScriptingException extends Exception {
         if (cause instanceof RhinoException) {
             FilenameFilter filter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
-                    return name.endsWith(".js") ||
-                           name.endsWith(".hac") ||
-                           name.endsWith(".hsp");
+                    return name.endsWith(".js") || //$NON-NLS-1$
+                           name.endsWith(".hac") || //$NON-NLS-1$
+                           name.endsWith(".hsp"); //$NON-NLS-1$
                 }
             };
             scriptStack = ((RhinoException) cause).getScriptStackTrace(filter);
@@ -85,7 +85,7 @@ public class ScriptingException extends Exception {
             if (scriptStack != null) {
                 s.println(this);
                 s.print(scriptStack);
-                s.print("Full trace: ");
+                s.print(Messages.getString("ScriptingException.0")); //$NON-NLS-1$
             }
             getCause().printStackTrace(s);
         }
@@ -100,7 +100,7 @@ public class ScriptingException extends Exception {
             if (scriptStack != null) {
                 s.println(this);
                 s.print(scriptStack);
-                s.print("Full trace: ");
+                s.print(Messages.getString("ScriptingException.1")); //$NON-NLS-1$
             }
             getCause().printStackTrace(s);
         }

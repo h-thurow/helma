@@ -49,7 +49,7 @@ public abstract class ImageGenerator {
             // server.properties:
             String className = null;
             if (Server.getServer() != null) {
-                className = Server.getServer().getProperty("imageGenerator");
+                className = Server.getServer().getProperty("imageGenerator"); //$NON-NLS-1$
             }
 
             Class generatorClass = null;
@@ -57,17 +57,17 @@ public abstract class ImageGenerator {
                 // if no class is defined, try the default ones:
                 try {
                     // start with ImageIO
-                    Class.forName("javax.imageio.ImageIO");
+                    Class.forName("javax.imageio.ImageIO"); //$NON-NLS-1$
                     // if we're still here, ImageIOWrapper can be used
-                    className = "helma.image.imageio.ImageIOGenerator";
+                    className = "helma.image.imageio.ImageIOGenerator"; //$NON-NLS-1$
                 } catch (ClassNotFoundException e1) {
                     try {
                         // use Jimi as a fallback scenaio
-                        Class.forName("com.sun.jimi.core.Jimi");
+                        Class.forName("com.sun.jimi.core.Jimi"); //$NON-NLS-1$
                         // if we're still here, JimiWrapper can be used
-                        className = "helma.image.jimi.JimiGenerator";
+                        className = "helma.image.jimi.JimiGenerator"; //$NON-NLS-1$
                     } catch (ClassNotFoundException e2) {
-                        throw new RuntimeException("JimiGenerator canot be used. Please make sure you placed jimi.jar in helma/lib/ext");
+                        throw new RuntimeException(Messages.getString("ImageGenerator.0")); //$NON-NLS-1$
                     }
                 }
             }
@@ -76,13 +76,13 @@ public abstract class ImageGenerator {
                 generatorClass = Class.forName(className);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
-                    "The imageGenerator class cannot be found: " + className);
+                    Messages.getString("ImageGenerator.1") + className); //$NON-NLS-1$
             }
             try {
                 generator = (ImageGenerator)generatorClass.newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(
-                    "The ImageGenerator instance could not be created: "
+                    Messages.getString("ImageGenerator.2") //$NON-NLS-1$
                         + className);
             }
         }

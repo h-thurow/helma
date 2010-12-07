@@ -134,7 +134,7 @@ public class CacheMap implements ObjectCache {
         int newThreshold = capacity / 2;
         if (newThreshold != threshold) {
             if (app != null)
-                app.logEvent("Setting cache capacity to " + capacity);
+                app.logEvent(Messages.getString("CacheMap.0") + capacity); //$NON-NLS-1$
             updateThreshold(newThreshold);
         }
     }
@@ -251,8 +251,8 @@ public class CacheMap implements ObjectCache {
         if (newTable.size() >= threshold) {
             // Rotate the tables.
             if (app != null)
-                app.logEvent("Rotating Cache tables at " + newTable.size() +
-                        "/" + oldTable.size() + " (new/old)");
+                app.logEvent(Messages.getString("CacheMap.1") + newTable.size() + //$NON-NLS-1$
+                        "/" + oldTable.size() + Messages.getString("CacheMap.2")); //$NON-NLS-1$ //$NON-NLS-2$
             oldTable = newTable;
             newTable = createTable(eachCapacity, loadFactor);
         }
@@ -294,10 +294,10 @@ public class CacheMap implements ObjectCache {
     /// The app properties have been modified, reload settings
     public void updateProperties(Properties props) {
         try {
-            int cacheSize = Integer.parseInt(props.getProperty("cachesize", "1000"));
+            int cacheSize = Integer.parseInt(props.getProperty("cachesize", "1000"));  //$NON-NLS-1$//$NON-NLS-2$
             setCapacity(cacheSize);
         } catch (Exception x) {
-            String message = "Invalid cachesize setting: " + props.getProperty("cachesize");
+            String message = Messages.getString("CacheMap.3") + props.getProperty("cachesize");  //$NON-NLS-1$//$NON-NLS-2$
             if (app != null) {
                 app.logError(message);
             } else {

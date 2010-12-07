@@ -47,11 +47,11 @@ public class Profiler implements Debugger {
      */
     static String getFunctionName(DebuggableScript script) {
         if (script.isFunction()) {
-            StringBuffer b = new StringBuffer(script.getSourceName()).append(" #");
+            StringBuffer b = new StringBuffer(script.getSourceName()).append(" #"); //$NON-NLS-1$
             b.append(script.getLineNumbers()[0]);
             String funcName = script.getFunctionName();
             if (funcName != null && funcName.length() > 0) {
-                b.append(": ").append(script.getFunctionName());
+                b.append(": ").append(script.getFunctionName()); //$NON-NLS-1$
             }
             return b.toString();
         } else {
@@ -77,7 +77,7 @@ public class Profiler implements Debugger {
             }
         }
         maxLength = maxLength + 30 - prefixLength;
-        StringBuffer buffer = new StringBuffer("     total  average  calls    path\n");
+        StringBuffer buffer = new StringBuffer(Messages.getString("Profiler.0")); //$NON-NLS-1$
         for (int i = 0; i < maxLength; i++) {
             buffer.append('-');
         }
@@ -150,7 +150,7 @@ public class Profiler implements Debugger {
                     Integer.valueOf(invocations),
                     name.substring(prefixLength)
             };
-            formatter.format("%1$7d ms %2$5d ms %3$6d    %4$s%n", args);
+            formatter.format("%1$7d ms %2$5d ms %3$6d    %4$s%n", args); //$NON-NLS-1$
             return formatter.toString();
         }
     }

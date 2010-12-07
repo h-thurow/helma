@@ -59,7 +59,7 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
     public Node read(File file)
               throws ParserConfigurationException, SAXException, IOException {
         if (nmgr == null) {
-            throw new RuntimeException("can't create a new Node without a NodeManager");
+            throw new RuntimeException(Messages.getString("XmlDatabaseReader.0")); //$NON-NLS-1$
         }
 
         SAXParser parser = factory.newSAXParser();
@@ -83,23 +83,23 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
                              Attributes atts) {
         // System.err.println ("XML-READ: startElement "+namespaceURI+", "+localName+", "+qName+", "+atts.getValue("id"));
         // discard the first element called xmlroot
-        if ("xmlroot".equals(qName) && (currentNode == null)) {
+        if ("xmlroot".equals(qName) && (currentNode == null)) { //$NON-NLS-1$
             return;
         }
 
         // if currentNode is null, this must be the hopobject node
-        if ("hopobject".equals(qName) && (currentNode == null)) {
-            String id = atts.getValue("id");
-            String name = atts.getValue("name");
-            String prototype = atts.getValue("prototype");
+        if ("hopobject".equals(qName) && (currentNode == null)) { //$NON-NLS-1$
+            String id = atts.getValue("id"); //$NON-NLS-1$
+            String name = atts.getValue("name"); //$NON-NLS-1$
+            String prototype = atts.getValue("prototype"); //$NON-NLS-1$
 
-            if ("".equals(prototype)) {
-                prototype = "hopobject";
+            if ("".equals(prototype)) { //$NON-NLS-1$
+                prototype = "hopobject"; //$NON-NLS-1$
             }
 
             try {
-                long created = Long.parseLong(atts.getValue("created"));
-                long lastmodified = Long.parseLong(atts.getValue("lastModified"));
+                long created = Long.parseLong(atts.getValue("created")); //$NON-NLS-1$
+                long lastmodified = Long.parseLong(atts.getValue("lastModified")); //$NON-NLS-1$
 
                 currentNode = new Node(name, id, prototype, nmgr.safe, created,
                                        lastmodified);
@@ -112,24 +112,24 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
 
         // find out what kind of element this is by looking at
         // the number and names of attributes.
-        String idref = atts.getValue("idref");
+        String idref = atts.getValue("idref"); //$NON-NLS-1$
 
         if (idref != null) {
             // a hopobject reference.
             NodeHandle handle = makeNodeHandle(atts);
 
-            if ("hop:child".equals(qName)) {
+            if ("hop:child".equals(qName)) { //$NON-NLS-1$
                 if (subnodes == null) {
                     subnodes = currentNode.createSubnodeList();
                 }
 
                 subnodes.add(handle);
-            } else if ("hop:parent".equals(qName)) {
+            } else if ("hop:parent".equals(qName)) { //$NON-NLS-1$
                 currentNode.setParentHandle(handle);
             } else {
                 // property name may be encoded as "propertyname" attribute,
                 // otherwise it is the element name
-                String propName = atts.getValue("propertyname");
+                String propName = atts.getValue("propertyname"); //$NON-NLS-1$
 
                 if (propName == null) {
                     propName = qName;
@@ -148,15 +148,15 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
             }
         } else {
             // a primitive property
-            elementType = atts.getValue("type");
+            elementType = atts.getValue("type"); //$NON-NLS-1$
 
             if (elementType == null) {
-                elementType = "string";
+                elementType = "string"; //$NON-NLS-1$
             }
 
             // property name may be encoded as "propertyname" attribute,
             // otherwise it is the element name
-            elementName = atts.getValue("propertyname");
+            elementName = atts.getValue("propertyname"); //$NON-NLS-1$
 
             if (elementName == null) {
                 elementName = qName;
@@ -204,13 +204,13 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
 
             charBuffer.setLength(0);
 
-            if ("boolean".equals(elementType)) {
-                if ("true".equals(charValue)) {
+            if ("boolean".equals(elementType)) { //$NON-NLS-1$
+                if ("true".equals(charValue)) { //$NON-NLS-1$
                     prop.setBooleanValue(true);
                 } else {
                     prop.setBooleanValue(false);
                 }
-            } else if ("date".equals(elementType)) {
+            } else if ("date".equals(elementType)) { //$NON-NLS-1$
                 SimpleDateFormat format = new SimpleDateFormat(DATEFORMAT);
 
                 try {
@@ -220,9 +220,9 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
                 } catch (ParseException e) {
                     prop.setStringValue(charValue);
                 }
-            } else if ("float".equals(elementType)) {
+            } else if ("float".equals(elementType)) { //$NON-NLS-1$
                 prop.setFloatValue((new Double(charValue)).doubleValue());
-            } else if ("integer".equals(elementType)) {
+            } else if ("integer".equals(elementType)) { //$NON-NLS-1$
                 prop.setIntegerValue((new Long(charValue)).longValue());
             } else {
                 prop.setStringValue(charValue);
@@ -242,8 +242,8 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
 
     // create a node handle from a node reference DOM element
     private NodeHandle makeNodeHandle(Attributes atts) {
-        String idref = atts.getValue("idref");
-        String protoref = atts.getValue("prototyperef");
+        String idref = atts.getValue("idref"); //$NON-NLS-1$
+        String protoref = atts.getValue("prototyperef"); //$NON-NLS-1$
         DbMapping dbmap = null;
 
         if (protoref != null) {

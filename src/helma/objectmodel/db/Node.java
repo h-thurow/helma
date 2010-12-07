@@ -82,7 +82,7 @@ public final class Node implements INode {
      */
     protected Node(WrappedNodeManager nmgr) {
         if (nmgr == null) {
-            throw new NullPointerException("nmgr");
+            throw new NullPointerException("nmgr"); //$NON-NLS-1$
         }
         this.nmgr = nmgr;
         created = lastmodified = System.currentTimeMillis();
@@ -95,11 +95,11 @@ public final class Node implements INode {
      */
     public Node(String name, String id, String prototype, WrappedNodeManager nmgr) {
         if (nmgr == null) {
-            throw new NullPointerException("nmgr");
+            throw new NullPointerException("nmgr"); //$NON-NLS-1$
         }
         this.nmgr = nmgr;
         if (prototype == null) {
-            prototype = "HopObject";
+            prototype = "HopObject"; //$NON-NLS-1$
         }
         init(nmgr.getDbMapping(prototype), id, name, prototype, null);
     }
@@ -119,7 +119,7 @@ public final class Node implements INode {
      */
     public Node(Node home, String propname, WrappedNodeManager nmgr, String prototype) {
         if (nmgr == null) {
-            throw new NullPointerException("nmgr");
+            throw new NullPointerException("nmgr"); //$NON-NLS-1$
         }
         this.nmgr = nmgr;
         setParent(home);
@@ -143,7 +143,7 @@ public final class Node implements INode {
      */
     public Node(String name, String prototype, WrappedNodeManager nmgr) {
         if (nmgr == null) {
-            throw new NullPointerException("nmgr");
+            throw new NullPointerException("nmgr"); //$NON-NLS-1$
         }
         this.nmgr = nmgr;
         this.prototype = prototype;
@@ -152,7 +152,7 @@ public final class Node implements INode {
         // the id is only generated when the node is actually checked into db,
         // or when it's explicitly requested.
         id = null;
-        this.name = (name == null) ? "" : name;
+        this.name = (name == null) ? "" : name; //$NON-NLS-1$
         created = lastmodified = System.currentTimeMillis();
         state = TRANSIENT;
 
@@ -175,7 +175,7 @@ public final class Node implements INode {
         this.name = name;
         // If name was not set from resultset, create a synthetical name now.
         if ((name == null) || (name.length() == 0)) {
-            this.name = prototype + " " + id;
+            this.name = prototype + " " + id; //$NON-NLS-1$
         }
 
         this.propMap = propMap;
@@ -211,16 +211,16 @@ public final class Node implements INode {
         }
 
         if (state == INVALID) {
-            nmgr.logEvent("Got Invalid Node: " + this);
+            nmgr.logEvent(Messages.getString("Node.0") + this); //$NON-NLS-1$
             Thread.dumpStack();
-            throw new ConcurrencyException("Node " + this +
-                                           " was invalidated by another thread.");
+            throw new ConcurrencyException(Messages.getString("Node.1") + this + //$NON-NLS-1$
+                                           Messages.getString("Node.2")); //$NON-NLS-1$
         }
 
         if ((lock != null) && (lock != tx) && lock.isAlive() && lock.isActive()) {
             // nmgr.logEvent("Concurrency conflict for " + this + ", lock held by " + lock);
-            throw new ConcurrencyException("Tried to modify " + this +
-                                           " from two threads at the same time.");
+            throw new ConcurrencyException(Messages.getString("Node.3") + this + //$NON-NLS-1$
+                                           Messages.getString("Node.4")); //$NON-NLS-1$
         }
 
         tx.visitDirtyNode(this);
@@ -410,7 +410,7 @@ public final class Node implements INode {
 
                 if (prel != null) {
                     if (prel.groupby != null) {
-                        setName(getString("groupname"));
+                        setName(getString("groupname")); //$NON-NLS-1$
                         anonymous = false;
                     } else if (prel.accessName != null) {
                         String propname = dbmap.columnNameToProperty(prel.accessName);
@@ -452,7 +452,7 @@ public final class Node implements INode {
             if (divider != null) {
                 b.insert(0, divider);
             } else {
-                divider = "/";
+                divider = "/"; //$NON-NLS-1$
             }
 
             b.insert(0, p.getElementName());
@@ -461,7 +461,7 @@ public final class Node implements INode {
             loopWatch++;
 
             if (loopWatch > 10) {
-                b.insert(0, "...");
+                b.insert(0, "..."); //$NON-NLS-1$
 
                 break;
             }
@@ -475,7 +475,7 @@ public final class Node implements INode {
     public String getPrototype() {
         // if prototype is null, it's a vanilla HopObject.
         if (prototype == null) {
-            return "HopObject";
+            return "HopObject"; //$NON-NLS-1$
         }
 
         return prototype;
@@ -510,7 +510,7 @@ public final class Node implements INode {
      */
     public Key getKey() {
         if (primaryKey == null && state == TRANSIENT) {
-            throw new RuntimeException("getKey called on transient Node: " + this);
+            throw new RuntimeException(Messages.getString("Node.5") + this); //$NON-NLS-1$
         }
 
         if ((dbmap == null) && (prototype != null) && (nmgr != null)) {
@@ -635,8 +635,8 @@ public final class Node implements INode {
                     	for (int j = 0; j < pinfo.virtualnames.length; j++) {
                     		newParentNode = (Node) newParentNode.getNode(pinfo.virtualnames[j]);
                     		if (newParentNode == null) {
-                                getApp().logError("Error: Can't retrieve parent node " +
-                                                       pinfo + " for " + this);
+                                getApp().logError(Messages.getString("Node.6") + //$NON-NLS-1$
+                                                       pinfo + Messages.getString("Node.7") + this); //$NON-NLS-1$
                             }
                     	}
 
@@ -669,8 +669,8 @@ public final class Node implements INode {
                             }
                         }
                     } catch (Exception x) {
-                        getApp().logError("Error retrieving parent node " +
-                                                   pinfo + " for " + this, x);
+                        getApp().logError(Messages.getString("Node.8") + //$NON-NLS-1$
+                                                   pinfo + Messages.getString("Node.9") + this, x); //$NON-NLS-1$
                     }
                 }
             }
@@ -683,8 +683,8 @@ public final class Node implements INode {
             } else {
                 parentHandle = null;
                 if (state != TRANSIENT) {
-                    getApp().logEvent("*** Couldn't resolve parent for " + this +
-                            " - please check _parent info in type.properties!");
+                    getApp().logEvent(Messages.getString("Node.10") + this + //$NON-NLS-1$
+                            Messages.getString("Node.11")); //$NON-NLS-1$
                 }
                 return null;
             }
@@ -726,7 +726,7 @@ public final class Node implements INode {
         if (elem instanceof Node) {
             node = (Node) elem;
         } else {
-            throw new RuntimeException("Can't add fixed-transient node to a persistent node");
+            throw new RuntimeException(Messages.getString("Node.12")); //$NON-NLS-1$
         }
 
         // only lock nodes if parent node is not transient
@@ -811,8 +811,8 @@ public final class Node implements INode {
                         if (old != null && old != node) {
                             // A node with this name already exists. This is a
                             // programming error, throw an exception.
-                            throw new RuntimeException("An object named \"" + prop +
-                                "\" is already contained in the collection.");
+                            throw new RuntimeException(Messages.getString("Node.13") + prop + //$NON-NLS-1$
+                                Messages.getString("Node.14")); //$NON-NLS-1$
                         }
 
                         if (state != TRANSIENT) {
@@ -905,7 +905,7 @@ public final class Node implements INode {
 
         boolean anon = false;
 
-        if ((nm == null) || "".equals(nm.trim())) {
+        if ((nm == null) || "".equals(nm.trim())) { //$NON-NLS-1$
             anon = true;
         }
 
@@ -954,7 +954,7 @@ public final class Node implements INode {
                 } else {
                     // Do what we have to do: loop through subnodes and
                     // check if any one matches
-                    String propname = rel.groupby != null ? "groupname" : rel.accessName;
+                    String propname = rel.groupby != null ? "groupname" : rel.accessName; //$NON-NLS-1$
                     INode node = null;
                     Enumeration e = getSubnodes();
                     while (e.hasMoreElements()) {
@@ -1103,7 +1103,7 @@ public final class Node implements INode {
      */
     protected Node getGroupbySubnode(String groupname, boolean create) {
         if (groupname == null) {
-            throw new IllegalArgumentException("Can't create group by null");
+            throw new IllegalArgumentException(Messages.getString("Node.15")); //$NON-NLS-1$
         }
 
         boolean persistent = state != TRANSIENT;
@@ -1129,7 +1129,7 @@ public final class Node implements INode {
                     }
 
                     // set "groupname" property to value of groupby field
-                    node.setString("groupname", groupname);
+                    node.setString("groupname", groupname); //$NON-NLS-1$
                     // Set the dbmapping on the group node
                     node.setDbMapping(groupbyMapping);
                     node.setPrototype(groupbyMapping.getTypeName());
@@ -1163,7 +1163,7 @@ public final class Node implements INode {
                     return node;
                 }
             } catch (Exception noluck) {
-                nmgr.nmgr.app.logError("Error creating group-by node for " + groupname, noluck);
+                nmgr.nmgr.app.logError(Messages.getString("Node.16") + groupname, noluck); //$NON-NLS-1$
             }
         }
 
@@ -1182,7 +1182,7 @@ public final class Node implements INode {
                 parent.removeNode(this);
             } catch (Exception x) {
                 // couldn't remove from parent. Log and continue
-                getApp().logError("Couldn't remove node from parent: " + x);
+                getApp().logError(Messages.getString("Node.17") + x); //$NON-NLS-1$
             }
         }
         deepRemoveNode();
@@ -1258,7 +1258,7 @@ public final class Node implements INode {
                         }
                     }
                 } else if (prel.groupby != null) {
-                    String prop = node.getString("groupname");
+                    String prop = node.getString("groupname"); //$NON-NLS-1$
                     if (prop != null && state != TRANSIENT) {
                         nmgr.evictKey(new SyntheticKey(getKey(), prop));
                     }
@@ -1580,7 +1580,7 @@ public final class Node implements INode {
      * @return ...
      */
     public String getParentInfo() {
-        return "anonymous:" + anonymous + ",parentHandle" + parentHandle + ",parent:" +
+        return "anonymous:" + anonymous + ",parentHandle" + parentHandle + ",parent:" +  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$
                getParent();
     }
 
@@ -1873,7 +1873,7 @@ public final class Node implements INode {
 
                         if ((n != null) && (n != this)) {
                             throw new RuntimeException(this +
-                                    " already contains an object named " + value);
+                                    Messages.getString("Node.18") + value); //$NON-NLS-1$
                         }
 
                         // check if this node is already registered with the old name;
@@ -2127,9 +2127,9 @@ public final class Node implements INode {
             if (vmap == null) {
                 value.setDbMapping(nmap);
             } else if (!nmap.isStorageCompatible(vmap) && !rel.isComplexReference()) {
-                throw new RuntimeException("Can't set " + propname +
-                                           " to object with prototype " +
-                                           value.getPrototype() + ", was expecting " +
+                throw new RuntimeException(Messages.getString("Node.19") + propname + //$NON-NLS-1$
+                                           Messages.getString("Node.20") + //$NON-NLS-1$
+                                           value.getPrototype() + Messages.getString("Node.21") + //$NON-NLS-1$
                                            nmap.getTypeName());
             }
         }
@@ -2143,7 +2143,7 @@ public final class Node implements INode {
         if (value instanceof Node) {
             n = (Node) value;
         } else {
-            throw new RuntimeException("Can't add fixed-transient node to a persistent node");
+            throw new RuntimeException(Messages.getString("Node.22")); //$NON-NLS-1$
         }
 
         boolean isPersistable = isPersistableProperty(propname);
@@ -2304,7 +2304,7 @@ public final class Node implements INode {
                 }
             }
         } catch (Exception x) {
-            getApp().logError("Error unsetting property", x);
+            getApp().logError(Messages.getString("Node.23"), x); //$NON-NLS-1$
         }
     }
 
@@ -2337,14 +2337,14 @@ public final class Node implements INode {
             // but the functionality is really worth it.
             RequestEvaluator reval = getApp().getCurrentRequestEvaluator();
             if (reval != null) {
-                Object str = reval.invokeDirectFunction(this, "toString", RequestEvaluator.EMPTY_ARGS);
+                Object str = reval.invokeDirectFunction(this, "toString", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
                 if (str instanceof String)
                     return (String) str;
             }
         } catch (Exception x) {
             // fall back to default representation
         }
-        return "HopObject " + name;
+        return "HopObject " + name; //$NON-NLS-1$
     }
 
     /**
@@ -2525,7 +2525,7 @@ public final class Node implements INode {
     String generateTransientID() {
         // make transient ids differ from persistent ones
         // and are unique within on runtime session
-        return "t" + idgen++;
+        return "t" + idgen++; //$NON-NLS-1$
     }
 
     /**
@@ -2545,8 +2545,8 @@ public final class Node implements INode {
      *
      */
     public void dump() {
-        System.err.println("subnodes: " + subnodes);
-        System.err.println("properties: " + propMap);
+        System.err.println(Messages.getString("Node.24") + subnodes); //$NON-NLS-1$
+        System.err.println(Messages.getString("Node.25") + propMap); //$NON-NLS-1$
     }
 
     /**

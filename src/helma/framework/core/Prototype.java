@@ -91,8 +91,8 @@ public final class Prototype {
         if (typeProps != null) {
             props.putAll(typeProps);
         } else if (repository != null) {
-            props.addResource(repository.getResource("type.properties"));
-            props.addResource(repository.getResource(name + ".properties"));
+            props.addResource(repository.getResource("type.properties")); //$NON-NLS-1$
+            props.addResource(repository.getResource(name + ".properties")); //$NON-NLS-1$
         }
 
         dbmap = new DbMapping(app, name, props);
@@ -124,8 +124,8 @@ public final class Prototype {
     public void addRepository(Repository repository, boolean update) throws IOException {
         if (!repositories.contains(repository)) {
             repositories.add(repository);
-            props.addResource(repository.getResource("type.properties"));
-            props.addResource(repository.getResource(name + ".properties"));
+            props.addResource(repository.getResource("type.properties")); //$NON-NLS-1$
+            props.addResource(repository.getResource(name + ".properties")); //$NON-NLS-1$
             if (update) {
                 RequestEvaluator eval = app.getCurrentRequestEvaluator();
                 ScriptingEngine engine = eval == null ? null : eval.scriptingEngine;
@@ -264,7 +264,7 @@ public final class Prototype {
      */
     public void setParentPrototype(Prototype parent) {
         // this is not allowed for the hopobject and global prototypes
-        if ("hopobject".equals(lowerCaseName) || "global".equals(lowerCaseName)) {
+        if ("hopobject".equals(lowerCaseName) || "global".equals(lowerCaseName)) { //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
 
@@ -304,7 +304,7 @@ public final class Prototype {
 
         Prototype p = parent;
 
-        while ((p != null) && !"hopobject".equals(p.getLowerCaseName())) {
+        while ((p != null) && !"hopobject".equals(p.getLowerCaseName())) { //$NON-NLS-1$
             Object old = handlers.put(p.name, obj);
             // if an object was already registered by this name, put it back in again.
             if (old != null) {
@@ -440,7 +440,7 @@ public final class Prototype {
      *  Return a string representing this prototype.
      */
     public String toString() {
-        return "[Prototype " + app.getName() + "/" + name + "]";
+        return "[Prototype " + app.getName() + "/" + name + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
@@ -648,7 +648,7 @@ public final class Prototype {
         }
 
         public String toString() {
-            return "[SkinMap " + name + "]";
+            return "[SkinMap " + name + "]";  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 }

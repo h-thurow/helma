@@ -37,10 +37,10 @@ public final class ResponseTrans extends Writer implements Serializable {
     static final long serialVersionUID = -8627370766119740844L;
     static final int INITIAL_BUFFER_SIZE = 2048;
 
-    static final String newLine = System.getProperty("line.separator");
+    static final String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
 
     //  MIME content type of the response.
-    private String contentType = "text/html";
+    private String contentType = "text/html"; //$NON-NLS-1$
 
     // Charset (encoding) to use for the response.
     private String charset;
@@ -194,7 +194,7 @@ public final class ResponseTrans extends Writer implements Serializable {
         redir = forward = message = null;
         error = null;
         etag = realm = charset = null;
-        contentType =  "text/html";
+        contentType =  "text/html"; //$NON-NLS-1$
         values.clear();
         handlers.clear();
         meta.clear();
@@ -250,9 +250,9 @@ public final class ResponseTrans extends Writer implements Serializable {
 
     public synchronized StringBuffer popBuffer() {
         if (buffer == null) {
-            throw new RuntimeException("Can't pop string buffer: buffer is null");
+            throw new RuntimeException(Messages.getString("ResponseTrans.0")); //$NON-NLS-1$
         } else if (buffers == null) {
-            throw new RuntimeException("Can't pop string buffer: buffer stack is empty");
+            throw new RuntimeException(Messages.getString("ResponseTrans.1")); //$NON-NLS-1$
         }
         // get local reference
         StringBuffer buf = buffer;
@@ -375,12 +375,12 @@ public final class ResponseTrans extends Writer implements Serializable {
             debugBuffer = new StringBuffer();
         }
 
-        String str = (message == null) ? "null" : message.toString();
+        String str = (message == null) ? "null" : message.toString(); //$NON-NLS-1$
 
-        debugBuffer.append("<div class=\"helma-debug-line\" style=\"background: yellow; ");
-        debugBuffer.append("color: black; border-top: 1px solid black;\">");
+        debugBuffer.append("<div class=\"helma-debug-line\" style=\"background: yellow; "); //$NON-NLS-1$
+        debugBuffer.append("color: black; border-top: 1px solid black;\">"); //$NON-NLS-1$
         debugBuffer.append(str);
-        debugBuffer.append("</div>");
+        debugBuffer.append("</div>"); //$NON-NLS-1$
     }
 
     /**
@@ -455,7 +455,7 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void redirect(String url) throws RedirectException {
         // remove newline chars to prevent response splitting attack
         redir = url == null ?
-                null : url.replaceAll("[\r\n]", "");
+                null : url.replaceAll("[\r\n]", ""); //$NON-NLS-1$ //$NON-NLS-2$
         throw new RedirectException(redir);
     }
 
@@ -478,7 +478,7 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void forward(String url) throws RedirectException {
         // remove newline chars to prevent response splitting attack
         forward = url == null ?
-                null : url.replaceAll("[\r\n]", "");
+                null : url.replaceAll("[\r\n]", ""); //$NON-NLS-1$ //$NON-NLS-2$
         throw new RedirectException(forward);
     }
 
@@ -553,33 +553,33 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void reportError(Throwable throwable) {
         if (throwable == null) {
             // just to be safe
-            reportError("Unspecified error");
+            reportError(Messages.getString("ResponseTrans.2")); //$NON-NLS-1$
             return;
         }
         if (reqtrans.isXmlRpc()) {
             writeXmlRpcError(new RuntimeException(throwable));
         } else {
             status = 500;
-            if (!"true".equalsIgnoreCase(app.getProperty("suppressErrorPage"))) {
-                write("<html><body>");
-                write("<h2>Error in application " + app.getName() + "</h2><p>");
+            if (!"true".equalsIgnoreCase(app.getProperty("suppressErrorPage"))) { //$NON-NLS-1$ //$NON-NLS-2$
+                write("<html><body>"); //$NON-NLS-1$
+                write(Messages.getString("ResponseTrans.3") + app.getName() + "</h2><p>");  //$NON-NLS-1$//$NON-NLS-2$
                 encode(getErrorMessage(throwable));
-                writeln("</p>");
+                writeln("</p>"); //$NON-NLS-1$
                 if (app.debug()) {
                     if (throwable instanceof ScriptingException) {
                         ScriptingException scriptx = (ScriptingException) throwable;
-                        writeln("<h4>Script Stack</h4>");
-                        writeln("<pre>" + scriptx.getScriptStackTrace() + "</pre>");
-                        writeln("<h4>Java Stack</h4>");
-                        writeln("<pre>" + scriptx.getJavaStackTrace() + "</pre>");
+                        writeln(Messages.getString("ResponseTrans.4")); //$NON-NLS-1$
+                        writeln("<pre>" + scriptx.getScriptStackTrace() + "</pre>"); //$NON-NLS-1$ //$NON-NLS-2$
+                        writeln(Messages.getString("ResponseTrans.5")); //$NON-NLS-1$
+                        writeln("<pre>" + scriptx.getJavaStackTrace() + "</pre>"); //$NON-NLS-1$ //$NON-NLS-2$
                     } else {
-                        writeln("<h4>Java Stack</h4>");
-                        writeln("<pre>");
+                        writeln(Messages.getString("ResponseTrans.6")); //$NON-NLS-1$
+                        writeln("<pre>"); //$NON-NLS-1$
                         throwable.printStackTrace(new PrintWriter(this));
-                        writeln("</pre>");
+                        writeln("</pre>"); //$NON-NLS-1$
                     }
                 }
-                writeln("</body></html>");
+                writeln("</body></html>"); //$NON-NLS-1$
             }
         }
     }
@@ -594,13 +594,13 @@ public final class ResponseTrans extends Writer implements Serializable {
             writeXmlRpcError(new RuntimeException(errorMessage));
         } else {
             status = 500;
-            if (!"true".equalsIgnoreCase(app.getProperty("suppressErrorPage"))) {
-                write("<html><body><h2>");
-                write("Error in application ");
+            if (!"true".equalsIgnoreCase(app.getProperty("suppressErrorPage"))) { //$NON-NLS-1$ //$NON-NLS-2$
+                write("<html><body><h2>"); //$NON-NLS-1$
+                write(Messages.getString("ResponseTrans.7")); //$NON-NLS-1$
                 write(app.getName());
-                write("</h2><p>");
+                write("</h2><p>"); //$NON-NLS-1$
                 encode(errorMessage);
-                writeln("</p></body></html>");
+                writeln("</p></body></html>"); //$NON-NLS-1$
             }
         }
     }
@@ -608,9 +608,9 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void writeXmlRpcResponse(Object result) {
         try {
             reset();
-            contentType = "text/xml";
+            contentType = "text/xml"; //$NON-NLS-1$
             if (charset == null) {
-                charset = "UTF-8";
+                charset = "UTF-8"; //$NON-NLS-1$
             }
             XmlRpcResponseProcessor xresproc = new XmlRpcResponseProcessor();
             writeBinary(xresproc.encodeResponse(result, charset));
@@ -620,9 +620,9 @@ public final class ResponseTrans extends Writer implements Serializable {
     }
 
     public void writeXmlRpcError(Exception x) {
-        contentType = "text/xml";
+        contentType = "text/xml"; //$NON-NLS-1$
         if (charset == null) {
-            charset = "UTF-8";
+            charset = "UTF-8"; //$NON-NLS-1$
         }
         XmlRpcResponseProcessor xresproc = new XmlRpcResponseProcessor();
         writeBinary(xresproc.encodeException(x, charset));
@@ -670,14 +670,14 @@ public final class ResponseTrans extends Writer implements Serializable {
             }
             // if charset is not set, use western encoding
             if (charset == null) {
-                charset = "UTF-8";
+                charset = "UTF-8"; //$NON-NLS-1$
             }
 
             // if debug buffer exists, append it to main buffer
             if (contentType != null &&
-                    contentType.startsWith("text/html") && 
+                    contentType.startsWith("text/html") && //$NON-NLS-1$ 
                     debugBuffer != null) {
-                debugBuffer.append("</div>");
+                debugBuffer.append("</div>"); //$NON-NLS-1$
                 if (buffer == null) {
                     buffer = debugBuffer;
                 } else {
@@ -701,7 +701,7 @@ public final class ResponseTrans extends Writer implements Serializable {
             }
         }
 
-        boolean autoETags = "true".equals(app.getProperty("autoETags", "true"));
+        boolean autoETags = "true".equals(app.getProperty("autoETags", "true")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         // if etag is not set, calc MD5 digest and check it, but only if
         // not a redirect or error
         if (autoETags &&
@@ -710,11 +710,11 @@ public final class ResponseTrans extends Writer implements Serializable {
                 status == 200 &&
                 redir == null) {
             try {
-                digest = MessageDigest.getInstance("MD5");
+                digest = MessageDigest.getInstance("MD5"); //$NON-NLS-1$
                 // if (contentType != null)
                 //     digest.update (contentType.getBytes());
                 byte[] b = digest.digest(response);
-                etag = "\"" + new String(Base64.encode(b)) + "\"";
+                etag = "\"" + new String(Base64.encode(b)) + "\""; //$NON-NLS-1$ //$NON-NLS-2$
                 // only set response to 304 not modified if no cookies were set
                 if (reqtrans.hasETag(etag) && countCookies() == 0) {
                     response = new byte[0];
@@ -722,7 +722,7 @@ public final class ResponseTrans extends Writer implements Serializable {
                 }
             } catch (Exception e) {
                 // Etag creation failed for some reason.
-                app.logError("Error creating ETag: " + e);
+                app.logError(Messages.getString("ResponseTrans.8") + e); //$NON-NLS-1$
             }
         }
 
@@ -778,7 +778,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public String getContentType() {
         if (charset != null) {
-            return contentType + "; charset=" + charset;
+            return contentType + "; charset=" + charset; //$NON-NLS-1$
         }
 
         return contentType;
@@ -823,7 +823,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param value the ETag header value
      */
     public void setETag(String value) {
-        etag = (value == null) ? null : ("\"" + value + "\"");
+        etag = (value == null) ? null : ("\"" + value + "\""); //$NON-NLS-1$ //$NON-NLS-2$
         if (etag != null && reqtrans.hasETag(etag)) {
             notModified = true;
             throw new RedirectException(null);
@@ -856,7 +856,7 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void dependsOn(Object what) {
         if (digest == null) {
             try {
-                digest = MessageDigest.getInstance("MD5");
+                digest = MessageDigest.getInstance("MD5"); //$NON-NLS-1$
             } catch (NoSuchAlgorithmException nsa) {
                 // MD5 should always be available
             }
@@ -986,7 +986,7 @@ public final class ResponseTrans extends Writer implements Serializable {
 
         // remove newline chars to prevent response splitting attack
         if (value != null) {
-            value = value.replaceAll("[\r\n]", "");
+            value = value.replaceAll("[\r\n]", ""); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         if (c == null) {
@@ -1081,7 +1081,7 @@ public final class ResponseTrans extends Writer implements Serializable {
         if (msg == null || msg.length() == 0)
             msg = t.toString();
         if (msg == null || msg.length() == 0)
-            return "Unspecified Error: " + t.getClass().getName();
+            return Messages.getString("ResponseTrans.9") + t.getClass().getName(); //$NON-NLS-1$
         return msg;
     }
 

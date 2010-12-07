@@ -102,13 +102,13 @@ public class RhinoEngine implements ScriptingEngine {
                             extensionGlobals.putAll(tmpGlobals);
                         }
                     } catch (ConfigurationException e) {
-                        app.logError("Couldn't initialize extension " + ext.getName(), e);
+                        app.logError(Messages.getString("RhinoEngine.0") + ext.getName(), e); //$NON-NLS-1$
                     }
                 }
             }
 
         } catch (Exception e) {
-            app.logError("Cannot initialize interpreter", e);
+            app.logError(Messages.getString("RhinoEngine.1"), e); //$NON-NLS-1$
             throw new RuntimeException(e.getMessage(), e);
         } finally {
             Context.exit();
@@ -218,11 +218,11 @@ public class RhinoEngine implements ScriptingEngine {
                 String result = profiler.getResult();
                 ResponseTrans res = getResponse();
                 if (res != null) {
-                    getResponse().debug("<pre>" + result + "</pre>");
+                    getResponse().debug("<pre>" + result + "</pre>"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
-                app.logEvent("Profiler data for " + getRequest() + ":\n" + result);
+                app.logEvent(Messages.getString("RhinoEngine.2") + getRequest() + Messages.getString("RhinoEngine.3") + result); //$NON-NLS-1$ //$NON-NLS-2$
             } catch (Exception x) {
-                app.logError("Error in profiler: " + x, x);
+                app.logError(Messages.getString("RhinoEngine.4") + x, x); //$NON-NLS-1$
             }
         }
         // unregister the engine threadlocal
@@ -253,10 +253,10 @@ public class RhinoEngine implements ScriptingEngine {
     public Object invoke(Object thisObject, Object function, Object[] args,
                          int argsWrapMode, boolean resolve) throws ScriptingException {
         if (function == null) {
-            throw new IllegalArgumentException("Function argument must not be null");
+            throw new IllegalArgumentException(Messages.getString("RhinoEngine.5")); //$NON-NLS-1$
         }
         if (args == null) {
-            throw new IllegalArgumentException("Arguments array must not be null");
+            throw new IllegalArgumentException(Messages.getString("RhinoEngine.6")); //$NON-NLS-1$
         }
         try {
             Scriptable obj = thisObject == null ? global : Context.toObject(thisObject, global);
@@ -267,14 +267,14 @@ public class RhinoEngine implements ScriptingEngine {
                 // otherwise replace dots with underscores.
                 if (resolve) {
                     if (funcName.indexOf('.') > 0) {
-                        String[] path = StringUtils.split(funcName, ".");
+                        String[] path = StringUtils.split(funcName, "."); //$NON-NLS-1$
                         for (int i = 0; i < path.length - 1; i++) {
                             Object propValue = ScriptableObject.getProperty(obj, path[i]);
                             if (propValue instanceof Scriptable) {
                                 obj = (Scriptable) propValue;
                             } else {
-                                throw new RuntimeException("Can't resolve function name " +
-                                        funcName + " in " + thisObject);
+                                throw new RuntimeException(Messages.getString("RhinoEngine.7") + //$NON-NLS-1$
+                                        funcName + Messages.getString("RhinoEngine.8") + thisObject); //$NON-NLS-1$
                             }
                         }
                         funcName = path[path.length - 1];
@@ -292,7 +292,7 @@ public class RhinoEngine implements ScriptingEngine {
                 if (function instanceof Wrapper)
                     function = ((Wrapper) function).unwrap();
                 if (!(function instanceof Function))
-                    throw new IllegalArgumentException("Not a function or function name: " + function);
+                    throw new IllegalArgumentException(Messages.getString("RhinoEngine.9") + function); //$NON-NLS-1$
                 func = (Function) function;
             }
 
@@ -381,7 +381,7 @@ public class RhinoEngine implements ScriptingEngine {
         if (resolve) {
             if (fname.indexOf('.') > 0) {
                 Scriptable op = obj == null ? global : Context.toObject(obj, global);
-                String[] path = StringUtils.split(fname, ".");
+                String[] path = StringUtils.split(fname, "."); //$NON-NLS-1$
                 for (int i = 0; i < path.length; i++) {
                     Object value = ScriptableObject.getProperty(op, path[i]);
                     if (value instanceof Scriptable) {
@@ -421,14 +421,14 @@ public class RhinoEngine implements ScriptingEngine {
 
         String prototypeName = app.getPrototypeName(obj);
 
-        if ("user".equalsIgnoreCase(prototypeName)
-                && "password".equalsIgnoreCase(propname)) {
+        if ("user".equalsIgnoreCase(prototypeName) //$NON-NLS-1$
+                && "password".equalsIgnoreCase(propname)) { //$NON-NLS-1$
             return false;
         }
 
         // if this is a HopObject, check if the property is defined
         // in the type.properties db-mapping.
-        if (obj instanceof INode && ! "hopobject".equalsIgnoreCase(prototypeName)) {
+        if (obj instanceof INode && ! "hopobject".equalsIgnoreCase(prototypeName)) { //$NON-NLS-1$
             DbMapping dbm = app.getDbMapping(prototypeName);
             if (dbm != null) {
                 Relation rel = dbm.propertyToRelation(propname);
@@ -463,7 +463,7 @@ public class RhinoEngine implements ScriptingEngine {
                 return (prop instanceof Function) ? null : prop;
             }
         } catch (Exception esx) {
-            app.logError("Error getting global property " + propname + ": " + esx);
+            app.logError(Messages.getString("RhinoEngine.10") + propname + Messages.getString("RhinoEngine.11") + esx); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
@@ -500,7 +500,7 @@ public class RhinoEngine implements ScriptingEngine {
                 return (prop instanceof Function) ? null : prop;
             }
         } catch (Exception esx) {
-            app.logError("Error getting property " + propname + ": " + esx);
+            app.logError(Messages.getString("RhinoEngine.12") + propname + Messages.getString("RhinoEngine.13") + esx); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
@@ -518,7 +518,7 @@ public class RhinoEngine implements ScriptingEngine {
             return false;
         if (obj instanceof IPathElement) {
             String protoName = ((IPathElement) obj).getPrototype();
-            return protoName != null && !"hopobject".equalsIgnoreCase(protoName);
+            return protoName != null && !"hopobject".equalsIgnoreCase(protoName); //$NON-NLS-1$
         }
         // assume java object is typed
         return true;
@@ -567,13 +567,13 @@ public class RhinoEngine implements ScriptingEngine {
                     if (obj instanceof GlobalObject)
                         return new GlobalProxy((GlobalObject) obj);
                     if (obj instanceof ApplicationBean)
-                        return new ScriptBeanProxy("app");
+                        return new ScriptBeanProxy("app"); //$NON-NLS-1$
                     if (obj instanceof RequestBean)
-                        return new ScriptBeanProxy("req");
+                        return new ScriptBeanProxy("req"); //$NON-NLS-1$
                     if (obj instanceof ResponseBean)
-                        return new ScriptBeanProxy("res");
+                        return new ScriptBeanProxy("res"); //$NON-NLS-1$
                     if (obj instanceof PathWrapper)
-                        return new ScriptBeanProxy("path");
+                        return new ScriptBeanProxy("path"); //$NON-NLS-1$
                     return super.replaceObject(obj);
                 }
             };
@@ -697,7 +697,7 @@ public class RhinoEngine implements ScriptingEngine {
     public Skin getSkin(String protoName, String skinName) throws IOException {
         Skin skin;
         ResponseTrans res = getResponse();
-        if (skinName.startsWith("#")) {
+        if (skinName.startsWith("#")) { //$NON-NLS-1$
             // evaluate relative subskin name against currently rendering skin
             skin = res.getActiveSkin();
             return skin == null ?
@@ -729,8 +729,8 @@ public class RhinoEngine implements ScriptingEngine {
         if (!core.hasProfiler) {
             return false;
         }
-        String profilerSession = app.getProperty("rhino.profile.session");
-        if (profilerSession == null || "all".equalsIgnoreCase(profilerSession)) {
+        String profilerSession = app.getProperty("rhino.profile.session"); //$NON-NLS-1$
+        if (profilerSession == null || "all".equalsIgnoreCase(profilerSession)) { //$NON-NLS-1$
             return true;
         }
         RequestTrans req = getRequest();

@@ -204,9 +204,9 @@ public class ImageInfo {
 	 * this array.
 	 */
 	private static final String[] FORMAT_NAMES =
-		{"JPEG", "GIF", "PNG", "BMP", "PCX", 
-		 "IFF", "RAS", "PBM", "PGM", "PPM", 
-		 "PSD", "SWF"};
+		{"JPEG", "GIF", "PNG", "BMP", "PCX",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		 "IFF", "RAS", "PBM", "PGM", "PPM",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		 "PSD", "SWF"}; //$NON-NLS-1$ //$NON-NLS-2$
 
 	/**
 	 * The names of the MIME types for all supported file formats.
@@ -214,9 +214,9 @@ public class ImageInfo {
 	 * this array.
 	 */
 	private static final String[] MIME_TYPE_STRINGS =
-		{"image/jpeg", "image/gif", "image/png", "image/bmp", "image/pcx", 
-		 "image/iff", "image/ras", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", 
-		 "image/psd", "application/x-shockwave-flash"};
+		{"image/jpeg", "image/gif", "image/png", "image/bmp", "image/pcx",   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		 "image/iff", "image/ras", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap",     //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$//$NON-NLS-5$
+		 "image/psd", "application/x-shockwave-flash"}; //$NON-NLS-1$ //$NON-NLS-2$
 
 	private int width;
 	private int height;
@@ -541,7 +541,7 @@ public class ImageInfo {
 				if (read(chars, 0, size) != size) {
 					return false;
 				}
-				String comment = new String(chars, "iso-8859-1");
+				String comment = new String(chars, "iso-8859-1"); //$NON-NLS-1$
 				comment = comment.trim();
 				addComment(comment);
 			}
@@ -757,7 +757,7 @@ public class ImageInfo {
 	private static boolean determineVerbosity(String[] args) {
 		if (args != null && args.length > 0) {
 			for (int i = 0; i < args.length; i++) {
-				if ("-c".equals(args[i])) {
+				if ("-c".equals(args[i])) { //$NON-NLS-1$
 					return false;
 				}
 			}
@@ -798,7 +798,7 @@ public class ImageInfo {
 	 */
 	public String getComment(int index) {
 		if (comments == null || index < 0 || index >= comments.size()) {
-			throw new IllegalArgumentException("Not a valid comment index: " + index);
+			throw new IllegalArgumentException(Messages.getString("ImageInfo.0") + index); //$NON-NLS-1$
 		}
 		return (String)comments.elementAt(index);
 	}
@@ -822,7 +822,7 @@ public class ImageInfo {
 		if (format >= 0 && format < FORMAT_NAMES.length) {
 			return FORMAT_NAMES[format];
 		} else {
-			return "?";
+			return "?"; //$NON-NLS-1$
 		}
 	}
 
@@ -860,7 +860,7 @@ public class ImageInfo {
 		if (format >= 0 && format < MIME_TYPE_STRINGS.length) {
 			if (format == FORMAT_JPEG && progressive)
 			{
-				return "image/pjpeg";
+				return "image/pjpeg"; //$NON-NLS-1$
 			}
 			return MIME_TYPE_STRINGS[format];
 		} else {
@@ -1005,8 +1005,8 @@ public class ImageInfo {
 				InputStream in = null;
 				try {
 					String name = args[index++];
-					System.out.print(name + ";");
-					if (name.startsWith("http://")) {
+					System.out.print(name + ";"); //$NON-NLS-1$
+					if (name.startsWith("http://")) { //$NON-NLS-1$
 						in = new URL(name).openConnection().getInputStream();
 					} else {
 						in = new FileInputStream(name);
@@ -1034,16 +1034,16 @@ public class ImageInfo {
 
 	private static void printCompact(String sourceName, ImageInfo imageInfo) {
 		System.out.println(
-			imageInfo.getFormatName() + ";" +
-			imageInfo.getMimeType() + ";" +
-			imageInfo.getWidth() + ";" +
-			imageInfo.getHeight() + ";" +
-			imageInfo.getBitsPerPixel() + ";" +
-			imageInfo.getNumberOfImages() + ";" +
-			imageInfo.getPhysicalWidthDpi() + ";" +
-			imageInfo.getPhysicalHeightDpi() + ";" +
-			imageInfo.getPhysicalWidthInch() + ";" +
-			imageInfo.getPhysicalHeightInch() + ";" +
+			imageInfo.getFormatName() + ";" + //$NON-NLS-1$
+			imageInfo.getMimeType() + ";" + //$NON-NLS-1$
+			imageInfo.getWidth() + ";" + //$NON-NLS-1$
+			imageInfo.getHeight() + ";" + //$NON-NLS-1$
+			imageInfo.getBitsPerPixel() + ";" + //$NON-NLS-1$
+			imageInfo.getNumberOfImages() + ";" + //$NON-NLS-1$
+			imageInfo.getPhysicalWidthDpi() + ";" + //$NON-NLS-1$
+			imageInfo.getPhysicalHeightDpi() + ";" + //$NON-NLS-1$
+			imageInfo.getPhysicalWidthInch() + ";" + //$NON-NLS-1$
+			imageInfo.getPhysicalHeightInch() + ";" + //$NON-NLS-1$
 			imageInfo.isProgressive()
 		);
 	}
@@ -1066,30 +1066,30 @@ public class ImageInfo {
 			return;
 		}
 		while (indentLevels-- > 0) {
-			System.out.print("\t");
+			System.out.print("\t"); //$NON-NLS-1$
 		}
 		if (text != null && text.length() > 0) {
 			System.out.print(text);
-			System.out.print(" ");
+			System.out.print(" "); //$NON-NLS-1$
 		}
 		System.out.println(value);
 	}
 
 	private static void printVerbose(String sourceName, ImageInfo ii) {
 		printLine(0, null, sourceName);
-		printLine(1, "File format: ", ii.getFormatName());
-		printLine(1, "MIME type: ", ii.getMimeType());
-		printLine(1, "Width (pixels): ", ii.getWidth(), 1);
-		printLine(1, "Height (pixels): ", ii.getHeight(), 1);
-		printLine(1, "Bits per pixel: ", ii.getBitsPerPixel(), 1);
-		printLine(1, "Progressive: ", Boolean.toString(ii.isProgressive()));
-		printLine(1, "Number of images: ", ii.getNumberOfImages(), 1);
-		printLine(1, "Physical width (dpi): ", ii.getPhysicalWidthDpi(), 1);
-		printLine(1, "Physical height (dpi): ", ii.getPhysicalHeightDpi(), 1);
-		printLine(1, "Physical width (inches): ", ii.getPhysicalWidthInch(), 1.0f);
-		printLine(1, "Physical height (inches): ", ii.getPhysicalHeightInch(), 1.0f);
+		printLine(1, Messages.getString("ImageInfo.1"), ii.getFormatName()); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.2"), ii.getMimeType()); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.3"), ii.getWidth(), 1); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.4"), ii.getHeight(), 1); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.5"), ii.getBitsPerPixel(), 1); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.6"), Boolean.toString(ii.isProgressive())); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.7"), ii.getNumberOfImages(), 1); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.8"), ii.getPhysicalWidthDpi(), 1); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.9"), ii.getPhysicalHeightDpi(), 1); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.10"), ii.getPhysicalWidthInch(), 1.0f); //$NON-NLS-1$
+		printLine(1, Messages.getString("ImageInfo.11"), ii.getPhysicalHeightInch(), 1.0f); //$NON-NLS-1$
 		int numComments = ii.getNumberOfComments();
-		printLine(1, "Number of textual comments: ", numComments, 1);
+		printLine(1, Messages.getString("ImageInfo.12"), numComments, 1); //$NON-NLS-1$
 		if (numComments > 0) {
 			for (int i = 0; i < numComments; i++) {
 				printLine(2, null, ii.getComment(i));

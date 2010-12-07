@@ -46,7 +46,7 @@ public final class DbKey implements Key, Serializable {
      */
     public DbKey(DbMapping dbmap, String id) {
         if (id == null) {
-            throw new IllegalArgumentException("id null in DbKey");
+            throw new IllegalArgumentException(Messages.getString("DbKey.0")); //$NON-NLS-1$
         }
         this.id = id;
         this.storageName = (dbmap == null) ? null : dbmap.getStorageTypeName();
@@ -123,7 +123,7 @@ public final class DbKey implements Key, Serializable {
      * @return a string representation for this key
      */
     public String toString() {
-        return (storageName == null) ? ("[" + id + "]") : (storageName + "[" + id + "]");
+        return (storageName == null) ? ("[" + id + "]") : (storageName + "[" + id + "]");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     // We implement write/readObject to set storageName

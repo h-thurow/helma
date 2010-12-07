@@ -28,6 +28,6 @@ public class ApplicationStoppedException extends RuntimeException {
      * Creates a new ApplicationStoppedException object.
      */
     public ApplicationStoppedException() {
-        super("The application has been stopped");
+        super(Messages.getString("ApplicationStoppedException.0")); //$NON-NLS-1$
     }
 }

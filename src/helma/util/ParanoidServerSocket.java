@@ -64,7 +64,7 @@ public class ParanoidServerSocket extends ServerSocket {
             s = super.accept();
 
             if ((filter != null) && !filter.matches(s.getInetAddress())) {
-                System.err.println("Refusing connection from " + s.getInetAddress());
+                System.err.println(Messages.getString("ParanoidServerSocket.0") + s.getInetAddress()); //$NON-NLS-1$
 
                 try {
                     s.close();

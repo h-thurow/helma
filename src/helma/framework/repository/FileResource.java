@@ -38,7 +38,7 @@ public class FileResource extends AbstractResource {
         name = file.getAbsolutePath();
         shortName = file.getName();
         // base name is short name with extension cut off
-        int lastDot = shortName.lastIndexOf(".");
+        int lastDot = shortName.lastIndexOf("."); //$NON-NLS-1$
         baseName = (lastDot == -1) ? shortName : shortName.substring(0, lastDot);
     }
 
@@ -60,7 +60,7 @@ public class FileResource extends AbstractResource {
 
     public URL getUrl() {
         try {
-            return new URL("file:" + file.getAbsolutePath());
+            return new URL("file:" + file.getAbsolutePath()); //$NON-NLS-1$
         } catch (MalformedURLException ex) {
             return null;
         }

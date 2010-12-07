@@ -26,36 +26,36 @@ public class DefaultNodeChangeListener implements
             	Iterator nodes = inserted.iterator();
             	while (nodes.hasNext()) {
             		try {
-						reval.getScriptingEngine().invoke((Node) nodes.next(), "onInserted", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false);
+						reval.getScriptingEngine().invoke((Node) nodes.next(), "onInserted", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false); //$NON-NLS-1$
 					} catch (ScriptingException e) {
-						_application.logError("Error invoking onInserted().", e);
+						_application.logError(Messages.getString("DefaultNodeChangeListener.0"), e); //$NON-NLS-1$
 					}
             	}
             	
             	nodes = updated.iterator();
             	while (nodes.hasNext()) {
             		try {
-						reval.getScriptingEngine().invoke((Node) nodes.next(), "onUpdated", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false);
+						reval.getScriptingEngine().invoke((Node) nodes.next(), "onUpdated", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false); //$NON-NLS-1$
 					} catch (ScriptingException e) {
-						_application.logError("Error invoking onUpdated().", e);
+						_application.logError(Messages.getString("DefaultNodeChangeListener.1"), e); //$NON-NLS-1$
 					}
             	}
             	
             	nodes = deleted.iterator();
             	while (nodes.hasNext()) {
             		try {
-						reval.getScriptingEngine().invoke((Node) nodes.next(), "onDeleted", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false);
+						reval.getScriptingEngine().invoke((Node) nodes.next(), "onDeleted", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false); //$NON-NLS-1$
 					} catch (ScriptingException e) {
-						_application.logError("Error invoking onDeleted().", e);
+						_application.logError(Messages.getString("DefaultNodeChangeListener.2"), e); //$NON-NLS-1$
 					}
             	}
             	
             	nodes = parents.iterator();
             	while (nodes.hasNext()) {
             		try {
-						reval.getScriptingEngine().invoke((Node) nodes.next(), "onChanged", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false);
+						reval.getScriptingEngine().invoke((Node) nodes.next(), "onChanged", RequestEvaluator.EMPTY_ARGS, ScriptingEngine.ARGS_WRAP_DEFAULT, false); //$NON-NLS-1$
 					} catch (ScriptingException e) {
-						_application.logError("Error invoking onChanged().", e);
+						_application.logError(Messages.getString("DefaultNodeChangeListener.3"), e); //$NON-NLS-1$
 					}
             	}
             }

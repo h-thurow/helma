@@ -106,8 +106,8 @@ public class Transactor {
     public static Transactor getInstanceOrFail() throws IllegalStateException {
         Transactor tx = (Transactor) txtor.get();
         if (tx == null)
-            throw new IllegalStateException("Operation requires a Transactor, " +
-                "but current thread does not have one.");
+            throw new IllegalStateException(Messages.getString("Transactor.0") + //$NON-NLS-1$
+                Messages.getString("Transactor.1")); //$NON-NLS-1$
         return tx;
     }
 
@@ -268,7 +268,7 @@ public class Transactor {
             // Check if the connection is still alive by executing a simple statement.
             try {
                 Statement stmt = con.createStatement();
-                stmt.execute("SELECT 1");
+                stmt.execute("SELECT 1"); //$NON-NLS-1$
                 stmt.close();
                 testedConnections.put(src, new Long(now));
             } catch (SQLException sx) {
@@ -291,7 +291,7 @@ public class Transactor {
      */
     public synchronized void begin(String name) throws Exception {
         if (killed) {
-            throw new DatabaseException("Transaction started on killed thread");
+            throw new DatabaseException(Messages.getString("Transactor.2")); //$NON-NLS-1$
         } else if (active) {
             abort();
         }
@@ -344,19 +344,19 @@ public class Transactor {
     	    	Iterator<Node> insertedNodes = transaction.getInsertedNodes().iterator();
     	    	while (insertedNodes.hasNext()) {
     	    		Node node = insertedNodes.next();
-    	            eventLog.debug("inserted node: " + node.getPrototype() + "/" + node.getID());
+    	            eventLog.debug(Messages.getString("Transactor.3") + node.getPrototype() + Messages.getString("Transactor.4") + node.getID()); //$NON-NLS-1$ //$NON-NLS-2$
         		}
     	    	
     	    	Iterator<Node> modifiedNodes = transaction.getModifiedNodes().iterator();
     	    	while (modifiedNodes.hasNext()) {
     	    		Node node = modifiedNodes.next();
-                    eventLog.debug("updated node: " + node.getPrototype() + "/" + node.getID());	            
+                    eventLog.debug(Messages.getString("Transactor.5") + node.getPrototype() + Messages.getString("Transactor.6") + node.getID());	             //$NON-NLS-1$ //$NON-NLS-2$
         		}
     	    	
     	    	Iterator<Node> deletedNodes = transaction.getDeletedNodes().iterator();
     	    	while (deletedNodes.hasNext()) {
     	    		Node node = deletedNodes.next();
-                    eventLog.debug("removed node: " + node.getPrototype() + "/" + node.getID());	            
+                    eventLog.debug(Messages.getString("Transactor.7") + node.getPrototype() + Messages.getString("Transactor.8") + node.getID());	             //$NON-NLS-1$ //$NON-NLS-2$
         		}
         	}
         	
@@ -365,15 +365,15 @@ public class Transactor {
         	numberOfDeletedNodes += transaction.getNumberOfDeletedNodes();
         }
         
-        StringBuffer msg = new StringBuffer(tname).append(" done in ")
-			.append(System.currentTimeMillis() - tstart).append(" millis");
+        StringBuffer msg = new StringBuffer(tname).append(Messages.getString("Transactor.9")) //$NON-NLS-1$
+			.append(System.currentTimeMillis() - tstart).append(Messages.getString("Transactor.10")); //$NON-NLS-1$
         if (numberOfInsertedNodes + 
         	numberOfModifiedNodes + 
         	numberOfDeletedNodes > 0) {
-        	msg.append(" [+")
-        		.append(numberOfInsertedNodes).append(", ~")
-        		.append(numberOfModifiedNodes).append(", -")
-        		.append(numberOfDeletedNodes).append("]");
+        	msg.append(" [+") //$NON-NLS-1$
+        		.append(numberOfInsertedNodes).append(", ~") //$NON-NLS-1$
+        		.append(numberOfModifiedNodes).append(", -") //$NON-NLS-1$
+        		.append(numberOfDeletedNodes).append("]"); //$NON-NLS-1$
         }
         nmgr.app.logAccess(msg.toString());
     	
@@ -397,7 +397,7 @@ public class Transactor {
      */
     public synchronized Transaction execute() throws Exception {
         if (killed) {
-            throw new DatabaseException("commit() called on killed transactor thread");
+            throw new DatabaseException(Messages.getString("Transactor.11")); //$NON-NLS-1$
         } else if (!active) {
             return new Transaction();
         }
@@ -514,7 +514,7 @@ public class Transactor {
 					connection.rollback();
 				}
 			} catch (SQLException e) {
-				nmgr.app.logError("Rollback of SQL transaction failed", e);
+				nmgr.app.logError(Messages.getString("Transactor.12"), e); //$NON-NLS-1$
 			}
         }
         
@@ -529,8 +529,8 @@ public class Transactor {
                 txn = null;
             }
 
-            nmgr.app.logAccess(tname + " aborted after " +
-                               (System.currentTimeMillis() - tstart) + " millis");
+            nmgr.app.logAccess(tname + Messages.getString("Transactor.13") + //$NON-NLS-1$
+                               (System.currentTimeMillis() - tstart) + Messages.getString("Transactor.14")); //$NON-NLS-1$
         }
 
         // unset transaction name
@@ -557,13 +557,13 @@ public class Transactor {
             }
         }
 
-        if (thread.isAlive() && "true".equals(nmgr.app.getProperty("requestTimeoutStop"))) {
+        if (thread.isAlive() && "true".equals(nmgr.app.getProperty("requestTimeoutStop"))) { //$NON-NLS-1$ //$NON-NLS-2$
             // still running - check if we ought to stop() it
             try {
                 Thread.sleep(2000);
                 if (thread.isAlive()) {
                     // thread is still running, pull emergency break
-                    nmgr.app.logEvent("Stopping Thread for Transactor " + this);
+                    nmgr.app.logEvent(Messages.getString("Transactor.15") + this); //$NON-NLS-1$
                     thread.stop();
                 }
             } catch (InterruptedException ir) {
@@ -582,7 +582,7 @@ public class Transactor {
                     Connection con = (Connection) i.next();
 
                     con.close();
-                    nmgr.app.logEvent("Closing DB connection: " + con);
+                    nmgr.app.logEvent(Messages.getString("Transactor.16") + con); //$NON-NLS-1$
                 } catch (Exception ignore) {
                     // exception closing db connection, ignore
                 }
@@ -619,6 +619,6 @@ public class Transactor {
      * @return ...
      */
     public String toString() {
-        return "Transactor[" + tname + "]";
+        return "Transactor[" + tname + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

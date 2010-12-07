@@ -75,7 +75,7 @@ public class TransientNode implements INode, Serializable {
     public static String generateID() {
         // make transient ids differ from persistent ones
         // and are unique within on runtime session
-        return "t" + idgen++;
+        return "t" + idgen++; //$NON-NLS-1$
     }
 
     public void setDbMapping(DbMapping dbmap) {
@@ -123,7 +123,7 @@ public class TransientNode implements INode, Serializable {
             if (divider != null) {
                 b.insert(0, divider);
             } else {
-                divider = "/";
+                divider = "/"; //$NON-NLS-1$
             }
 
             b.insert(0, p.getElementName());
@@ -146,7 +146,7 @@ public class TransientNode implements INode, Serializable {
     public String getPrototype() {
         // if prototype is null, it's a vanilla HopObject.
         if (prototype == null) {
-            return "HopObject";
+            return "HopObject"; //$NON-NLS-1$
         }
 
         return prototype;
@@ -161,7 +161,7 @@ public class TransientNode implements INode, Serializable {
     }
 
     public void setSubnodeRelation(String rel) {
-        throw new UnsupportedOperationException("Can't set subnode relation for non-persistent Node.");
+        throw new UnsupportedOperationException(Messages.getString("TransientNode.0")); //$NON-NLS-1$
     }
 
     public String getSubnodeRelation() {
@@ -184,7 +184,7 @@ public class TransientNode implements INode, Serializable {
         String n = elem.getName();
 
         if (n.indexOf('/') > -1) {
-            throw new RuntimeException("The name of a node must not contain \"/\" (slash).");
+            throw new RuntimeException(Messages.getString("TransientNode.1")); //$NON-NLS-1$
         }
 
         if ((nodeMap != null) && (nodeMap.get(elem.getID()) != null)) {
@@ -234,7 +234,7 @@ public class TransientNode implements INode, Serializable {
     public INode createNode(String nm, int where) {
         boolean anon = false;
 
-        if ((nm == null) || "".equals(nm.trim())) {
+        if ((nm == null) || "".equals(nm.trim())) { //$NON-NLS-1$
             anon = true;
         }
 
@@ -259,7 +259,7 @@ public class TransientNode implements INode, Serializable {
     }
 
     public INode getSubnode(String name) {
-        StringTokenizer st = new StringTokenizer(name, "/");
+        StringTokenizer st = new StringTokenizer(name, "/"); //$NON-NLS-1$
         TransientNode retval = this;
         TransientNode runner;
 
@@ -268,7 +268,7 @@ public class TransientNode implements INode, Serializable {
 
             String next = st.nextToken().trim().toLowerCase();
 
-            if ("".equals(next)) {
+            if ("".equals(next)) { //$NON-NLS-1$
                 retval = this;
             } else {
                 retval = (runner.nodeMap == null) ? null
@@ -568,7 +568,7 @@ public class TransientNode implements INode, Serializable {
     }
 
     public String toString() {
-        return "TransientNode " + name;
+        return Messages.getString("TransientNode.2") + name; //$NON-NLS-1$
     }
 
     /**

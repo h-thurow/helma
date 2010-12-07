@@ -58,44 +58,44 @@ public final class StandaloneServletClient extends AbstractServletClient {
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
 
-        hopDir = init.getInitParameter("hopdir");
+        hopDir = init.getInitParameter("hopdir"); //$NON-NLS-1$
 
         if (hopDir == null) {
             // assume helmaDir to be current directory
-            hopDir = ".";
+            hopDir = "."; //$NON-NLS-1$
         }
 
-        appName = init.getInitParameter("application");
+        appName = init.getInitParameter("application"); //$NON-NLS-1$
 
         if ((appName == null) || (appName.trim().length() == 0)) {
-            throw new ServletException("application parameter not specified");
+            throw new ServletException(Messages.getString("StandaloneServletClient.0")); //$NON-NLS-1$
         }
 
-        appDir = init.getInitParameter("appdir");
+        appDir = init.getInitParameter("appdir"); //$NON-NLS-1$
 
-        dbDir = init.getInitParameter("dbdir");
+        dbDir = init.getInitParameter("dbdir"); //$NON-NLS-1$
 
         if ((dbDir == null) || (dbDir.trim().length() == 0)) {
-            throw new ServletException("dbdir parameter not specified");
+            throw new ServletException(Messages.getString("StandaloneServletClient.1")); //$NON-NLS-1$
         }
 
         Class[] parameters = { String.class };
         ArrayList repositoryList = new ArrayList();
 
         for (int i = 0; true; i++) {
-            String repositoryArgs = init.getInitParameter("repository." + i);
+            String repositoryArgs = init.getInitParameter("repository." + i); //$NON-NLS-1$
             if (repositoryArgs != null) {
                 // lookup repository implementation
-                String repositoryImpl = init.getInitParameter("repository." + i +
-                        ".implementation");
+                String repositoryImpl = init.getInitParameter("repository." + i + //$NON-NLS-1$
+                        ".implementation"); //$NON-NLS-1$
                 if (repositoryImpl == null) {
                     // implementation not set manually, have to guess it
-                    if (repositoryArgs.endsWith(".zip")) {
-                        repositoryImpl = "helma.framework.repository.ZipRepository";
-                    } else if (repositoryArgs.endsWith(".js")) {
-                        repositoryImpl = "helma.framework.repository.SingleFileRepository";
+                    if (repositoryArgs.endsWith(".zip")) { //$NON-NLS-1$
+                        repositoryImpl = "helma.framework.repository.ZipRepository"; //$NON-NLS-1$
+                    } else if (repositoryArgs.endsWith(".js")) { //$NON-NLS-1$
+                        repositoryImpl = "helma.framework.repository.SingleFileRepository"; //$NON-NLS-1$
                     } else {
-                        repositoryImpl = "helma.framework.repository.FileRepository";
+                        repositoryImpl = "helma.framework.repository.FileRepository"; //$NON-NLS-1$
                     }
                 }
         
@@ -104,10 +104,10 @@ public final class StandaloneServletClient extends AbstractServletClient {
                         .getConstructor(parameters)
                         .newInstance(new Object[] {repositoryArgs});
                     repositoryList.add(newRepository);
-                    log("adding repository: " + repositoryArgs);
+                    log(Messages.getString("StandaloneServletClient.2") + repositoryArgs); //$NON-NLS-1$
                 } catch (Exception ex) {
-                    log("Adding repository " + repositoryArgs + " failed. " +
-                        "Will not use that repository. Check your initArgs!", ex);
+                    log(Messages.getString("StandaloneServletClient.3") + repositoryArgs + Messages.getString("StandaloneServletClient.4") + //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("StandaloneServletClient.5"), ex); //$NON-NLS-1$
                 }
             } else {
                 // we always scan repositories 0-9, beyond that only if defined
@@ -119,7 +119,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
         
         // add app dir
         FileRepository appRep = new FileRepository(appDir);
-        log("adding repository: " + appDir);
+        log(Messages.getString("StandaloneServletClient.6") + appDir); //$NON-NLS-1$
         if (!repositoryList.contains(appRep)) {
             repositoryList.add(appRep);
         }
@@ -167,7 +167,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
             app.init();
             app.start();
         } catch (Exception x) {
-            log("Error starting Application " + appName + ": " + x);
+            log(Messages.getString("StandaloneServletClient.7") + appName + Messages.getString("StandaloneServletClient.8") + x); //$NON-NLS-1$ //$NON-NLS-2$
             x.printStackTrace();
         }
     }
@@ -181,7 +181,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
             try {
                 app.stop();
             } catch (Exception x) {
-                log("Error shutting down app " + app.getName() + ": ");
+                log(Messages.getString("StandaloneServletClient.9") + app.getName() + Messages.getString("StandaloneServletClient.10")); //$NON-NLS-1$ //$NON-NLS-2$
                 x.printStackTrace();
             }
         }

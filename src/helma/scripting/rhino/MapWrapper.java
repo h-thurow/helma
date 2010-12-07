@@ -217,7 +217,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
 
     public Object getDefaultValue(Class hint) {
         if (hint == null || hint == String.class) {
-            return map == null ? "{}" : map.toString();
+            return map == null ? "{}" : map.toString(); //$NON-NLS-1$
         }
         return super.getDefaultValue(hint);
     }
@@ -236,7 +236,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * Return the class name for wrapped maps.
      */
     public String getClassName() {
-        return "[MapWrapper]";
+        return "[MapWrapper]"; //$NON-NLS-1$
     }
 
     /**
@@ -245,9 +245,9 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      */
     public String toString() {
         if (map == null) {
-            return "[MapWrapper{}]";
+            return "[MapWrapper{}]"; //$NON-NLS-1$
         } else {
-            return "[MapWrapper"+map.toString()+"]";
+            return "[MapWrapper"+map.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 }

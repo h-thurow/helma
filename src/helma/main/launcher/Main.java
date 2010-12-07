@@ -36,14 +36,14 @@ import java.util.ArrayList;
  */
 public class Main {
     public static final String[] jars = {
-                                            "helma.jar", "rhino.jar", "jetty.jar",
-                                            "jetty-util.jar", "jetty-ajp.jar",
-                                            "commons-logging.jar", "crimson.jar",
-                                            "xmlrpc.jar", "servlet.jar",
-                                            "mail.jar", "activation.jar",
-                                            "commons-fileupload.jar", "commons-codec.jar",
-                                            "commons-io.jar", "commons-net.jar", 
-                                            "tagsoup.jar"
+                                            "helma.jar", "rhino.jar", "jetty.jar", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                            "jetty-util.jar", "jetty-ajp.jar",  //$NON-NLS-1$//$NON-NLS-2$
+                                            "commons-logging.jar", "crimson.jar",  //$NON-NLS-1$//$NON-NLS-2$
+                                            "xmlrpc.jar", "servlet.jar",  //$NON-NLS-1$//$NON-NLS-2$
+                                            "mail.jar", "activation.jar", //$NON-NLS-1$ //$NON-NLS-2$
+                                            "commons-fileupload.jar", "commons-codec.jar",  //$NON-NLS-1$//$NON-NLS-2$
+                                            "commons-io.jar", "commons-net.jar",   //$NON-NLS-1$//$NON-NLS-2$
+                                            "tagsoup.jar" //$NON-NLS-1$
                                         };
 
     private Class serverClass;
@@ -70,17 +70,17 @@ public class Main {
             String installDir = getInstallDir(args);
             ClassLoader loader = createClassLoader(installDir);
             // get the main server class
-            serverClass = loader.loadClass("helma.main.Server");
+            serverClass = loader.loadClass("helma.main.Server"); //$NON-NLS-1$
             Class[] cargs = new Class[]{args.getClass()};
-            Method loadServer = serverClass.getMethod("loadServer", cargs);
+            Method loadServer = serverClass.getMethod("loadServer", cargs); //$NON-NLS-1$
             Object[] nargs = new Object[]{args};
             // and invoke the static loadServer(String[]) method
             server = loadServer.invoke(null, nargs);
-            Method init = serverClass.getMethod("init", EMPTY_CLASS_ARRAY);
+            Method init = serverClass.getMethod("init", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
             init.invoke(server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
-            System.err.println("Unable to load Helma: ");
+            System.err.println(Messages.getString("Main.0")); //$NON-NLS-1$
             x.printStackTrace();
             System.exit(2);
         }
@@ -88,11 +88,11 @@ public class Main {
 
     public void start() {
         try {
-            Method start = serverClass.getMethod("start", EMPTY_CLASS_ARRAY);
+            Method start = serverClass.getMethod("start", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
             start.invoke(server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
-            System.err.println("Unable to start Helma: ");
+            System.err.println(Messages.getString("Main.1")); //$NON-NLS-1$
             x.printStackTrace();
             System.exit(2);
         }
@@ -100,11 +100,11 @@ public class Main {
 
     public void stop() {
         try {
-            Method start = serverClass.getMethod("stop", EMPTY_CLASS_ARRAY);
+            Method start = serverClass.getMethod("stop", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
             start.invoke(server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
-            System.err.println("Unable to stop Helma: ");
+            System.err.println(Messages.getString("Main.2")); //$NON-NLS-1$
             x.printStackTrace();
             System.exit(2);
         }
@@ -112,11 +112,11 @@ public class Main {
 
     public void destroy() {
         try {
-            Method start = serverClass.getMethod("shutdown", EMPTY_CLASS_ARRAY);
+            Method start = serverClass.getMethod("shutdown", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
             start.invoke(server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
-            System.err.println("Unable to shutdown Helma: ");
+            System.err.println(Messages.getString("Main.3")); //$NON-NLS-1$
             x.printStackTrace();
             System.exit(2);
         }
@@ -135,30 +135,30 @@ public class Main {
             throws MalformedURLException, UnsupportedEncodingException {
 
         // decode installDir in case it is URL-encoded
-        installDir = URLDecoder.decode(installDir, System.getProperty("helma.urlEncoding", "UTF-8"));
+        installDir = URLDecoder.decode(installDir, System.getProperty("helma.urlEncoding", "UTF-8")); //$NON-NLS-1$ //$NON-NLS-2$
 
         // set up the class path
-        File libdir = new File(installDir, "lib");
+        File libdir = new File(installDir, "lib"); //$NON-NLS-1$
         ArrayList jarlist = new ArrayList();
 
         for (int i = 0; i < jars.length; i++) {
             File jar = new File(libdir, jars[i]);
-            jarlist.add(new URL("file:" + jar.getAbsolutePath()));
+            jarlist.add(new URL("file:" + jar.getAbsolutePath())); //$NON-NLS-1$
         }
 
         // add all jar files from the lib/ext directory
-        File extdir = new File(libdir, "ext");
+        File extdir = new File(libdir, "ext"); //$NON-NLS-1$
         File[] files = extdir.listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     String n = name.toLowerCase();
-                    return n.endsWith(".jar") || n.endsWith(".zip");
+                    return n.endsWith(".jar") || n.endsWith(".zip"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             });
 
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
-                jarlist.add(new URL("file:" + files[i].getAbsolutePath()));
-                System.err.println("Adding to classpath: " + files[i].getAbsolutePath());
+                jarlist.add(new URL("file:" + files[i].getAbsolutePath())); //$NON-NLS-1$
+                System.err.println(Messages.getString("Main.4") + files[i].getAbsolutePath()); //$NON-NLS-1$
             }
         }
 
@@ -167,11 +167,11 @@ public class Main {
         jarlist.toArray(urls);
 
         // find out if system classes should be excluded from class path
-        String excludeSystemClasses = System.getProperty("helma.excludeSystemClasses");
+        String excludeSystemClasses = System.getProperty("helma.excludeSystemClasses"); //$NON-NLS-1$
 
         ClassLoader loader;
 
-        if ("true".equalsIgnoreCase(excludeSystemClasses)) {
+        if ("true".equalsIgnoreCase(excludeSystemClasses)) { //$NON-NLS-1$
             loader = new URLClassLoader(urls, null);
         } else {
             loader = new URLClassLoader(urls);
@@ -202,7 +202,7 @@ public class Main {
 
         // first, try to get helma home dir from command line options
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-i") && ((i + 1) < args.length)) {
+            if (args[i].equals("-i") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 installDir = args[i + 1];
             }
         }
@@ -212,7 +212,7 @@ public class Main {
 
         // try to get Helma installation directory
         if (installDir == null) {
-            URL launcherUrl = apploader.findResource("helma/main/launcher/Main.class");
+            URL launcherUrl = apploader.findResource("helma/main/launcher/Main.class"); //$NON-NLS-1$
 
             // this is a  JAR URL of the form
             //    jar:<url>!/{entry}
@@ -221,15 +221,15 @@ public class Main {
 
             String jarUrl = launcherUrl.toString();
 
-            if (!jarUrl.startsWith("jar:") || jarUrl.indexOf("!") < 0) {
-                installDir = System.getProperty("user.dir");
-                System.err.println("Warning: Helma install dir not set by -i parameter ");
-                System.err.println("         and not started from launcher.jar. Using ");
-                System.err.println("         current working directory as install dir.");
+            if (!jarUrl.startsWith("jar:") || jarUrl.indexOf("!") < 0) { //$NON-NLS-1$ //$NON-NLS-2$
+                installDir = System.getProperty("user.dir"); //$NON-NLS-1$
+                System.err.println(Messages.getString("Main.5")); //$NON-NLS-1$
+                System.err.println(Messages.getString("Main.6")); //$NON-NLS-1$
+                System.err.println(Messages.getString("Main.7")); //$NON-NLS-1$
             } else {
                 jarUrl = jarUrl.substring(4);
 
-                int excl = jarUrl.indexOf("!");
+                int excl = jarUrl.indexOf("!"); //$NON-NLS-1$
                 jarUrl = jarUrl.substring(0, excl);
                 launcherUrl = new URL(jarUrl);
 
@@ -239,7 +239,7 @@ public class Main {
             }
         }
         // set System property
-        System.setProperty("helma.home", installDir);
+        System.setProperty("helma.home", installDir); //$NON-NLS-1$
         // and return install dir
         return installDir;
     }

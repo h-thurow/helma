@@ -56,7 +56,7 @@ public class SingleFileRepository implements Repository {
         this.parent = parent;
         res = new FileResource(file, this);
         allResources.add(res);
-        isScriptFile = file.getName().endsWith(".js");
+        isScriptFile = file.getName().endsWith(".js"); //$NON-NLS-1$
         if (isScriptFile) {
             repositories = new Repository[] { new FakeGlobal() };
         } else {
@@ -226,8 +226,8 @@ public class SingleFileRepository implements Repository {
      * Returns a string representation of the object.
      */
     public String toString() {
-        return new StringBuffer("SingleFileRepository[")
-                .append(res.getName()).append("]").toString();
+        return new StringBuffer("SingleFileRepository[") //$NON-NLS-1$
+                .append(res.getName()).append("]").toString(); //$NON-NLS-1$
     }
 
     class FakeGlobal implements Repository {
@@ -251,7 +251,7 @@ public class SingleFileRepository implements Repository {
         public String getShortName() {
             // we need to return "Global" here in order to be recognized as
             // global code folder - that's the whole purpose of this class
-            return "Global";
+            return "Global"; //$NON-NLS-1$
         }
 
         /**

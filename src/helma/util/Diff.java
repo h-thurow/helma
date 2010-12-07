@@ -611,9 +611,9 @@ public class Diff
         public String toString()
         {
             StringBuffer buf = new StringBuffer();
-            buf.append("del: [" + delStart + ", " + delEnd + "]");
-            buf.append(" ");
-            buf.append("add: [" + addStart + ", " + addEnd + "]");
+            buf.append("del: [" + delStart + ", " + delEnd + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            buf.append(" "); //$NON-NLS-1$
+            buf.append("add: [" + addStart + ", " + addEnd + "]");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
             return buf.toString();
         }
 

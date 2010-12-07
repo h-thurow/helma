@@ -64,7 +64,7 @@ public class XmlRpcObject extends BaseFunction {
     public static Object xmlrpcObjectConstructor(Context cx, Object[] args,
                                               Function ctorObj, boolean inNewExpr) {
         if (args.length == 0 || args.length > 2) {
-            throw new IllegalArgumentException("Wrong number of arguments in constructor for XML-RPC client");
+            throw new IllegalArgumentException(Messages.getString("XmlRpcObject.0")); //$NON-NLS-1$
         }
         if (args.length == 1) {
             String url = args[0].toString();
@@ -84,19 +84,19 @@ public class XmlRpcObject extends BaseFunction {
         Method[] methods = XmlRpcObject.class.getDeclaredMethods();
         Member ctorMember = null;
         for (int i=0; i<methods.length; i++) {
-            if ("xmlrpcObjectConstructor".equals(methods[i].getName())) {
+            if ("xmlrpcObjectConstructor".equals(methods[i].getName())) { //$NON-NLS-1$
                 ctorMember = methods[i];
                 break;
             }
         }
-        FunctionObject ctor = new FunctionObject("Remote", ctorMember, scope);
-        ScriptableObject.defineProperty(scope, "Remote", ctor, ScriptableObject.DONTENUM);
+        FunctionObject ctor = new FunctionObject("Remote", ctorMember, scope); //$NON-NLS-1$
+        ScriptableObject.defineProperty(scope, "Remote", ctor, ScriptableObject.DONTENUM); //$NON-NLS-1$
         // ctor.addAsConstructor(scope, proto);
     }
 
 
     public Object get(String name, Scriptable start) {
-        String m = method == null ? name : method+"."+name;
+        String m = method == null ? name : method+"."+name; //$NON-NLS-1$
         return new XmlRpcObject(url, m);
     }
 
@@ -107,7 +107,7 @@ public class XmlRpcObject extends BaseFunction {
                       throws EvaluatorException {
 
         if (method == null) {
-            throw new EvaluatorException("Invalid method name");
+            throw new EvaluatorException(Messages.getString("XmlRpcObject.1")); //$NON-NLS-1$
         }
 
         RhinoCore core = RhinoCore.getCore();
@@ -131,7 +131,7 @@ public class XmlRpcObject extends BaseFunction {
             if (result instanceof Exception) {
                 throw (Exception) result;
             }
-            retval.put("result", retval, core.processXmlRpcArgument(result));
+            retval.put("result", retval, core.processXmlRpcArgument(result)); //$NON-NLS-1$
 
         } catch (Exception x) {
             String msg = x.getMessage();
@@ -139,7 +139,7 @@ public class XmlRpcObject extends BaseFunction {
             if ((msg == null) || (msg.length() == 0)) {
                 msg = x.toString();
             }
-            retval.put("error", retval, msg);
+            retval.put("error", retval, msg); //$NON-NLS-1$
 
             Application app = RhinoCore.getCore().getApplication(); 
             app.logError(msg, x);
@@ -150,11 +150,11 @@ public class XmlRpcObject extends BaseFunction {
     }
 
     public String getClassName() {
-        return "Remote";
+        return "Remote"; //$NON-NLS-1$
     }
 
     public String toString() {
-        return "[Remote "+url+"]";
+        return "[Remote "+url+"]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public Object getDefaultValue(Class hint) {

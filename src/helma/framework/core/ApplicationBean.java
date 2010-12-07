@@ -150,30 +150,30 @@ public class ApplicationBean implements Serializable {
             if (file == null) {
                 file = findResource(app.hopHome, path);
                 if (file == null) {
-                    throw new RuntimeException("Repository not found: " + path);
+                    throw new RuntimeException(Messages.getString("ApplicationBean.0") + path); //$NON-NLS-1$
                 }
             }
             if (file.isDirectory()) {
                 rep = new FileRepository(file);
             } else if (file.isFile()) {
-                if (file.getName().endsWith(".zip")) {
+                if (file.getName().endsWith(".zip")) { //$NON-NLS-1$
                     rep = new ZipRepository(file);
                 } else {
                     rep = new SingleFileRepository(file);
                 }
             } else {
-                throw new RuntimeException("Unsupported file type in addRepository: " + file);
+                throw new RuntimeException(Messages.getString("ApplicationBean.1") + file); //$NON-NLS-1$
             }
         } else if (obj instanceof Repository) {
             rep = (Repository) obj;
         } else {
-            throw new RuntimeException("Invalid argument to addRepository: " + obj);
+            throw new RuntimeException(Messages.getString("ApplicationBean.2") + obj); //$NON-NLS-1$
         }
         app.addRepository(rep, parent);
         try {
             app.typemgr.checkRepository(rep, true);
         } catch (IOException iox) {
-            getLogger().error("Error checking repository " + rep, iox);
+            getLogger().error(Messages.getString("ApplicationBean.3") + rep, iox); //$NON-NLS-1$
         }
     }
 
@@ -187,9 +187,9 @@ public class ApplicationBean implements Serializable {
         File file = new File(parent, path).getAbsoluteFile();
         if (!file.exists()) {
             // if file does not exist, try with .zip and .js extensions appended
-            file = new File(parent, path + ".zip").getAbsoluteFile();
+            file = new File(parent, path + ".zip").getAbsoluteFile(); //$NON-NLS-1$
             if (!file.exists()) {
-                file = new File(parent, path + ".js").getAbsoluteFile();
+                file = new File(parent, path + ".js").getAbsoluteFile(); //$NON-NLS-1$
             }
         }
         return file.exists() ? file : null;
@@ -274,8 +274,8 @@ public class ApplicationBean implements Serializable {
      * @return the newly registered user, or null if we failed
      */
     public INode registerUser(String username, String password) {
-        if ((username == null) || (password == null) || "".equals(username.trim()) ||
-                "".equals(password.trim())) {
+        if ((username == null) || (password == null) || "".equals(username.trim()) || //$NON-NLS-1$
+                "".equals(password.trim())) { //$NON-NLS-1$
             return null;
         } else {
             return app.registerUser(username, password);
@@ -288,7 +288,7 @@ public class ApplicationBean implements Serializable {
      * @return the user object, or null
      */
     public INode getUser(String username) {
-        if ((username == null) || "".equals(username.trim())) {
+        if ((username == null) || "".equals(username.trim())) { //$NON-NLS-1$
             return null;
         }
 
@@ -334,7 +334,7 @@ public class ApplicationBean implements Serializable {
      * @return an array of sessions for the given user
      */
     public SessionBean[] getSessionsForUser(String username) {
-        if ((username == null) || "".equals(username.trim())) {
+        if ((username == null) || "".equals(username.trim())) { //$NON-NLS-1$
             return new SessionBean[0];
         }
 
@@ -757,7 +757,7 @@ public class ApplicationBean implements Serializable {
      * @return string description of this app bean object
      */
     public String toString() {
-        return "[Application " + app.getName() + "]";
+        return "[Application " + app.getName() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     class AsyncInvoker extends Thread implements FutureResult {
@@ -832,9 +832,9 @@ public class ApplicationBean implements Serializable {
         }
 
         public String toString() {
-            return new StringBuffer("AsyncInvokeThread{running: ").append(running)
-                    .append(", result: ").append(result).append(", exception: ")
-                    .append(exception).append("}").toString();
+            return new StringBuffer("AsyncInvokeThread{running: ").append(running) //$NON-NLS-1$
+                    .append(", result: ").append(result).append(", exception: ")  //$NON-NLS-1$//$NON-NLS-2$
+                    .append(exception).append("}").toString(); //$NON-NLS-1$
         }
 
     }

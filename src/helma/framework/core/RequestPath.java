@@ -124,7 +124,7 @@ public class RequestPath {
 
         for (int i=start; i<ids.size(); i++) {
             buffer.append(UrlEncoded.encode(ids.get(i).toString(), app.charset));
-            buffer.append("/");
+            buffer.append("/"); //$NON-NLS-1$
         }
 
         if (action != null) {
@@ -163,7 +163,7 @@ public class RequestPath {
     public String toString() {
         // If there's just one element we're on the root object.
         if (ids.size() <= 1) 
-            return "/";
+            return "/"; //$NON-NLS-1$
         
         StringBuffer buffer = new StringBuffer();
         for (int i=1; i<ids.size(); i++) {

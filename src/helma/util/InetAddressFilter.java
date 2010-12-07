@@ -42,14 +42,14 @@ public class InetAddressFilter {
      */
     public void addAddress(String address) throws IOException {
         boolean v6 = false;
-        String separator = ".";
+        String separator = "."; //$NON-NLS-1$
         int length = 4;
         int loop = 4;
 
         // check if this is a v4 or v6 IP address
-        if (address.indexOf(":") > -1) {
+        if (address.indexOf(":") > -1) { //$NON-NLS-1$
             v6 = true;
-            separator = ":.";
+            separator = ":."; //$NON-NLS-1$
             length = 16;
             loop = 8;
         }
@@ -59,15 +59,15 @@ public class InetAddressFilter {
         StringTokenizer st = new StringTokenizer(address, separator);
 
         if (st.countTokens() != loop) {
-            throw new IOException("\"" + address +
-                                  "\" does not represent a valid IP address");
+            throw new IOException(Messages.getString("InetAddressFilter.0") + address + //$NON-NLS-1$
+                                  Messages.getString("InetAddressFilter.1")); //$NON-NLS-1$
         }
 
         for (int i = 0; i < loop; i++) {
             String next = st.nextToken();
 
             if (v6) {
-                if ("*".equals(next)) {
+                if ("*".equals(next)) { //$NON-NLS-1$
                     pattern[i*2] = pattern[i*2+1] = 256;
                 } else if (next.length() == 0) {
                     pattern[i*2] = pattern[i*2+1] = 0;
@@ -77,7 +77,7 @@ public class InetAddressFilter {
                     pattern[i*2+1] = (byte) (n & 0xff);
                 }
             } else {
-                if ("*".equals(next)) {
+                if ("*".equals(next)) { //$NON-NLS-1$
                     pattern[i] = 256;
                 } else {
                     pattern[i] = (byte) Integer.parseInt(next);

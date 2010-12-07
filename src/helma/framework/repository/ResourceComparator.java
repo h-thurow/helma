@@ -95,7 +95,7 @@ public class ResourceComparator implements Comparator {
             return ((Repository) obj).getRootRepository();
 
         // something we can't compare
-        throw new IllegalArgumentException("Can't compare "+obj);
+        throw new IllegalArgumentException(Messages.getString("ResourceComparator.0")+obj); //$NON-NLS-1$
     }
 
     private String getFullName(Object obj) {
@@ -105,7 +105,7 @@ public class ResourceComparator implements Comparator {
             return ((Repository) obj).getName();
 
         // something we can't compare
-        throw new IllegalArgumentException("Can't compare "+obj);
+        throw new IllegalArgumentException(Messages.getString("ResourceComparator.1")+obj); //$NON-NLS-1$
     }
 
 }

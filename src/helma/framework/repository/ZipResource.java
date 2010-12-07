@@ -40,7 +40,7 @@ public final class ZipResource extends AbstractResource {
                 .append(shortName).toString();
 
         // base name is short name with extension cut off
-        int lastDot = shortName.lastIndexOf(".");
+        int lastDot = shortName.lastIndexOf("."); //$NON-NLS-1$
         baseName = (lastDot == -1) ? shortName : shortName.substring(0, lastDot);
     }
 
@@ -54,7 +54,7 @@ public final class ZipResource extends AbstractResource {
             zipfile = repository.getZipFile();
             ZipEntry entry = zipfile.getEntry(entryName);
             if (entry == null) {
-                throw new IOException("Zip resource " + this + " does not exist");
+                throw new IOException(Messages.getString("ZipResource.0") + this + Messages.getString("ZipResource.1")); //$NON-NLS-1$ //$NON-NLS-2$
             }
             int size = (int) entry.getSize();
             byte[] buf = new byte[size];
@@ -93,7 +93,7 @@ public final class ZipResource extends AbstractResource {
             zipfile = repository.getZipFile();
             ZipEntry entry = zipfile.getEntry(entryName);
             if (entry == null) {
-                throw new IOException("Zip resource " + this + " does not exist");
+                throw new IOException(Messages.getString("ZipResource.2") + this + Messages.getString("ZipResource.3")); //$NON-NLS-1$ //$NON-NLS-2$
             }
             InputStream in = zipfile.getInputStream(entry);
             int size = (int) entry.getSize();
@@ -135,7 +135,7 @@ public final class ZipResource extends AbstractResource {
     public URL getUrl() {
         // TODO: we might want to return a Jar URL
         // http://java.sun.com/j2se/1.5.0/docs/api/java/net/JarURLConnection.html
-        throw new UnsupportedOperationException("getUrl() not implemented for ZipResource");
+        throw new UnsupportedOperationException(Messages.getString("ZipResource.4")); //$NON-NLS-1$
     }
 
     public long getLength() {

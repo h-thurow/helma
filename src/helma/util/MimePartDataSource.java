@@ -66,7 +66,7 @@ public class MimePartDataSource implements DataSource {
      * @throws IOException ...
      */
     public OutputStream getOutputStream() throws IOException {
-        throw new IOException("Can't write to MimePart object.");
+        throw new IOException(Messages.getString("MimePartDataSource.0")); //$NON-NLS-1$
     }
 
     /**

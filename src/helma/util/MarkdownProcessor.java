@@ -34,27 +34,27 @@ public class MarkdownProcessor {
     static final Set blockTags = new HashSet();
 
     static {
-        blockTags.add("p");
-        blockTags.add("div");
-        blockTags.add("h1");
-        blockTags.add("h2");
-        blockTags.add("h3");
-        blockTags.add("h4");
-        blockTags.add("h5");
-        blockTags.add("h6");
-        blockTags.add("blockquote");
-        blockTags.add("pre");
-        blockTags.add("table");
-        blockTags.add("tr"); // handle <tr> as block tag for pragmatical reasons
-        blockTags.add("dl");
-        blockTags.add("ol");
-        blockTags.add("ul");
-        blockTags.add("script");
-        blockTags.add("noscript");
-        blockTags.add("form");
-        blockTags.add("fieldset");
-        blockTags.add("iframe");
-        blockTags.add("math");
+        blockTags.add("p"); //$NON-NLS-1$
+        blockTags.add("div"); //$NON-NLS-1$
+        blockTags.add("h1"); //$NON-NLS-1$
+        blockTags.add("h2"); //$NON-NLS-1$
+        blockTags.add("h3"); //$NON-NLS-1$
+        blockTags.add("h4"); //$NON-NLS-1$
+        blockTags.add("h5"); //$NON-NLS-1$
+        blockTags.add("h6"); //$NON-NLS-1$
+        blockTags.add("blockquote"); //$NON-NLS-1$
+        blockTags.add("pre"); //$NON-NLS-1$
+        blockTags.add("table"); //$NON-NLS-1$
+        blockTags.add("tr"); // handle <tr> as block tag for pragmatical reasons //$NON-NLS-1$
+        blockTags.add("dl"); //$NON-NLS-1$
+        blockTags.add("ol"); //$NON-NLS-1$
+        blockTags.add("ul"); //$NON-NLS-1$
+        blockTags.add("script"); //$NON-NLS-1$
+        blockTags.add("noscript"); //$NON-NLS-1$
+        blockTags.add("form"); //$NON-NLS-1$
+        blockTags.add("fieldset"); //$NON-NLS-1$
+        blockTags.add("iframe"); //$NON-NLS-1$
+        blockTags.add("math"); //$NON-NLS-1$
     }
 
     public MarkdownProcessor() {}
@@ -545,18 +545,18 @@ public class MarkdownProcessor {
                 }
             }
             if (chars[j] == '&') {
-                code.append("&amp;");
+                code.append("&amp;"); //$NON-NLS-1$
             } else if (chars[j] == '<') {
-                code.append("&lt;");
+                code.append("&lt;"); //$NON-NLS-1$
             } else if (chars[j] == '>') {
-                code.append("&gt;");
+                code.append("&gt;"); //$NON-NLS-1$
             } else {
                 code.append(chars[j]);
             }
             j += 1;
         }
-        openTag("code", buffer);
-        buffer.append(code.toString().trim()).append("</code>");
+        openTag("code", buffer); //$NON-NLS-1$
+        buffer.append(code.toString().trim()).append("</code>"); //$NON-NLS-1$
         i = j + 1;
         return true;
     }
@@ -795,24 +795,24 @@ public class MarkdownProcessor {
         }
         b.setLength(0);
         if (isImage) {
-            buffer.append("<img src=\"").append(escapeHtml(link[0])).append("\"");
-            buffer.append(" alt=\"").append(escapeHtml(text)).append("\"");
+            buffer.append("<img src=\"").append(escapeHtml(link[0])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
+            buffer.append(" alt=\"").append(escapeHtml(text)).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
             if (link[1] != null) {
-                buffer.append(" title=\"").append(escapeHtml(link[1])).append("\"");
+                buffer.append(" title=\"").append(escapeHtml(link[1])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            buffer.append(" />");
+            buffer.append(" />"); //$NON-NLS-1$
 
         } else {
-            buffer.append("<a href=\"").append(escapeHtml(link[0])).append("\"");
+            buffer.append("<a href=\"").append(escapeHtml(link[0])).append("\"");  //$NON-NLS-1$//$NON-NLS-2$
             if (link[1] != null) {
-                buffer.append(" title=\"").append(escapeHtml(link[1])).append("\"");
+                buffer.append(" title=\"").append(escapeHtml(link[1])).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            buffer.append(">");
+            buffer.append(">"); //$NON-NLS-1$
             if (needsEncoding) {
                 MarkdownProcessor wrapped = new MarkdownProcessor();
-                buffer.append(wrapped.processLinkText(text)).append("</a>");
+                buffer.append(wrapped.processLinkText(text)).append("</a>"); //$NON-NLS-1$
             } else {
-                buffer.append(escapeHtml(text)).append("</a>");
+                buffer.append(escapeHtml(text)).append("</a>"); //$NON-NLS-1$
             }
         }
         i = j + 1;
@@ -830,20 +830,20 @@ public class MarkdownProcessor {
         }
         if (chars[j] == '>') {
             String href = new String(chars, k, j - k);
-            if (href.matches("\\w+:\\S*")) {
+            if (href.matches("\\w+:\\S*")) { //$NON-NLS-1$
                 String text = href;
-                if (href.startsWith("mailto:")) {
+                if (href.startsWith("mailto:")) { //$NON-NLS-1$
                     text = href.substring(7);
                     href = escapeMailtoUrl(href);
                 }
-                buffer.append("<a href=\"").append(href).append("\">")
-                        .append(text).append("</a>");
+                buffer.append("<a href=\"").append(href).append("\">")  //$NON-NLS-1$//$NON-NLS-2$
+                        .append(text).append("</a>"); //$NON-NLS-1$
                 i = j + 1;
                 return true;
-            } else if (href.matches("^.+@.+\\.[a-zA-Z]+$")) {
-                buffer.append("<a href=\"")
-                        .append(escapeMailtoUrl("mailto:" + href)).append("\">")
-                        .append(href).append("</a>");
+            } else if (href.matches("^.+@.+\\.[a-zA-Z]+$")) { //$NON-NLS-1$
+                buffer.append("<a href=\"") //$NON-NLS-1$
+                        .append(escapeMailtoUrl("mailto:" + href)).append("\">") //$NON-NLS-1$ //$NON-NLS-2$
+                        .append(href).append("</a>"); //$NON-NLS-1$
                 i = j + 1;
                 return true;
             }
@@ -858,8 +858,8 @@ public class MarkdownProcessor {
                 j += 1;
             }
             if (j < length && chars[j] == '.') {
-                checkCloseList("ol", nesting);
-                checkOpenList("ol", nesting);
+                checkCloseList("ol", nesting); //$NON-NLS-1$
+                checkOpenList("ol", nesting); //$NON-NLS-1$
                 i = j + 1;
                 return true;
             }
@@ -869,8 +869,8 @@ public class MarkdownProcessor {
             }
             j += 1;
             if (j < length && isSpace(chars[j])) {
-                checkCloseList("ul", nesting);
-                checkOpenList("ul", nesting);
+                checkCloseList("ul", nesting); //$NON-NLS-1$
+                checkOpenList("ul", nesting); //$NON-NLS-1$
                 i = j;
                 return true;
             }
@@ -890,9 +890,9 @@ public class MarkdownProcessor {
             list.open();
         } else {
             stack.closeElementsExclusive(list);
-            buffer.insert(getBufferEnd(), "</li>");
+            buffer.insert(getBufferEnd(), "</li>"); //$NON-NLS-1$
         }
-        openTag("li", buffer);
+        openTag("li", buffer); //$NON-NLS-1$
         listParagraphs = isParagraphStart();
         lineMarker = paragraphStartMarker = buffer.length();
         state = LIST;
@@ -933,13 +933,13 @@ public class MarkdownProcessor {
         }
         while(j < length && chars[j] != '\n') {
             if (chars[j] == '&') {
-                buffer.append("&amp;");
+                buffer.append("&amp;"); //$NON-NLS-1$
             } else if (chars[j] == '<') {
-                buffer.append("&lt;");
+                buffer.append("&lt;"); //$NON-NLS-1$
             } else if (chars[j] == '>') {
-                buffer.append("&gt;");
+                buffer.append("&gt;"); //$NON-NLS-1$
             } else if (chars[j] == '\t') {
-                buffer.append("   ");
+                buffer.append("   "); //$NON-NLS-1$
             } else {
                 buffer.append(chars[j]);
             }
@@ -992,10 +992,10 @@ public class MarkdownProcessor {
         int paragraphEndMarker = getBufferEnd();
         if (paragraphs && paragraphEndMarker > paragraphStartMarker &&
                 (chars[i + 1] == '\n' || buffer.charAt(buffer.length() - 1) == '\n')) {
-            buffer.insert(paragraphEndMarker, "</p>");
-            buffer.insert(paragraphStartMarker, "<p>");
+            buffer.insert(paragraphEndMarker, "</p>"); //$NON-NLS-1$
+            buffer.insert(paragraphStartMarker, "<p>"); //$NON-NLS-1$
         } else if (i > 1 && chars[i-1] == ' ' && chars[i-2] == ' ') {
-            buffer.append("<br />");
+            buffer.append("<br />"); //$NON-NLS-1$
         }
     }
 
@@ -1041,11 +1041,11 @@ public class MarkdownProcessor {
             }
             if (j < length && chars[j] == '\n') {
                 if (c == '=') {
-                    buffer.insert(lineMarker, "<h1>");
-                    buffer.append("</h1>");
+                    buffer.insert(lineMarker, "<h1>"); //$NON-NLS-1$
+                    buffer.append("</h1>"); //$NON-NLS-1$
                 } else {
-                    buffer.insert(lineMarker, "<h2>");
-                    buffer.append("</h2>");
+                    buffer.insert(lineMarker, "<h2>"); //$NON-NLS-1$
+                    buffer.append("</h2>"); //$NON-NLS-1$
                 }
                 i = j;
             }
@@ -1066,7 +1066,7 @@ public class MarkdownProcessor {
         }
         if (count >= 3 &&  chars[k] == '\n') {
             checkCloseList(null, nesting - 1);
-            buffer.append("<hr />");
+            buffer.append("<hr />"); //$NON-NLS-1$
             i = k;
             return true;
         }
@@ -1082,13 +1082,13 @@ public class MarkdownProcessor {
 
     private String escapeHtml(String str) {
         if (str.indexOf('"') > -1) {
-            str = str.replace("\"", "&quot;");
+            str = str.replace("\"", "&quot;"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (str.indexOf('<') > -1) {
-            str = str.replace("\"", "&lt;");
+            str = str.replace("\"", "&lt;");  //$NON-NLS-1$//$NON-NLS-2$
         }
             if (str.indexOf('>') > -1) {
-            str = str.replace("\"", "&gt;");
+            str = str.replace("\"", "&gt;");  //$NON-NLS-1$//$NON-NLS-2$
         }
         return str;
     }
@@ -1099,9 +1099,9 @@ public class MarkdownProcessor {
         for (int i = 0; i < chars.length; i++) {
             double random = Math.random();
             if (random < 0.5) {
-                b.append("&#x").append(Integer.toString(chars[i], 16)).append(";");
+                b.append("&#x").append(Integer.toString(chars[i], 16)).append(";"); //$NON-NLS-1$ //$NON-NLS-2$
             } else if (random < 0.9) {
-                b.append("&#").append(Integer.toString(chars[i], 10)).append(";");
+                b.append("&#").append(Integer.toString(chars[i], 10)).append(";");  //$NON-NLS-1$//$NON-NLS-2$
             } else {
                 b.append(chars[i]);
             }
@@ -1262,7 +1262,7 @@ public class MarkdownProcessor {
         }
 
         void close() {
-            buffer.insert(getBufferEnd(), "</" + tag + ">");
+            buffer.insert(getBufferEnd(), "</" + tag + ">"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -1273,7 +1273,7 @@ public class MarkdownProcessor {
 
     class BlockquoteElement extends Element {
         BlockquoteElement(int nesting) {
-            tag = "blockquote";
+            tag = "blockquote"; //$NON-NLS-1$
             this.nesting = nesting;
         }
     }
@@ -1284,19 +1284,19 @@ public class MarkdownProcessor {
         }
 
         void open() {
-            openTag("pre", buffer);
-            openTag("code", buffer);
+            openTag("pre", buffer); //$NON-NLS-1$
+            openTag("code", buffer); //$NON-NLS-1$
         }
 
         void close() {
-            buffer.insert(codeEndMarker, "</code></pre>");
+            buffer.insert(codeEndMarker, "</code></pre>"); //$NON-NLS-1$
         }
     }
 
     class HeaderElement extends Element {
         HeaderElement(int nesting) {
             this.nesting = nesting;
-            this.tag = "h" + nesting;
+            this.tag = "h" + nesting; //$NON-NLS-1$
         }
     }
 
@@ -1307,7 +1307,7 @@ public class MarkdownProcessor {
         }
 
         void close() {
-            buffer.insert(getBufferEnd(), "</li></" + tag + ">");        }
+            buffer.insert(getBufferEnd(), "</li></" + tag + ">");        }  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     class Emphasis extends Element {
@@ -1315,13 +1315,13 @@ public class MarkdownProcessor {
         Emphasis(int mod, int end) {
             this.mod = mod;
             this.end = end;
-            this.tag = mod == 1 ? "em" : "strong";
+            this.tag = mod == 1 ? "em" : "strong";  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
-            System.out.println("Usage: java org.helma.util.MarkdownProcessor FILE");
+            System.out.println(Messages.getString("MarkdownProcessor.0")); //$NON-NLS-1$
             return;
         }
         MarkdownProcessor processor = new MarkdownProcessor(new File(args[0]));

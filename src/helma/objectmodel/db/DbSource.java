@@ -83,7 +83,7 @@ public class DbSource {
             init();
             con = DriverManager.getConnection(url, conProps);
 
-            if ("false".equalsIgnoreCase(subProps.getProperty("autoCommit"))) {
+            if ("false".equalsIgnoreCase(subProps.getProperty("autoCommit"))) {  //$NON-NLS-1$//$NON-NLS-2$
             	con.setAutoCommit(false);
             }
             
@@ -113,7 +113,7 @@ public class DbSource {
             // test if connection is still ok
             try {
                 Statement stmt = con.createStatement();
-                stmt.execute("SELECT 1");
+                stmt.execute("SELECT 1"); //$NON-NLS-1$
                 stmt.close();
             } catch (SQLException sx) {
                 try {
@@ -153,33 +153,33 @@ public class DbSource {
         // use properties hashcode for ourselves
         hashcode = subProps.hashCode();
         // get JDBC URL and driver class name
-        url = subProps.getProperty("url");
-        driver = subProps.getProperty("driver");
+        url = subProps.getProperty("url"); //$NON-NLS-1$
+        driver = subProps.getProperty("driver"); //$NON-NLS-1$
         // sanity checks
         if (url == null) {
-            throw new NullPointerException(name+".url is not defined in db.properties");
+            throw new NullPointerException(name+Messages.getString("DbSource.0")); //$NON-NLS-1$
         }
         if (driver == null) {
-            throw new NullPointerException(name+".driver class not defined in db.properties");
+            throw new NullPointerException(name+Messages.getString("DbSource.1")); //$NON-NLS-1$
         }
         // test if this is an Oracle or MySQL driver
-        isOracle = driver.startsWith("oracle.jdbc.driver");
-        isMySQL = driver.startsWith("com.mysql.jdbc") ||
-                  driver.startsWith("org.gjt.mm.mysql");
-        isPostgreSQL = driver.equals("org.postgresql.Driver");
-        isH2 = driver.equals("org.h2.Driver");
+        isOracle = driver.startsWith("oracle.jdbc.driver"); //$NON-NLS-1$
+        isMySQL = driver.startsWith("com.mysql.jdbc") || //$NON-NLS-1$
+                  driver.startsWith("org.gjt.mm.mysql"); //$NON-NLS-1$
+        isPostgreSQL = driver.equals("org.postgresql.Driver"); //$NON-NLS-1$
+        isH2 = driver.equals("org.h2.Driver"); //$NON-NLS-1$
         // test if driver class is available
         Class.forName(driver);
 
         // set up driver connection properties
         conProps=new Properties();
-        String prop = subProps.getProperty("user");
+        String prop = subProps.getProperty("user"); //$NON-NLS-1$
         if (prop != null) {
-            conProps.put("user", prop);
+            conProps.put("user", prop); //$NON-NLS-1$
         }
-        prop = subProps.getProperty("password");
+        prop = subProps.getProperty("password"); //$NON-NLS-1$
         if (prop != null) {
-            conProps.put("password", prop);
+            conProps.put("password", prop); //$NON-NLS-1$
         }
 
         // read any remaining extra properties to be passed to the driver
@@ -187,11 +187,11 @@ public class DbSource {
             String key = (String) e.nextElement();
 
             // filter out properties we alread have
-            if ("url".equalsIgnoreCase(key) ||
-                "driver".equalsIgnoreCase(key) ||
-                "user".equalsIgnoreCase(key) ||
-                "password".equalsIgnoreCase(key) ||
-                "autoCommit".equalsIgnoreCase(key)) {
+            if ("url".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "driver".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "user".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "password".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "autoCommit".equalsIgnoreCase(key)) { //$NON-NLS-1$
                 continue;
             }
             conProps.setProperty(key, subProps.getProperty(key));

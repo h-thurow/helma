@@ -41,9 +41,9 @@ public class Commandline {
             ClassLoader loader = Main.createClassLoader(installDir);
 
             // get the main server class
-            Class clazz = loader.loadClass("helma.main.CommandlineRunner");
+            Class clazz = loader.loadClass("helma.main.CommandlineRunner"); //$NON-NLS-1$
             Class[] cargs = new Class[]{args.getClass()};
-            Method main = clazz.getMethod("main", cargs);
+            Method main = clazz.getMethod("main", cargs); //$NON-NLS-1$
             Object[] nargs = new Object[]{args};
 
             // and invoke the static main(String, String[]) method
@@ -51,7 +51,7 @@ public class Commandline {
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             x.printStackTrace();
-            System.err.println("Unable to get Helma installation directory: ");
+            System.err.println(Messages.getString("Commandline.0")); //$NON-NLS-1$
             System.err.println(x.getMessage());
             System.exit(2);
         }

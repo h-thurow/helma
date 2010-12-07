@@ -72,7 +72,7 @@ public class ApplicationManager implements XmlRpcHandler {
                 for (Enumeration e = props.keys(); e.hasMoreElements();) {
                     String appName = (String) e.nextElement();
 
-                    if ((appName.indexOf(".") == -1) &&
+                    if ((appName.indexOf(".") == -1) && //$NON-NLS-1$
                             (applications.get(appName) == null)) {
                         AppDescriptor appDesc = new AppDescriptor(appName);
                         appDesc.start();
@@ -98,7 +98,7 @@ public class ApplicationManager implements XmlRpcHandler {
                     }
                 }
             } catch (Exception mx) {
-                getLogger().error("Error checking applications", mx);
+                getLogger().error(Messages.getString("ApplicationManager.0"), mx); //$NON-NLS-1$
             }
 
             lastModified = System.currentTimeMillis();
@@ -150,7 +150,7 @@ public class ApplicationManager implements XmlRpcHandler {
                 for (Enumeration e = props.keys(); e.hasMoreElements();) {
                     String appName = (String) e.nextElement();
 
-                    if (appName.indexOf(".") == -1) {
+                    if (appName.indexOf(".") == -1) { //$NON-NLS-1$
                         String appValue = props.getProperty(appName);
 
                         if (appValue != null && appValue.length() > 0) {
@@ -170,7 +170,7 @@ public class ApplicationManager implements XmlRpcHandler {
 
             lastModified = System.currentTimeMillis();
         } catch (Exception mx) {
-            getLogger().error("Error starting applications", mx);
+            getLogger().error(Messages.getString("ApplicationManager.1"), mx); //$NON-NLS-1$
             mx.printStackTrace();
         }
     }
@@ -209,15 +209,15 @@ public class ApplicationManager implements XmlRpcHandler {
      */
     public Object execute(String method, Vector params)
                    throws Exception {
-        int dot = method.indexOf(".");
+        int dot = method.indexOf("."); //$NON-NLS-1$
 
         if (dot == -1) {
-            throw new Exception("Method name \"" + method +
-                                "\" does not specify a handler application");
+            throw new Exception(Messages.getString("ApplicationManager.2") + method + //$NON-NLS-1$
+                                Messages.getString("ApplicationManager.3")); //$NON-NLS-1$
         }
 
         if ((dot == 0) || (dot == (method.length() - 1))) {
-            throw new Exception("\"" + method + "\" is not a valid XML-RPC method name");
+            throw new Exception(Messages.getString("ApplicationManager.4") + method + Messages.getString("ApplicationManager.5")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         String handler = method.substring(0, dot);
@@ -225,13 +225,13 @@ public class ApplicationManager implements XmlRpcHandler {
         Application app = (Application) xmlrpcHandlers.get(handler);
 
         if (app == null) {
-            app = (Application) xmlrpcHandlers.get("*");
+            app = (Application) xmlrpcHandlers.get("*"); //$NON-NLS-1$
             // use the original method name, the handler is resolved within the app.
             method2 = method;
         }
 
         if (app == null) {
-            throw new Exception("Handler \"" + handler + "\" not found for " + method);
+            throw new Exception(Messages.getString("ApplicationManager.6") + handler + Messages.getString("ApplicationManager.7") + method); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         return app.executeXmlRpc(method2, params);
@@ -240,33 +240,33 @@ public class ApplicationManager implements XmlRpcHandler {
     private String getMountpoint(String mountpoint) {
         mountpoint = mountpoint.trim();
 
-        if ("".equals(mountpoint)) {
-            return "/";
-        } else if (!mountpoint.startsWith("/")) {
-            return "/" + mountpoint;
+        if ("".equals(mountpoint)) { //$NON-NLS-1$
+            return "/"; //$NON-NLS-1$
+        } else if (!mountpoint.startsWith("/")) { //$NON-NLS-1$
+            return "/" + mountpoint; //$NON-NLS-1$
         }
 
         return mountpoint;
     }
 
     private String joinMountpoint(String prefix, String suffix) {
-        if (prefix.endsWith("/") || suffix.startsWith("/")) {
+        if (prefix.endsWith("/") || suffix.startsWith("/")) {  //$NON-NLS-1$//$NON-NLS-2$
             return prefix+suffix;
         } else {
-            return prefix+"/"+suffix;
+            return prefix+"/"+suffix; //$NON-NLS-1$
         }
     }
 
     private String getPathPattern(String mountpoint) {
-        if (!mountpoint.startsWith("/")) {
-            mountpoint = "/"+mountpoint;
+        if (!mountpoint.startsWith("/")) { //$NON-NLS-1$
+            mountpoint = "/"+mountpoint; //$NON-NLS-1$
         }
 
-        if ("/".equals(mountpoint)) {
-            return "/";
+        if ("/".equals(mountpoint)) { //$NON-NLS-1$
+            return "/"; //$NON-NLS-1$
         }
 
-        if (mountpoint.endsWith("/")) {
+        if (mountpoint.endsWith("/")) { //$NON-NLS-1$
             return mountpoint.substring(0, mountpoint.length()-1);
         }
 
@@ -338,56 +338,56 @@ public class ApplicationManager implements XmlRpcHandler {
         AppDescriptor(String name) {
             ResourceProperties conf = props.getSubProperties(name + '.');
             appName = name;
-            mountpoint = getMountpoint(conf.getProperty("mountpoint", appName));
+            mountpoint = getMountpoint(conf.getProperty("mountpoint", appName)); //$NON-NLS-1$
             pathPattern = getPathPattern(mountpoint);
-            staticDir = conf.getProperty("static");
-            staticMountpoint = getPathPattern(conf.getProperty("staticMountpoint",
-                                        joinMountpoint(mountpoint, "static")));
-            staticIndex = "true".equalsIgnoreCase(conf.getProperty("staticIndex"));
-            String home = conf.getProperty("staticHome");
+            staticDir = conf.getProperty("static"); //$NON-NLS-1$
+            staticMountpoint = getPathPattern(conf.getProperty("staticMountpoint", //$NON-NLS-1$
+                                        joinMountpoint(mountpoint, "static"))); //$NON-NLS-1$
+            staticIndex = "true".equalsIgnoreCase(conf.getProperty("staticIndex"));  //$NON-NLS-1$//$NON-NLS-2$
+            String home = conf.getProperty("staticHome"); //$NON-NLS-1$
             if (home == null) {
-                staticHome = new String[] {"index.html", "index.htm"};
+                staticHome = new String[] {"index.html", "index.htm"}; //$NON-NLS-1$ //$NON-NLS-2$
             } else {
-                staticHome = StringUtils.split(home, ",");
+                staticHome = StringUtils.split(home, ","); //$NON-NLS-1$
             }
-            protectedStaticDir = conf.getProperty("protectedStatic");
+            protectedStaticDir = conf.getProperty("protectedStatic"); //$NON-NLS-1$
 
-            cookieDomain = conf.getProperty("cookieDomain");
-            sessionCookieName = conf.getProperty("sessionCookieName");
-            protectedSessionCookie = conf.getProperty("protectedSessionCookie");
-            uploadLimit = conf.getProperty("uploadLimit");
-            uploadSoftfail = conf.getProperty("uploadSoftfail");
-            debug = conf.getProperty("debug");
-            String appDirName = conf.getProperty("appdir");
+            cookieDomain = conf.getProperty("cookieDomain"); //$NON-NLS-1$
+            sessionCookieName = conf.getProperty("sessionCookieName"); //$NON-NLS-1$
+            protectedSessionCookie = conf.getProperty("protectedSessionCookie"); //$NON-NLS-1$
+            uploadLimit = conf.getProperty("uploadLimit"); //$NON-NLS-1$
+            uploadSoftfail = conf.getProperty("uploadSoftfail"); //$NON-NLS-1$
+            debug = conf.getProperty("debug"); //$NON-NLS-1$
+            String appDirName = conf.getProperty("appdir"); //$NON-NLS-1$
             appDir = (appDirName == null) ? null : getAbsoluteFile(appDirName);
-            String dbDirName = conf.getProperty("dbdir");
+            String dbDirName = conf.getProperty("dbdir"); //$NON-NLS-1$
             dbDir = (dbDirName == null) ? null : getAbsoluteFile(dbDirName);
-            servletClassName = conf.getProperty("servletClass");
+            servletClassName = conf.getProperty("servletClass"); //$NON-NLS-1$
 
             // got ignore dirs
-            ignoreDirs = conf.getProperty("ignore");
+            ignoreDirs = conf.getProperty("ignore"); //$NON-NLS-1$
 
             // read and configure app repositories
             ArrayList repositoryList = new ArrayList();
             Class[] parameters = { String.class };
             for (int i = 0; true; i++) {
-                String repositoryArgs = conf.getProperty("repository." + i);
+                String repositoryArgs = conf.getProperty("repository." + i); //$NON-NLS-1$
 
                 if (repositoryArgs != null) {
                     // lookup repository implementation
-                    String repositoryImpl = conf.getProperty("repository." + i +
-                                                              ".implementation");
+                    String repositoryImpl = conf.getProperty("repository." + i + //$NON-NLS-1$
+                                                              ".implementation"); //$NON-NLS-1$
                     if (repositoryImpl == null) {
                         // implementation not set manually, have to guess it
-                        if (repositoryArgs.endsWith(".zip")) {
+                        if (repositoryArgs.endsWith(".zip")) { //$NON-NLS-1$
                             repositoryArgs = findResource(repositoryArgs);
-                            repositoryImpl = "helma.framework.repository.ZipRepository";
-                        } else if (repositoryArgs.endsWith(".js")) {
+                            repositoryImpl = "helma.framework.repository.ZipRepository"; //$NON-NLS-1$
+                        } else if (repositoryArgs.endsWith(".js")) { //$NON-NLS-1$
                             repositoryArgs = findResource(repositoryArgs);
-                            repositoryImpl = "helma.framework.repository.SingleFileRepository";
+                            repositoryImpl = "helma.framework.repository.SingleFileRepository"; //$NON-NLS-1$
                         } else {
                             repositoryArgs = findResource(repositoryArgs);
-                            repositoryImpl = "helma.framework.repository.FileRepository";
+                            repositoryImpl = "helma.framework.repository.FileRepository"; //$NON-NLS-1$
                         }
                     }
 
@@ -397,8 +397,8 @@ public class ApplicationManager implements XmlRpcHandler {
                                 .newInstance(new Object[] {repositoryArgs});
                         repositoryList.add(newRepository);
                     } catch (Exception ex) {
-                        getLogger().error("Adding repository " + repositoryArgs + " failed. " +
-                                           "Will not use that repository. Check your initArgs!", ex);
+                        getLogger().error(Messages.getString("ApplicationManager.8") + repositoryArgs + Messages.getString("ApplicationManager.9") + //$NON-NLS-1$ //$NON-NLS-2$
+                                           Messages.getString("ApplicationManager.10"), ex); //$NON-NLS-1$
                     }
                 } else {
                     // we always scan repositories 0-9, beyond that only if defined
@@ -423,7 +423,7 @@ public class ApplicationManager implements XmlRpcHandler {
 
 
         void start() {
-            getLogger().info("Building application " + appName);
+            getLogger().info(Messages.getString("ApplicationManager.11") + appName); //$NON-NLS-1$
 
             try {
                 // create the application instance
@@ -443,13 +443,13 @@ public class ApplicationManager implements XmlRpcHandler {
 
                 app.start();
             } catch (Exception x) {
-                getLogger().error("Error creating application " + appName, x);
+                getLogger().error(Messages.getString("ApplicationManager.12") + appName, x); //$NON-NLS-1$
                 x.printStackTrace();
             }
         }
 
         void stop() {
-            getLogger().info("Stopping application " + appName);
+            getLogger().info(Messages.getString("ApplicationManager.13") + appName); //$NON-NLS-1$
 
             // unbind application
             unbind();
@@ -457,9 +457,9 @@ public class ApplicationManager implements XmlRpcHandler {
             // stop application
             try {
                 app.stop();
-                getLogger().info("Stopped application " + appName);
+                getLogger().info(Messages.getString("ApplicationManager.14") + appName); //$NON-NLS-1$
             } catch (Exception x) {
-                getLogger().error("Couldn't stop app", x);
+                getLogger().error(Messages.getString("ApplicationManager.15"), x); //$NON-NLS-1$
             }
 
             descriptors.remove(appName);
@@ -468,7 +468,7 @@ public class ApplicationManager implements XmlRpcHandler {
 
         void bind() {
             try {
-                getLogger().info("Binding application " + appName + " :: " + app.hashCode() + " :: " + this.hashCode());
+                getLogger().info(Messages.getString("ApplicationManager.16") + appName + " :: " + app.hashCode() + " :: " + this.hashCode());   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 
                 // set application URL prefix if it isn't set in app.properties
                 if (!app.hasExplicitBaseURI()) {
@@ -487,53 +487,53 @@ public class ApplicationManager implements XmlRpcHandler {
 
                         File staticContent = getAbsoluteFile(staticDir);
 
-                        getLogger().info("Serving static from " + staticContent.getPath());
-                        getLogger().info("Mounting static at " + staticMountpoint);
+                        getLogger().info(Messages.getString("ApplicationManager.17") + staticContent.getPath()); //$NON-NLS-1$
+                        getLogger().info(Messages.getString("ApplicationManager.18") + staticMountpoint); //$NON-NLS-1$
                         
                         ResourceHandler rhandler = new ResourceHandler();
                         rhandler.setResourceBase(staticContent.getPath());
                         rhandler.setWelcomeFiles(staticHome);
                         
-                        staticContext = context.addContext(staticMountpoint, "");
+                        staticContext = context.addContext(staticMountpoint, ""); //$NON-NLS-1$
                         staticContext.setHandler(rhandler);
                         
                         staticContext.start();
                     }
                     
-                    appContext = context.addContext(pathPattern, "");
+                    appContext = context.addContext(pathPattern, ""); //$NON-NLS-1$
 
                     ServletHandler handler = new ServletHandler();
                     Class servletClass = servletClassName == null ?
                             EmbeddedServletClient.class : Class.forName(servletClassName);
 
                     ServletHolder holder = new ServletHolder(servletClass);
-                    handler.addServletWithMapping(holder, "/*");
+                    handler.addServletWithMapping(holder, "/*"); //$NON-NLS-1$
 
-                    holder.setInitParameter("application", appName);
+                    holder.setInitParameter("application", appName); //$NON-NLS-1$
                     // holder.setInitParameter("mountpoint", mountpoint);
 
                     if (cookieDomain != null) {
-                        holder.setInitParameter("cookieDomain", cookieDomain);
+                        holder.setInitParameter("cookieDomain", cookieDomain); //$NON-NLS-1$
                     }
 
                     if (sessionCookieName != null) {
-                        holder.setInitParameter("sessionCookieName", sessionCookieName);
+                        holder.setInitParameter("sessionCookieName", sessionCookieName); //$NON-NLS-1$
                     }
 
                     if (protectedSessionCookie != null) {
-                        holder.setInitParameter("protectedSessionCookie", protectedSessionCookie);
+                        holder.setInitParameter("protectedSessionCookie", protectedSessionCookie); //$NON-NLS-1$
                     }
 
                     if (uploadLimit != null) {
-                        holder.setInitParameter("uploadLimit", uploadLimit);
+                        holder.setInitParameter("uploadLimit", uploadLimit); //$NON-NLS-1$
                     }
 
                     if (uploadSoftfail != null) {
-                        holder.setInitParameter("uploadSoftfail", uploadSoftfail);
+                        holder.setInitParameter("uploadSoftfail", uploadSoftfail); //$NON-NLS-1$
                     }
 
                     if (debug != null) {
-                        holder.setInitParameter("debug", debug);
+                        holder.setInitParameter("debug", debug); //$NON-NLS-1$
                     }
                     
                     appContext.setHandler(handler);
@@ -541,7 +541,7 @@ public class ApplicationManager implements XmlRpcHandler {
                     if (protectedStaticDir != null) {
                         File protectedContent = getAbsoluteFile(protectedStaticDir);
                         appContext.setResourceBase(protectedContent.getPath());
-                        getLogger().info("Serving protected static from " +
+                        getLogger().info(Messages.getString("ApplicationManager.19") + //$NON-NLS-1$
                                        protectedContent.getPath());
                     }
 
@@ -554,13 +554,13 @@ public class ApplicationManager implements XmlRpcHandler {
                 xmlrpcHandlerName = app.getXmlRpcHandlerName();
                 xmlrpcHandlers.put(xmlrpcHandlerName, app);
             } catch (Exception x) {
-                getLogger().error("Couldn't bind app", x);
+                getLogger().error(Messages.getString("ApplicationManager.20"), x); //$NON-NLS-1$
                 x.printStackTrace();
             }
         }
 
         void unbind() {
-            getLogger().info("Unbinding application " + appName);
+            getLogger().info(Messages.getString("ApplicationManager.21") + appName); //$NON-NLS-1$
 
             try {
                 // unbind from Jetty HTTP server
@@ -586,13 +586,13 @@ public class ApplicationManager implements XmlRpcHandler {
                     xmlrpcHandlers.remove(xmlrpcHandlerName);
                 }
             } catch (Exception x) {
-                getLogger().error("Couldn't unbind app", x);
+                getLogger().error(Messages.getString("ApplicationManager.22"), x); //$NON-NLS-1$
             }
 
         }
 
         public String toString() {
-            return "[AppDescriptor "+app+"]";
+            return "[AppDescriptor "+app+"]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

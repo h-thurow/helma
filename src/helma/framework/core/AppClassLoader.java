@@ -47,6 +47,6 @@ public class AppClassLoader extends URLClassLoader {
     }
 
     public String toString() {
-        return "helma.framework.core.AppClassLoader[" + appname + "]";
+        return "helma.framework.core.AppClassLoader[" + appname + "]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

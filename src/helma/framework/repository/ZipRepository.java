@@ -82,9 +82,9 @@ public final class ZipRepository extends AbstractRepository {
         if (zipentry == null) {
             name = shortName = file.getName();
             depth = 0;
-            entryPath = "";
+            entryPath = ""; //$NON-NLS-1$
         } else {
-            String[] pathArray = StringUtils.split(zipentry.getName(), "/");
+            String[] pathArray = StringUtils.split(zipentry.getName(), "/"); //$NON-NLS-1$
             depth = pathArray.length;
             shortName = pathArray[depth - 1];
             entryPath = zipentry.getName();
@@ -124,7 +124,7 @@ public final class ZipRepository extends AbstractRepository {
                         // names don't match - not a child of ours
                         continue;
                     }
-                    String[] entrypath = StringUtils.split(eName, "/");
+                    String[] entrypath = StringUtils.split(eName, "/"); //$NON-NLS-1$
                     if (depth > 0 && !shortName.equals(entrypath[depth-1])) {
                         // catch case where our name is Foo and other's is FooBar
                         continue;
@@ -171,10 +171,10 @@ public final class ZipRepository extends AbstractRepository {
     private ZipEntry composeChildEntry(String name) {
         if (entryPath == null || entryPath.length() == 0) {
             return new ZipEntry(name);
-        } else if (entryPath.endsWith("/")) {
+        } else if (entryPath.endsWith("/")) { //$NON-NLS-1$
             return new ZipEntry(entryPath + name);
         } else {
-            return new ZipEntry(entryPath + "/" + name);
+            return new ZipEntry(entryPath + "/" + name); //$NON-NLS-1$
         }
     }
 
@@ -182,7 +182,7 @@ public final class ZipRepository extends AbstractRepository {
      * Called to create a child resource for this repository
      */
     protected Resource createResource(String name) {
-        return new ZipResource(entryPath + "/" + name, this);
+        return new ZipResource(entryPath + "/" + name, this); //$NON-NLS-1$
     }
 
     public long getChecksum() {
@@ -212,7 +212,7 @@ public final class ZipRepository extends AbstractRepository {
 
     public void create() {
         // we do not create zip files as it makes no sense
-        throw new UnsupportedOperationException("create() not implemented for ZipRepository");
+        throw new UnsupportedOperationException(Messages.getString("ZipRepository.0")); //$NON-NLS-1$
     }
 
     /**
@@ -245,7 +245,7 @@ public final class ZipRepository extends AbstractRepository {
     }
 
     public String toString() {
-        return new StringBuffer("ZipRepository[").append(name).append("]").toString();
+        return new StringBuffer("ZipRepository[").append(name).append("]").toString(); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

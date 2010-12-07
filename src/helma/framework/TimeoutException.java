@@ -28,6 +28,6 @@ public class TimeoutException extends RuntimeException {
      * Creates a new TimeoutException object.
      */
     public TimeoutException() {
-        super("Request timed out");
+        super(Messages.getString("TimeoutException.0")); //$NON-NLS-1$
     }
 }

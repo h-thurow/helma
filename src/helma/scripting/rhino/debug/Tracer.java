@@ -58,7 +58,7 @@ public class Tracer implements Debugger {
      */
     static String toString(DebuggableScript script) {
         if (script.isFunction()) {
-            return script.getSourceName() + ": " + script.getFunctionName();
+            return script.getSourceName() + ": " + script.getFunctionName(); //$NON-NLS-1$
         } else {
             return script.getSourceName();
         }
@@ -95,7 +95,7 @@ public class Tracer implements Debugger {
          *  Called when thrown exception is handled by the function or script.
          */
         public void onExceptionThrown(Context cx, Throwable ex) {
-            res.debug("Exception Thrown: " + ex);
+            res.debug(Messages.getString("Tracer.0") + ex); //$NON-NLS-1$
         }
 
         /**
@@ -129,11 +129,11 @@ public class Tracer implements Debugger {
             // looking for bottlenecks, but not when trying to find out wtf is going on
             // if (time <= 1)
             //     return;            
-            StringBuffer b = new StringBuffer("Trace: ");
+            StringBuffer b = new StringBuffer(Messages.getString("Tracer.1")); //$NON-NLS-1$
             for (int i = 0; i < depth; i++)
-                b.append(".&nbsp;");
+                b.append(".&nbsp;"); //$NON-NLS-1$
             b.append(Tracer.toString(script));
-            b.append("(");
+            b.append("("); //$NON-NLS-1$
 
             /* for (int i = 0; i < args.length; i++) {
                b.append(HtmlEncoder.encodeAll(ScriptRuntime.toString(args[i])));
@@ -143,11 +143,11 @@ public class Tracer implements Debugger {
                }
            } */
 
-            b.append(")");
+            b.append(")"); //$NON-NLS-1$
 
-            b.append(" <b>");
+            b.append(" <b>"); //$NON-NLS-1$
             b.append(time);
-            b.append(" millis</b>");
+            b.append(Messages.getString("Tracer.2")); //$NON-NLS-1$
 
             res.debug(b);
 

@@ -45,8 +45,8 @@ public class PathWrapper extends ScriptableObject {
         // initialize properties and functions
         setParentScope(core.getScope());
         setPrototype(null);
-        defineProperty("length", PathWrapper.class, DONTENUM | READONLY | PERMANENT);
-        defineFunctionProperties(new String[] {"href", "contains"}, 
+        defineProperty("length", PathWrapper.class, DONTENUM | READONLY | PERMANENT); //$NON-NLS-1$
+        defineFunctionProperties(new String[] {"href", "contains"},  //$NON-NLS-1$ //$NON-NLS-2$
                                  PathWrapper.class, DONTENUM | PERMANENT);
     }
 
@@ -143,11 +143,11 @@ public class PathWrapper extends ScriptableObject {
     }
 
     public String getClassName() {
-        return "[PathWrapper]";
+        return "[PathWrapper]"; //$NON-NLS-1$
     }
 
     public String toString() {
-        return "PathWrapper["+path.toString()+"]";
+        return "PathWrapper["+path.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
     }
     
     /**

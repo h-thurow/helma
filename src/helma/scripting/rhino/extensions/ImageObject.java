@@ -52,14 +52,14 @@ public class ImageObject {
         Method[] methods = ImageObject.class.getDeclaredMethods();
         Member ctorMember = null;
         for (int i=0; i<methods.length; i++) {
-            if ("imageCtor".equals(methods[i].getName())) {
+            if ("imageCtor".equals(methods[i].getName())) { //$NON-NLS-1$
                 ctorMember = methods[i];
                 break;
             }
         }
-        FunctionObject ctor = new FunctionObject("Image", ctorMember, scope);
-        ScriptableObject.defineProperty(scope, "Image", ctor, ScriptableObject.DONTENUM);
-        ctor.put("getInfo", ctor, new GetInfo());
+        FunctionObject ctor = new FunctionObject("Image", ctorMember, scope); //$NON-NLS-1$
+        ScriptableObject.defineProperty(scope, "Image", ctor, ScriptableObject.DONTENUM); //$NON-NLS-1$
+        ctor.put("getInfo", ctor, new GetInfo()); //$NON-NLS-1$
     }
 
     public static Object imageCtor (Context cx, Object[] args,
@@ -130,19 +130,19 @@ public class ImageObject {
                 }
             }
         } catch (IOException iox) {
-            throw new RuntimeException("Error creating Image: " + iox);
+            throw new RuntimeException(Messages.getString("ImageObject.0") + iox); //$NON-NLS-1$
         }
 
         if (img == null) {
             switch (args.length) {
                 case 0:
-                    throw new RuntimeException("Error creating Image: Called without arguments");
+                    throw new RuntimeException(Messages.getString("ImageObject.1")); //$NON-NLS-1$
                 case 1:
-                    throw new RuntimeException("Error creating Image from " + args[0]);
+                    throw new RuntimeException(Messages.getString("ImageObject.2") + args[0]); //$NON-NLS-1$
                 case 2:
-                    throw new RuntimeException("Error creating Image from " + args[0] + ", " + args[1]);
+                    throw new RuntimeException(Messages.getString("ImageObject.3") + args[0] + ", " + args[1]);  //$NON-NLS-1$//$NON-NLS-2$
                 default:
-                    throw new RuntimeException("Error creating Image: Wrong number of arguments");
+                    throw new RuntimeException(Messages.getString("ImageObject.4")); //$NON-NLS-1$
             }
         }
 
@@ -155,7 +155,7 @@ public class ImageObject {
         public Object call(Context cx, Scriptable scope,
                            Scriptable thisObj, Object[] args) {
             if (args.length != 1) {
-                throw new IllegalArgumentException("Image.getInfo() expects one argument");
+                throw new IllegalArgumentException(Messages.getString("ImageObject.5")); //$NON-NLS-1$
             }
 
             Object arg = args[0];
@@ -182,7 +182,7 @@ public class ImageObject {
                     String str = (String) arg;
                     // try to interpret argument as URL if it contains a colon,
                     // otherwise or if URL is malformed interpret as file name.
-                    if (str.indexOf(":") > -1) {
+                    if (str.indexOf(":") > -1) { //$NON-NLS-1$
                         try {
                             URL url = new URL(str);
                             in = url.openStream();
@@ -195,8 +195,8 @@ public class ImageObject {
                 }
     
                 if (in == null) {
-                    String msg = "Unrecognized argument in Image.getInfo(): ";
-                    msg += arg == null ? "null" : arg.getClass().toString();
+                    String msg = Messages.getString("ImageObject.6"); //$NON-NLS-1$
+                    msg += arg == null ? "null" : arg.getClass().toString(); //$NON-NLS-1$
                     throw new IllegalArgumentException(msg);
                 }
     

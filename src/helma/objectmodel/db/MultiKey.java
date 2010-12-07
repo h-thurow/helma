@@ -63,7 +63,7 @@ public final class MultiKey implements Key, Serializable {
     private String getStorageNameFromParts(DbMapping dbmap, Map parts) {
         if (dbmap == null)
             return null;
-        String protoName = (String) parts.get("$prototype");
+        String protoName = (String) parts.get("$prototype"); //$NON-NLS-1$
         if (protoName != null) {
             DbMapping dynamap = dbmap.app.getDbMapping(protoName);
             if (dynamap != null) {
@@ -145,7 +145,7 @@ public final class MultiKey implements Key, Serializable {
      * @return a string representation for this key
      */
     public String toString() {
-        return (storageName == null) ? ("[" + parts + "]") : (storageName + "[" + parts + "]");
+        return (storageName == null) ? ("[" + parts + "]") : (storageName + "[" + parts + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
     }
 
     // We implement write/readObject to set storageName

@@ -162,7 +162,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         if (!hasRelationalNodes() || segments == null) {
             return super.toArray();
         }
-        node.nmgr.logEvent("Warning: toArray() called on large segmented collection: " + node);
+        node.nmgr.logEvent(Messages.getString("SegmentedSubnodeList.0") + node); //$NON-NLS-1$
         for (int i = 0; i < segments.length; i++) {
             loadSegment(i, false);
         }
@@ -189,7 +189,7 @@ public class SegmentedSubnodeList extends SubnodeList {
                     node.nmgr.getNodeIDs(node, rel);
             int actualSize = seglist.size();
             if (actualSize != expectedSize) {
-                node.nmgr.logEvent("Inconsistent segment size in " + node + ": " + segment);
+                node.nmgr.logEvent(Messages.getString("SegmentedSubnodeList.1") + node + Messages.getString("SegmentedSubnodeList.2") + segment); //$NON-NLS-1$ //$NON-NLS-2$
             }
             int listSize = list.size();
             for (int i = 0; i < actualSize; i++) {
@@ -262,7 +262,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         }
 
         public String toString() {
-            return "Segment{startIndex: " + startIndex + ", length: " + length + "}";
+            return "Segment{startIndex: " + startIndex + ", length: " + length + "}";  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 

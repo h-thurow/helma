@@ -76,7 +76,7 @@ public class XmlIDGenerator {
      * Returns a string representation of this IDGenerator
      */
     public String toString() {
-        return "IDGenerator[counter=" + counter + ",dirty=" + dirty + "]";
+        return "IDGenerator[counter=" + counter + ",dirty=" + dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
@@ -89,13 +89,13 @@ public class XmlIDGenerator {
     public static XmlIDGenerator getIDGenerator(File file)
             throws ObjectNotFoundException {
         if (!file.exists()) {
-            throw new ObjectNotFoundException("IDGenerator not found in idgen.xml");
+            throw new ObjectNotFoundException(Messages.getString("XmlIDGenerator.0")); //$NON-NLS-1$
         }
 
         try {
             Document document = XmlUtil.parse(new FileInputStream(file));
             org.w3c.dom.Element tmp = (Element) document.getDocumentElement()
-                    .getElementsByTagName("counter")
+                    .getElementsByTagName("counter") //$NON-NLS-1$
                     .item(0);
 
             return new XmlIDGenerator(Long.parseLong(XmlUtil.getTextContent(tmp)));
@@ -115,12 +115,12 @@ public class XmlIDGenerator {
             throws IOException {
         OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file));
 
-        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        out.write("<!-- printed by helma object publisher     -->\n");
-        out.write("<!-- created " + (new Date()).toString() + " -->\n");
-        out.write("<xmlroot>\n");
-        out.write("  <counter>" + idgen.getValue() + "</counter>\n");
-        out.write("</xmlroot>\n");
+        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //$NON-NLS-1$
+        out.write("<!-- printed by helma object publisher     -->\n"); //$NON-NLS-1$
+        out.write("<!-- created " + (new Date()).toString() + " -->\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        out.write("<xmlroot>\n"); //$NON-NLS-1$
+        out.write("  <counter>" + idgen.getValue() + "</counter>\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        out.write("</xmlroot>\n"); //$NON-NLS-1$
         out.close();
     }
 }

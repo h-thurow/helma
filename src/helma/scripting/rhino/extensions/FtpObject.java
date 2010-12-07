@@ -60,7 +60,7 @@ public class FtpObject extends ScriptableObject {
      * @return ...
      */
     public String getClassName() {
-        return "FtpClient";
+        return "FtpClient"; //$NON-NLS-1$
     }
 
     /**
@@ -69,7 +69,7 @@ public class FtpObject extends ScriptableObject {
      * @return ...
      */
     public String toString() {
-        return "[FtpClient]";
+        return "[FtpClient]"; //$NON-NLS-1$
     }
 
     /**
@@ -78,8 +78,8 @@ public class FtpObject extends ScriptableObject {
      * @return ...
      */
     public String toDetailString() {
-        return "ES:[Object: builtin " + this.getClass().getName() + ":" +
-               this.toString() + "]";
+        return "ES:[Object: builtin " + this.getClass().getName() + ":" +  //$NON-NLS-1$//$NON-NLS-2$
+               this.toString() + "]"; //$NON-NLS-1$
     }
 
     Exception getLastError() {
@@ -292,7 +292,7 @@ public class FtpObject extends ScriptableObject {
     public static FtpObject ftpObjCtor(Context cx, Object[] args,
                 Function ctorObj, boolean inNewExpr) {
         if (args.length != 1 || args[0] == Undefined.instance) {
-            throw new IllegalArgumentException("Ftp constructor called without argument");
+            throw new IllegalArgumentException(Messages.getString("FtpObject.0")); //$NON-NLS-1$
         }
         return new FtpObject(args[0].toString());
     }
@@ -303,22 +303,22 @@ public class FtpObject extends ScriptableObject {
         proto.setPrototype(getObjectPrototype(scope));
         Member ctorMember = null;
         for (int i=0; i<methods.length; i++) {
-            if ("ftpObjCtor".equals(methods[i].getName())) {
+            if ("ftpObjCtor".equals(methods[i].getName())) { //$NON-NLS-1$
                 ctorMember = methods[i];
                 break;
             }
         }
-        FunctionObject ctor = new FunctionObject("FtpClient", ctorMember, scope);
+        FunctionObject ctor = new FunctionObject("FtpClient", ctorMember, scope); //$NON-NLS-1$
         ctor.addAsConstructor(scope, proto);
         String[] ftpFuncs = {
-                "login", "cd", "mkdir", "lcd", "putFile",
-                "putString", "getFile", "getString", "logout",
-                "binary", "ascii"
+                "login", "cd", "mkdir", "lcd", "putFile",   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                "putString", "getFile", "getString", "logout",  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
+                "binary", "ascii"  //$NON-NLS-1$//$NON-NLS-2$
                             };
         try {
             proto.defineFunctionProperties(ftpFuncs, FtpObject.class, 0);
         } catch (Exception ignore) {
-            System.err.println ("Error defining function properties: "+ignore);
+            System.err.println (Messages.getString("FtpObject.1")+ignore); //$NON-NLS-1$
         }
     }
 

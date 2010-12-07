@@ -36,10 +36,10 @@ public class ParentInfo {
     public ParentInfo(String desc) {
 
         // [named] isn't used anymore, we just want to keep the parsing compatible.
-        int n = desc.indexOf("[named]");
+        int n = desc.indexOf("[named]"); //$NON-NLS-1$
         desc = n > -1 ? desc.substring(0, n) : desc;
 
-        String[] parts = StringUtils.split(desc, ".");
+        String[] parts = StringUtils.split(desc, "."); //$NON-NLS-1$
 
         switch (parts.length) {
         	case 0:
@@ -61,21 +61,21 @@ public class ParentInfo {
             	}
         }
 
-        isroot = "root".equalsIgnoreCase(propname);
+        isroot = "root".equalsIgnoreCase(propname); //$NON-NLS-1$
     }
 
     /**
      * @return a string representation of the parent info
      */
     public String toString() {
-        StringBuffer b = new StringBuffer("ParentInfo[").append(propname);
+        StringBuffer b = new StringBuffer("ParentInfo[").append(propname); //$NON-NLS-1$
         if (virtualnames.length > 0) {
         	for (int i = 0; i < virtualnames.length; i++) {
-        		b.append(".").append(virtualnames[i]);	
+        		b.append(".").append(virtualnames[i]);	 //$NON-NLS-1$
         	}
         }
         if (collectionname != null)
-            b.append(".").append(collectionname);
-        return b.append("]").toString();
+            b.append(".").append(collectionname); //$NON-NLS-1$
+        return b.append("]").toString(); //$NON-NLS-1$
     }
 }

@@ -47,7 +47,7 @@ public class GlobalFunctions extends AbstractQuercusModule {
             @SuppressWarnings("unused") final StringValue name) {
         // TODO: implement
         QuercusEngine.ENGINE.get().getEnvironment().error(
-                "Not yet implemented!");
+                Messages.getString("GlobalFunctions.0")); //$NON-NLS-1$
         return null;
     }
 
@@ -86,13 +86,13 @@ public class GlobalFunctions extends AbstractQuercusModule {
         helma.framework.core.Skin skin;
         final ResponseTrans response = engine.getRequestEvaluator()
                 .getResponse();
-        if (name.startsWith("#")) {
+        if (name.startsWith("#")) { //$NON-NLS-1$
             // evaluate relative subskin name against currently rendering skin
             skin = response.getActiveSkin();
             return skin == null ? null : skin.getSubskin(name.substring(1));
         }
 
-        final Integer hashCode = Integer.valueOf("Global".hashCode()
+        final Integer hashCode = Integer.valueOf("Global".hashCode() //$NON-NLS-1$
                 + name.hashCode());
         skin = response.getCachedSkin(hashCode);
 
@@ -104,10 +104,10 @@ public class GlobalFunctions extends AbstractQuercusModule {
             final Object[] skinpath = response.getSkinpath();
             try {
                 skin = engine.getApplication()
-                        .getSkin("Global", name, skinpath);
+                        .getSkin("Global", name, skinpath); //$NON-NLS-1$
             } catch (final IOException e) {
                 throw new helma.scripting.ScriptingException(
-                        "Getting skin from application using skinpath failed!",
+                        Messages.getString("GlobalFunctions.1"), //$NON-NLS-1$
                         e);
             }
             response.cacheSkin(hashCode, skin);
@@ -130,7 +130,7 @@ public class GlobalFunctions extends AbstractQuercusModule {
         if (parameters != null
                 && !(parameters.toJavaObject() instanceof HopObject)) {
             engine.getEnvironment().error(
-                    "Parameters must be null or a HopObject!");
+                    Messages.getString("GlobalFunctions.2")); //$NON-NLS-1$
         }
 
         helma.framework.core.Skin skin;
@@ -170,7 +170,7 @@ public class GlobalFunctions extends AbstractQuercusModule {
         if (parameters != null
                 && !(parameters.toJavaObject() instanceof HopObject)) {
             engine.getEnvironment().error(
-                    "Parameters must be null or a HopObject!");
+                    Messages.getString("GlobalFunctions.3")); //$NON-NLS-1$
         }
 
         helma.framework.core.Skin skin;

@@ -38,8 +38,8 @@ public class FileLogger extends Logger implements Log {
     private File logfile;
 
     // number format for log file rotation
-    DecimalFormat nformat = new DecimalFormat("000");
-    DateFormat aformat = new SimpleDateFormat("yyyy-MM-dd");
+    DecimalFormat nformat = new DecimalFormat("000"); //$NON-NLS-1$
+    DateFormat aformat = new SimpleDateFormat("yyyy-MM-dd"); //$NON-NLS-1$
 
     /**
      * Create a file logger. The actual file names do have numbers appended and are
@@ -53,7 +53,7 @@ public class FileLogger extends Logger implements Log {
         // make logdir have an absolute path in case it doesn't already
         if (!logdir.isAbsolute())
             logdir = logdir.getAbsoluteFile();
-        logfile = new File(logdir, name + ".log");
+        logfile = new File(logdir, name + ".log"); //$NON-NLS-1$
 
         if (!logdir.exists()) {
             logdir.mkdirs();
@@ -79,7 +79,7 @@ public class FileLogger extends Logger implements Log {
             writer = new PrintWriter(new FileWriter(logfile.getAbsolutePath(), true),
                                      false);
         } catch (IOException iox) {
-            System.err.println("Error creating log " + name + ": " + iox);
+            System.err.println(Messages.getString("FileLogger.0") + name + ": " + iox);  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 
@@ -130,9 +130,9 @@ public class FileLogger extends Logger implements Log {
             int ct = 0;
 
             // first append just the date
-            String archname = name + "-" + today + ".log";
+            String archname = name + "-" + today + ".log"; //$NON-NLS-1$ //$NON-NLS-2$
             File archive = new File(logdir, archname);
-            File zipped = new File(logdir, archname + ".gz");
+            File zipped = new File(logdir, archname + ".gz"); //$NON-NLS-1$
 
             // increase counter until we find an unused log archive name, checking
             // both unzipped and zipped file names
@@ -140,16 +140,16 @@ public class FileLogger extends Logger implements Log {
                 // for the next try we append a counter
                 String archidx = (ct > 999) ? Integer.toString(ct) : nformat.format(++ct);
 
-                archname = name + "-" + today + "-" + archidx + ".log";
+                archname = name + "-" + today + "-" + archidx + ".log"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 archive = new File(logdir, archname);
-                zipped = new File(logdir, archname + ".gz");
+                zipped = new File(logdir, archname + ".gz"); //$NON-NLS-1$
             }
 
             if (logfile.renameTo(archive)) {
                 return archive;
             } else {
-                System.err.println("Error rotating log file " + canonicalName +
-                        ". Will append to old file.");
+                System.err.println(Messages.getString("FileLogger.1") + canonicalName + //$NON-NLS-1$
+                        Messages.getString("FileLogger.2")); //$NON-NLS-1$
             }
         }
 
@@ -161,7 +161,7 @@ public class FileLogger extends Logger implements Log {
      * Return a string representation of this Logger
      */
     public String toString() {
-        return "FileLogger[" + name + "]";
+        return "FileLogger[" + name + "]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 
     /**
@@ -197,7 +197,7 @@ public class FileLogger extends Logger implements Log {
             while (it.hasNext()) {
                 try {
                     file = (File) it.next();
-                    File zipped = new File(file.getAbsolutePath() + ".gz");
+                    File zipped = new File(file.getAbsolutePath() + ".gz"); //$NON-NLS-1$
                     GZIPOutputStream zip = new GZIPOutputStream(new FileOutputStream(zipped));
                     BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
                     byte[] b = new byte[BUFFER_SIZE];
@@ -211,7 +211,7 @@ public class FileLogger extends Logger implements Log {
                     in.close();
                     file.delete();
                 } catch (Exception e) {
-                    System.err.println("Error gzipping " + file);
+                    System.err.println(Messages.getString("FileLogger.3") + file); //$NON-NLS-1$
                     System.err.println(e.toString());
                 }
             }

@@ -57,7 +57,7 @@ public class JettyServer {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Jetty configuration problem: " + e);
+            throw new RuntimeException(Messages.getString("JettyServer.0") + e); //$NON-NLS-1$
         }
     }
 
@@ -86,15 +86,15 @@ public class JettyServer {
         	http.addConnector(ajp13);
 
             // jetty6 does not support protection of AJP13 connections anymore
-            if (server.sysProps.containsKey("allowAJP13")) {
-                String message = "allowAJP13 property is no longer supported. " +
-                        "Please remove it from your config and use a firewall " +
-                        "to protect the AJP13 port";
+            if (server.sysProps.containsKey("allowAJP13")) { //$NON-NLS-1$
+                String message = Messages.getString("JettyServer.1") + //$NON-NLS-1$
+                        Messages.getString("JettyServer.2") + //$NON-NLS-1$
+                        Messages.getString("JettyServer.3"); //$NON-NLS-1$
                 server.getLogger().error(message);
                 throw new RuntimeException(message);
             }
 
-            server.getLogger().info("Starting AJP13-Listener on port " + (ajpPort));            
+            server.getLogger().info(Messages.getString("JettyServer.4") + (ajpPort));             //$NON-NLS-1$
         }
         openListeners();
     }

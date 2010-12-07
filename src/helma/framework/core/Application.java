@@ -139,7 +139,7 @@ public final class Application implements Runnable {
     private String hrefRootPrototype;
 
     // the id of the object to use as root object
-    String rootId = "0";
+    String rootId = "0"; //$NON-NLS-1$
 
     // Db mappings for some standard prototypes
     private DbMapping rootMapping;
@@ -176,7 +176,7 @@ public final class Application implements Runnable {
     private Resource currentCodeResource;
 
     // Field to cache unmapped java classes
-    private final static String CLASS_NOT_MAPPED = "(unmapped)";
+    private final static String CLASS_NOT_MAPPED = Messages.getString("Application.0"); //$NON-NLS-1$
 
     /**
      * Namespace search path for global macros
@@ -216,11 +216,11 @@ public final class Application implements Runnable {
                        File customAppDir, File customDbDir)
                 throws RemoteException, IllegalArgumentException {
         if ((name == null) || (name.trim().length() == 0)) {
-            throw new IllegalArgumentException("Invalid application name: " + name);
+            throw new IllegalArgumentException(Messages.getString("Application.1") + name); //$NON-NLS-1$
         }
 
         if (repositories.length == 0) {
-            throw new java.lang.IllegalArgumentException("No sources defined for application: " + name);
+            throw new java.lang.IllegalArgumentException(Messages.getString("Application.2") + name); //$NON-NLS-1$
         }
 
         this.name = name;
@@ -267,35 +267,35 @@ public final class Application implements Runnable {
         }
 
         // give the Helma Thread group a name so the threads can be recognized
-        threadgroup = new ThreadGroup("TX-" + name);
+        threadgroup = new ThreadGroup("TX-" + name); //$NON-NLS-1$
 
         // create app-level properties
-        props = new ResourceProperties(this, "app.properties", sysProps);
+        props = new ResourceProperties(this, "app.properties", sysProps); //$NON-NLS-1$
 
         // get log names
-        accessLogName = props.getProperty("accessLog",
-                new StringBuffer("helma.").append(name).append(".access").toString());
-        eventLogName = props.getProperty("eventLog",
-                new StringBuffer("helma.").append(name).append(".event").toString());
+        accessLogName = props.getProperty("accessLog", //$NON-NLS-1$
+                new StringBuffer("helma.").append(name).append(".access").toString());  //$NON-NLS-1$//$NON-NLS-2$
+        eventLogName = props.getProperty("eventLog", //$NON-NLS-1$
+                new StringBuffer("helma.").append(name).append(".event").toString());  //$NON-NLS-1$//$NON-NLS-2$
 
         // create app-level db sources
-        dbProps = new ResourceProperties(this, "db.properties", sysDbProps, false);
+        dbProps = new ResourceProperties(this, "db.properties", sysDbProps, false); //$NON-NLS-1$
 
         // the passwd file, to be used with the authenticate() function
         CryptResource parentpwfile = null;
 
         if (hopHome != null) {
-            parentpwfile = new CryptResource(new FileResource(new File(hopHome, "passwd")), null);
+            parentpwfile = new CryptResource(new FileResource(new File(hopHome, "passwd")), null); //$NON-NLS-1$
         }
 
-        pwfile = new CryptResource(repositories[0].getResource("passwd"), parentpwfile);
+        pwfile = new CryptResource(repositories[0].getResource("passwd"), parentpwfile); //$NON-NLS-1$
 
         // the properties that map java class names to prototype names
-        classMapping = new ResourceProperties(this, "class.properties");
+        classMapping = new ResourceProperties(this, "class.properties"); //$NON-NLS-1$
         classMapping.setIgnoreCase(false);
 
         // get class name of root object if defined. Otherwise native Helma objectmodel will be used.
-        rootObjectClass = classMapping.getProperty("root");
+        rootObjectClass = classMapping.getProperty("root"); //$NON-NLS-1$
 
         updateProperties();
 
@@ -345,7 +345,7 @@ public final class Application implements Runnable {
         String ignoreDirs;
 
         Initializer(String dirs) {
-            super(name + "-init");
+            super(name + "-init"); //$NON-NLS-1$
             ignoreDirs = dirs;
         }
 
@@ -372,7 +372,7 @@ public final class Application implements Runnable {
             try {
                 typemgr.createPrototypes();
             } catch (Exception x) {
-                logError("Error creating prototypes", x);
+                logError(Messages.getString("Application.3"), x); //$NON-NLS-1$
             }
 
             if (Server.getServer() != null) {
@@ -384,7 +384,7 @@ public final class Application implements Runnable {
                     try {
                         ext.applicationStarted(Application.this);
                     } catch (ConfigurationException e) {
-                        logEvent("couldn't init extension " + ext.getName() + ": " +
+                        logEvent(Messages.getString("Application.4") + ext.getName() + ": " +  //$NON-NLS-1$//$NON-NLS-2$
                                  e.toString());
                     }
                 }
@@ -402,16 +402,16 @@ public final class Application implements Runnable {
             skinmgr = new SkinManager(Application.this);
 
             // read in root id, root prototype, user prototype
-            rootId = props.getProperty("rootid", "0");
-            String rootPrototype = props.getProperty("rootprototype", "root");
-            String userPrototype = props.getProperty("userprototype", "user");
+            rootId = props.getProperty("rootid", "0"); //$NON-NLS-1$ //$NON-NLS-2$
+            String rootPrototype = props.getProperty("rootprototype", "root"); //$NON-NLS-1$ //$NON-NLS-2$
+            String userPrototype = props.getProperty("userprototype", "user"); //$NON-NLS-1$ //$NON-NLS-2$
 
             rootMapping = getDbMapping(rootPrototype);
             if (rootMapping == null)
-                throw new RuntimeException("rootPrototype does not exist: " + rootPrototype);
+                throw new RuntimeException(Messages.getString("Application.5") + rootPrototype); //$NON-NLS-1$
             userMapping = getDbMapping(userPrototype);
             if (userMapping == null)
-                throw new RuntimeException("userPrototype does not exist: " + userPrototype);
+                throw new RuntimeException(Messages.getString("Application.6") + userPrototype); //$NON-NLS-1$
 
             // The whole user/userroot handling is basically old
             // ugly obsolete crap. Don't bother.
@@ -419,12 +419,12 @@ public final class Application implements Runnable {
             String usernameField = (userMapping != null) ? userMapping.getNameField() : null;
 
             if (usernameField == null) {
-                usernameField = "name";
+                usernameField = "name"; //$NON-NLS-1$
             }
 
-            p.put("_children", "collection(" + userPrototype + ")");
-            p.put("_children.accessname", usernameField);
-            userRootMapping = new DbMapping(Application.this, "__userroot__", p);
+            p.put("_children", "collection(" + userPrototype + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            p.put("_children.accessname", usernameField); //$NON-NLS-1$
+            userRootMapping = new DbMapping(Application.this, "__userroot__", p); //$NON-NLS-1$
             userRootMapping.update();
 
             // create the node manager
@@ -432,17 +432,17 @@ public final class Application implements Runnable {
             nmgr.init(dbDir.getAbsoluteFile(), props);
 
             // create the app cache node exposed as app.data
-            cachenode = new TransientNode("app");
+            cachenode = new TransientNode("app"); //$NON-NLS-1$
 
             // create and init session manager
-            String sessionMgrImpl = props.getProperty("sessionManagerImpl",
-                                                      "helma.framework.core.SessionManager");
+            String sessionMgrImpl = props.getProperty("sessionManagerImpl", //$NON-NLS-1$
+                                                      "helma.framework.core.SessionManager"); //$NON-NLS-1$
             sessionMgr = (SessionManager) Class.forName(sessionMgrImpl).newInstance();
-            logEvent("Using session manager class " + sessionMgrImpl);
+            logEvent(Messages.getString("Application.7") + sessionMgrImpl); //$NON-NLS-1$
             sessionMgr.init(Application.this);
 
             // read the sessions if wanted
-            if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) {
+            if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) {  //$NON-NLS-1$//$NON-NLS-2$
                 RequestEvaluator ev = getEvaluator();
                 try {
                     ev.initScriptingEngine();
@@ -456,13 +456,13 @@ public final class Application implements Runnable {
             int minThreads = 0;
 
             try {
-                minThreads = Integer.parseInt(props.getProperty("minThreads"));
+                minThreads = Integer.parseInt(props.getProperty("minThreads")); //$NON-NLS-1$
             } catch (Exception ignore) {
                 // not parsable as number, keep 0
             }
 
             if (minThreads > 0) {
-                logEvent("Starting "+minThreads+" evaluator(s) for " + name);
+                logEvent(Messages.getString("Application.8")+minThreads+Messages.getString("Application.9") + name); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             for (int i = 0; i < minThreads; i++) {
@@ -488,14 +488,14 @@ public final class Application implements Runnable {
         RequestEvaluator eval = null;
         try {
             eval = getEvaluator();
-            eval.invokeInternal(null, "onStart", RequestEvaluator.EMPTY_ARGS);
+            eval.invokeInternal(null, "onStart", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
         } catch (Exception xcept) {
-            logError("Error in " + name + ".onStart()", xcept);
+            logError(Messages.getString("Application.10") + name + ".onStart()", xcept);  //$NON-NLS-1$//$NON-NLS-2$
         } finally {
             releaseEvaluator(eval);
         }
 
-        worker = new Thread(this, name + "-worker");
+        worker = new Thread(this, name + "-worker"); //$NON-NLS-1$
         worker.setPriority(Thread.NORM_PRIORITY + 1);
         worker.start();
     }
@@ -508,9 +508,9 @@ public final class Application implements Runnable {
         RequestEvaluator eval = null;
         try {
             eval = getEvaluator();
-            eval.invokeInternal(null, "onStop", RequestEvaluator.EMPTY_ARGS);
+            eval.invokeInternal(null, "onStop", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
         } catch (Exception x) {
-            logError("Error in " + name + ".onStop()", x);
+            logError(Messages.getString("Application.11") + name + ".onStop()", x);  //$NON-NLS-1$//$NON-NLS-2$
         }
 
         // mark app as stopped
@@ -540,7 +540,7 @@ public final class Application implements Runnable {
         try {
             nmgr.shutdown();
         } catch (DatabaseException dbx) {
-            System.err.println("Error shutting down embedded db: " + dbx);
+            System.err.println(Messages.getString("Application.12") + dbx); //$NON-NLS-1$
         }
 
         // tell the extensions that we're stopped.
@@ -555,7 +555,7 @@ public final class Application implements Runnable {
         }
 
         // store the sessions if wanted
-        if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) {
+        if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) { //$NON-NLS-1$ //$NON-NLS-2$
             // sessionMgr.storeSessionData(null);
             sessionMgr.storeSessionData(null, eval.scriptingEngine);
         }
@@ -604,20 +604,20 @@ public final class Application implements Runnable {
         } catch (EmptyStackException nothreads) {
             int maxThreads = 50;
 
-            String maxThreadsProp = props.getProperty("maxThreads");
+            String maxThreadsProp = props.getProperty("maxThreads"); //$NON-NLS-1$
             if (maxThreadsProp != null) {
                 try {
                     maxThreads = Integer.parseInt(maxThreadsProp);
                 } catch (Exception ignore) {
-                    logEvent("Couldn't parse maxThreads property: " + maxThreadsProp);
+                    logEvent(Messages.getString("Application.13") + maxThreadsProp); //$NON-NLS-1$
                 }
             }
 
             synchronized (this) {
                 // allocate a new evaluator
                 if (allThreads.size() < maxThreads) {
-                    logEvent("Starting engine " + (allThreads.size() + 1) +
-                             " for " + name);
+                    logEvent(Messages.getString("Application.14") + (allThreads.size() + 1) + //$NON-NLS-1$
+                             Messages.getString("Application.15") + name); //$NON-NLS-1$
 
                     RequestEvaluator ev = new RequestEvaluator(this);
 
@@ -638,12 +638,12 @@ public final class Application implements Runnable {
             } catch (EmptyStackException nothreads) {
                 // do nothing
             } catch (InterruptedException inter) {
-                throw new RuntimeException("Thread interrupted.");
+                throw new RuntimeException(Messages.getString("Application.16")); //$NON-NLS-1$
             }
         }
 
         // no luck, give up.
-        throw new RuntimeException("Maximum Thread count reached.");
+        throw new RuntimeException(Messages.getString("Application.17")); //$NON-NLS-1$
     }
 
     /**
@@ -764,7 +764,7 @@ public final class Application implements Runnable {
                 try {
                     res.close(charset);
                 } catch (UnsupportedEncodingException uee) {
-                    logError("Unsupported response encoding", uee);
+                    logError(Messages.getString("Application.18"), uee); //$NON-NLS-1$
                 }
             }
         }
@@ -856,21 +856,21 @@ public final class Application implements Runnable {
         if (rootObjectClass != null) {
             // create custom root element.
             try {
-                if (classMapping.containsKey("root.factory.class") &&
-                        classMapping.containsKey("root.factory.method")) {
-                    String rootFactory = classMapping.getProperty("root.factory.class");
+                if (classMapping.containsKey("root.factory.class") && //$NON-NLS-1$
+                        classMapping.containsKey("root.factory.method")) { //$NON-NLS-1$
+                    String rootFactory = classMapping.getProperty("root.factory.class"); //$NON-NLS-1$
                     Class c = typemgr.getClassLoader().loadClass(rootFactory);
                     Method m = c.getMethod(
-                            classMapping.getProperty("root.factory.method"),
+                            classMapping.getProperty("root.factory.method"), //$NON-NLS-1$
                             (Class[]) null);
                     rootObject = m.invoke(c, (Object[]) null);
                 } else {
-                    String rootClass = classMapping.getProperty("root");
+                    String rootClass = classMapping.getProperty("root"); //$NON-NLS-1$
                     Class c = typemgr.getClassLoader().loadClass(rootClass);
                     rootObject = c.newInstance();
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Error creating root object: " +
+                throw new RuntimeException(Messages.getString("Application.19") + //$NON-NLS-1$
                         e.toString());
             }
             return rootObject;
@@ -919,7 +919,7 @@ public final class Application implements Runnable {
      * Returns the Object which contains registered users of this application.
      */
     public INode getUserRoot() {
-        INode users = nmgr.safe.getNode("1", userRootMapping);
+        INode users = nmgr.safe.getNode("1", userRootMapping); //$NON-NLS-1$
 
         users.setDbMapping(userRootMapping);
 
@@ -980,13 +980,13 @@ public final class Application implements Runnable {
         String protoname = getPrototypeName(obj);
 
         if (protoname == null) {
-            return typemgr.getPrototype("hopobject");
+            return typemgr.getPrototype("hopobject"); //$NON-NLS-1$
         }
 
         Prototype p = typemgr.getPrototype(protoname);
 
         if (p == null) {
-            p = typemgr.getPrototype("hopobject");
+            p = typemgr.getPrototype("hopobject"); //$NON-NLS-1$
         }
 
         return p;
@@ -1115,7 +1115,7 @@ public final class Application implements Runnable {
 
         uname = uname.toLowerCase().trim();
 
-        if ("".equals(uname)) {
+        if ("".equals(uname)) { //$NON-NLS-1$
             return null;
         }
 
@@ -1130,7 +1130,7 @@ public final class Application implements Runnable {
                 return null;
             }
 
-            unode = new Node(uname, "user", nmgr.safe);
+            unode = new Node(uname, "user", nmgr.safe); //$NON-NLS-1$
 
             String usernameField = (userMapping != null) ? userMapping.getNameField() : null;
             String usernameProp = null;
@@ -1140,17 +1140,17 @@ public final class Application implements Runnable {
             }
 
             if (usernameProp == null) {
-                usernameProp = "name";
+                usernameProp = "name"; //$NON-NLS-1$
             }
 
             unode.setName(uname);
             unode.setString(usernameProp, uname);
-            unode.setString("password", password);
+            unode.setString("password", password); //$NON-NLS-1$
 
             return users.addNode(unode);
 
         } catch (Exception x) {
-            logEvent("Error registering User: " + x);
+            logEvent(Messages.getString("Application.20") + x); //$NON-NLS-1$
 
             return null;
         }
@@ -1167,7 +1167,7 @@ public final class Application implements Runnable {
 
         uname = uname.toLowerCase().trim();
 
-        if ("".equals(uname)) {
+        if ("".equals(uname)) { //$NON-NLS-1$
             return false;
         }
 
@@ -1177,7 +1177,7 @@ public final class Application implements Runnable {
             if (unode == null)
                 return false;
 
-            String pw = unode.getString("password");
+            String pw = unode.getString("password"); //$NON-NLS-1$
 
             if ((pw != null) && pw.equals(password)) {
                 // let the old user-object forget about this session
@@ -1295,7 +1295,7 @@ public final class Application implements Runnable {
         String ename = getElementName(elem);
         if (ename != null) {
             b.append(UrlEncoded.encode(ename, charset));
-            b.append("/");
+            b.append("/"); //$NON-NLS-1$
         }
     }
 
@@ -1313,9 +1313,9 @@ public final class Application implements Runnable {
      */
     public void setBaseURI(String uri) {
         if (uri == null) {
-            this.baseURI = "/";
-        } else if (!uri.endsWith("/")) {
-            this.baseURI = uri + "/";
+            this.baseURI = "/"; //$NON-NLS-1$
+        } else if (!uri.endsWith("/")) { //$NON-NLS-1$
+            this.baseURI = uri + "/"; //$NON-NLS-1$
         } else {
             this.baseURI = uri;
         }
@@ -1326,7 +1326,7 @@ public final class Application implements Runnable {
      *  properties, false otherwise.
      */
     public boolean hasExplicitBaseURI() {
-        return props.containsKey("baseuri");
+        return props.containsKey("baseuri"); //$NON-NLS-1$
     }
 
     /**
@@ -1377,8 +1377,8 @@ public final class Application implements Runnable {
                 return reval.invokeDirectFunction(obj, func, args);
             } catch (Exception x) {
                 if (debug) {
-                    System.err.println("Error in Application.invokeFunction (" +
-                                        func + "): " + x);
+                    System.err.println(Messages.getString("Application.21") + //$NON-NLS-1$
+                                        func + Messages.getString("Application.22") + x); //$NON-NLS-1$
                 }
             }
         }
@@ -1408,7 +1408,7 @@ public final class Application implements Runnable {
             return ((IPathElement) obj).getElementName();
         }
 
-        Object retval = invokeFunction(obj, "getElementName", RequestEvaluator.EMPTY_ARGS);
+        Object retval = invokeFunction(obj, "getElementName", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
 
         if (retval != null) {
             return retval.toString();
@@ -1426,7 +1426,7 @@ public final class Application implements Runnable {
         }
 
         Object[] arg = new Object[] { name };
-        return invokeFunction(obj, "getChildElement", arg);
+        return invokeFunction(obj, "getChildElement", arg); //$NON-NLS-1$
     }
 
     /**
@@ -1437,7 +1437,7 @@ public final class Application implements Runnable {
             return ((IPathElement) obj).getParentElement();
         }
 
-        return invokeFunction(obj, "getParentElement", RequestEvaluator.EMPTY_ARGS);
+        return invokeFunction(obj, "getParentElement", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
     }
 
     /**
@@ -1447,7 +1447,7 @@ public final class Application implements Runnable {
      */
     public String getPrototypeName(Object obj) {
         if (obj == null) {
-            return "global";
+            return "global"; //$NON-NLS-1$
         } else if (obj instanceof IPathElement) {
             // check if e implements the IPathElement interface
             return ((IPathElement) obj).getPrototype();
@@ -1565,7 +1565,7 @@ public final class Application implements Runnable {
      *  Get a logger object to log events for this application.
      */
     public Log getLogger(String logname) {
-        if ("console".equals(logDir) || "console".equals(logname)) {
+        if ("console".equals(logDir) || "console".equals(logname)) {  //$NON-NLS-1$//$NON-NLS-2$
             return Logging.getConsoleLog();
         } else {
             return LogFactory.getLog(logname);
@@ -1601,7 +1601,7 @@ public final class Application implements Runnable {
                 long sleepInterval = 60000;
 
                 try {
-                    String sleepProp = props.getProperty("schedulerInterval");
+                    String sleepProp = props.getProperty("schedulerInterval"); //$NON-NLS-1$
                     if (sleepProp != null) {
                         sleepInterval = Math.max(1000, Integer.parseInt(sleepProp) * 1000);
                     } else {
@@ -1623,22 +1623,22 @@ public final class Application implements Runnable {
                 try {
                     lastSessionCleanup = sessionMgr.cleanupSessions(lastSessionCleanup);
                 } catch (Exception x) {
-                    logError("Error in session cleanup: " + x, x);
+                    logError(Messages.getString("Application.23") + x, x); //$NON-NLS-1$
                 } catch (LinkageError x) {
-                    logError("Error in session cleanup: " + x, x);
+                    logError(Messages.getString("Application.24") + x, x); //$NON-NLS-1$
                 }
 
                 // execute cron jobs
                 try {
                     executeCronJobs();
                 } catch (Exception x) {
-                    logError("Error in cron job execution: " + x, x);
+                    logError(Messages.getString("Application.25") + x, x); //$NON-NLS-1$
                 } catch (LinkageError x) {
-                    logError("Error in cron job execution: " + x, x);
+                    logError(Messages.getString("Application.26") + x, x); //$NON-NLS-1$
                 }
 
             } catch (VirtualMachineError error) {
-                logError("Error in scheduler loop: " + error, error);
+                logError(Messages.getString("Application.27") + error, error); //$NON-NLS-1$
             }
         }
 
@@ -1650,7 +1650,7 @@ public final class Application implements Runnable {
             }
         }
 
-        logEvent("Scheduler for " + name + " exiting");
+        logEvent(Messages.getString("Application.28") + name + Messages.getString("Application.29")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -1660,17 +1660,17 @@ public final class Application implements Runnable {
      */
     private void executeCronJobs() {
         // loop-local cron job data
-        List jobs = CronJob.parse(props.getSubProperties("cron."));
+        List jobs = CronJob.parse(props.getSubProperties("cron.")); //$NON-NLS-1$
         Date date = new Date();
 
         jobs.addAll(customCronJobs.values());
         CronJob.sort(jobs);
 
         if (debug) {
-            logEvent("Running cron jobs: " + jobs);
+            logEvent(Messages.getString("Application.30") + jobs); //$NON-NLS-1$
         }
         if (!activeCronJobs.isEmpty()) {
-            logEvent("Cron jobs still running from last minute: " + activeCronJobs);
+            logEvent(Messages.getString("Application.31") + activeCronJobs); //$NON-NLS-1$
         }
 
         for (Iterator i = jobs.iterator(); i.hasNext();) {
@@ -1679,7 +1679,7 @@ public final class Application implements Runnable {
             if (job.appliesToDate(date)) {
                 // check if the job is already active ...
                 if (activeCronJobs.containsKey(job.getName())) {
-                    logEvent(job + " is still active, skipped in this minute");
+                    logEvent(job + Messages.getString("Application.32")); //$NON-NLS-1$
 
                     continue;
                 }
@@ -1690,8 +1690,8 @@ public final class Application implements Runnable {
                     evaluator = getEvaluator();
                 } catch (RuntimeException rt) {
                     if (running) {
-                        logEvent("couldn't execute " + job +
-                                ", maximum thread count reached");
+                        logEvent(Messages.getString("Application.33") + job + //$NON-NLS-1$
+                                Messages.getString("Application.34")); //$NON-NLS-1$
 
                         continue;
                     } else {
@@ -1712,7 +1712,7 @@ public final class Application implements Runnable {
                         evaluator.invokeInternal(null, job.getFunction(),
                                 RequestEvaluator.EMPTY_ARGS, job.getTimeout());
                     } catch (Exception ex) {
-                        logEvent("error running " + job + ": " + ex);
+                        logEvent(Messages.getString("Application.35") + job + ": " + ex);  //$NON-NLS-1$//$NON-NLS-2$
                     } finally {
                         releaseEvaluator(evaluator);
                     }
@@ -1762,7 +1762,7 @@ public final class Application implements Runnable {
             dbs = new DbSource(name, dbProps);
             dbSources.put(dbSrcName, dbs);
         } catch (Exception problem) {
-            logEvent("Error creating DbSource " + name +": ");
+            logEvent(Messages.getString("Application.36") + name +": "); //$NON-NLS-1$ //$NON-NLS-2$
             logEvent(problem.toString());
         }
 
@@ -1872,7 +1872,7 @@ public final class Application implements Runnable {
      * @return the current upload status.
      */
     public UploadStatus getUploadStatus(RequestTrans req) {
-        String uploadId = (String) req.get("upload_id");
+        String uploadId = (String) req.get("upload_id"); //$NON-NLS-1$
         if (uploadId == null)
             return null;
 
@@ -1892,16 +1892,16 @@ public final class Application implements Runnable {
             props.update();
 
             // character encoding to be used for responses
-            charset = props.getProperty("charset", "UTF-8");
+            charset = props.getProperty("charset", "UTF-8");  //$NON-NLS-1$//$NON-NLS-2$
 
             // debug flag
-            debug = "true".equalsIgnoreCase(props.getProperty("debug"));
+            debug = "true".equalsIgnoreCase(props.getProperty("debug"));  //$NON-NLS-1$//$NON-NLS-2$
 
             // if rhino debugger is enabled use higher (10 min) default request timeout
             String defaultReqTimeout =
-                    "true".equalsIgnoreCase(props.getProperty("rhino.debug")) ?
-                        "600" : "60";
-            String reqTimeout = props.getProperty("requesttimeout", defaultReqTimeout);
+                    "true".equalsIgnoreCase(props.getProperty("rhino.debug")) ? //$NON-NLS-1$ //$NON-NLS-2$
+                        "600" : "60";  //$NON-NLS-1$//$NON-NLS-2$
+            String reqTimeout = props.getProperty("requesttimeout", defaultReqTimeout); //$NON-NLS-1$
             try {
                 requestTimeout = Long.parseLong(reqTimeout) * 1000L;
             } catch (Exception ignore) {
@@ -1910,25 +1910,25 @@ public final class Application implements Runnable {
             }
 
             // set base URI
-            String base = props.getProperty("baseuri");
+            String base = props.getProperty("baseuri"); //$NON-NLS-1$
 
             if (base != null) {
                 setBaseURI(base);
             } else if (baseURI == null) {
-                baseURI = "/";
+                baseURI = "/"; //$NON-NLS-1$
             }
 
-            hrefRootPrototype = props.getProperty("hrefrootprototype");
-            rootObjectPropertyName = props.getProperty("rootobjectpropertyname");
-            rootObjectFunctionName = props.getProperty("rootobjectfunctionname");
+            hrefRootPrototype = props.getProperty("hrefrootprototype"); //$NON-NLS-1$
+            rootObjectPropertyName = props.getProperty("rootobjectpropertyname"); //$NON-NLS-1$
+            rootObjectFunctionName = props.getProperty("rootobjectfunctionname"); //$NON-NLS-1$
 
             // update the XML-RPC access list, containting prototype.method
             // entries of functions that may be called via XML-RPC
-            String xmlrpcAccessProp = props.getProperty("xmlrpcaccess");
+            String xmlrpcAccessProp = props.getProperty("xmlrpcaccess"); //$NON-NLS-1$
             HashSet xra = new HashSet();
 
             if (xmlrpcAccessProp != null) {
-                StringTokenizer st = new StringTokenizer(xmlrpcAccessProp, ",; ");
+                StringTokenizer st = new StringTokenizer(xmlrpcAccessProp, ",; "); //$NON-NLS-1$
 
                 while (st.hasMoreTokens()) {
                     String token = st.nextToken().trim();
@@ -1954,19 +1954,19 @@ public final class Application implements Runnable {
                     try {
                         ext.applicationUpdated(this);
                     } catch (ConfigurationException e) {
-                        logEvent("Error updating extension "+ext+": "+e);
+                        logEvent(Messages.getString("Application.38")+ext+": "+e); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
             }
 
-            String loggerFactory = props.getProperty("loggerFactory", "helma.util.Logging");
-            if ("helma.util.Logging".equals(loggerFactory)) {
-                logDir = props.getProperty("logdir", "log");
-                if (System.getProperty("helma.logdir") == null) {
+            String loggerFactory = props.getProperty("loggerFactory", "helma.util.Logging");  //$NON-NLS-1$//$NON-NLS-2$
+            if ("helma.util.Logging".equals(loggerFactory)) { //$NON-NLS-1$
+                logDir = props.getProperty("logdir", "log"); //$NON-NLS-1$ //$NON-NLS-2$
+                if (System.getProperty("helma.logdir") == null) { //$NON-NLS-1$
                     // set up helma.logdir system property in case we're using it
                     // FIXME: this sets a global System property, should be per-app
                     File dir = new File(logDir);
-                    System.setProperty("helma.logdir", dir.getAbsolutePath());
+                    System.setProperty("helma.logdir", dir.getAbsolutePath()); //$NON-NLS-1$
                 }
             } else {
                 logDir = null;
@@ -2031,7 +2031,7 @@ public final class Application implements Runnable {
      */
     public String getXmlRpcHandlerName() {
         if (xmlrpcHandlerName == null) {
-            xmlrpcHandlerName = props.getProperty("xmlrpcHandlerName", this.name);
+            xmlrpcHandlerName = props.getProperty("xmlrpcHandlerName", this.name); //$NON-NLS-1$
         }
 
         return xmlrpcHandlerName;
@@ -2041,7 +2041,7 @@ public final class Application implements Runnable {
      * Return a string representation for this app.
      */
     public String toString() {
-        return "[Application "+name+"]";
+        return "[Application "+name+"]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -2124,15 +2124,15 @@ public final class Application implements Runnable {
      * Periodically called to log thread stats for this application
      */
     public void printThreadStats() {
-        logEvent("Thread Stats for " + name + ": " + threadgroup.activeCount() +
-                 " active");
+        logEvent(Messages.getString("Application.40") + name + ": " + threadgroup.activeCount() +  //$NON-NLS-1$//$NON-NLS-2$
+                 Messages.getString("Application.41")); //$NON-NLS-1$
 
         Runtime rt = Runtime.getRuntime();
         long free = rt.freeMemory();
         long total = rt.totalMemory();
 
-        logEvent("Free memory: " + (free / 1024) + " kB");
-        logEvent("Total memory: " + (total / 1024) + " kB");
+        logEvent(Messages.getString("Application.42") + (free / 1024) + Messages.getString("Application.43")); //$NON-NLS-1$ //$NON-NLS-2$
+        logEvent(Messages.getString("Application.44") + (total / 1024) + Messages.getString("Application.45")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -2140,11 +2140,11 @@ public final class Application implements Runnable {
      */
     protected void checkXmlRpcAccess(String proto, String method)
                               throws Exception {
-        String key = proto + "." + method;
+        String key = proto + "." + method; //$NON-NLS-1$
 
         // XML-RPC access items are case insensitive and stored in lower case
         if (!xmlrpcAccess.contains(key.toLowerCase())) {
-            throw new Exception("Method " + key + " is not callable via XML-RPC");
+            throw new Exception(Messages.getString("Application.46") + key + Messages.getString("Application.47")); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -2162,7 +2162,7 @@ public final class Application implements Runnable {
                 thisEvaluator.invokeInternal(null, job.getFunction(),
                                              RequestEvaluator.EMPTY_ARGS, job.getTimeout());
             } catch (Exception ex) {
-                logEvent("error running " + job + ": " + ex);
+                logEvent(Messages.getString("Application.48") + job + ": " + ex);  //$NON-NLS-1$//$NON-NLS-2$
             } finally {
                 releaseEvaluator(thisEvaluator);
                 thisEvaluator = null;
@@ -2171,7 +2171,7 @@ public final class Application implements Runnable {
         }
 
         public String toString() {
-            return "CronRunner[" + job + "]";
+            return "CronRunner[" + job + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

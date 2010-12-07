@@ -150,22 +150,22 @@ public class Logo {
         int linect = 0;
         int ct = 0;
 
-        System.out.print("\n\n\n  static byte[] image = {\n    ");
+        System.out.print("\n\n\n  static byte[] image = {\n    "); //$NON-NLS-1$
 
         while (ct > -1) {
             ct = fis.read(b);
 
             for (int i = 0; i < ct; i++) {
-                System.out.print(b[i] + ",");
+                System.out.print(b[i] + ","); //$NON-NLS-1$
                 linect++;
 
                 if (linect > 30) {
                     linect = 0;
-                    System.out.print("\n    ");
+                    System.out.print("\n    "); //$NON-NLS-1$
                 }
             }
         }
 
-        System.out.print("  };\n\n\n");
+        System.out.print("  };\n\n\n"); //$NON-NLS-1$
     }
 }

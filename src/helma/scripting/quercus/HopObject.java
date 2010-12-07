@@ -73,8 +73,8 @@ public class HopObject extends ObjectExtJavaValue {
     private HopObject(final INode node) {
         super(
                 QuercusEngine.ENGINE.get().getEnvironment().getClass(
-                        "HopObject"), new Object(), QuercusEngine.ENGINE.get()
-                        .getEnvironment().getClass("HopObject")
+                        "HopObject"), new Object(), QuercusEngine.ENGINE.get() //$NON-NLS-1$
+                        .getEnvironment().getClass("HopObject") //$NON-NLS-1$
                         .getJavaClassDef());
         this._node = node;
         this._engine = QuercusEngine.ENGINE.get();
@@ -92,10 +92,10 @@ public class HopObject extends ObjectExtJavaValue {
         super(engine.getEnvironment()
                 .getClass(
                         node.getPrototype() != null ? node.getPrototype()
-                                : "HopObject"), new HopObject(node), engine
+                                : "HopObject"), new HopObject(node), engine //$NON-NLS-1$
                 .getEnvironment().getClass(
                         node.getPrototype() != null ? node.getPrototype()
-                                : "HopObject").getJavaClassDef());
+                                : "HopObject").getJavaClassDef()); //$NON-NLS-1$
         this._node = node;
         this._engine = engine;
     }
@@ -125,34 +125,34 @@ public class HopObject extends ObjectExtJavaValue {
      */
     public Object __get(final String name) {
         // check what we are looking for
-        if (name.startsWith("_")) {
+        if (name.startsWith("_")) { //$NON-NLS-1$
             // we are looking for an internal property
 
             // TODO: make naming more consistent
             // will break backwards compatibility to HopObject however
-            if (name.equals("_prototype") || name.equals("__prototype__")) {
+            if (name.equals("_prototype") || name.equals("__prototype__")) {  //$NON-NLS-1$//$NON-NLS-2$
                 return this._node.getPrototype();
-            } else if (name.equals("_name") || name.equals("__name__")) {
+            } else if (name.equals("_name") || name.equals("__name__")) { //$NON-NLS-1$ //$NON-NLS-2$
                 return this._node.getName();
-            } else if (name.equals("_parent") || name.equals("__parent__")) {
+            } else if (name.equals("_parent") || name.equals("__parent__")) {  //$NON-NLS-1$//$NON-NLS-2$
                 return new HopObject(this._node.getParent(), this._engine);
-            } else if (name.equals("cache")) {
+            } else if (name.equals("cache")) { //$NON-NLS-1$
                 return new HopObject(this._node.getCacheNode(), this._engine);
-            } else if (name.equals("_id") || name.equals("__id__")) {
+            } else if (name.equals("_id") || name.equals("__id__")) {  //$NON-NLS-1$//$NON-NLS-2$
                 return this._node.getID();
-            } else if (name.equals("__proto__")) {
+            } else if (name.equals("__proto__")) { //$NON-NLS-1$
                 return this._engine.getApplication().getPrototypeByName(
                         this._node.getPrototype());
-            } else if (name.equals("__hash__") && this._node instanceof Node) {
+            } else if (name.equals("__hash__") && this._node instanceof Node) { //$NON-NLS-1$
                 return Integer.valueOf(((Node) this._node).hashCode());
-            } else if (name.equals("__node__")) {
+            } else if (name.equals("__node__")) { //$NON-NLS-1$
                 return this._node;
-            } else if (name.equalsIgnoreCase("__created__")) {
+            } else if (name.equalsIgnoreCase("__created__")) { //$NON-NLS-1$
                 return Long.valueOf(this._node.created());
-            } else if (name.equalsIgnoreCase("__lastmodified__")) {
+            } else if (name.equalsIgnoreCase("__lastmodified__")) { //$NON-NLS-1$
                 return Long.valueOf(this._node.lastModified());
             }
-        } else if (name.equals("subnodeRelation")) {
+        } else if (name.equals("subnodeRelation")) { //$NON-NLS-1$
             // we are looking for a special property
 
             // TODO: make naming more consistent
@@ -179,13 +179,13 @@ public class HopObject extends ObjectExtJavaValue {
 
         // TODO: make naming more consistent
         // will break backwards compatibility to HopObject however
-        if (name.equals("subnodeRelation")) {
+        if (name.equals("subnodeRelation")) { //$NON-NLS-1$
             this._node.setSubnodeRelation(value.toString());
         } else if (value == null) {
             this._node.unset(name);
-        } else if (name.equals("_prototype")) {
+        } else if (name.equals("_prototype")) { //$NON-NLS-1$
             this._node.setPrototype(value.toString());
-        } else if (name.equals("_name")) {
+        } else if (name.equals("_name")) { //$NON-NLS-1$
             this._node.setName(value.toString());
         } else if (value instanceof Boolean) {
             this._node.setBoolean(name, ((Boolean) value).booleanValue());
@@ -402,7 +402,7 @@ public class HopObject extends ObjectExtJavaValue {
                 return new HopObject(node, this._engine);
             }
         } catch (final Exception e) {
-            throw new ScriptingException("Getting by id failed!", e);
+            throw new ScriptingException(Messages.getString("HopObject.0"), e); //$NON-NLS-1$
         }
 
         return null;
@@ -427,9 +427,9 @@ public class HopObject extends ObjectExtJavaValue {
      */
     @Override
     protected Value getFieldExt(final Env environment, final StringValue name) {
-        final AbstractFunction function = findFunction("__get");
+        final AbstractFunction function = findFunction("__get"); //$NON-NLS-1$
         if (function != null) {
-            return callMethod(environment, StringValue.create("__get")
+            return callMethod(environment, StringValue.create("__get") //$NON-NLS-1$
                     .toStringValue(), new Value[] {name});
         }
 
@@ -461,7 +461,7 @@ public class HopObject extends ObjectExtJavaValue {
             @SuppressWarnings("unused") final String name)
             throws ScriptingException {
         // TODO: implement
-        throw new ScriptingException("Not yet implemented.", null);
+        throw new ScriptingException(Messages.getString("HopObject.1"), null); //$NON-NLS-1$
     }
 
     /**
@@ -532,7 +532,7 @@ public class HopObject extends ObjectExtJavaValue {
         Skin skin;
         final ResponseTrans response = this._engine.getRequestEvaluator()
                 .getResponse();
-        if (name.startsWith("#")) {
+        if (name.startsWith("#")) { //$NON-NLS-1$
             // evaluate relative subskin name against currently rendering skin
             skin = response.getActiveSkin();
             return skin == null ? null : skin.getSubskin(name.substring(1));
@@ -554,7 +554,7 @@ public class HopObject extends ObjectExtJavaValue {
                         name, skinpath);
             } catch (final IOException e) {
                 throw new ScriptingException(
-                        "Getting skin from application using skinpath failed!",
+                        Messages.getString("HopObject.2"), //$NON-NLS-1$
                         e);
             }
             response.cacheSkin(hashCode, skin);
@@ -705,7 +705,7 @@ public class HopObject extends ObjectExtJavaValue {
             try {
                 ((Node) this._node).prefetchChildren(startIndex, length);
             } catch (final Exception e) {
-                throw new ScriptingException("Prefetching failed!", e);
+                throw new ScriptingException(Messages.getString("HopObject.3"), e); //$NON-NLS-1$
             }
         }
     }
@@ -721,10 +721,10 @@ public class HopObject extends ObjectExtJavaValue {
             final Value value) {
         final Value oldValue = getFieldExt(environment, name);
 
-        final AbstractFunction function = findFunction("__set");
+        final AbstractFunction function = findFunction("__set"); //$NON-NLS-1$
         if (function != null) {
             callMethod(environment,
-                    StringValue.create("__set").toStringValue(), new Value[] {
+                    StringValue.create("__set").toStringValue(), new Value[] { //$NON-NLS-1$
                             name, value});
         } else {
             __set(name.toJavaString(), value.toJavaObject());
@@ -825,7 +825,7 @@ public class HopObject extends ObjectExtJavaValue {
             e.printStackTrace();
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -846,7 +846,7 @@ public class HopObject extends ObjectExtJavaValue {
             return renderSkinAsString(skin, parameters);
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**

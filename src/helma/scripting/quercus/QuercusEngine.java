@@ -201,7 +201,7 @@ public class QuercusEngine implements ScriptingEngine {
 
         // get the global prototype
         final Prototype globalPrototype = this._application
-                .getPrototypeByName("Global");
+                .getPrototypeByName("Global"); //$NON-NLS-1$
         if (globalPrototype != null) {
             // FIXME: resources need to be named *.js for getCodeResources()
             // scriptExtension should be moved to a getter on Application which
@@ -211,7 +211,7 @@ public class QuercusEngine implements ScriptingEngine {
             final Resource[] resources = globalPrototype.getResources();
             // loop all code resources
             for (final Resource resource : resources) {
-                if (resource.getName().endsWith(".php")) {
+                if (resource.getName().endsWith(".php")) { //$NON-NLS-1$
                     try {
                         // include the code (i.e. load defined functions and add
                         // as methods)
@@ -224,8 +224,8 @@ public class QuercusEngine implements ScriptingEngine {
                                     function);
                         }
                     } catch (final IOException e) {
-                        throw new ScriptingException("Code in "
-                                + resource.getName() + " could not be parsed!",
+                        throw new ScriptingException(Messages.getString("QuercusEngine.0") //$NON-NLS-1$
+                                + resource.getName() + Messages.getString("QuercusEngine.1"), //$NON-NLS-1$
                                 e);
                     }
                 }
@@ -241,8 +241,8 @@ public class QuercusEngine implements ScriptingEngine {
         // class called HopObjectJava and one called HopObject.
         final JavaClassDef classDefHopObject = new JavaClassDef(
                 new ModuleContext(ClassLoader.getSystemClassLoader()),
-                "HopObjectJava", HopObject.class);
-        this._environment.addClassDef("HopObjectJava", classDefHopObject);
+                "HopObjectJava", HopObject.class); //$NON-NLS-1$
+        this._environment.addClassDef("HopObjectJava", classDefHopObject); //$NON-NLS-1$
 
         boolean containsHopObject = false;
         // solve dependencies beteween prototypes and order them in a way that
@@ -254,18 +254,18 @@ public class QuercusEngine implements ScriptingEngine {
             final Prototype prototype = prototypes.next();
             // skip prototypes we already know or if it is the global prototype
             if (prototypesOrderedByDependencies.contains(prototype)
-                    || prototype.getName().equals("Global")) {
+                    || prototype.getName().equals("Global")) { //$NON-NLS-1$
                 continue;
             }
 
-            if (prototype.getName().equals("HopObject")) {
+            if (prototype.getName().equals("HopObject")) { //$NON-NLS-1$
                 // prototype is HopObject, we need to add it as first
                 prototypesOrderedByDependencies.add(0, prototype);
                 containsHopObject = true;
             } else if (prototype.getParentPrototype() != null) {
                 // not HopObject, parent prototype is set
                 if (prototype.getParentPrototype().getName()
-                        .equals("HopObject")) {
+                        .equals("HopObject")) { //$NON-NLS-1$
                     // not HopObject, parent protype is HopObject, we need to
                     // add right after HopObject
                     prototypesOrderedByDependencies.add(
@@ -296,7 +296,7 @@ public class QuercusEngine implements ScriptingEngine {
         // check if HopObject is in the list
         if (!containsHopObject) {
             // HopObject is not in the list yet, add it as first
-            prototypesOrderedByDependencies.add(0, new Prototype("HopObject",
+            prototypesOrderedByDependencies.add(0, new Prototype("HopObject", //$NON-NLS-1$
                     null, this._application, null));
         }
 
@@ -306,14 +306,14 @@ public class QuercusEngine implements ScriptingEngine {
             final Prototype prototype = prototypes.next();
 
             String parentClass;
-            if (prototype.getName().equals("HopObject")) {
+            if (prototype.getName().equals("HopObject")) { //$NON-NLS-1$
                 // HopObject needs HopObjectJava as parent prototype
-                parentClass = "HopObjectJava";
+                parentClass = "HopObjectJava"; //$NON-NLS-1$
             } else if (prototype.getParentPrototype() != null) {
                 parentClass = prototype.getParentPrototype().getName();
             } else {
                 // default parent prototype is HopObject
-                parentClass = "HopObject";
+                parentClass = "HopObject"; //$NON-NLS-1$
             }
 
             final InterpretedClassDef classDefinitionJava = new InterpretedClassDef(
@@ -333,7 +333,7 @@ public class QuercusEngine implements ScriptingEngine {
             final Resource[] resources = prototype.getResources();
             // loop all code resources
             for (final Resource resource : resources) {
-                if (resource.getName().endsWith(".php")) {
+                if (resource.getName().endsWith(".php")) { //$NON-NLS-1$
                     try {
                         // include the code (i.e. load defined functions and add
                         // as methods)
@@ -380,9 +380,9 @@ public class QuercusEngine implements ScriptingEngine {
             // add a constructor, which simply calls the HopObjectJava
             // constructor with the class name as argument so
             // that the NodeInterface knows the prototype
-            classDefinitionJava.addFunction("__construct", this._quercus.parseCode(
-                    "function __construct() {HopObjectJava::__construct(\""
-                            + prototype.getName() + "\")}").getFunctions()
+            classDefinitionJava.addFunction("__construct", this._quercus.parseCode( //$NON-NLS-1$
+                    "function __construct() {HopObjectJava::__construct(\"" //$NON-NLS-1$
+                            + prototype.getName() + "\")}").getFunctions() //$NON-NLS-1$
                     .iterator().next());
 
             this._environment.addClass(prototype.getName(), classDefinitionJava);
@@ -428,7 +428,7 @@ public class QuercusEngine implements ScriptingEngine {
     @Override
     public Object getProperty(final Object thisObject, final String propertyName) {
         if (thisObject == null || thisObject instanceof INode
-                && ((INode) thisObject).getPrototype().equals("Global")) {
+                && ((INode) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
             return this._environment.getGlobalValue(propertyName);
         } else if (thisObject instanceof HopObject) {
             return ((HopObject) thisObject).getFieldExt(this._environment,
@@ -484,7 +484,7 @@ public class QuercusEngine implements ScriptingEngine {
         QuercusClass classDef = null;
 
         if (thisObject == null || thisObject instanceof INode
-                && ((INode) thisObject).getPrototype().equals("Global")) {
+                && ((INode) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
             // no thisObject or an INode with prototype Global, look for a
             // global function
             return this._environment.findFunction(functionName) != null;
@@ -539,7 +539,7 @@ public class QuercusEngine implements ScriptingEngine {
     public boolean hasProperty(final Object thisObject,
             final String propertyName) {
         if (thisObject == null || thisObject instanceof INode
-                && ((INode) thisObject).getPrototype().equals("Global")) {
+                && ((INode) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
             // no thisObject or an INode with prototype Global, look for a
             // global variable
             return this._environment.getGlobalValue(propertyName) != null;
@@ -678,8 +678,8 @@ public class QuercusEngine implements ScriptingEngine {
                     // init extension and get global objects provided by it
                     globals = extension.initScripting(this._application, this);
                 } catch (final ConfigurationException e) {
-                    this._application.logError("Failed to init extension "
-                            + extension.getName() + "!");
+                    this._application.logError(Messages.getString("QuercusEngine.2") //$NON-NLS-1$
+                            + extension.getName() + Messages.getString("QuercusEngine.3")); //$NON-NLS-1$
                 }
 
                 // check if extension provides any global objects
@@ -718,13 +718,13 @@ public class QuercusEngine implements ScriptingEngine {
         // check if functionName is invalid
         if (functionName == null || !(functionName instanceof String)) {
             throw new IllegalArgumentException(
-                    "Function argument must not be null or anything else than String!");
+                    Messages.getString("QuercusEngine.4")); //$NON-NLS-1$
         }
 
         // check if thisObject is invalid
         if (thisObject != null && !(thisObject instanceof INode)) {
             throw new IllegalArgumentException(
-                    "This object must not be anything else than INode!");
+                    Messages.getString("QuercusEngine.5")); //$NON-NLS-1$
         }
 
         // check if we should invode a global function

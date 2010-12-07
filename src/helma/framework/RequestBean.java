@@ -123,7 +123,7 @@ public class RequestBean implements Serializable {
      * @return A string representation of this request
      */
     public String toString() {
-        return "[Request]";
+        return "[Request]"; //$NON-NLS-1$
     }
 
     /**

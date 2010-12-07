@@ -109,6 +109,6 @@ public final class SyntheticKey implements Key, Serializable {
      * @return a string representation for this key
      */
     public String toString() {
-        return parentKey + "/" + name;
+        return parentKey + "/" + name; //$NON-NLS-1$
     }
 }

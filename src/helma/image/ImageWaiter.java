@@ -64,7 +64,7 @@ public class ImageWaiter implements ImageObserver {
 
         // if width and height haven't been set, throw tantrum
         if (width == -1 || height == -1) {
-            throw new RuntimeException("Error loading image");
+            throw new RuntimeException(Messages.getString("ImageWaiter.0")); //$NON-NLS-1$
         }
     }
 

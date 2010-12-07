@@ -44,11 +44,11 @@ public class JavaObject extends NativeJavaObject {
         overload = new HashMap();
         Method[] m = JavaObject.class.getMethods();
         for (int i=0; i<m.length; i++) {
-            if ("href".equals(m[i].getName()) ||
-                "renderSkin".equals(m[i].getName()) ||
-                "renderSkinAsString".equals(m[i].getName()) ||
-                "getResource".equals(m[i].getName()) ||
-                "getResources".equals(m[i].getName())) {
+            if ("href".equals(m[i].getName()) || //$NON-NLS-1$
+                "renderSkin".equals(m[i].getName()) || //$NON-NLS-1$
+                "renderSkinAsString".equals(m[i].getName()) || //$NON-NLS-1$
+                "getResource".equals(m[i].getName()) || //$NON-NLS-1$
+                "getResources".equals(m[i].getName())) { //$NON-NLS-1$
                 overload.put(m[i].getName(), m[i]);
             }
         }
@@ -108,7 +108,7 @@ public class JavaObject extends NativeJavaObject {
                     (paramobj == Undefined.instance) ? null : paramobj);
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -174,15 +174,15 @@ public class JavaObject extends NativeJavaObject {
             return new FunctionObject(name, (Method) value, this);
         }
 
-        if ("_prototype".equals(name) || "__prototype__".equals(name)) {
+        if ("_prototype".equals(name) || "__prototype__".equals(name)) { //$NON-NLS-1$ //$NON-NLS-2$
             return protoName;
         }
 
-        if ("__proto__".equals(name)) {
+        if ("__proto__".equals(name)) { //$NON-NLS-1$
             return getPrototype();
         }
 
-        if ("__javaObject__".equals(name)) {
+        if ("__javaObject__".equals(name)) { //$NON-NLS-1$
             return unscriptedJavaObj;
         }
 

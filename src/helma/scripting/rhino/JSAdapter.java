@@ -79,12 +79,12 @@ public final class JSAdapter implements Scriptable, Function {
         obj.setParentScope(scope);
         obj.setPrototype(getFunctionPrototype(scope));
         obj.isPrototype = true;
-        ScriptableObject.defineProperty(scope, "JSAdapter",  obj,
+        ScriptableObject.defineProperty(scope, "JSAdapter",  obj, //$NON-NLS-1$
                 ScriptableObject.DONTENUM);
     }
     
     public String getClassName() {
-        return "JSAdapter";
+        return "JSAdapter"; //$NON-NLS-1$
     }
     
     public Object get(String name, Scriptable start) {
@@ -254,7 +254,7 @@ public final class JSAdapter implements Scriptable, Function {
             if (tmp instanceof Function) {
                 return ((Function)tmp).call(cx, scope, tmp, args);
             } else {
-                throw Context.reportRuntimeError("TypeError: not a function");
+                throw Context.reportRuntimeError(Messages.getString("JSAdapter.0")); //$NON-NLS-1$
             }
         }
     }
@@ -267,7 +267,7 @@ public final class JSAdapter implements Scriptable, Function {
             if (args.length > 0) {
                 newObj = new JSAdapter(Context.toObject(args[0], topLevel));
             } else {
-                throw Context.reportRuntimeError("JSAdapter requires adaptee");
+                throw Context.reportRuntimeError(Messages.getString("JSAdapter.1")); //$NON-NLS-1$
             }
             return newObj;
         } else {
@@ -275,7 +275,7 @@ public final class JSAdapter implements Scriptable, Function {
             if (tmp instanceof Function) {
                 return ((Function)tmp).construct(cx, scope, args);
             } else {
-                throw Context.reportRuntimeError("TypeError: not a constructor");
+                throw Context.reportRuntimeError(Messages.getString("JSAdapter.2")); //$NON-NLS-1$
             }
         }
     }
@@ -286,7 +286,7 @@ public final class JSAdapter implements Scriptable, Function {
     
     public void setAdaptee(Scriptable adaptee) {
         if (adaptee == null) {
-            throw new NullPointerException("adaptee can not be null");
+            throw new NullPointerException(Messages.getString("JSAdapter.3")); //$NON-NLS-1$
         }
         this.adaptee = adaptee;
     }
@@ -328,9 +328,9 @@ public final class JSAdapter implements Scriptable, Function {
     private boolean isPrototype;
     
     // names of adaptee JavaScript functions
-    private static final String GET_PROP = "__get__";
-    private static final String HAS_PROP = "__has__";
-    private static final String PUT_PROP = "__put__";
-    private static final String DEL_PROP = "__delete__";
-    private static final String GET_PROPIDS = "__getIds__";
+    private static final String GET_PROP = "__get__"; //$NON-NLS-1$
+    private static final String HAS_PROP = "__has__"; //$NON-NLS-1$
+    private static final String PUT_PROP = "__put__"; //$NON-NLS-1$
+    private static final String DEL_PROP = "__delete__"; //$NON-NLS-1$
+    private static final String GET_PROPIDS = "__getIds__"; //$NON-NLS-1$
 }

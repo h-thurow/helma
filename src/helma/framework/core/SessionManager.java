@@ -142,7 +142,7 @@ public class SessionManager {
      */
     public void storeSessionData(File f, ScriptingEngine engine) {
         if (f == null) {
-            f = new File(app.dbDir, "sessions");
+            f = new File(app.dbDir, "sessions"); //$NON-NLS-1$
         }
 
         try {
@@ -158,16 +158,16 @@ public class SessionManager {
                         // p.writeObject(e.nextElement());
                     } catch (NotSerializableException nsx) {
                         // not serializable, skip this session
-                        app.logError("Error serializing session.", nsx);
+                        app.logError(Messages.getString("SessionManager.0"), nsx); //$NON-NLS-1$
                     }
                 }
             }
 
             p.flush();
             ostream.close();
-            app.logEvent("stored " + sessions.size() + " sessions in file");
+            app.logEvent(Messages.getString("SessionManager.1") + sessions.size() + Messages.getString("SessionManager.2")); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (Exception e) {
-            app.logError("error storing session data.", e);
+            app.logError(Messages.getString("SessionManager.3"), e); //$NON-NLS-1$
         }
     }
 
@@ -176,7 +176,7 @@ public class SessionManager {
      */
     public void loadSessionData(File f, ScriptingEngine engine) {
         if (f == null) {
-            f = new File(app.dbDir, "sessions");
+            f = new File(app.dbDir, "sessions"); //$NON-NLS-1$
         }
 
         // compute session timeout value
@@ -184,8 +184,8 @@ public class SessionManager {
 
         try {
             sessionTimeout = Math.max(0,
-                                      Integer.parseInt(app.getProperty("sessionTimeout",
-                                                                         "30")));
+                                      Integer.parseInt(app.getProperty("sessionTimeout", //$NON-NLS-1$
+                                                                         "30"))); //$NON-NLS-1$
         } catch (Exception ignore) {
             System.out.println(ignore.toString());
         }
@@ -194,7 +194,7 @@ public class SessionManager {
         Transactor tx = Transactor.getInstance(app.getNodeManager());
 
         try {
-            tx.begin("sessionloader");
+            tx.begin("sessionloader"); //$NON-NLS-1$
             // load the stored data:
             InputStream istream = new BufferedInputStream(new FileInputStream(f));
             ObjectInputStream p = new ObjectInputStream(istream);
@@ -216,13 +216,13 @@ public class SessionManager {
             p.close();
             istream.close();
             sessions = newSessions;
-            app.logEvent("loaded " + newSessions.size() + " sessions from file");
+            app.logEvent(Messages.getString("SessionManager.4") + newSessions.size() + Messages.getString("SessionManager.5")); //$NON-NLS-1$ //$NON-NLS-2$
             tx.commit();
         } catch (FileNotFoundException fnf) {
             // suppress error message if session file doesn't exist
             tx.abort();
         } catch (Exception e) {
-            app.logError("error loading session data.", e);
+            app.logError(Messages.getString("SessionManager.6"), e); //$NON-NLS-1$
             tx.abort();
         } finally {
             tx.closeConnections();
@@ -250,9 +250,9 @@ public class SessionManager {
 
             try {
                 sessionTimeout = Math.max(0,
-                        Integer.parseInt(app.getProperty("sessionTimeout", "30")));
+                        Integer.parseInt(app.getProperty("sessionTimeout", "30"))); //$NON-NLS-1$ //$NON-NLS-2$
             } catch (NumberFormatException nfe) {
-                app.logEvent("Invalid sessionTimeout setting: " + app.getProperty("sessionTimeout"));
+                app.logEvent(Messages.getString("SessionManager.7") + app.getProperty(Messages.getString("SessionManager.8"))); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             RequestEvaluator thisEvaluator = null;
@@ -274,10 +274,10 @@ public class SessionManager {
                             try {
                                 Object[] param = {session.getSessionId()};
 
-                                thisEvaluator.invokeInternal(userhandle, "onLogout", param);
+                                thisEvaluator.invokeInternal(userhandle, "onLogout", param); //$NON-NLS-1$
                             } catch (Exception x) {
                                 // errors should already be logged by requestevaluator, but you never know
-                                app.logError("Error in onLogout", x);
+                                app.logError(Messages.getString("SessionManager.9"), x); //$NON-NLS-1$
                             }
                         }
 
@@ -285,7 +285,7 @@ public class SessionManager {
                     }
                 }
             } catch (Exception cx) {
-                app.logError("Error cleaning up sessions", cx);
+                app.logError(Messages.getString("SessionManager.10"), cx); //$NON-NLS-1$
             } finally {
                 if (thisEvaluator != null) {
                     app.releaseEvaluator(thisEvaluator);

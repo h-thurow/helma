@@ -92,10 +92,10 @@ public class XmlConverter implements XmlConstants {
             try {
                 return convert(new File(desc), helmaNode);
             } catch (FileNotFoundException notfound) {
-                throw new RuntimeException("couldn't read xml: " + desc);
+                throw new RuntimeException(Messages.getString("XmlConverter.0") + desc); //$NON-NLS-1$
             }
         } catch (IOException ioerror) {
-            throw new RuntimeException("couldn't read xml: " + desc);
+            throw new RuntimeException(Messages.getString("XmlConverter.1") + desc); //$NON-NLS-1$
         }
     }
 
@@ -191,13 +191,13 @@ public class XmlConverter implements XmlConstants {
         Object previousNode = null;
 
         if (DEBUG) {
-            debug("reading " + element.getNodeName());
+            debug(Messages.getString("XmlConverter.2") + element.getNodeName()); //$NON-NLS-1$
         }
 
-        String prototype = props.getProperty(element.getNodeName() + "._prototype");
+        String prototype = props.getProperty(element.getNodeName() + "._prototype"); //$NON-NLS-1$
 
         if ((prototype == null) && !sparse) {
-            prototype = "HopObject";
+            prototype = "HopObject"; //$NON-NLS-1$
         }
 
         // if we have a prototype (either explicit or implicit "hopobject"),
@@ -269,26 +269,26 @@ public class XmlConverter implements XmlConstants {
                 Element childElement = (Element) childNode;
 
                 // get the basic key we have to look for in the properties-table
-                domKey = element.getNodeName() + "." + childElement.getNodeName();
+                domKey = element.getNodeName() + "." + childElement.getNodeName(); //$NON-NLS-1$
 
                 // is there a childtext-2-property mapping?
-                if ((props != null) && props.containsKey(domKey + "._text")) {
-                    helmaKey = props.getProperty(domKey + "._text");
+                if ((props != null) && props.containsKey(domKey + "._text")) { //$NON-NLS-1$
+                    helmaKey = props.getProperty(domKey + "._text"); //$NON-NLS-1$
 
-                    if (helmaKey.equals("")) {
+                    if (helmaKey.equals("")) { //$NON-NLS-1$
                         // if property is set but without value, read elementname for this mapping
                         helmaKey = childElement.getNodeName().replace(':',
                                                                       defaultSeparator);
                     }
 
                     if (DEBUG) {
-                        debug("childtext-2-property mapping, helmaKey " + helmaKey +
-                              " for domKey " + domKey);
+                        debug(Messages.getString("XmlConverter.3") + helmaKey + //$NON-NLS-1$
+                              Messages.getString("XmlConverter.4") + domKey); //$NON-NLS-1$
                     }
 
                     // check if helmaKey contains an explicit prototype name in which to
                     // set the property.
-                    int dot = helmaKey.indexOf(".");
+                    int dot = helmaKey.indexOf("."); //$NON-NLS-1$
 
                     if (dot > -1) {
                         String prototype = helmaKey.substring(0, dot);
@@ -303,8 +303,8 @@ public class XmlConverter implements XmlConstants {
                         helmaNode.setString(helmaKey, XmlUtil.getTextContent(childNode));
 
                         if (DEBUG) {
-                            debug("childtext-2-property mapping, setting " + helmaKey +
-                                  " as string");
+                            debug(Messages.getString("XmlConverter.5") + helmaKey + //$NON-NLS-1$
+                                  Messages.getString("XmlConverter.6")); //$NON-NLS-1$
                         }
                     }
 
@@ -314,24 +314,24 @@ public class XmlConverter implements XmlConstants {
                 // is there a simple child-2-property mapping?
                 // (lets the user define to use only one element and make this a property
                 // and simply ignore other elements of the same name)
-                if ((props != null) && props.containsKey(domKey + "._property")) {
-                    helmaKey = props.getProperty(domKey + "._property");
+                if ((props != null) && props.containsKey(domKey + "._property")) { //$NON-NLS-1$
+                    helmaKey = props.getProperty(domKey + "._property"); //$NON-NLS-1$
 
                     // if property is set but without value, read elementname for this mapping:
-                    if (helmaKey.equals("")) {
+                    if (helmaKey.equals("")) { //$NON-NLS-1$
                         helmaKey = childElement.getNodeName().replace(':',
                                                                       defaultSeparator);
                     }
 
                     if (DEBUG) {
-                        debug("child-2-property mapping, helmaKey " + helmaKey +
-                              " for domKey " + domKey);
+                        debug(Messages.getString("XmlConverter.7") + helmaKey + //$NON-NLS-1$
+                              Messages.getString("XmlConverter.8") + domKey); //$NON-NLS-1$
                     }
 
                     // get the node on which to opererate, depending on the helmaKey
                     // value from the properties file.
                     INode node = helmaNode;
-                    int dot = helmaKey.indexOf(".");
+                    int dot = helmaKey.indexOf("."); //$NON-NLS-1$
 
                     if (dot > -1) {
                         String prototype = helmaKey.substring(0, dot);
@@ -351,7 +351,7 @@ public class XmlConverter implements XmlConstants {
                         convert(childElement, node.createNode(helmaKey), nodeCache);
 
                         if (DEBUG) {
-                            debug("read " + childElement.toString() +
+                            debug(Messages.getString("XmlConverter.9") + childElement.toString() + //$NON-NLS-1$
                                   node.getNode(helmaKey).toString());
                         }
                     }
@@ -362,12 +362,12 @@ public class XmlConverter implements XmlConstants {
                 // map it to one of the children-lists
                 helma.objectmodel.INode newHelmaNode = null;
                 String childrenMapping = props.getProperty(element.getNodeName() +
-                                                           "._children");
+                                                           "._children"); //$NON-NLS-1$
 
                 // do we need a mapping directly among _children of helmaNode?
                 // can either be through property elname._children=_all or elname._children=childname
                 if ((childrenMapping != null) &&
-                        (childrenMapping.equals("_all") ||
+                        (childrenMapping.equals("_all") || //$NON-NLS-1$
                         childrenMapping.equals(childElement.getNodeName()))) {
                     newHelmaNode = convert(childElement, helmaNode.createNode(null),
                                            nodeCache);
@@ -393,7 +393,7 @@ public class XmlConverter implements XmlConstants {
                 // get the node on which to opererate, depending on the helmaKey
                 // value from the properties file.
                 INode node = helmaNode;
-                int dot = helmaKey.indexOf(".");
+                int dot = helmaKey.indexOf("."); //$NON-NLS-1$
 
                 if (dot > -1) {
                     String prototype = helmaKey.substring(0, dot);
@@ -412,7 +412,7 @@ public class XmlConverter implements XmlConstants {
                 // try to get the virtual node
                 INode worknode = null;
 
-                if ("_children".equals(helmaKey)) {
+                if ("_children".equals(helmaKey)) { //$NON-NLS-1$
                     worknode = node;
                 } else {
                     worknode = node.getNode(helmaKey);
@@ -424,8 +424,8 @@ public class XmlConverter implements XmlConstants {
                 }
 
                 if (DEBUG) {
-                    debug("mounting child " + childElement.getNodeName() +
-                          " at worknode " + worknode.toString());
+                    debug(Messages.getString("XmlConverter.10") + childElement.getNodeName() + //$NON-NLS-1$
+                          Messages.getString("XmlConverter.11") + worknode.toString()); //$NON-NLS-1$
                 }
 
                 // now mount it, possibly re-using the helmaNode that's been created before
@@ -442,15 +442,15 @@ public class XmlConverter implements XmlConstants {
 
         // if there's some text content for this element, map it:
         if ((textcontent.length() > 0) && !sparse) {
-            helmaKey = props.getProperty(element.getNodeName() + "._text");
+            helmaKey = props.getProperty(element.getNodeName() + "._text"); //$NON-NLS-1$
 
             if (helmaKey == null) {
-                helmaKey = "text";
+                helmaKey = "text"; //$NON-NLS-1$
             }
 
             if (DEBUG) {
-                debug("setting text " + textcontent + " to property " + helmaKey +
-                      " of object " + helmaNode);
+                debug(Messages.getString("XmlConverter.12") + textcontent + Messages.getString("XmlConverter.13") + helmaKey + //$NON-NLS-1$ //$NON-NLS-2$
+                      Messages.getString("XmlConverter.14") + helmaNode); //$NON-NLS-1$
             }
 
             helmaNode.setString(helmaKey, textcontent.toString().trim());
@@ -468,7 +468,7 @@ public class XmlConverter implements XmlConstants {
 
         for (int i = 0; i < len; i++) {
             org.w3c.dom.Node attr = nnm.item(i);
-            String helmaKey = props.getProperty(element.getNodeName() + "._attribute." +
+            String helmaKey = props.getProperty(element.getNodeName() + "._attribute." + //$NON-NLS-1$
                                                 attr.getNodeName());
 
             // unless we only map explicit attributes, use attribute name as property name
@@ -480,7 +480,7 @@ public class XmlConverter implements XmlConstants {
             if (helmaKey != null) {
                 // check if the mapping contains the prototype to which 
                 // the property should be applied
-                int dot = helmaKey.indexOf(".");
+                int dot = helmaKey.indexOf("."); //$NON-NLS-1$
 
                 if (dot > -1) {
                     String prototype = helmaKey.substring(0, dot);
@@ -502,17 +502,17 @@ public class XmlConverter implements XmlConstants {
      * utility function
      */
     private void extractProperties(Properties props) {
-        if (props.containsKey("separator")) {
-            defaultSeparator = props.getProperty("separator").charAt(0);
+        if (props.containsKey("separator")) { //$NON-NLS-1$
+            defaultSeparator = props.getProperty("separator").charAt(0); //$NON-NLS-1$
         }
 
-        sparse = "sparse".equalsIgnoreCase(props.getProperty("_mode"));
+        sparse = "sparse".equalsIgnoreCase(props.getProperty("_mode")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /** for testing */
     void debug(Object msg) {
         for (int i = 0; i < offset; i++) {
-            System.out.print("   ");
+            System.out.print("   "); //$NON-NLS-1$
         }
 
         System.out.println(msg.toString());

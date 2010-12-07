@@ -143,7 +143,7 @@ public class GIFEncoder {
         row = new int[width];
 
         // Write the Magic header
-        writeString("GIF89a");
+        writeString("GIF89a"); //$NON-NLS-1$
 
         // Write out the screen width and height
         writeWord(width);

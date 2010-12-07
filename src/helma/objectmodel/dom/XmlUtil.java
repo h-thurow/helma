@@ -49,7 +49,7 @@ public class XmlUtil {
 
                 return domBuilder;
             } catch (ParserConfigurationException e) {
-                throw new RuntimeException("Cannot build parser: " + e.toString());
+                throw new RuntimeException(Messages.getString("XmlUtil.0") + e.toString()); //$NON-NLS-1$
             }
         }
     }
@@ -84,9 +84,9 @@ public class XmlUtil {
 
             return doc;
         } catch (SAXException e) {
-            throw new RuntimeException("Bad xml-code: " + e.toString());
+            throw new RuntimeException(Messages.getString("XmlUtil.1") + e.toString()); //$NON-NLS-1$
         } catch (IOException f) {
-            throw new RuntimeException("Could not read Xml: " + f.toString());
+            throw new RuntimeException(Messages.getString("XmlUtil.2") + f.toString()); //$NON-NLS-1$
         }
     }
 
@@ -109,9 +109,9 @@ public class XmlUtil {
 
             return doc;
         } catch (SAXException e) {
-            throw new RuntimeException("Bad xml-code: " + e.toString());
+            throw new RuntimeException(Messages.getString("XmlUtil.3") + e.toString()); //$NON-NLS-1$
         } catch (IOException f) {
-            throw new RuntimeException("Could not read Xml: " + f.toString());
+            throw new RuntimeException(Messages.getString("XmlUtil.4") + f.toString()); //$NON-NLS-1$
         }
     }
 

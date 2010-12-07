@@ -28,15 +28,15 @@ public class MD5Encoder {
     /** used by commandline script to create admin username & password          */
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.out.println("\n\nUsage: helma.util.MD5Encoder <username> <password>");
-            System.out.println("Output:");
-            System.out.println("adminUsername=<encoded username>");
-            System.out.println("adminPassword=<encoded password>\n");
+            System.out.println(Messages.getString("MD5Encoder.0")); //$NON-NLS-1$
+            System.out.println(Messages.getString("MD5Encoder.1")); //$NON-NLS-1$
+            System.out.println(Messages.getString("MD5Encoder.2")); //$NON-NLS-1$
+            System.out.println(Messages.getString("MD5Encoder.3")); //$NON-NLS-1$
             System.exit(0);
         }
 
-        System.out.println("adminUsername=" + encode(args[0]));
-        System.out.println("adminPassword=" + encode(args[1]));
+        System.out.println(Messages.getString("MD5Encoder.4") + encode(args[0])); //$NON-NLS-1$
+        System.out.println(Messages.getString("MD5Encoder.5") + encode(args[1])); //$NON-NLS-1$
     }
 
     /**
@@ -62,7 +62,7 @@ public class MD5Encoder {
      * @throws NoSuchAlgorithmException ...
      */
     public static String encode(byte[] message) throws NoSuchAlgorithmException {
-        md = MessageDigest.getInstance("MD5");
+        md = MessageDigest.getInstance("MD5"); //$NON-NLS-1$
 
         byte[] b = md.digest(message);
         StringBuffer buf = new StringBuffer(b.length * 2);
@@ -71,7 +71,7 @@ public class MD5Encoder {
             int j = (b[i] < 0) ? (256 + b[i]) : b[i];
 
             if (j < 16) {
-                buf.append("0");
+                buf.append("0"); //$NON-NLS-1$
             }
 
             buf.append(Integer.toHexString(j));

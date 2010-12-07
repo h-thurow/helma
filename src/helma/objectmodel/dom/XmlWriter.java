@@ -34,11 +34,11 @@ import java.util.Vector;
  * 
  */
 public class XmlWriter extends OutputStreamWriter implements XmlConstants {
-    private final static String LINESEPARATOR = System.getProperty("line.separator");
+    private final static String LINESEPARATOR = System.getProperty("line.separator"); //$NON-NLS-1$
     private static int fileid;
     private Vector convertedNodes;
     private int maxLevels = 3;
-    private String indent = "  ";
+    private String indent = "  "; //$NON-NLS-1$
     private StringBuffer prefix = new StringBuffer();
     private SimpleDateFormat format = new SimpleDateFormat(DATEFORMAT);
     private boolean dbmode = true;
@@ -173,7 +173,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
         StringBuffer tmp = new StringBuffer();
 
         for (int i = 0; i < ct; i++) {
-            tmp.append(" ");
+            tmp.append(" "); //$NON-NLS-1$
         }
 
         indent = tmp.toString();
@@ -189,20 +189,20 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
         convertedNodes = new Vector();
 
         if (explicitEncoding == null) {
-            writeln("<?xml version=\"1.0\"?>");
+            writeln("<?xml version=\"1.0\"?>"); //$NON-NLS-1$
         } else {
-            writeln("<?xml version=\"1.0\" encoding=\"" + explicitEncoding + "\"?>");
+            writeln("<?xml version=\"1.0\" encoding=\"" + explicitEncoding + "\"?>"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         // add style sheet processing instruction
-        writeln("<?xml-stylesheet type=\"text/xsl\" href=\"helma.xsl\"?>");
+        writeln("<?xml-stylesheet type=\"text/xsl\" href=\"helma.xsl\"?>"); //$NON-NLS-1$
 
         // writeln ("<!-- printed by helma object publisher     -->");
         // writeln ("<!-- created " + (new Date()).toString() + " -->" );
-        write("<xmlroot xmlns:hop=\"");
+        write("<xmlroot xmlns:hop=\""); //$NON-NLS-1$
         write(NAMESPACE);
-        writeln("\">");
+        writeln("\">"); //$NON-NLS-1$
         write(node, null, null, 0);
-        writeln("</xmlroot>");
+        writeln("</xmlroot>"); //$NON-NLS-1$
         convertedNodes = null;
 
         return true;
@@ -248,7 +248,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
             INode parent = node.getParent();
 
             if (parent != null) {
-                writeReferenceTag(parent, "hop:parent", null);
+                writeReferenceTag(parent, "hop:parent", null); //$NON-NLS-1$
             }
 
             writeProperties(node, level);
@@ -297,7 +297,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
                     elementName = key;
                     propName = null;
                 } else {
-                    elementName = "property";
+                    elementName = "property"; //$NON-NLS-1$
                     propName = key;
                 }
 
@@ -336,42 +336,42 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
 
         write(prefix.toString());
         write(indent);
-        write("<");
+        write("<"); //$NON-NLS-1$
         write(elementName);
 
         if (propName != null) {
-            write(" propertyname=\"");
+            write(" propertyname=\""); //$NON-NLS-1$
             write(HtmlEncoder.encodeXml(propName));
-            write("\"");
+            write("\""); //$NON-NLS-1$
         }
 
         switch (propType) {
             case IProperty.BOOLEAN:
-                write(" type=\"boolean\">");
+                write(" type=\"boolean\">"); //$NON-NLS-1$
                 write(property.getStringValue());
 
                 break;
 
             case IProperty.FLOAT:
-                write(" type=\"float\">");
+                write(" type=\"float\">"); //$NON-NLS-1$
                 write(property.getStringValue());
 
                 break;
 
             case IProperty.INTEGER:
-                write(" type=\"integer\">");
+                write(" type=\"integer\">"); //$NON-NLS-1$
                 write(property.getStringValue());
 
                 break;
 
             case IProperty.DATE:
-                write(" type=\"date\">");
+                write(" type=\"date\">"); //$NON-NLS-1$
                 write(format.format(property.getDateValue()));
 
                 break;
 
             case IProperty.STRING:
-                write(">");
+                write(">"); //$NON-NLS-1$
 
                 String str = HtmlEncoder.encodeXml(property.getStringValue());
 
@@ -381,9 +381,9 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
                 break;
         }
 
-        write("</");
+        write("</"); //$NON-NLS-1$
         write(elementName);
-        write(">");
+        write(">"); //$NON-NLS-1$
         write(LINESEPARATOR);
     }
 
@@ -407,7 +407,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
         while (e.hasMoreElements()) {
             INode nextNode = (INode) e.nextElement();
 
-            write(nextNode, "hop:child", null, level);
+            write(nextNode, "hop:child", null, level); //$NON-NLS-1$
         }
     }
 
@@ -418,27 +418,27 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
     public void writeTagOpen(INode node, String name, String propName)
                       throws IOException {
         write(prefix.toString());
-        write("<");
-        write((name == null) ? "hopobject" : name);
-        write(" id=\"");
+        write("<"); //$NON-NLS-1$
+        write((name == null) ? "hopobject" : name); //$NON-NLS-1$
+        write(" id=\""); //$NON-NLS-1$
         write(node.getID());
 
         if (propName != null) {
-            write("\" propertyname=\"");
+            write("\" propertyname=\""); //$NON-NLS-1$
             write(HtmlEncoder.encodeXml(propName));
         }
 
-        write("\" name=\"");
+        write("\" name=\""); //$NON-NLS-1$
         write(HtmlEncoder.encodeXml(node.getName()));
-        write("\" prototype=\"");
+        write("\" prototype=\""); //$NON-NLS-1$
         write(getNodePrototype(node));
-        write("\" created=\"");
+        write("\" created=\""); //$NON-NLS-1$
         write(Long.toString(node.created()));
-        write("\" lastModified=\"");
+        write("\" lastModified=\""); //$NON-NLS-1$
         write(Long.toString(node.lastModified()));
 
         //FIXME: do we need anonymous-property?
-        write("\">");
+        write("\">"); //$NON-NLS-1$
         write(LINESEPARATOR);
     }
 
@@ -448,9 +448,9 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      */
     public void writeTagClose(String name) throws IOException {
         write(prefix.toString());
-        write("</");
-        write((name == null) ? "hopobject" : name);
-        write(">");
+        write("</"); //$NON-NLS-1$
+        write((name == null) ? "hopobject" : name); //$NON-NLS-1$
+        write(">"); //$NON-NLS-1$
         write(LINESEPARATOR);
     }
 
@@ -462,19 +462,19 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
     public void writeReferenceTag(INode node, String name, String propName)
                            throws IOException {
         write(prefix.toString());
-        write("<");
-        write((name == null) ? "hopobject" : name);
-        write(" idref=\"");
+        write("<"); //$NON-NLS-1$
+        write((name == null) ? "hopobject" : name); //$NON-NLS-1$
+        write(" idref=\""); //$NON-NLS-1$
         write(node.getID());
 
         if (propName != null) {
-            write("\" propertyname=\"");
+            write("\" propertyname=\""); //$NON-NLS-1$
             write(HtmlEncoder.encodeXml(propName));
         }
 
-        write("\" prototyperef=\"");
+        write("\" prototyperef=\""); //$NON-NLS-1$
         write(getNodePrototype(node));
-        write("\"/>");
+        write("\"/>"); //$NON-NLS-1$
         write(LINESEPARATOR);
     }
 
@@ -482,8 +482,8 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * retrieve prototype-string of a node, defaults to "hopobject"
      */
     private String getNodePrototype(INode node) {
-        if ((node.getPrototype() == null) || "".equals(node.getPrototype())) {
-            return "hopobject";
+        if ((node.getPrototype() == null) || "".equals(node.getPrototype())) { //$NON-NLS-1$
+            return "hopobject"; //$NON-NLS-1$
         } else {
             return node.getPrototype();
         }

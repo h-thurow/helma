@@ -48,7 +48,7 @@ public class WrappedMap implements Map {
     public WrappedMap(Map map, boolean readonly) {
         if (map == null) {
             throw new NullPointerException(
-                "null Map passed to WrappedMap constructor");
+                Messages.getString("WrappedMap.0")); //$NON-NLS-1$
         }
         wrapped = map;
         this.readonly = readonly;
@@ -96,28 +96,28 @@ public class WrappedMap implements Map {
 
     public Object put(Object key, Object value) {
         if (readonly) {
-            throw new RuntimeException("Attempt to modify readonly map");
+            throw new RuntimeException(Messages.getString("WrappedMap.1")); //$NON-NLS-1$
         }
         return wrapped.put(key, value);
     }
 
     public Object remove(Object key) {
         if (readonly) {
-            throw new RuntimeException("Attempt to modify readonly map");
+            throw new RuntimeException(Messages.getString("WrappedMap.2")); //$NON-NLS-1$
         }
         return wrapped.remove(key);
     }
 
     public void putAll(Map t) {
         if (readonly) {
-            throw new RuntimeException("Attempt to modify readonly map");
+            throw new RuntimeException(Messages.getString("WrappedMap.3")); //$NON-NLS-1$
         }
         wrapped.putAll(t);
     }
 
     public void clear() {
         if (readonly) {
-            throw new RuntimeException("Attempt to modify readonly map");
+            throw new RuntimeException(Messages.getString("WrappedMap.4")); //$NON-NLS-1$
         }
         wrapped.clear();
     }
