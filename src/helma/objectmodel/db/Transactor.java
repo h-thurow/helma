@@ -17,6 +17,7 @@
 package helma.objectmodel.db;
 
 import helma.objectmodel.DatabaseException;
+import helma.objectmodel.INode;
 import helma.objectmodel.ITransaction;
 
 import java.sql.Connection;
@@ -65,6 +66,8 @@ public class Transactor {
 
     // the thread we're associated with
     private Thread thread;
+    
+    private ArrayList<Transaction> transactions = new ArrayList<Transaction>();
 
     private static final ThreadLocal txtor = new ThreadLocal();
 
@@ -131,6 +134,15 @@ public class Transactor {
         if (node != null) {
             Key key = node.getKey();
 
+            if (node.getState() == INode.DELETED && dirtyNodes.containsKey(key)) {
+            	// remove a known deleted node (will be re-added at the end of the list),
+            	// because it might not have been deleted yet when we were last modified
+            	// about it being dirty, which could result in a on commit removal order
+            	// which does not equal the removal order as done in the request's
+            	// application code
+            	dirtyNodes.remove(key);
+            }
+            
             dirtyNodes.put(key, node);
         }
     }
@@ -299,35 +311,104 @@ public class Transactor {
      * @throws Exception ...
      */
     public synchronized void commit() throws Exception {
+    	execute();
+    	
+    	Iterator connections = sqlConnections.values().iterator();
+        while (connections.hasNext()) {
+        	Connection connection = (Connection) connections.next();
+        	if (!connection.getAutoCommit()) {
+        		connection.commit();
+        	}
+        }
+        
+        int numberOfInsertedNodes = 0;
+        int numberOfModifiedNodes = 0;
+        int numberOfDeletedNodes = 0;
+        
+        boolean hasListeners = nmgr.hasNodeChangeListeners();
+        
+        Iterator<Transaction> iterator = transactions.iterator();
+        while (iterator.hasNext()) {
+        	Transaction transaction = iterator.next();
+        	
+        	if (hasListeners) {
+                nmgr.fireNodeChangeEvent(transaction.getInsertedNodes(), 
+                	transaction.getModifiedNodes(),
+                	transaction.getDeletedNodes(), 
+                	transaction.getUpdatedParentNodes());
+            }
+        	
+        	Log eventLog = nmgr.app.getEventLog();
+        	
+        	if (eventLog.isDebugEnabled()) {
+    	    	Iterator<Node> insertedNodes = transaction.getInsertedNodes().iterator();
+    	    	while (insertedNodes.hasNext()) {
+    	    		Node node = insertedNodes.next();
+    	            eventLog.debug("inserted node: " + node.getPrototype() + "/" + node.getID());
+        		}
+    	    	
+    	    	Iterator<Node> modifiedNodes = transaction.getModifiedNodes().iterator();
+    	    	while (modifiedNodes.hasNext()) {
+    	    		Node node = modifiedNodes.next();
+                    eventLog.debug("updated node: " + node.getPrototype() + "/" + node.getID());	            
+        		}
+    	    	
+    	    	Iterator<Node> deletedNodes = transaction.getDeletedNodes().iterator();
+    	    	while (deletedNodes.hasNext()) {
+    	    		Node node = deletedNodes.next();
+                    eventLog.debug("removed node: " + node.getPrototype() + "/" + node.getID());	            
+        		}
+        	}
+        	
+        	numberOfInsertedNodes += transaction.getNumberOfInsertedNodes();
+        	numberOfModifiedNodes += transaction.getNumberOfModifiedNodes();
+        	numberOfDeletedNodes += transaction.getNumberOfDeletedNodes();
+        }
+        
+        StringBuffer msg = new StringBuffer(tname).append(" done in ")
+			.append(System.currentTimeMillis() - tstart).append(" millis");
+        if (numberOfInsertedNodes + 
+        	numberOfModifiedNodes + 
+        	numberOfDeletedNodes > 0) {
+        	msg.append(" [+")
+        		.append(numberOfInsertedNodes).append(", ~")
+        		.append(numberOfModifiedNodes).append(", -")
+        		.append(numberOfDeletedNodes).append("]");
+        }
+        nmgr.app.logAccess(msg.toString());
+    	
+        transactions.clear();
+        
+    	if (active) {
+	        active = false;
+	        nmgr.db.commitTransaction(txn);
+	        txn = null;
+	    }
+	
+	    // unset transaction name
+	    tname = null;
+    }
+    
+    /**
+     * Execute the current transaction, persisting all changes to the database,
+     * but not yet commiting the changes.
+     * 
+     * @throws Exception
+     */
+    public synchronized Transaction execute() throws Exception {
         if (killed) {
             throw new DatabaseException("commit() called on killed transactor thread");
         } else if (!active) {
-            return;
+            return new Transaction();
         }
-        int inserted = 0;
-        int updated = 0;
-        int deleted = 0;
-
-        ArrayList insertedNodes = null;
-        ArrayList updatedNodes = null;
-        ArrayList deletedNodes = null;
-        ArrayList modifiedParentNodes = null;
-        // if nodemanager has listeners collect dirty nodes
-        boolean hasListeners = nmgr.hasNodeChangeListeners();
-
-        if (hasListeners) {
-            insertedNodes = new ArrayList();
-            updatedNodes = new ArrayList();
-            deletedNodes = new ArrayList();
-            modifiedParentNodes = new ArrayList();
-        }
+        
+        Transaction transaction = new Transaction();
 
         if (!dirtyNodes.isEmpty()) {
             Object[] dirty = dirtyNodes.values().toArray();
 
             // the set to collect DbMappings to be marked as changed
             HashSet dirtyDbMappings = new HashSet();
-            Log eventLog = nmgr.app.getEventLog();
 
             for (int i = 0; i < dirty.length; i++) {
                 Node node = (Node) dirty[i];
@@ -343,15 +424,7 @@ public class Transactor {
                     // register node with nodemanager cache
                     nmgr.registerNode(node);
 
-                    if (hasListeners) {
-                        insertedNodes.add(node);
-                    }
-
-                    inserted++;
-                    if (eventLog.isDebugEnabled()) {
-                        eventLog.debug("inserted node: " + node.getPrototype() + "/" +
-                                node.getID());
-                    }
+                    transaction.addInsertedNode(node);
                 } else if (nstate == Node.MODIFIED) {
                     // only mark DbMapping as dirty if updateNode returns true
                     if (nmgr.updateNode(nmgr.db, txn, node)) {
@@ -362,15 +435,7 @@ public class Transactor {
                     // update node with nodemanager cache
                     nmgr.registerNode(node);
 
-                    if (hasListeners) {
-                        updatedNodes.add(node);
-                    }
-
-                    updated++;
-                    if (eventLog.isDebugEnabled()) {
-                        eventLog.debug("updated node: " + node.getPrototype() + "/" +
-                                node.getID());
-                    }
+                    transaction.addModifiedNode(node);
                 } else if (nstate == Node.DELETED) {
                     nmgr.deleteNode(nmgr.db, txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
@@ -378,22 +443,13 @@ public class Transactor {
                     // remove node from nodemanager cache
                     nmgr.evictNode(node);
 
-                    if (hasListeners) {
-                        deletedNodes.add(node);
-                    }
-
-                    deleted++;
-                    if (eventLog.isDebugEnabled()) {
-                        eventLog.debug("removed node: " + node.getPrototype() + "/" +
-                                node.getID());
-                    }
+                    transaction.addDeletedNode(node);
                 }
 
                 node.clearWriteLock();
             }
 
             // set last data change times in db-mappings
-            // long now = System.currentTimeMillis();
             for (Iterator i = dirtyDbMappings.iterator(); i.hasNext(); ) {
                 DbMapping dbm = (DbMapping) i.next();
                 if (dbm != null) {
@@ -402,73 +458,66 @@ public class Transactor {
             }
         }
 
-        long now = System.currentTimeMillis();
-
         if (!parentNodes.isEmpty()) {
             // set last subnode change times in parent nodes
             for (Iterator i = parentNodes.iterator(); i.hasNext(); ) {
                 Node node = (Node) i.next();
                 node.markSubnodesChanged();
-                if (hasListeners) {
-                    modifiedParentNodes.add(node);
-                }
+                
+                transaction.addUpdatedParentNode(node);
             }
-        }
-
-        if (hasListeners) {
-            nmgr.fireNodeChangeEvent(insertedNodes, updatedNodes,
-                                     deletedNodes, modifiedParentNodes);
         }
 
         // clear the node collections
         recycle();
-
-        if (active) {
-            active = false;
-            nmgr.db.commitTransaction(txn);
-            txn = null;
-        }
-
-        StringBuffer msg = new StringBuffer(tname).append(" done in ")
-                .append(now - tstart).append(" millis");
-        if(inserted + updated + deleted > 0) {
-            msg.append(" [+")
-                    .append(inserted).append(", ~")
-                    .append(updated).append(", -")
-                    .append(deleted).append("]");
-        }
-        nmgr.app.logAccess(msg.toString());
-
-        // unset transaction name
-        tname = null;
+        
+        transactions.add(transaction);
+        return transaction;
     }
 
     /**
      * Abort the current transaction, rolling back all changes made.
      */
     public synchronized void abort() {
-        Object[] dirty = dirtyNodes.values().toArray();
-
-        // evict dirty nodes from cache
-        for (int i = 0; i < dirty.length; i++) {
-            Node node = (Node) dirty[i];
-
-            // Declare node as invalid, so it won't be used by other threads
-            // that want to write on it and remove it from cache
-            nmgr.evictNode(node);
-            node.clearWriteLock();
-        }
-
-        long now = System.currentTimeMillis();
-
-        // set last subnode change times in parent nodes
-        for (Iterator i = parentNodes.iterator(); i.hasNext(); ) {
-            Node node = (Node) i.next();
-            node.markSubnodesChanged();
-        }
-
-        // clear the node collections
+    	Iterator<Transaction> iterator = transactions.iterator();
+    	while (iterator.hasNext()) {
+    		Transaction transaction = iterator.next();
+    		
+    		// evict dirty nodes from cache
+    		Iterator<Node> dirtyNodes = transaction.getDirtyNodes().iterator();
+    		while (dirtyNodes.hasNext()) {
+    			Node node = dirtyNodes.next();
+    			
+    			// Declare node as invalid, so it won't be used by other threads
+                // that want to write on it and remove it from cache
+    			nmgr.evictNode(node);
+                node.clearWriteLock();
+    		}
+    		
+            // set last subnode change times in parent nodes
+            Iterator<Node> updatedParentNodes = transaction.getUpdatedParentNodes().iterator();
+            while (updatedParentNodes.hasNext()) {
+            	Node node = updatedParentNodes.next();
+                node.markSubnodesChanged();
+            }
+    	}
+    	
+    	// clear the node collections
         recycle();
+        transactions.clear();
+        
+        Iterator connections = sqlConnections.values().iterator();
+        while (connections.hasNext()) {
+        	Connection connection = (Connection) connections.next();
+        	try {
+				if (!connection.getAutoCommit()) {
+					connection.rollback();
+				}
+			} catch (SQLException e) {
+				nmgr.app.logError("Rollback of SQL transaction failed", e);
+			}
+        }
+        
         // close any JDBC connections associated with this transactor thread
         closeConnections();
 

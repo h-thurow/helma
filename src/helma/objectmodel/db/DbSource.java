@@ -83,9 +83,12 @@ public class DbSource {
             init();
             con = DriverManager.getConnection(url, conProps);
 
-            // If we wanted to use SQL transactions, we'd set autoCommit to
-            // false here and make commit/rollback invocations in Transactor methods;
+            if ("false".equalsIgnoreCase(subProps.getProperty("autoCommit"))) {
+            	con.setAutoCommit(false);
+            }
+            
             // System.err.println ("Created new Connection to "+url);
+            
             if (tx != null) {
                 tx.registerConnection(this, con);
             } else {
@@ -187,7 +190,8 @@ public class DbSource {
             if ("url".equalsIgnoreCase(key) ||
                 "driver".equalsIgnoreCase(key) ||
                 "user".equalsIgnoreCase(key) ||
-                "password".equalsIgnoreCase(key)) {
+                "password".equalsIgnoreCase(key) ||
+                "autoCommit".equalsIgnoreCase(key)) {
                 continue;
             }
             conProps.setProperty(key, subProps.getProperty(key));

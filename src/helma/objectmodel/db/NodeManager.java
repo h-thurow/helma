@@ -478,7 +478,7 @@ public final class NodeManager {
         }
 
         // set connection to write mode
-        if (con.isReadOnly()) con.setReadOnly(false);
+        //if (con.isReadOnly()) con.setReadOnly(false);
 
         String insertString = dbm.getInsert();
         PreparedStatement stmt = con.prepareStatement(insertString);
@@ -619,7 +619,7 @@ public final class NodeManager {
 
             Connection con = dbm.getConnection();
             // set connection to write mode
-            if (con.isReadOnly()) con.setReadOnly(false);
+            //if (con.isReadOnly()) con.setReadOnly(false);
             PreparedStatement stmt = con.prepareStatement(b.toString());
 
             int stmtNumber = 0;
@@ -698,7 +698,7 @@ public final class NodeManager {
             try {
                 Connection con = dbm.getConnection();
                 // set connection to write mode
-                if (con.isReadOnly()) con.setReadOnly(false);
+                //if (con.isReadOnly()) con.setReadOnly(false);
 
                 st = con.createStatement();
 
@@ -780,7 +780,7 @@ public final class NodeManager {
         try {
             Connection con = map.getConnection();
             // set connection to read-only mode
-            if (!con.isReadOnly()) con.setReadOnly(true);
+            //if (!con.isReadOnly()) con.setReadOnly(true);
 
             stmt = con.createStatement();
 
@@ -832,7 +832,7 @@ public final class NodeManager {
         try {
             Connection con = map.getConnection();
             // TODO is it necessary to set connection to write mode here?
-            if (con.isReadOnly()) con.setReadOnly(false);
+            //if (con.isReadOnly()) con.setReadOnly(false);
 
             stmt = con.createStatement();
 
@@ -876,7 +876,7 @@ public final class NodeManager {
         // retrieve the value of that field instead of the primary key
         Connection con = type.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
@@ -966,7 +966,7 @@ public final class NodeManager {
 
         Connection con = dbm.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = con.createStatement();
         DbColumn[] columns = dbm.getColumns();
@@ -1053,7 +1053,7 @@ public final class NodeManager {
             if (missing != null) {
                 Connection con = dbm.getConnection();
                 // set connection to read-only mode
-                if (!con.isReadOnly()) con.setReadOnly(true);
+                //if (!con.isReadOnly()) con.setReadOnly(true);
 
                 Statement stmt = con.createStatement();
                 DbColumn[] columns = dbm.getColumns();
@@ -1181,7 +1181,7 @@ public final class NodeManager {
         int retval = 0;
         Connection con = type.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
@@ -1238,7 +1238,7 @@ public final class NodeManager {
 
         Connection con = rel.otherType.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        //if (!con.isReadOnly()) con.setReadOnly(true);
 
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
@@ -1312,7 +1312,7 @@ public final class NodeManager {
             try {
                 Connection con = dbm.getConnection();
                 // set connection to read-only mode
-                if (!con.isReadOnly()) con.setReadOnly(true);
+                //if (!con.isReadOnly()) con.setReadOnly(true);
 
                 stmt = con.createStatement();
 
@@ -1388,7 +1388,7 @@ public final class NodeManager {
             try {
                 Connection con = dbm.getConnection();
                 // set connection to read-only mode
-                if (!con.isReadOnly()) con.setReadOnly(true);
+                //if (!con.isReadOnly()) con.setReadOnly(true);
                 DbColumn[] columns = dbm.getColumns();
                 Relation[] joins = dbm.getJoins();
                 StringBuffer b = dbm.getSelect(rel);

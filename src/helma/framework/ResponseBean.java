@@ -633,6 +633,19 @@ public class ResponseBean implements Serializable {
             tx.begin(tname);
         }
     }
+    
+    /**
+     * Executes any changes made during the course of the current
+     * transaction without actually committing the transaction.
+     * 
+     * @throws Exception
+     */
+    public void execute() throws Exception {
+    	 Transactor tx = Transactor.getInstance();
+         if (tx != null) {
+             tx.execute();
+         }
+    }
 
     /**
      * Rollback the current transaction and start a new one.
