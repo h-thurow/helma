@@ -113,6 +113,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
         gui.setVisible(visible);
     }
 
+    @Override
     public void dispose() {
         super.dispose();
         gui.setVisible(false);
@@ -177,12 +178,14 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             // tree.setRootVisible(false);
             // track double clicks
             tree.addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent evt) {
                     openScript(tree.getSelectionPath());
                 }
             });
             // track enter key
             tree.addKeyListener(new KeyAdapter() {
+                @Override
                 public void keyPressed(KeyEvent evt) {
                     if (evt.getKeyCode() == KeyEvent.VK_ENTER)
                         openScript(tree.getSelectionPath());
@@ -195,11 +198,13 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             // no bold font lists for me, thanks
             list.setFont(list.getFont().deriveFont(Font.PLAIN));
             list.addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent evt) {
                     openFunction((FunctionItem) list.getSelectedValue());
                 }
             });
             list.addKeyListener(new KeyAdapter() {
+                @Override
                 public void keyPressed(KeyEvent evt) {
                     if (evt.getKeyCode() == KeyEvent.VK_ENTER)
                         openFunction((FunctionItem) list.getSelectedValue());
@@ -221,6 +226,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             contentPane.add(split2, BorderLayout.CENTER);
         }
 
+        @Override
         public void updateSourceText(final Dim.SourceInfo sourceInfo) {
             // super.updateSourceText(sourceInfo);
             String filename = sourceInfo.url();
@@ -234,6 +240,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             });
         }
 
+        @Override
         protected void showFileWindow(String sourceName, int lineNumber) {
             if (!isVisible())
                 setVisible(true);
@@ -305,6 +312,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             return name.compareTo(other.name);
         }
 
+        @Override
         public String toString() {
             return name;
         }

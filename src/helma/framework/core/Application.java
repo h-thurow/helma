@@ -349,6 +349,7 @@ public final class Application implements Runnable {
             ignoreDirs = dirs;
         }
 
+        @Override
         public void run() {
             try {
                 synchronized (Application.this) {
@@ -2040,6 +2041,7 @@ public final class Application implements Runnable {
     /**
      * Return a string representation for this app.
      */
+    @Override
     public String toString() {
         return "[Application "+name+"]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -2157,6 +2159,7 @@ public final class Application implements Runnable {
             this.job = job;
         }
 
+        @Override
         public void run() {
             try {
                 thisEvaluator.invokeInternal(null, job.getFunction(),
@@ -2170,6 +2173,7 @@ public final class Application implements Runnable {
             }
         }
 
+        @Override
         public String toString() {
             return "CronRunner[" + job + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }

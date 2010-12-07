@@ -92,6 +92,7 @@ public class JimiGenerator extends ImageGenerator {
      * @throws IOException
      * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
      */
+    @Override
     public void write(ImageWrapper wrapper, String filename, float quality, boolean alpha) throws IOException {
         // determine the type from the file extension
         int pos = filename.lastIndexOf('.');
@@ -126,6 +127,7 @@ public class JimiGenerator extends ImageGenerator {
      * @throws IOException
     * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.io.OutputStream, java.lang.String, float, boolean)
      */
+    @Override
     public void write(ImageWrapper wrapper, OutputStream out, String mimeType, float quality, boolean alpha) throws IOException {
         // determine the type from the mime type by taking away image/ and image/x-
         if (mimeType.startsWith("image/")) { //$NON-NLS-1$

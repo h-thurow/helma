@@ -103,6 +103,7 @@ public final class ZipRepository extends AbstractRepository {
         return new ZipFile(file);
     }
 
+    @Override
     public synchronized void update() {
         if (file.lastModified() != lastModified ||
                 repositories == null ||
@@ -181,6 +182,7 @@ public final class ZipRepository extends AbstractRepository {
     /**
      * Called to create a child resource for this repository
      */
+    @Override
     protected Resource createResource(String name) {
         return new ZipResource(entryPath + "/" + name, this); //$NON-NLS-1$
     }
@@ -231,10 +233,12 @@ public final class ZipRepository extends AbstractRepository {
         return file.lastModified();
     }
 
+    @Override
     public int hashCode() {
         return 17 + (37 * file.hashCode()) + (37 * name.hashCode());
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof ZipRepository)) {
             return false;
@@ -244,6 +248,7 @@ public final class ZipRepository extends AbstractRepository {
         return (file.equals(rep.file) && name.equals(rep.name));
     }
 
+    @Override
     public String toString() {
         return new StringBuffer("ZipRepository[").append(name).append("]").toString(); //$NON-NLS-1$ //$NON-NLS-2$
     }

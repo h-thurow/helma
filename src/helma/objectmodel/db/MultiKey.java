@@ -80,6 +80,7 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return true if both keys are identical
      */
+    @Override
     public boolean equals(Object what) {
         if (what == this) {
             return true;
@@ -102,6 +103,7 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return this key's hash code
      */
+    @Override
     public int hashCode() {
         if (hashcode == 0) {
             hashcode = (storageName == null) ? (17 + (37 * parts.hashCode()))
@@ -144,6 +146,7 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return a string representation for this key
      */
+    @Override
     public String toString() {
         return (storageName == null) ? ("[" + parts + "]") : (storageName + "[" + parts + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
     }

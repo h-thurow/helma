@@ -312,6 +312,7 @@ public class ResourceProperties extends Properties {
      * @param value value to look for
      * @return true if the value is found in the value list
      */
+    @Override
     public synchronized boolean contains(Object value) {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -324,6 +325,7 @@ public class ResourceProperties extends Properties {
      * @param key key to look for
      * @return true if the key is found in the key list
      */
+    @Override
     public synchronized boolean containsKey(Object key) {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -339,6 +341,7 @@ public class ResourceProperties extends Properties {
      * Returns an enumeration of all values
      * @return values enumeration
      */
+    @Override
     public synchronized Enumeration elements() {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -351,6 +354,7 @@ public class ResourceProperties extends Properties {
      * @param key key to use for fetching the value
      * @return value belonging to the given key
      */
+    @Override
     public synchronized Object get(Object key) {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -414,6 +418,7 @@ public class ResourceProperties extends Properties {
      * @param defaultValue default value to return if key is not found
      * @return spiecific value or default value if not found
      */
+    @Override
     public String getProperty(String key, String defaultValue) {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -431,6 +436,7 @@ public class ResourceProperties extends Properties {
      * @param key key to use for fetching the value
      * @return value belonging to the given key
      */
+    @Override
     public String getProperty(String key) {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -447,6 +453,7 @@ public class ResourceProperties extends Properties {
      * Checks wether the properties list is empty
      * @return true if the properties list is empty
      */
+    @Override
     public synchronized boolean isEmpty() {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -466,6 +473,7 @@ public class ResourceProperties extends Properties {
      * Returns an enumeration of all keys
      * @return keys enumeration
      */
+    @Override
     public synchronized Enumeration keys() {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -477,6 +485,7 @@ public class ResourceProperties extends Properties {
      * Returns a set of all keys
      * @return keys set
      */
+    @Override
     public Set keySet() {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -490,6 +499,7 @@ public class ResourceProperties extends Properties {
      * @param value value
      * @return the old value, if an old value got replaced
      */
+    @Override
     public synchronized Object put(Object key, Object value) {
         if (value instanceof String) {
             value = ((String) value).trim();
@@ -506,6 +516,7 @@ public class ResourceProperties extends Properties {
      * @param key key
      * @return the old value
      */
+    @Override
     public synchronized Object remove(Object key) {
         String strkey = key.toString();
         if (ignoreCase) {
@@ -531,6 +542,7 @@ public class ResourceProperties extends Properties {
      * Returns the number of peroperties in the list
      * @return number of properties
      */
+    @Override
     public synchronized int size() {
         if ((System.currentTimeMillis() - lastCheck) > CACHE_TIME) {
             update();
@@ -541,6 +553,7 @@ public class ResourceProperties extends Properties {
     /**
      * Overwrite clear() to also empty the key map.
      */
+    @Override
     public synchronized void clear() {
         keyMap.clear();
         super.clear();
@@ -550,6 +563,7 @@ public class ResourceProperties extends Properties {
      * Returns a string-representation of the class
      * @return string
      */
+    @Override
     public synchronized String toString() {
         return super.toString();
     }

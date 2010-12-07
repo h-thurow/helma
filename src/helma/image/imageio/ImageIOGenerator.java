@@ -99,6 +99,7 @@ public class ImageIOGenerator extends ImageGenerator {
      * @throws IOException
      * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
      */
+    @Override
     public void write(ImageWrapper wrapper, String filename, float quality, boolean alpha) throws IOException {
         // determine suffix:
         int pos = filename.lastIndexOf('.');
@@ -140,6 +141,7 @@ public class ImageIOGenerator extends ImageGenerator {
      * @throws IOException
      * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.io.OutputStream, java.lang.String, float, boolean)
      */
+    @Override
     public void write(ImageWrapper wrapper, OutputStream out, String mimeType, float quality, boolean alpha) throws IOException {
             // Find a writer for that type
         ImageWriter writer = null;

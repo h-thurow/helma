@@ -55,6 +55,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
      *
      * @throws ServletException ...
      */
+    @Override
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
 
@@ -135,6 +136,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
      *
      * @return this servlet's application instance
      */
+    @Override
     public Application getApplication() {
         if (app == null) {
             createApp();
@@ -176,6 +178,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
      * The servlet is being destroyed. Close and release the application if
      * it does exist.
      */
+    @Override
     public void destroy() {
         if (app != null) {
             try {

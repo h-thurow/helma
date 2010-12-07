@@ -42,15 +42,18 @@ public class GIFImageWriterSpi extends ImageWriterSpi {
         );
     }
 
+    @Override
     public String getDescription(Locale locale) {
         return "Graphics Interchange Format"; //$NON-NLS-1$
     }
 
+    @Override
     public ImageWriter createWriterInstance(Object extension)
         throws IOException {
         return new GIFImageWriter(this);
     }
 
+    @Override
     public boolean canEncodeImage(ImageTypeSpecifier type) {
         // FIXME handle # colors
         return true;

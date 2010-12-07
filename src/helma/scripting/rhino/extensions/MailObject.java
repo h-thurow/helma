@@ -87,6 +87,7 @@ public class MailObject extends ScriptableObject implements Serializable {
     /**
      *  Overrides abstract method in ScriptableObject
      */
+    @Override
     public String getClassName() {
         return "Mail"; //$NON-NLS-1$
     }

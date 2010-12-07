@@ -373,6 +373,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      *
      * @return ...
      */
+    @Override
     public String toString() {
         return getStringValue();
     }
@@ -534,6 +535,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      * @return true if this equals obj
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this)
             return true;

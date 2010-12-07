@@ -124,10 +124,12 @@ public class FileObject extends ScriptableObject {
         }
     }
 
+    @Override
     public String getClassName() {
         return "File"; //$NON-NLS-1$
     }
 
+    @Override
     public String toString() {
          if (file==null) return "<null>"; //$NON-NLS-1$
          return file.toString();

@@ -1087,6 +1087,7 @@ public final class RhinoCore implements ScopeProvider {
             return null;
         }
 
+        @Override
         public String toString() {
             return ("TypeInfo[" + frameworkProto + "," + new Date(lastUpdate) + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
@@ -1097,6 +1098,7 @@ public final class RhinoCore implements ScopeProvider {
      */
     class WrapMaker extends WrapFactory {
 
+        @Override
         public Object wrap(Context cx, Scriptable scope, Object obj, Class staticType) {
             // taking a shortcut here on things normally defined by setJavaPrimitivesWrap()
             if (obj == null || obj == Undefined.instance
@@ -1135,6 +1137,7 @@ public final class RhinoCore implements ScopeProvider {
             return super.wrap(cx, scope, obj, staticType);
         }
 
+        @Override
         public Scriptable wrapNewObject(Context cx, Scriptable scope, Object obj) {
             if (obj instanceof Scriptable) {
                 return (Scriptable) obj;
@@ -1154,6 +1157,7 @@ public final class RhinoCore implements ScopeProvider {
     class StringTrim extends BaseFunction {
         private static final long serialVersionUID = -1515630068911501925L;
 
+        @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             String str = thisObj.toString();
             return str.trim();
@@ -1163,6 +1167,7 @@ public final class RhinoCore implements ScopeProvider {
     class DateFormat extends BaseFunction {
         private static final long serialVersionUID = 4694440247686532087L;
 
+        @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             Date date = new Date((long) ScriptRuntime.toNumber(thisObj));
             SimpleDateFormat df;
@@ -1189,6 +1194,7 @@ public final class RhinoCore implements ScopeProvider {
     class NumberFormat extends BaseFunction {
         private static final long serialVersionUID = -6999409297243210875L;
 
+        @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             DecimalFormat df;
             if (args.length > 0 && args[0] != Undefined.instance) {
@@ -1204,6 +1210,7 @@ public final class RhinoCore implements ScopeProvider {
 
         final boolean strictVars = "true".equalsIgnoreCase(app.getProperty("strictVars")); //$NON-NLS-1$ //$NON-NLS-2$
 
+        @Override
         protected void onContextCreated(Context cx) {
             cx.setWrapFactory(wrapper);
             cx.setOptimizationLevel(optLevel);
@@ -1219,6 +1226,7 @@ public final class RhinoCore implements ScopeProvider {
             super.onContextCreated(cx);
         }
 
+        @Override
         protected boolean hasFeature(Context cx, int featureIndex) {
             switch (featureIndex) {
                 case Context.FEATURE_DYNAMIC_SCOPE:
@@ -1239,6 +1247,7 @@ public final class RhinoCore implements ScopeProvider {
          * This can be used to customize {@link Context} without introducing
          * additional subclasses.
          */
+        @Override
         protected void observeInstructionCount(Context cx, int instructionCount) {
             RhinoEngine engine = RhinoEngine.getRhinoEngine();
             if (engine != null && engine.thread != Thread.currentThread()) {

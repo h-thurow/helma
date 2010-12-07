@@ -122,6 +122,7 @@ public class RequestBean implements Serializable {
     /**
      * @return A string representation of this request
      */
+    @Override
     public String toString() {
         return "[Request]"; //$NON-NLS-1$
     }

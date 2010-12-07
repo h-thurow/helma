@@ -36,6 +36,7 @@ public class SegmentedSubnodeList extends SubnodeList {
      *
      * @param handle element to be inserted.
      */
+    @Override
     public synchronized boolean add(NodeHandle handle) {
         if (!hasRelationalNodes() || segments == null) {
             return super.add(handle);
@@ -52,6 +53,7 @@ public class SegmentedSubnodeList extends SubnodeList {
      * @param index the index to insert the element at
      * @param handle the object to add
      */
+    @Override
     public synchronized void add(int index, NodeHandle handle) {
         if (!hasRelationalNodes() || segments == null) {
             super.add(index, handle);
@@ -70,6 +72,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         }
     }
 
+    @Override
     public NodeHandle get(int index) {
         if (!hasRelationalNodes() || segments == null) {
             return super.get(index);
@@ -81,6 +84,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         return (NodeHandle) list.get(index);
     }
 
+    @Override
     public synchronized boolean contains(Object object) {
         if (!hasRelationalNodes() || segments == null) {
             return super.contains(object);
@@ -96,6 +100,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         return false;
     }
 
+    @Override
     public synchronized int indexOf(Object object) {
         if (!hasRelationalNodes() || segments == null) {
             return super.indexOf(object);
@@ -116,6 +121,7 @@ public class SegmentedSubnodeList extends SubnodeList {
      * remove the object specified by the given index-position
      * @param index the index-position of the NodeHandle to remove
      */
+    @Override
     public synchronized Object remove(int index) {
         if (!hasRelationalNodes() || segments == null) {
             return super.remove(index);
@@ -137,6 +143,7 @@ public class SegmentedSubnodeList extends SubnodeList {
      * remove the given Object from this List
      * @param object the NodeHandle to remove
      */
+    @Override
     public synchronized boolean remove(Object object) {
         if (!hasRelationalNodes() || segments == null) {
             return super.remove(object);
@@ -158,6 +165,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         return false;
     }
 
+    @Override
     public synchronized Object[] toArray() {
         if (!hasRelationalNodes() || segments == null) {
             return super.toArray();
@@ -206,6 +214,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         return Collections.EMPTY_LIST;
     }
 
+    @Override
     protected synchronized void update() {
         if (!hasRelationalNodes()) {
             segments = null;
@@ -239,6 +248,7 @@ public class SegmentedSubnodeList extends SubnodeList {
         }
     }
 
+    @Override
     public int size() {
         if (!hasRelationalNodes() || segments == null) {
             return super.size();
@@ -261,6 +271,7 @@ public class SegmentedSubnodeList extends SubnodeList {
             return startIndex + length;
         }
 
+        @Override
         public String toString() {
             return "Segment{startIndex: " + startIndex + ", length: " + length + "}";  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
         }

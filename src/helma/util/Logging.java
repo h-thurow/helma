@@ -59,6 +59,7 @@ public class Logging extends LogFactory {
      * directory specified by the "log.dir" System property. If the
      * logname is "console" a log that writes to System.out is returned.
      */
+    @Override
     public Log getInstance(String logname) {
         if (logname == null) {
             throw new LogConfigurationException(Messages.getString("Logging.0")); //$NON-NLS-1$
@@ -106,14 +107,17 @@ public class Logging extends LogFactory {
         return log;
     }
 
+    @Override
     public synchronized Log getInstance (Class clazz) {
         return getInstance(clazz.getPackage().getName());
     }
 
+    @Override
     public void setAttribute(String name, Object value) {
         // FIXME: make log dir changeable at runtime
     }
 
+    @Override
     public Object getAttribute(String name) {
         if ("logdir".equals(name)) { //$NON-NLS-1$
             return logdir;
@@ -121,10 +125,12 @@ public class Logging extends LogFactory {
         return null;
     }
 
+    @Override
     public String[] getAttributeNames() {
         return new String[] {};
     }
 
+    @Override
     public void removeAttribute(String parm1) {
         // nothing to do
     }
@@ -132,6 +138,7 @@ public class Logging extends LogFactory {
     /**
      * Flush all logs and shut down.
      */
+    @Override
     public void release() {
         shutdown();
     }
@@ -238,6 +245,7 @@ public class Logging extends LogFactory {
      */
     static class Runner extends Thread {
 
+        @Override
         public synchronized void run() {
             long nextMidnight = nextMidnight();
 

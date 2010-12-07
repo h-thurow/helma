@@ -55,6 +55,7 @@ public class SystemMap extends HashMap {
      * the one returned by java.util.HashMap.toString(), but additionally displays
      * Object arrays in a human friendly way.
      */
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("{"); //$NON-NLS-1$

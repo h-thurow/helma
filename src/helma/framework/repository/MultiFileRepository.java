@@ -51,6 +51,7 @@ public class MultiFileRepository extends FileRepository {
      * rather than prototype repositories. Zip files are handled as top-level
      * script repositories like in FileRepository, while resources are ignored.
      */
+    @Override
     public synchronized void update() {
         if (!directory.exists()) {
             repositories = emptyRepositories;
@@ -90,6 +91,7 @@ public class MultiFileRepository extends FileRepository {
      * get hashcode
      * @return int
      */
+    @Override
     public int hashCode() {
         return 37 + (37 * directory.hashCode());
     }
@@ -99,6 +101,7 @@ public class MultiFileRepository extends FileRepository {
      * @param obj Object
      * @return boolean
      */
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof MultiFileRepository &&
                directory.equals(((MultiFileRepository) obj).directory);
@@ -108,6 +111,7 @@ public class MultiFileRepository extends FileRepository {
      * get object serialized as string
      * @return String
      */
+    @Override
     public String toString() {
         return new StringBuffer("MultiFileRepository[").append(name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
     }

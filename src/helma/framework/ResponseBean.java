@@ -248,6 +248,7 @@ public class ResponseBean implements Serializable {
      *
      * @return string representation
      */
+    @Override
     public String toString() {
         return "[Response]"; //$NON-NLS-1$
     }

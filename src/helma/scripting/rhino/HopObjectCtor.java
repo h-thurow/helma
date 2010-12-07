@@ -121,6 +121,7 @@ public class HopObjectCtor extends FunctionObject {
         }
     }
 
+    @Override
     public Object get(String name, Scriptable start) {
         if (!initialized && core.isInitialized()) {
             // trigger prototype compilation on static
@@ -131,6 +132,7 @@ public class HopObjectCtor extends FunctionObject {
         return super.get(name, start);
     }
 
+    @Override
     public void put(String name, Scriptable start, Object value) {
         if (value instanceof Function) {
             // reset static function's parent scope, needed because of the way we compile
@@ -161,6 +163,7 @@ public class HopObjectCtor extends FunctionObject {
          *
          * @return the HopObject or null if it doesn't exist
          */
+        @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             if (args.length < 1 || args.length > 2)
                 throw new IllegalArgumentException(Messages.getString("HopObjectCtor.2")); //$NON-NLS-1$
@@ -190,10 +193,12 @@ public class HopObjectCtor extends FunctionObject {
             return Context.toObject(node, this);
         }
 
+        @Override
         public int getArity() {
             return 1; 
         }
 
+        @Override
         public int getLength() {
             return 1;
         }
@@ -208,6 +213,7 @@ public class HopObjectCtor extends FunctionObject {
             ScriptRuntime.setFunctionProtoAndParent(this, scope);
         }
 
+        @Override
         public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
             if (args.length != 1) {
                 throw new IllegalArgumentException(Messages.getString("HopObjectCtor.3")); //$NON-NLS-1$
@@ -235,10 +241,12 @@ public class HopObjectCtor extends FunctionObject {
             return new HopObject("HopQuery", core, node, core.hopObjectProto); //$NON-NLS-1$
         }
 
+        @Override
         public int getArity() {
             return 1;
         }
 
+        @Override
         public int getLength() {
             return 1;
         }

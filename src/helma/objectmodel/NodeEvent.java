@@ -68,6 +68,7 @@ public class NodeEvent implements Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         switch (type) {
             case CONTENT_CHANGED:

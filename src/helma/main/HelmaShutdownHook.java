@@ -28,6 +28,7 @@ public class HelmaShutdownHook extends Thread {
     /**
      *
      */
+    @Override
     public void run() {
         System.err.println(Messages.getString("HelmaShutdownHook.0")); //$NON-NLS-1$
 

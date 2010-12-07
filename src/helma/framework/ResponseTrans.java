@@ -275,6 +275,7 @@ public final class ResponseTrans extends Writer implements Serializable {
     /**
      * Append a string to the response unchanged.
      */
+    @Override
     public synchronized void write(String str) {
         if (str != null) {
             if (buffer == null) {
@@ -301,6 +302,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param offset
      * @param length
      */
+    @Override
     public synchronized void write(char[] chars, int offset, int length) {
         if (buffer == null) {
             buffer = new StringBuffer(Math.max(length + 100, INITIAL_BUFFER_SIZE));
@@ -313,6 +315,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      *
      * @param chars
      */
+    @Override
     public void write(char chars[]) {
         write(chars, 0, chars.length);
     }
@@ -322,6 +325,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * Appends a signle character to the response buffer.
      * @param c
      */
+    @Override
     public synchronized void write(int c) {
         if (buffer == null) {
             buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
@@ -335,6 +339,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param offset
      * @param length
      */
+    @Override
     public void write(String str, int offset, int length) {
         char cbuf[]  = new char[length];
         str.getChars(offset, (offset + length), cbuf, 0);
@@ -628,6 +633,7 @@ public final class ResponseTrans extends Writer implements Serializable {
         writeBinary(xresproc.encodeException(x, charset));
     }
 
+    @Override
     public void flush() {
         // does nothing!
     }
@@ -636,6 +642,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * This has to be called after writing to this response has finished and before it is shipped back to the
      * web server. Transforms the string buffer into a byte array for transmission.
      */
+    @Override
     public void close() throws UnsupportedEncodingException {
         close(null);
     }

@@ -2331,6 +2331,7 @@ public final class Node implements INode {
      * javascript implemented toString() if it is defined.
      * @return a string representing this node.
      */
+    @Override
     public String toString() {
         try {
             // We need to reach deap into helma.framework.core to invoke toString(),
@@ -2533,6 +2534,7 @@ public final class Node implements INode {
      * changes, the node will automatically get a new ESNode wrapper, since they're cached in a hashtable.
      * You gotta love these hash code tricks ;-)
      */
+    @Override
     public int hashCode() {
         if (prototype == null) {
             return super.hashCode();

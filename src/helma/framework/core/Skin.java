@@ -1006,6 +1006,7 @@ public final class Skin {
             }
         }
 
+        @Override
         public String toString() {
             return "[Macro: " + name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }

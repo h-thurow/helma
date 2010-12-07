@@ -364,6 +364,7 @@ public class RequestTrans implements Serializable {
      *  The hash code is computed from the session id if available. This is used to
      *  detect multiple identic requests.
      */
+    @Override
     public int hashCode() {
         if (session == null || path == null) {
             return super.hashCode();
@@ -378,6 +379,7 @@ public class RequestTrans implements Serializable {
      * path, session, request data, and conditional get data. This is used to
      * evaluate multiple simultanous identical requests only once.
      */
+    @Override
     public boolean equals(Object what) {
         if (what instanceof RequestTrans) {
             if (session == null || path == null) {
@@ -621,6 +623,7 @@ public class RequestTrans implements Serializable {
         }
     }
 
+    @Override
     public String toString() {
         return method + ":" + path; //$NON-NLS-1$
     }
@@ -641,6 +644,7 @@ public class RequestTrans implements Serializable {
             }
         }
 
+        @Override
         public Object put(Object key, Object value) {
             if (key instanceof String) {
                 String name = (String) key;
@@ -677,6 +681,7 @@ public class RequestTrans implements Serializable {
             return super.put(name, value);
         }
 
+        @Override
         public Object get(Object key) {
             if (key instanceof String) {
                 Object value = super.get(key);
@@ -707,6 +712,7 @@ public class RequestTrans implements Serializable {
 
         private static final long serialVersionUID = 5737810055554406299L;
 
+        @Override
         public Object get(Object key) {
             Object value = super.get(key);
             if (value != null)
@@ -720,10 +726,12 @@ public class RequestTrans implements Serializable {
             return null;
         }
 
+        @Override
         public boolean containsKey(Object key) {
             return get(key) != null;
         }
 
+        @Override
         public Set entrySet() {
             Set entries = new HashSet(super.entrySet());
             if (postParams != null) entries.addAll(postParams.entrySet());
@@ -732,6 +740,7 @@ public class RequestTrans implements Serializable {
             return entries;
         }
 
+        @Override
         public Set keySet() {
             Set keys = new HashSet(super.keySet());
             if (postParams != null) keys.addAll(postParams.keySet());
@@ -744,6 +753,7 @@ public class RequestTrans implements Serializable {
     class ParamComboMap extends SystemMap {
         private static final long serialVersionUID = -9177176570950359431L;
 
+        @Override
         public Object get(Object key) {
             Object value;
             if (postParams != null && (value = postParams.get(key)) != null)
@@ -753,10 +763,12 @@ public class RequestTrans implements Serializable {
             return null;
         }
 
+        @Override
         public boolean containsKey(Object key) {
             return get(key) != null;
         }
 
+        @Override
         public Set entrySet() {
             Set entries = new HashSet();
             if (postParams != null) entries.addAll(postParams.entrySet());
@@ -764,6 +776,7 @@ public class RequestTrans implements Serializable {
             return entries;
         }
 
+        @Override
         public Set keySet() {
             Set keys = new HashSet();
             if (postParams != null) keys.addAll(postParams.keySet());

@@ -285,6 +285,7 @@ public class DbSource {
     /**
      * Returns a hash code value for the object.
      */
+    @Override
     public int hashCode() {
         return hashcode;
     }
@@ -292,6 +293,7 @@ public class DbSource {
     /**
      * Indicates whether some other object is "equal to" this one.
      */
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof DbSource && subProps.equals(((DbSource) obj).subProps);
     }

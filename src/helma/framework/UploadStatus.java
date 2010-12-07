@@ -66,6 +66,7 @@ public class UploadStatus implements Serializable {
         return System.currentTimeMillis() - lastModified > 60000;
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer("{current: ").append(current) //$NON-NLS-1$
                 .append(", total: ").append(total) //$NON-NLS-1$

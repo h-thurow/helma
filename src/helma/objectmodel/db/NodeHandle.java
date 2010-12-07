@@ -129,6 +129,7 @@ public final class NodeHandle implements INodeState, Serializable {
      *
      * @return ...
      */
+    @Override
     public boolean equals(Object other) {
         if (other instanceof NodeHandle) {
             Object obj1 = getObject();
@@ -154,6 +155,7 @@ public final class NodeHandle implements INodeState, Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         if (node != null) {
             return "NodeHandle[transient:" + node + "]";  //$NON-NLS-1$//$NON-NLS-2$

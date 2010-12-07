@@ -152,6 +152,7 @@ public class ImageObject {
     static class GetInfo extends BaseFunction {
         private static final long serialVersionUID = 109556119036857349L;
 
+        @Override
         public Object call(Context cx, Scriptable scope,
                            Scriptable thisObj, Object[] args) {
             if (args.length != 1) {

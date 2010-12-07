@@ -75,6 +75,7 @@ public class XmlIDGenerator {
     /**
      * Returns a string representation of this IDGenerator
      */
+    @Override
     public String toString() {
         return "IDGenerator[counter=" + counter + ",dirty=" + dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }

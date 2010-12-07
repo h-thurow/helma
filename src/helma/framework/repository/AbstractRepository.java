@@ -160,6 +160,7 @@ public abstract class AbstractRepository implements Repository {
      * Returns the repositories full name as string representation.
      * @see {getName()}
      */
+    @Override
     public String toString() {
         return getName();
     }

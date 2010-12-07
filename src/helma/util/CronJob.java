@@ -739,7 +739,8 @@ public class CronJob {
     return this.timeout;
   }
 
-  public String toString ()
+  @Override
+public String toString ()
   {
     return "[CronJob " + name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
   }

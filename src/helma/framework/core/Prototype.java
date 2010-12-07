@@ -439,6 +439,7 @@ public final class Prototype {
     /**
      *  Return a string representing this prototype.
      */
+    @Override
     public String toString() {
         return "[Prototype " + app.getName() + "/" + name + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
@@ -473,6 +474,7 @@ public final class Prototype {
             super(wrapped);
         }
 
+        @Override
         public Object get(Object key) {
             Resource res = (Resource) super.get(key);
 
@@ -505,21 +507,25 @@ public final class Prototype {
             skinpath = path;
         }
 
+        @Override
         public boolean containsKey(Object key) {
             checkForUpdates();
             return super.containsKey(key);
         }
 
+        @Override
         public boolean containsValue(Object value) {
             checkForUpdates();
             return super.containsValue(value);
         }
 
+        @Override
         public Set entrySet() {
             checkForUpdates();
             return super.entrySet();
         }
 
+        @Override
         public boolean equals(Object obj) {
             checkForUpdates();
             return super.equals(obj);
@@ -539,46 +545,55 @@ public final class Prototype {
             return (Resource) get(key);
         }
 
+        @Override
         public Object get(Object key) {
             checkForUpdates();
             return super.get(key);
         }
 
+        @Override
         public int hashCode() {
             checkForUpdates();
             return super.hashCode();
         }
 
+        @Override
         public boolean isEmpty() {
             checkForUpdates();
             return super.isEmpty();
         }
 
+        @Override
         public Set keySet() {
             checkForUpdates();
             return super.keySet();
         }
 
+        @Override
         public Object put(Object key, Object value) {
             // checkForUpdates ();
             return super.put(key, value);
         }
 
+        @Override
         public void putAll(Map t) {
             // checkForUpdates ();
             super.putAll(t);
         }
 
+        @Override
         public Object remove(Object key) {
             checkForUpdates();
             return super.remove(key);
         }
 
+        @Override
         public int size() {
             checkForUpdates();
             return super.size();
         }
 
+        @Override
         public Collection values() {
             checkForUpdates();
             return super.values();
@@ -647,6 +662,7 @@ public final class Prototype {
 
         }
 
+        @Override
         public String toString() {
             return "[SkinMap " + name + "]";  //$NON-NLS-1$//$NON-NLS-2$
         }

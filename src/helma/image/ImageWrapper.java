@@ -132,6 +132,7 @@ public class ImageWrapper {
      * 
      * @return a clone of this image.
      */
+    @Override
     public Object clone() {
         ImageWrapper wrapper = generator.createImage(this.width,
             this.height);

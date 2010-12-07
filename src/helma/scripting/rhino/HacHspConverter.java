@@ -215,6 +215,7 @@ public class HacHspConverter {
             return isStatic ? null : content;
         }
 
+        @Override
         public String toString() {
             return "Template.Part [" + content + "," + isStatic + "]";   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
         }

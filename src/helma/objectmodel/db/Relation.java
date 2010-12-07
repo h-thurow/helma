@@ -1453,6 +1453,7 @@ public final class Relation {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         String c = ""; //$NON-NLS-1$
         String spacer = ""; //$NON-NLS-1$
@@ -1545,6 +1546,7 @@ public final class Relation {
             return localKey;
         }
 
+        @Override
         public String toString() {
             return localKey + "=" + otherType.getTypeName() + "." + foreignKey; //$NON-NLS-1$ //$NON-NLS-2$
         }

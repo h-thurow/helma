@@ -77,6 +77,7 @@ public class SimplePathElement implements IPathElement {
     /**
      * Returns a string representation of this element.
      */
+    @Override
     public String toString() {
         return "SimplePathElement " + name; //$NON-NLS-1$
     }

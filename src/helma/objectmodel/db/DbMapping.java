@@ -1260,6 +1260,7 @@ public final class DbMapping {
      *
      * @return a string representation
      */
+    @Override
     public String toString() {
         if (typename == null) {
             return "[unspecified internal DbMapping]"; //$NON-NLS-1$

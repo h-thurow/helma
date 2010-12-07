@@ -210,6 +210,7 @@ public class SingleFileRepository implements Repository {
     /**
      * Indicates whether some other object is "equal to" this one.
      */
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof SingleFileRepository &&
                 res.equals(((SingleFileRepository) obj).res));
@@ -218,6 +219,7 @@ public class SingleFileRepository implements Repository {
     /**
      * Returns a hash code value for the object.
      */
+    @Override
     public int hashCode() {
         return res.hashCode();
     }
@@ -225,6 +227,7 @@ public class SingleFileRepository implements Repository {
     /**
      * Returns a string representation of the object.
      */
+    @Override
     public String toString() {
         return new StringBuffer("SingleFileRepository[") //$NON-NLS-1$
                 .append(res.getName()).append("]").toString(); //$NON-NLS-1$

@@ -103,14 +103,17 @@ public class FileResource extends AbstractResource {
         return repository;
     }
 
+    @Override
     public int hashCode() {
         return 17 + name.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof FileResource && name.equals(((FileResource)obj).name);
     }
 
+    @Override
     public String toString() {
         return getName();
     }

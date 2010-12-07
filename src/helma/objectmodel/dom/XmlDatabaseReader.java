@@ -79,6 +79,7 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
      * @param qName ...
      * @param atts ...
      */
+    @Override
     public void startElement(String namespaceURI, String localName, String qName,
                              Attributes atts) {
         // System.err.println ("XML-READ: startElement "+namespaceURI+", "+localName+", "+qName+", "+atts.getValue("id"));
@@ -179,6 +180,7 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
      *
      * @throws SAXException ...
      */
+    @Override
     public void characters(char[] ch, int start, int length)
                     throws SAXException {
         // append chars to char buffer
@@ -196,6 +198,7 @@ public final class XmlDatabaseReader extends DefaultHandler implements XmlConsta
      *
      * @throws SAXException ...
      */
+    @Override
     public void endElement(String namespaceURI, String localName, String qName)
                     throws SAXException {
         if (elementType != null) {

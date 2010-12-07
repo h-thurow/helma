@@ -57,6 +57,7 @@ public class ParanoidServerSocket extends ServerSocket {
      *
      * @throws IOException ...
      */
+    @Override
     public Socket accept() throws IOException {
         Socket s = null;
 

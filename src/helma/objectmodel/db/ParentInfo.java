@@ -67,6 +67,7 @@ public class ParentInfo {
     /**
      * @return a string representation of the parent info
      */
+    @Override
     public String toString() {
         StringBuffer b = new StringBuffer("ParentInfo[").append(propname); //$NON-NLS-1$
         if (virtualnames.length > 0) {

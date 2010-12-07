@@ -59,6 +59,7 @@ public class FtpObject extends ScriptableObject {
      *
      * @return ...
      */
+    @Override
     public String getClassName() {
         return "FtpClient"; //$NON-NLS-1$
     }
@@ -68,6 +69,7 @@ public class FtpObject extends ScriptableObject {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         return "[FtpClient]"; //$NON-NLS-1$
     }

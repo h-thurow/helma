@@ -288,6 +288,7 @@ public class Session implements Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         if (uid != null) {
             return "[Session for user " + uid + "]"; //$NON-NLS-1$ //$NON-NLS-2$

@@ -133,6 +133,7 @@ public class FileRepository extends AbstractRepository {
      * Gets called from within all methods returning sub-repositories or
      * resources
      */
+    @Override
     public synchronized void update() {
         if (!directory.exists()) {
             repositories = emptyRepositories;
@@ -176,6 +177,7 @@ public class FileRepository extends AbstractRepository {
     /**
      * Called to create a child resource for this repository
      */
+    @Override
     protected Resource createResource(String name) {
         return new FileResource(new File(directory, name), this);
     }
@@ -187,15 +189,18 @@ public class FileRepository extends AbstractRepository {
         return directory;
     }
 
+    @Override
     public int hashCode() {
         return 17 + (37 * directory.hashCode());
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof FileRepository &&
                directory.equals(((FileRepository) obj).directory);
     }
 
+    @Override
     public String toString() {
         return new StringBuffer("FileRepository[").append(name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
     }

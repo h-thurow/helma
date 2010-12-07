@@ -46,6 +46,7 @@ public class SessionBean implements Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         return session.toString();
     }

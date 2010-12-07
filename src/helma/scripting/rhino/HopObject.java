@@ -130,6 +130,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      *
      * @return The object's class or prototype name
      */
+    @Override
     public String getClassName() {
         return className;
     }
@@ -141,6 +142,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * @param value the property value
      * @param attributes the property attributes
      */
+    @Override
     public void defineProperty(String propertyName, Object value,
                                int attributes)
     {
@@ -158,6 +160,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * @param hint the type hint
      * @return the default value for the object
      */
+    @Override
     public Object getDefaultValue(Class hint) {
         return proxy == null ? toString() : proxy.getNode().toString();
     }
@@ -718,6 +721,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * @param start
      * @param value ...
      */
+    @Override
     public void put(String name, Scriptable start, Object value) {
         if (proxy == null) {
             // redirect the scripted constructor to __constructor__,
@@ -798,6 +802,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * @param start the object in which the lookup began
      * @return true if the property was found
      */
+    @Override
     public boolean has(String name, Scriptable start) {
         if (proxy != null) {
             INode node = getNode();
@@ -813,6 +818,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      *
      * @param name ...
      */
+    @Override
     public void delete(String name) {
         if ((proxy != null)) {
             INode node = getNode();
@@ -829,6 +835,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      *
      * @return ...
      */
+    @Override
     public Object get(String name, Scriptable start) {
     	Object obj = super.get(name, start);
     	if (obj == Scriptable.NOT_FOUND && proxy != null) {
@@ -966,6 +973,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * Return all property names of this object. This method is used by debugger.
      * @return array containing the names of all properties defined in this object
      */
+    @Override
     public Object[] getAllIds() {
         if (proxy == null) {
             return super.getAllIds();
@@ -977,6 +985,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * Return all "ordinary" property ids of this object. This "hides" the prototype methods.
      * @return array containing the names of this object's data properties
      */
+    @Override
     public Object[] getIds() {
         if (proxy == null) {
             // HopObject prototypes always return an empty array in order not to
@@ -1004,6 +1013,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      *
      * @return ...
      */
+    @Override
     public boolean has(int idx, Scriptable start) {
         if (proxy != null) {
             INode node = getNode();
@@ -1022,6 +1032,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      *
      * @return ...
      */
+    @Override
     public Object get(int idx, Scriptable start) {
         if (proxy != null) {
             INode node = getNode();
@@ -1044,6 +1055,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * <tt>Boolean.FALSE</tt> if this object is not equivalent to
      * <tt>value</tt>.
      */
+    @Override
     protected Object equivalentValues(Object value) {
         if (value == this) {
             return Boolean.TRUE;
@@ -1059,6 +1071,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * Return a string representation of this HopObject.
      * @return a string representing this HopObject
      */
+    @Override
     public String toString() {
         if (proxy == null) {
             return "[HopObject prototype " + className + "]"; //$NON-NLS-1$ //$NON-NLS-2$

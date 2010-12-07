@@ -33,6 +33,7 @@ public class AppClassLoader extends URLClassLoader {
         this.appname = appname;
     }
 
+    @Override
     protected void addURL(URL url) {
         super.addURL(url);
     }
@@ -46,6 +47,7 @@ public class AppClassLoader extends URLClassLoader {
         return appname;
     }
 
+    @Override
     public String toString() {
         return "helma.framework.core.AppClassLoader[" + appname + "]";  //$NON-NLS-1$//$NON-NLS-2$
     }

@@ -52,6 +52,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @param obj another object
      * @return true if obj represents the same key as this
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -71,6 +72,7 @@ public final class SyntheticKey implements Key, Serializable {
      * Get the hash-code for this key
      * @return the hash-code
      */
+    @Override
     public int hashCode() {
         if (hashcode == 0) {
             hashcode = 17 + (37 * name.hashCode()) +
@@ -108,6 +110,7 @@ public final class SyntheticKey implements Key, Serializable {
      * Return a string representation for this key
      * @return a string representation for this key
      */
+    @Override
     public String toString() {
         return parentKey + "/" + name; //$NON-NLS-1$
     }

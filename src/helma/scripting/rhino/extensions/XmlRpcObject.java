@@ -95,11 +95,13 @@ public class XmlRpcObject extends BaseFunction {
     }
 
 
+    @Override
     public Object get(String name, Scriptable start) {
         String m = method == null ? name : method+"."+name; //$NON-NLS-1$
         return new XmlRpcObject(url, m);
     }
 
+    @Override
     public Object call(Context cx,
                              Scriptable scope,
                              Scriptable thisObj,
@@ -149,14 +151,17 @@ public class XmlRpcObject extends BaseFunction {
 
     }
 
+    @Override
     public String getClassName() {
         return "Remote"; //$NON-NLS-1$
     }
 
+    @Override
     public String toString() {
         return "[Remote "+url+"]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Override
     public Object getDefaultValue(Class hint) {
         if (hint == null || hint == String.class) {
             return toString();

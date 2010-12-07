@@ -140,16 +140,19 @@ public class WrappedMap implements Map {
 
     // Comparison and hashing
 
+    @Override
     public boolean equals(Object o) {
         return wrapped.equals(o);
     }
 
+    @Override
     public int hashCode() {
         return wrapped.hashCode();
     }
 
     // toString
 
+    @Override
     public String toString() {
         return wrapped.toString();
     }

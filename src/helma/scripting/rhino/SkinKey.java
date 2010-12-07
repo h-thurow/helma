@@ -43,6 +43,7 @@ final class SkinKey {
      *
      * @return true if both keys are identical
      */
+    @Override
     public boolean equals(Object what) {
 
         if (!(what instanceof SkinKey)) {
@@ -59,6 +60,7 @@ final class SkinKey {
      *
      * @return this key's hash code
      */
+    @Override
     public int hashCode() {
         if (hashcode == 0) {
             hashcode = (17 + (37 * type.hashCode()) +

@@ -101,6 +101,7 @@ public class FileLogger extends Logger implements Log {
     /**
      * This is called by the runner thread to to make sure we have an open writer.
      */
+    @Override
     protected synchronized void ensureOpen() {
         // open a new writer if writer is null or the log file has been deleted
         if (writer == null || !logfile.exists()) {
@@ -160,6 +161,7 @@ public class FileLogger extends Logger implements Log {
     /**
      * Return a string representation of this Logger
      */
+    @Override
     public String toString() {
         return "FileLogger[" + name + "]";  //$NON-NLS-1$//$NON-NLS-2$
     }
@@ -190,6 +192,7 @@ public class FileLogger extends Logger implements Log {
             setPriority(MIN_PRIORITY);
         }
 
+        @Override
         public void run() {
             Iterator it = files.iterator();
             File file = null;

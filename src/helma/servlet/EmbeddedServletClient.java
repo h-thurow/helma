@@ -45,6 +45,7 @@ public final class EmbeddedServletClient extends AbstractServletClient {
      *
      * @throws ServletException ...
      */
+    @Override
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
         appName = init.getInitParameter("application"); //$NON-NLS-1$
@@ -60,6 +61,7 @@ public final class EmbeddedServletClient extends AbstractServletClient {
      *
      * @return this servlet's application instance
      */
+    @Override
     public Application getApplication() {
         if (app == null) {
             app = Server.getServer().getApplication(appName);

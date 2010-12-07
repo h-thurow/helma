@@ -113,6 +113,7 @@ public class Logger implements Log {
     /**
      * Return a string representation of this Logger
      */
+    @Override
     public String toString() {
         return new StringBuffer(getClass().getName()).append("[") //$NON-NLS-1$
                 .append(canonicalName).append(",").append(logLevel) //$NON-NLS-1$

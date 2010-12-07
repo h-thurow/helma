@@ -93,6 +93,7 @@ public class Timer {
             end = System.currentTimeMillis();
         }
 
+        @Override
         public String toString() {
             long now = System.currentTimeMillis();
 

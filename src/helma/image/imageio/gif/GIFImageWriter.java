@@ -35,6 +35,7 @@ public class GIFImageWriter extends ImageWriter {
         encoder = new GIFEncoder();
     }
 
+    @Override
     public void write(IIOMetadata streamMetadata, IIOImage image,
         ImageWriteParam param) throws IOException {
         if (image == null)
@@ -59,25 +60,30 @@ public class GIFImageWriter extends ImageWriter {
             param.getProgressiveMode() != ImageWriteParam.MODE_DISABLED, null);
     }
 
+    @Override
     public IIOMetadata convertStreamMetadata(IIOMetadata inData,
         ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public IIOMetadata convertImageMetadata(IIOMetadata inData,
         ImageTypeSpecifier imageType, ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public IIOMetadata getDefaultImageMetadata(ImageTypeSpecifier imageType,
         ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public IIOMetadata getDefaultStreamMetadata(ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public ImageWriteParam getDefaultWriteParam() {
         return new GIFImageWriteParam(getLocale());
     }

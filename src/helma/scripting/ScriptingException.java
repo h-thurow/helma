@@ -80,6 +80,7 @@ public class ScriptingException extends Exception {
     /*
      * Adaption from Throwable.printStackTrace() to also print Script file stack elements.
      */
+    @Override
     public void printStackTrace(PrintStream s) {
         synchronized (s) {
             if (scriptStack != null) {
@@ -95,6 +96,7 @@ public class ScriptingException extends Exception {
     /*
      * Adaption from Throwable.printStackTrace() to also print Script file stack elements.
      */
+    @Override
     public void printStackTrace(PrintWriter s) {
         synchronized (s) {
             if (scriptStack != null) {

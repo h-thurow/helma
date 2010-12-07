@@ -62,6 +62,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Returns a path object in the wrapped path by property name.
      */
+    @Override
     public Object get(String name, Scriptable start) {
         Object obj = path.getByPrototypeName(name);
 
@@ -75,6 +76,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Returns a path object in the wrapped path by property name.
      */
+    @Override
     public Object get(int idx, Scriptable start) {
         Object obj = path.get(idx);
 
@@ -88,6 +90,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Checks if an object with the given name is contained in the path.
      */
+    @Override
     public boolean has(String name, Scriptable start) {
         return path.getByPrototypeName(name) != null;
     }
@@ -95,6 +98,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Checks if an object with the given index is contained in the path.
      */
+    @Override
     public boolean has(int index, Scriptable start) {
         return index >= 0 && index < path.size();
     }
@@ -102,6 +106,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Returns a list of array indices 0..length-1.
      */
+    @Override
     public Object[] getIds() {
         Object[] ids = new Object[path.size()];
 
@@ -142,10 +147,12 @@ public class PathWrapper extends ScriptableObject {
         return path.indexOf(obj);
     }
 
+    @Override
     public String getClassName() {
         return "[PathWrapper]"; //$NON-NLS-1$
     }
 
+    @Override
     public String toString() {
         return "PathWrapper["+path.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
     }
@@ -157,6 +164,7 @@ public class PathWrapper extends ScriptableObject {
      * @param hint the type hint
      * @return the default value for the object
      */
+    @Override
     public Object getDefaultValue(Class hint) {
         return toString();
     }

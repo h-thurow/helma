@@ -559,6 +559,7 @@ public class RhinoEngine implements ScriptingEngine {
         try {
             // use a special ScriptableOutputStream that unwraps Wrappers
             ScriptableOutputStream sout = new ScriptableOutputStream(out, core.global) {
+                @Override
                 protected Object replaceObject(Object obj) throws IOException {
                     if (obj instanceof HopObject)
                         return new HopObjectProxy((HopObject) obj);
@@ -601,6 +602,7 @@ public class RhinoEngine implements ScriptingEngine {
         engines.set(this);
         try {
             ObjectInputStream sin = new ScriptableInputStream(in, core.global) {
+                @Override
                 protected Object resolveObject(Object obj) throws IOException {
                     if (obj instanceof SerializationProxy) {
                         return ((SerializationProxy) obj).getObject(RhinoEngine.this);

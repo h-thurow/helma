@@ -1267,7 +1267,9 @@ public class MarkdownProcessor {
     }
 
     class BaseElement extends Element {
+        @Override
         void open() {}
+        @Override
         void close() {}
     }
 
@@ -1283,11 +1285,13 @@ public class MarkdownProcessor {
             this.nesting = nesting;
         }
 
+        @Override
         void open() {
             openTag("pre", buffer); //$NON-NLS-1$
             openTag("code", buffer); //$NON-NLS-1$
         }
 
+        @Override
         void close() {
             buffer.insert(codeEndMarker, "</code></pre>"); //$NON-NLS-1$
         }
@@ -1306,6 +1310,7 @@ public class MarkdownProcessor {
             this.nesting = nesting;
         }
 
+        @Override
         void close() {
             buffer.insert(getBufferEnd(), "</li></" + tag + ">");        }  //$NON-NLS-1$//$NON-NLS-2$
     }

@@ -618,6 +618,7 @@ public class Transactor {
      *
      * @return ...
      */
+    @Override
     public String toString() {
         return "Transactor[" + tname + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }

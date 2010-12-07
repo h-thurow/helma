@@ -144,6 +144,7 @@ public class JavaObject extends NativeJavaObject {
     /**
      * Checks whether the given property is defined in this object.
      */
+    @Override
     public boolean has(String name, Scriptable start) {
         return overload.containsKey(name) || super.has(name, start);
     }
@@ -151,6 +152,7 @@ public class JavaObject extends NativeJavaObject {
     /** 
      * Get a named property from this object.
      */
+    @Override
     public Object get(String name, Scriptable start) {
         Object value;
 

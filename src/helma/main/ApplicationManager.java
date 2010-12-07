@@ -591,6 +591,7 @@ public class ApplicationManager implements XmlRpcHandler {
 
         }
 
+        @Override
         public String toString() {
             return "[AppDescriptor "+app+"]"; //$NON-NLS-1$ //$NON-NLS-2$
         }

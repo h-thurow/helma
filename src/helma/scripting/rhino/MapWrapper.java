@@ -62,6 +62,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * @param start ...
      * @param value ...
      */
+    @Override
     public void put(String name, Scriptable start, Object value) {
         if (map == null) {
             map = new HashMap();
@@ -84,6 +85,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public Object get(String name, Scriptable start) {
         if (map == null) {
             return null;
@@ -114,6 +116,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public boolean has(String name, Scriptable start) {
         return (map != null) && map.containsKey(name);
     }
@@ -123,6 +126,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @param name ...
      */
+    @Override
     public void delete(String name) {
         if (map != null) {
             map.remove(name);
@@ -136,6 +140,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * @param start ...
      * @param value ...
      */
+    @Override
     public void put(int idx, Scriptable start, Object value) {
         if (map == null) {
             map = new HashMap();
@@ -158,6 +163,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public Object get(int idx, Scriptable start) {
         if (map == null) {
             return null;
@@ -188,6 +194,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public boolean has(int idx, Scriptable start) {
         return (map != null) && map.containsKey(Integer.toString(idx));
     }
@@ -197,6 +204,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @param idx ...
      */
+    @Override
     public void delete(int idx) {
         if (map != null) {
             map.remove(Integer.toString(idx));
@@ -207,6 +215,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
     /**
      * Return an array containing the property key values of this map.
      */
+    @Override
     public Object[] getIds() {
         if (map == null) {
             return new Object[0];
@@ -215,6 +224,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
         return map.keySet().toArray();
     }
 
+    @Override
     public Object getDefaultValue(Class hint) {
         if (hint == null || hint == String.class) {
             return map == null ? "{}" : map.toString(); //$NON-NLS-1$
@@ -235,6 +245,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
     /**
      * Return the class name for wrapped maps.
      */
+    @Override
     public String getClassName() {
         return "[MapWrapper]"; //$NON-NLS-1$
     }
@@ -243,6 +254,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * Return a string representation for this wrapped map. This calls
      * Map.toString(), so usually the contents of the map will be listed.
      */
+    @Override
     public String toString() {
         if (map == null) {
             return "[MapWrapper{}]"; //$NON-NLS-1$

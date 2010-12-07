@@ -39,6 +39,7 @@ public class DemoExtension extends HelmaExtension {
      *
      * @throws ConfigurationException ...
      */
+    @Override
     public void init(Server server) throws ConfigurationException {
         try {
             // just a demo with the server class itself (which is always there, obviously)
@@ -55,6 +56,7 @@ public class DemoExtension extends HelmaExtension {
      *
      * @throws ConfigurationException ...
      */
+    @Override
     public void applicationStarted(Application app) throws ConfigurationException {
         app.logEvent(Messages.getString("DemoExtension.1") + app.getName()); //$NON-NLS-1$
     }
@@ -64,6 +66,7 @@ public class DemoExtension extends HelmaExtension {
      *
      * @param app ...
      */
+    @Override
     public void applicationStopped(Application app) {
         app.logEvent(Messages.getString("DemoExtension.2") + app.getName()); //$NON-NLS-1$
     }
@@ -73,6 +76,7 @@ public class DemoExtension extends HelmaExtension {
      *
      * @param app ...
      */
+    @Override
     public void applicationUpdated(Application app) {
         app.logEvent(Messages.getString("DemoExtension.3") + app.getName()); //$NON-NLS-1$
     }
@@ -87,6 +91,7 @@ public class DemoExtension extends HelmaExtension {
      *
      * @throws ConfigurationException ...
      */
+    @Override
     public HashMap initScripting(Application app, ScriptingEngine engine)
                           throws ConfigurationException {
         if (!(engine instanceof RhinoEngine)) {
@@ -110,6 +115,7 @@ public class DemoExtension extends HelmaExtension {
      *
      * @return ...
      */
+    @Override
     public String getName() {
         return "DemoExtension"; //$NON-NLS-1$
     }

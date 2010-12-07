@@ -138,6 +138,7 @@ public class ImageFilterOp implements BufferedImageOp {
             super(bits);
         }
         
+        @Override
         public int getRGB(int rgb) {
             // This is the part that speeds up most.
             // java.awt.image.ColorModel would return the same value, but with
@@ -145,18 +146,22 @@ public class ImageFilterOp implements BufferedImageOp {
             return rgb;
         }
 
+        @Override
         public int getAlpha(int pixel) {
             return pixel  >> 24;
         }
 
+        @Override
         public int getRed(int pixel) {
             return (pixel >> 16) & 0xff;
         }
 
+        @Override
         public int getGreen(int pixel) {
             return (pixel >>  8) & 0xff;
         }
 
+        @Override
         public int getBlue(int pixel) {
             return pixel & 0xff;
         }

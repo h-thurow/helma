@@ -117,6 +117,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
      *
      * @throws SAXException ...
      */
+    @Override
     public void startElement(String namespaceURI, String localName, String qName,
                              Attributes atts) throws SAXException {
         // System.err.println ("XML-READ: startElement "+namespaceURI+", "+localName+", "+qName+", "+atts.getValue("id"));
@@ -257,6 +258,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
      *
      * @throws SAXException ...
      */
+    @Override
     public void characters(char[] ch, int start, int length)
                     throws SAXException {
         // System.err.println ("CHARACTERS: "+new String (ch, start, length));
@@ -275,6 +277,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
      *
      * @throws SAXException ...
      */
+    @Override
     public void endElement(String namespaceURI, String localName, String qName)
                     throws SAXException {
         if (elementType != null) {

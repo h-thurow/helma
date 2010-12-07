@@ -80,6 +80,7 @@ public abstract class AbstractServletClient extends HttpServlet {
      *
      * @throws ServletException ...
      */
+    @Override
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
 
@@ -155,6 +156,7 @@ public abstract class AbstractServletClient extends HttpServlet {
      * @throws ServletException ...
      * @throws IOException ...
      */
+    @Override
     protected void service (HttpServletRequest request, HttpServletResponse response)
                 throws ServletException, IOException {
 
@@ -889,6 +891,7 @@ public abstract class AbstractServletClient extends HttpServlet {
      * Return servlet info
      * @return the servlet info
      */
+    @Override
     public String getServletInfo() {
         return Messages.getString("AbstractServletClient.19"); //$NON-NLS-1$
     }

@@ -45,28 +45,34 @@ public class CopyOnWriteMap extends WrappedMap {
         return modified;
     }
 
+    @Override
     public synchronized int size() {
         return wrapped.size();
     }
 
+    @Override
     public synchronized boolean isEmpty() {
         return wrapped.isEmpty();
     }
 
+    @Override
     public synchronized boolean containsKey(Object key) {
         return wrapped.containsKey(key);
     }
 
+    @Override
     public synchronized boolean containsValue(Object value) {
         return wrapped.containsValue(value);
     }
 
+    @Override
     public synchronized Object get(Object key) {
         return wrapped.get(key);
     }
 
     // Modification Operations - check for readonly
 
+    @Override
     public synchronized Object put(Object key, Object value) {
         if (!modified) {
             wrapped = new HashMap(wrapped);
@@ -75,6 +81,7 @@ public class CopyOnWriteMap extends WrappedMap {
         return wrapped.put(key, value);
     }
 
+    @Override
     public synchronized Object remove(Object key) {
         if (!modified) {
             wrapped = new HashMap(wrapped);
@@ -83,6 +90,7 @@ public class CopyOnWriteMap extends WrappedMap {
         return wrapped.remove(key);
     }
 
+    @Override
     public synchronized void putAll(Map t) {
         if (!modified) {
             wrapped = new HashMap(wrapped);
@@ -91,6 +99,7 @@ public class CopyOnWriteMap extends WrappedMap {
         wrapped.putAll(t);
     }
 
+    @Override
     public synchronized void clear() {
         if (!modified) {
             wrapped = new HashMap(wrapped);
@@ -101,30 +110,36 @@ public class CopyOnWriteMap extends WrappedMap {
 
     // Views
 
+    @Override
     public synchronized Set keySet() {
         return wrapped.keySet();
     }
 
+    @Override
     public synchronized Collection values() {
         return wrapped.values();
     }
 
+    @Override
     public synchronized Set entrySet() {
         return wrapped.entrySet();
     }
 
     // Comparison and hashing
 
+    @Override
     public synchronized boolean equals(Object o) {
         return wrapped.equals(o);
     }
 
+    @Override
     public synchronized int hashCode() {
         return wrapped.hashCode();
     }
 
     // toString
 
+    @Override
     public synchronized String toString() {
         return wrapped.toString();
     }

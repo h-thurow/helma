@@ -73,6 +73,7 @@ public class ResourceComparator implements Comparator {
      * @param obj comparator
      * @return true if the given comparator equals
      */
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof ResourceComparator) &&
                 app == ((ResourceComparator) obj).getApplication();

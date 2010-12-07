@@ -105,6 +105,7 @@ public class DatabaseObject {
         return "DatabaseObject"; //$NON-NLS-1$
     }
 
+    @Override
     public String toString() {
          if (driverName==null) return "[database protoype]"; //$NON-NLS-1$
          return "[Database: '" + driverName + //$NON-NLS-1$
@@ -620,6 +621,7 @@ public class DatabaseObject {
             return status;
        }
 
+        @Override
         public String toString() {
             return "[RowSet: '"+sql+"'" +  //$NON-NLS-1$//$NON-NLS-2$
                    (resultSet==null ? " - released]" : //$NON-NLS-1$

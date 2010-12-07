@@ -567,6 +567,7 @@ public class TransientNode implements INode, Serializable {
         return created;
     }
 
+    @Override
     public String toString() {
         return Messages.getString("TransientNode.2") + name; //$NON-NLS-1$
     }

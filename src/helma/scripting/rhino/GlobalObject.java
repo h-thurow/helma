@@ -93,6 +93,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      *
      * @return the class name for the global object
      */
+    @Override
     public String getClassName() {
         return "GlobalObject"; //$NON-NLS-1$
     }
@@ -105,6 +106,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * @param start
      * @param value
      */
+    @Override
     public void put(String name, Scriptable start, Object value) {
         // register property for PropertyRecorder interface
         if (isRecording) {
@@ -128,6 +130,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      * @param start
      * @return the property for the given name
      */
+    @Override
     public Object get(String name, Scriptable start) {
         // register property for PropertyRecorder interface
         if (isRecording) {
@@ -392,6 +395,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
         ScriptableObject scope = new NativeObject() {
             private static final long serialVersionUID = 9205558066617631601L;
 
+            @Override
             public String getClassName() {
                 return name;
             }
@@ -631,6 +635,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
         Scriptable scope = RhinoCore.getCore().global;
         // use a ScriptableOutputStream that unwraps Wrappers
         ScriptableOutputStream out = new ScriptableOutputStream(fos, scope) {
+            @Override
             protected Object replaceObject(Object obj) throws IOException {
                 if (obj instanceof Wrapper)
                     obj = ((Wrapper) obj).unwrap();
@@ -744,6 +749,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
         changedProperties = null;
     }
 
+    @Override
     public String toString() {
         return isThreadScope ? "[Thread Scope]" : "[Shared Scope]";  //$NON-NLS-1$//$NON-NLS-2$
     }
