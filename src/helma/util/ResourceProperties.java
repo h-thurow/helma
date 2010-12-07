@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -18,6 +22,7 @@ package helma.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import helma.framework.core.*;
 import helma.framework.repository.Resource;
@@ -223,9 +228,10 @@ public class ResourceProperties extends Properties {
                         Repository repository = (Repository) iterator.next();
                         Resource res = repository.getResource(resourceName);
                         if (res != null && res.exists()) {
-                            InputStream in = res.getInputStream();
-                            temp.load(in);
-                            in.close();
+							InputStreamReader reader = new InputStreamReader(
+									res.getInputStream());
+							temp.load(reader);
+							reader.close();
                         }
                     } catch (IOException iox) {
                         iox.printStackTrace();
@@ -255,9 +261,10 @@ public class ResourceProperties extends Properties {
                     try {
                         Resource res = (Resource) iterator.next();
                         if (res.exists()) {
-                            InputStream in = res.getInputStream();
-                            temp.load(in);
-                            in.close();
+							InputStreamReader reader = new InputStreamReader(
+									res.getInputStream());
+							temp.load(reader);
+							reader.close();
                         }
                     } catch (IOException iox) {
                         iox.printStackTrace();

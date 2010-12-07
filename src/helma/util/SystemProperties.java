@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ * 
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -131,20 +135,21 @@ public final class SystemProperties extends Properties {
 
         // read from the primary file
         if (file != null && file.exists()) {
-            FileInputStream bpin = null;
+			FileReader reader = null;
 
-            try {
-                bpin = new FileInputStream(file);
-                load(bpin);
-            } catch (Exception x) {
-                System.err.println("Error reading properties from file " + file + ": " + x);
-            } finally {
-                try {
-                    bpin.close();
-                } catch (Exception ignore) {
-                    // ignored
-                }
-            }
+			try {
+				reader = new FileReader(file);
+				load(reader);
+			} catch (Exception x) {
+				System.err.println("Error reading properties from file " + file
+						+ ": " + x);
+			} finally {
+				try {
+					reader.close();
+				} catch (Exception ignore) {
+					// ignored
+				}
+			}
         }
 
         // read additional properties from zip files, if available
