@@ -632,6 +632,8 @@ public class RequestTrans implements Serializable {
 
     class ParameterMap extends SystemMap {
 
+        private static final long serialVersionUID = 7632860503639617076L;
+
         public ParameterMap() {
             super();
         }
@@ -708,6 +710,8 @@ public class RequestTrans implements Serializable {
 
     class DataComboMap extends SystemMap {
 
+        private static final long serialVersionUID = 5737810055554406299L;
+
         public Object get(Object key) {
             Object value = super.get(key);
             if (value != null)
@@ -743,6 +747,8 @@ public class RequestTrans implements Serializable {
     }
 
     class ParamComboMap extends SystemMap {
+        private static final long serialVersionUID = -9177176570950359431L;
+
         public Object get(Object key) {
             Object value;
             if (postParams != null && (value = postParams.get(key)) != null)
