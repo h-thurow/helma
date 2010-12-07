@@ -44,7 +44,7 @@ public class GlobalFunctions extends AbstractQuercusModule {
      * @return a DatabaseObject for the specified DbConnection
      */
     public ObjectExtJavaValue getDBConnection(
-            @SuppressWarnings("unused") final StringValue name) {
+            final StringValue name) {
         // TODO: implement
         QuercusEngine.ENGINE.get().getEnvironment().error(
                 Messages.getString("GlobalFunctions.0")); //$NON-NLS-1$

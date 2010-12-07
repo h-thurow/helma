@@ -99,7 +99,6 @@ public class ResponseStream extends StreamImpl {
      * (non-Javadoc)
      * @see com.caucho.vfs.StreamImpl#write(byte[], int, int, boolean)
      */
-    @SuppressWarnings("unused")
     @Override
     public void write(final byte[] buffer, final int offset, final int length,
             final boolean isEnd) throws IOException {

@@ -458,7 +458,7 @@ public class HopObject extends ObjectExtJavaValue {
      * TODO: implement
      */
     public HopObject getOrderedView(
-            @SuppressWarnings("unused") final String name)
+            final String name)
             throws ScriptingException {
         // TODO: implement
         throw new ScriptingException(Messages.getString("HopObject.1"), null); //$NON-NLS-1$
@@ -774,7 +774,6 @@ public class HopObject extends ObjectExtJavaValue {
      *            The parameters to provide to the skin
      * @throws ScriptingException
      */
-    @SuppressWarnings("unused")
     private void renderSkin(final Skin skin, final Object[] parameters)
             throws ScriptingException {
         try {

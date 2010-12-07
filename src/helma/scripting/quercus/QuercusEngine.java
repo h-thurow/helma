@@ -168,7 +168,6 @@ public class QuercusEngine implements ScriptingEngine {
      * (non-Javadoc)
      * @see org.warp.scripting.ScriptingEngine#deserialize(java.io.InputStream)
      */
-    @SuppressWarnings("unused")
     @Override
     public Object deserialize(final InputStream in) throws IOException,
             ClassNotFoundException {
@@ -699,8 +698,8 @@ public class QuercusEngine implements ScriptingEngine {
      */
     @Override
     public void injectCodeResource(
-            @SuppressWarnings("unused") final String typename,
-            @SuppressWarnings("unused") final Resource resource) {
+            final String typename,
+            final Resource resource) {
         // TODO: implement
     }
 
@@ -712,8 +711,8 @@ public class QuercusEngine implements ScriptingEngine {
     @Override
     public Object invoke(final Object thisObject, final Object functionName,
             final Object[] arguments,
-            @SuppressWarnings("unused") final int argumentsWrapMode,
-            @SuppressWarnings("unused") final boolean resolve)
+            final int argumentsWrapMode,
+            final boolean resolve)
             throws ScriptingException {
         // check if functionName is invalid
         if (functionName == null || !(functionName instanceof String)) {
@@ -792,7 +791,7 @@ public class QuercusEngine implements ScriptingEngine {
      * @see org.warp.scripting.ScriptingEngine#isTypedObject(java.lang.Object)
      */
     @Override
-    public boolean isTypedObject(@SuppressWarnings("unused") final Object obj) {
+    public boolean isTypedObject(final Object obj) {
         // TODO: implement
         return false;
     }
@@ -802,7 +801,6 @@ public class QuercusEngine implements ScriptingEngine {
      * @see org.warp.scripting.ScriptingEngine#serialize(java.lang.Object,
      * java.io.OutputStream)
      */
-    @SuppressWarnings("unused")
     @Override
     public void serialize(final Object obj, final OutputStream out)
             throws IOException {
@@ -875,7 +873,7 @@ public class QuercusEngine implements ScriptingEngine {
     }
 
     @Override
-    public Object getGlobalProperty(@SuppressWarnings("unused") String propertyName) {
+    public Object getGlobalProperty(String propertyName) {
         // TODO Auto-generated method stub
         return null;
     }
