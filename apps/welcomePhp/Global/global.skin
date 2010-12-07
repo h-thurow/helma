@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Helma + PHP</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="/static/welcomePhp/default.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="wrapper">
+	<div id="logo">
+		<h1><a href="#">Welcome!</a></h1>
+		<h2><a href="#">to Helma + PHP</a></h2>
+		<h2 style="color:red;"><% message %></h2>
+	</div>
+	<div id="sidebar">
+		<div id="menu">
+			<ul>
+				<li class="active"><a href="<% root.href %>" title="Welcome Homepage">Welcome Homepage</a></li>
+				<li><a href="http://helma.org" title="Helma Homepage">Hop Homepage</a></li>
+				<li><a href="http://github.com/helma-next/helma-next" title="GitHub Homepage">GitHub Homepage</a></li>
+			</ul>
+		</div>
+		<div class="extra">&nbsp;</div>
+	</div>
+	<div id="content">
+		<a href="<% root.href page="add" %>">add</a>
+		<% param.content %>
+	</div>
+</div>
+<div id="footer">
+	<p id="legal">Copyright 2010 dowee it solutions GmbH. All rights Reserved.</p>
+	<p id="links">Designed by <a href="http://www.freecsstemplates.org/">Free CSS Templates</a>.</p>
+</div>
+</body>
+</html>
