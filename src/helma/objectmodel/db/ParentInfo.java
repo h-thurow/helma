@@ -24,7 +24,7 @@ import helma.util.StringUtils;
  */
 public class ParentInfo {
     public final String propname;
-    public final String virtualname;
+    public final String[] virtualnames;
     public final String collectionname;
     public final boolean isroot;
 
@@ -41,9 +41,25 @@ public class ParentInfo {
 
         String[] parts = StringUtils.split(desc, ".");
 
-        propname = parts.length > 0 ? parts[0].trim() : null;
-        virtualname = parts.length > 1 ? parts[1].trim() : null;
-        collectionname = parts.length > 2 ? parts[2].trim() : null;
+        switch (parts.length) {
+        	case 0:
+        		propname = collectionname = null;
+        		virtualnames = new String[0];
+        		break;
+        	case 1:
+        		propname = parts[0].trim();
+        		virtualnames = new String[0];
+        		collectionname = null;
+        		break;
+        	default:
+        		propname = parts[0].trim();
+        		virtualnames = new String[parts.length - 2];
+        		collectionname = parts[parts.length - 1];
+        		
+        		for (int i = 1; i < parts.length - 1; i++) {
+            		virtualnames[i - 1] = parts[i];
+            	}
+        }
 
         isroot = "root".equalsIgnoreCase(propname);
     }
@@ -53,8 +69,11 @@ public class ParentInfo {
      */
     public String toString() {
         StringBuffer b = new StringBuffer("ParentInfo[").append(propname);
-        if (virtualname != null)
-            b.append(".").append(virtualname);
+        if (virtualnames.length > 0) {
+        	for (int i = 0; i < virtualnames.length; i++) {
+        		b.append(".").append(virtualnames[i]);	
+        	}
+        }
         if (collectionname != null)
             b.append(".").append(collectionname);
         return b.append("]").toString();

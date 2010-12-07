@@ -630,23 +630,21 @@ public final class Node implements INode {
                 // if we found a parent node, check if we ought to use a virtual or groupby node as parent
                 if (parentNode != null) {
                     // see if dbmapping specifies anonymity for this node
-                    if (pinfo.virtualname != null) {
-                        Node pn2 = (Node) parentNode.getNode(pinfo.virtualname);
-                        if (pn2 == null) {
-                            getApp().logError("Error: Can't retrieve parent node " +
-                                                   pinfo + " for " + this);
-                        } else if (pinfo.collectionname != null) {
-                            pn2 = (Node) pn2.getNode(pinfo.collectionname);
-                        } else if (pn2.equals(this)) {
-                            // a special case we want to support: virtualname is actually
-                            // a reference to this node, not a collection containing this node.
-                            parentHandle = parentNode.getHandle();
-                            name = pinfo.virtualname;
-                            anonymous = false;
-                            return parentNode;
-                        }
+                    if (pinfo.virtualnames.length > 0) {
+                    	Node newParentNode = parentNode;
+                    	for (int j = 0; j < pinfo.virtualnames.length; j++) {
+                    		newParentNode = (Node) newParentNode.getNode(pinfo.virtualnames[j]);
+                    		if (newParentNode == null) {
+                                getApp().logError("Error: Can't retrieve parent node " +
+                                                       pinfo + " for " + this);
+                            }
+                    	}
 
-                        parentNode = pn2;
+                        parentNode = newParentNode;
+                    }
+                    
+                    if (parentNode != null && pinfo.collectionname != null) {
+            			parentNode = (Node) parentNode.getNode(pinfo.collectionname);
                     }
 
                     DbMapping dbm = (parentNode == null) ? null : parentNode.getDbMapping();
