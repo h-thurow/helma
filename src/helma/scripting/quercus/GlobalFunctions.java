@@ -33,21 +33,6 @@ public class GlobalFunctions extends AbstractQuercusModule {
     }
 
     /**
-     * Get a Helma database connection specified in db.properties
-     * 
-     * @param name
-     *            The name of the database connection to get
-     * @return a DatabaseObject for the specified DbConnection
-     */
-    public ObjectExtJavaValue getDBConnection(
-            final StringValue name) {
-        // TODO: implement
-        QuercusEngine.ENGINE.get().getEnvironment().error(
-                Messages.getString("GlobalFunctions.0")); //$NON-NLS-1$
-        return null;
-    }
-
-    /**
      * Resturns a global property specified in app.properties
      * 
      * @param name

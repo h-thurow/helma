@@ -73,7 +73,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
                                    "authenticate", "createSkin", "format", "encode",   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$
                                    "encodeXml", "encodeForm", "stripTags", "formatParagraphs",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                                    "getXmlDocument", "getHtmlDocument", "seal",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-                                   "getDBConnection", "getURL", "write", "writeln", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                                   "getURL", "write", "writeln", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                    "serialize", "deserialize", "defineLibraryScope",   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
                                    "wrapJavaMap", "unwrapJavaMap", "toJava", "definePrototype"  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
                                };
@@ -220,23 +220,6 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     public Object createSkin(String str) {
         return Context.toObject(new Skin(str, this.app), this);
-    }
-
-    /**
-     * Get a Helma DB connection specified in db.properties
-     *
-     * @param dbsource the db source name
-     *
-     * @return a DatabaseObject for the specified DbConnection
-     */
-    public Object getDBConnection(String dbsource) throws Exception {
-        if (dbsource == null)
-            throw new EvaluatorException(Messages.getString("GlobalObject.0")); //$NON-NLS-1$
-        DbSource dbsrc = this.app.getDbSource (dbsource);
-        if (dbsrc == null)
-            throw new EvaluatorException(Messages.getString("GlobalObject.1")+dbsource+Messages.getString("GlobalObject.2")); //$NON-NLS-1$ //$NON-NLS-2$
-        DatabaseObject db = new DatabaseObject (dbsrc);
-        return Context.toObject(db, this);
     }
 
     /**

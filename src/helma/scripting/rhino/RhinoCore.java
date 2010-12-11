@@ -162,15 +162,8 @@ public final class RhinoCore implements ScopeProvider {
             this.hopObjectProto =  HopObject.init(this);
             // use lazy loaded constructors for all extension objects that
             // adhere to the ScriptableObject.defineClass() protocol
-            new LazilyLoadedCtor(this.global, "File", //$NON-NLS-1$
-                    "helma.scripting.rhino.extensions.FileObject", false); //$NON-NLS-1$
-            new LazilyLoadedCtor(this.global, "Ftp", //$NON-NLS-1$
-                    "helma.scripting.rhino.extensions.FtpObject", false); //$NON-NLS-1$
-            new LazilyLoadedCtor(this.global, "Image", //$NON-NLS-1$
-                    "helma.scripting.rhino.extensions.ImageObject", false); //$NON-NLS-1$
             new LazilyLoadedCtor(this.global, "Remote", //$NON-NLS-1$
                     "helma.scripting.rhino.extensions.XmlRpcObject", false); //$NON-NLS-1$
-            MailObject.init(this.global, this.app.getProperties());
             JSAdapter.init(context, this.global, false);
 
             // add some convenience functions to string, date and number prototypes
