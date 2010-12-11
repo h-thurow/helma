@@ -41,7 +41,7 @@ public class Main {
                                             "commons-logging.jar", "crimson.jar",  //$NON-NLS-1$//$NON-NLS-2$
                                             "xmlrpc.jar", "servlet.jar",  //$NON-NLS-1$//$NON-NLS-2$
                                             "mail.jar", "activation.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "commons-fileupload.jar", "commons-codec.jar",  //$NON-NLS-1$//$NON-NLS-2$
+                                            "commons-fileupload.jar", "commons-codec-1.4.jar",  //$NON-NLS-1$//$NON-NLS-2$
                                             "commons-io.jar", "commons-net.jar",   //$NON-NLS-1$//$NON-NLS-2$
                                             "tagsoup.jar" //$NON-NLS-1$
                                         };
