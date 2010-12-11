@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.*;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -202,7 +203,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                     }
                 } else {
                     String host = (String) reqtrans.get("http_host");
-                    // http_host is guaranteed to be lower case 
+                    // http_host is guaranteed to be lower case
                     if (host != null && host.indexOf(resCookieDomain) == -1) {
                         resCookieDomain = null;
                     }
@@ -474,11 +475,11 @@ public abstract class AbstractServletClient extends HttpServlet {
         }
         try {
             OutputStream out = res.getOutputStream();
-    
+
             int bufferSize = 4096;
             byte buffer[] = new byte[bufferSize];
             int l;
-    
+
             while (length > 0) {
                 if (length < bufferSize) {
                     l = in.read(buffer, 0, length);
@@ -488,7 +489,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                 if (l == -1) {
                     break;
                 }
-    
+
                 length -= l;
                 out.write(buffer, 0, l);
             }
@@ -512,9 +513,9 @@ public abstract class AbstractServletClient extends HttpServlet {
             checksum[i] = (byte) (n);
             n >>>= 8;
         }
-        String etag = "\"" + new String(Base64.encode(checksum)) + "\"";
-        res.setHeader("ETag", etag);
-        String etagHeader = req.getHeader("If-None-Match");
+        String etag = "\"" + new String(Base64.encodeBase64(checksum)) + "\"";  //$NON-NLS-1$//$NON-NLS-2$
+        res.setHeader("ETag", etag); //$NON-NLS-1$
+        String etagHeader = req.getHeader("If-None-Match"); //$NON-NLS-1$
         if (etagHeader != null) {
             StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n");
             while (st.hasMoreTokens()) {
@@ -576,7 +577,7 @@ public abstract class AbstractServletClient extends HttpServlet {
         String id = null;
         while (id == null || app.getSession(id) != null) {
             long l = secureRandom ?
-                    random.nextLong() : 
+                    random.nextLong() :
                     random.nextLong() + Runtime.getRuntime().freeMemory() ^ hashCode();
             if (l < 0)
                 l = -l;
@@ -783,7 +784,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                             key = new String(data, 0, ox, encoding);
                             ox = 0;
                         } else {
-                            data[ox++] = c;                            
+                            data[ox++] = c;
                         }
 
                         break;

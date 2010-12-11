@@ -26,6 +26,7 @@ import java.io.*;
 import java.security.*;
 import java.util.*;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.xmlrpc.XmlRpcResponseProcessor;
 
 /**
@@ -675,7 +676,7 @@ public final class ResponseTrans extends Writer implements Serializable {
 
             // if debug buffer exists, append it to main buffer
             if (contentType != null &&
-                    contentType.startsWith("text/html") && 
+                    contentType.startsWith("text/html") &&
                     debugBuffer != null) {
                 debugBuffer.append("</div>");
                 if (buffer == null) {
@@ -713,8 +714,8 @@ public final class ResponseTrans extends Writer implements Serializable {
                 digest = MessageDigest.getInstance("MD5");
                 // if (contentType != null)
                 //     digest.update (contentType.getBytes());
-                byte[] b = digest.digest(response);
-                etag = "\"" + new String(Base64.encode(b)) + "\"";
+                byte[] b = this.digest.digest(this.response);
+                this.etag = "\"" + new String(Base64.encodeBase64(b)) + "\""; //$NON-NLS-1$ //$NON-NLS-2$
                 // only set response to 304 not modified if no cookies were set
                 if (reqtrans.hasETag(etag) && countCookies() == 0) {
                     response = new byte[0];
@@ -891,7 +892,7 @@ public final class ResponseTrans extends Writer implements Serializable {
         // generation sensitive to changes in the app
         byte[] b = digest.digest(MD5Encoder.toBytes(app.getChecksum()));
 
-        setETag(new String(Base64.encode(b)));
+        setETag(new String(Base64.encodeBase64(b)));
     }
 
     /**
