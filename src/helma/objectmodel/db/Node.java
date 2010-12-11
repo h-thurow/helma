@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ * 
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -24,7 +28,6 @@ import helma.objectmodel.INode;
 import helma.objectmodel.INodeState;
 import helma.objectmodel.IProperty;
 import helma.objectmodel.TransientNode;
-import helma.util.EmptyEnumeration;
 
 import java.util.*;
 
@@ -1489,7 +1492,7 @@ public final class Node implements INode {
     private Enumeration getLoadedSubnodes() {
         final SubnodeList list = this.subnodes;
         if (list == null) {
-            return new EmptyEnumeration();
+            return Collections.enumeration(Collections.EMPTY_LIST);
         }
 
         return new Enumeration() {
@@ -1548,7 +1551,7 @@ public final class Node implements INode {
         }
 
         // sorry, no properties for this Node
-        return new EmptyEnumeration();
+        return Collections.enumeration(Collections.EMPTY_LIST);
     }
 
     /**

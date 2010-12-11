@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -22,6 +26,7 @@ import helma.objectmodel.db.Relation;
 import helma.objectmodel.db.Node;
 import helma.util.*;
 import java.io.*;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -365,7 +370,7 @@ public class TransientNode implements INode, Serializable {
      *  property-related
      */
     public Enumeration properties() {
-        return (this.propMap == null) ? new EmptyEnumeration() : this.propMap.keys();
+        return (this.propMap == null) ? Collections.enumeration(Collections.EMPTY_LIST) : this.propMap.keys();
     }
 
     private TransientProperty getProperty(String propname) {
