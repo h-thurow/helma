@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -783,7 +787,7 @@ public final class RequestEvaluator implements Runnable {
             this.res.reportError(Messages.getString("RequestEvaluator.16")); //$NON-NLS-1$
         }
 
-        session.commit(this, this.app.sessionMgr);
+        session.commit(this.app.sessionMgr);
         return this.res;
     }
 

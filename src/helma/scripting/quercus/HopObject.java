@@ -461,7 +461,7 @@ public class HopObject extends ObjectExtJavaValue {
      * TODO: implement
      */
     public HopObject getOrderedView(
-            final String name)
+            @SuppressWarnings("unused") final String name)
             throws ScriptingException {
         // TODO: implement
         throw new ScriptingException(Messages.getString("HopObject.1"), null); //$NON-NLS-1$

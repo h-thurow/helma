@@ -1,18 +1,22 @@
 /*
-* Helma License Notice
-*
-* The contents of this file are subject to the Helma License
-* Version 2.0 (the "License"). You may not use this file except in
-* compliance with the License. A copy of the License is available at
-* http://adele.helma.org/download/helma/license.txt
-*
-* Copyright 1998-2003 Helma Software. All Rights Reserved.
-*
-* $RCSfile$
-* $Author$
-* $Revision$
-* $Date$
-*/
+ * Helma License Notice
+ *
+ * The contents of this file are subject to the Helma License
+ * Version 2.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://adele.helma.org/download/helma/license.txt
+ *
+ * Copyright 1998-2003 Helma Software. All Rights Reserved.
+ *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
+ * $RCSfile$
+ * $Author$
+ * $Revision$
+ * $Date$
+ */
 
 package helma.scripting.rhino.debug;
 
@@ -50,7 +54,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
         this.gui.setVisible(true);
     }
 
-    void createTreeNode(String sourceName, Dim.SourceInfo sourceInfo) {
+    void createTreeNode(String sourceName) {
         String[] path = StringUtils.split(sourceName, ":/\\"); //$NON-NLS-1$
         DebuggerTreeNode node = this.treeRoot;
         DebuggerTreeNode newNode = null;
@@ -231,7 +235,7 @@ public class HelmaDebugger extends Dim implements TreeSelectionListener {
             // super.updateSourceText(sourceInfo);
             String filename = sourceInfo.url();
             if (!HelmaDebugger.this.treeNodes.containsKey(filename)) {
-                createTreeNode(filename, sourceInfo);
+                createTreeNode(filename);
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

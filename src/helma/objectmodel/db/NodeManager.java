@@ -744,7 +744,7 @@ public final class NodeManager {
     public String doGenerateID(DbMapping map) throws Exception {
         if ((map == null) || !map.isRelational()) {
             // use embedded db id generator
-            return generateEmbeddedID(map);
+            return generateEmbeddedID();
         }
         String idMethod = map.getIDgen();
         if (idMethod == null || "[max]".equalsIgnoreCase(idMethod) || map.isMySQL()) { //$NON-NLS-1$
@@ -752,7 +752,7 @@ public final class NodeManager {
             return generateMaxID(map);
         } else if ("[hop]".equalsIgnoreCase(idMethod)) { //$NON-NLS-1$
             // use embedded db id generator
-            return generateEmbeddedID(map);
+            return generateEmbeddedID();
         } else {
             // use db sequence as id generator
             return generateSequenceID(map);
@@ -762,7 +762,7 @@ public final class NodeManager {
     /**
      * Gererates an ID for use with the embedded database.
      */
-    synchronized String generateEmbeddedID(DbMapping map) throws Exception {
+    synchronized String generateEmbeddedID() throws Exception {
         return this.db.nextID();
     }
 

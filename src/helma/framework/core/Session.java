@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -234,7 +238,7 @@ public class Session implements Serializable {
      *
      * @param reval the request evaluator that handled the request
      */
-    public void commit(RequestEvaluator reval, SessionManager smgr) {
+    public void commit(SessionManager smgr) {
         if (this.modifiedInRequest || this.cacheLastModified != this.cacheNode.lastModified()) {
             if (!this.registered) {
                 smgr.registerSession(this);

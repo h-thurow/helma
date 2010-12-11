@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -83,7 +87,7 @@ public final class XmlDatabase implements DatabaseInterface {
             txn = beginTransaction();
 
             try {
-                this.idgen = getIDGenerator(txn);
+                this.idgen = getIDGenerator();
 
                 if (this.idgen.getValue() < idBaseValue) {
                     this.idgen.setValue(idBaseValue);
@@ -210,7 +214,7 @@ public final class XmlDatabase implements DatabaseInterface {
      */
     public String nextID() throws ObjectNotFoundException {
         if (this.idgen == null) {
-            getIDGenerator(null);
+            getIDGenerator();
         }
 
         return this.idgen.newID();
@@ -223,7 +227,7 @@ public final class XmlDatabase implements DatabaseInterface {
      * @return the id-generator for this database
      * @throws ObjectNotFoundException
      */
-    public XmlIDGenerator getIDGenerator(TransactionInterface txn)
+    public XmlIDGenerator getIDGenerator()
                                throws ObjectNotFoundException {
         File file = new File(this.dbHomeDir, "idgen.xml"); //$NON-NLS-1$
 

@@ -22,7 +22,6 @@ package helma.scripting.rhino;
 
 import helma.scripting.rhino.extensions.*;
 import helma.framework.core.*;
-import helma.objectmodel.db.*;
 import helma.util.HtmlEncoder;
 import helma.util.MimePart;
 import helma.util.XmlUtils;

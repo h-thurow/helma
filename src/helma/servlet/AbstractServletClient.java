@@ -288,7 +288,7 @@ public abstract class AbstractServletClient extends HttpServlet {
             }
 
             // write response
-            writeResponse(request, response, reqtrans, restrans);
+            writeResponse(request, response, restrans);
         } catch (Exception x) {
             log(Messages.getString("AbstractServletClient.8"), x); //$NON-NLS-1$
             try {
@@ -307,7 +307,7 @@ public abstract class AbstractServletClient extends HttpServlet {
     }
 
     protected void writeResponse(HttpServletRequest req, HttpServletResponse res,
-                                 RequestTrans hopreq, ResponseTrans hopres)
+                                 ResponseTrans hopres)
             throws IOException {
         if (hopres.getForward() != null) {
             sendForward(res, req, hopres);

@@ -20,7 +20,6 @@
 
 package helma.scripting.rhino;
 
-import helma.scripting.rhino.extensions.*;
 import helma.scripting.rhino.debug.HelmaDebugger;
 import helma.framework.core.*;
 import helma.framework.repository.ResourceInterface;
