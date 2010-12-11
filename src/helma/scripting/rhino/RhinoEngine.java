@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.  
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -17,7 +21,7 @@
 package helma.scripting.rhino;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.HelmaExtension;
+import helma.extensions.InterfaceHelmaExtension;
 import helma.framework.*;
 import helma.framework.repository.Resource;
 import helma.framework.core.*;
@@ -93,7 +97,7 @@ public class RhinoEngine implements ScriptingEngine {
                 Vector extVec = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extVec.size(); i++) {
-                    HelmaExtension ext = (HelmaExtension) extVec.get(i);
+                    InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extVec.get(i);
 
                     try {
                         HashMap tmpGlobals = ext.initScripting(app, this);

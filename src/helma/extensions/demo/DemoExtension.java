@@ -7,6 +7,10 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
+ * 
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
  *
  * $RCSfile$
  * $Author$
@@ -18,7 +22,7 @@ package helma.extensions.demo;
 
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.HelmaExtension;
+import helma.extensions.InterfaceHelmaExtension;
 import helma.framework.core.Application;
 import helma.main.Server;
 import helma.scripting.ScriptingEngine;
@@ -31,7 +35,7 @@ import java.util.HashMap;
  * a new global object <code>demo</code> that wraps helma.main.Server
  * will be added to the scripting environment.
  */
-public class DemoExtension extends HelmaExtension {
+public class DemoExtension implements InterfaceHelmaExtension {
     /**
      *
      *

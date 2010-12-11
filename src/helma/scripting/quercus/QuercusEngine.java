@@ -7,6 +7,11 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  */
 
 package helma.scripting.quercus;
@@ -20,7 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.HelmaExtension;
+import helma.extensions.InterfaceHelmaExtension;
 import helma.framework.RedirectException;
 import helma.framework.core.Application;
 import helma.framework.core.Prototype;
@@ -668,7 +673,7 @@ public class QuercusEngine implements ScriptingEngine {
             // loop all extensions
             while (extensions.hasNext()) {
                 // get next extension
-                final HelmaExtension extension = (HelmaExtension) extensions
+                final InterfaceHelmaExtension extension = (InterfaceHelmaExtension) extensions
                         .next();
 
                 HashMap<String, ? extends Object> globals = null;

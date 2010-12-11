@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.  
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -17,7 +21,7 @@
 package helma.framework.core;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.HelmaExtension;
+import helma.extensions.InterfaceHelmaExtension;
 import helma.framework.*;
 import helma.framework.repository.*;
 import helma.main.Server;
@@ -379,7 +383,7 @@ public final class Application implements Runnable {
                 Vector extensions = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extensions.size(); i++) {
-                    HelmaExtension ext = (HelmaExtension) extensions.get(i);
+                    InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extensions.get(i);
 
                     try {
                         ext.applicationStarted(Application.this);
@@ -548,7 +552,7 @@ public final class Application implements Runnable {
             Vector extensions = Server.getServer().getExtensions();
 
             for (int i = 0; i < extensions.size(); i++) {
-                HelmaExtension ext = (HelmaExtension) extensions.get(i);
+                InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extensions.get(i);
 
                 ext.applicationStopped(this);
             }
@@ -1946,7 +1950,7 @@ public final class Application implements Runnable {
                 Vector extensions = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extensions.size(); i++) {
-                    HelmaExtension ext = (HelmaExtension) extensions.get(i);
+                    InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extensions.get(i);
 
                     try {
                         ext.applicationUpdated(this);

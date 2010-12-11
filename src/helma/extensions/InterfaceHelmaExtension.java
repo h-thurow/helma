@@ -7,6 +7,10 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
+ * 
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
  *
  * $RCSfile$
  * $Author$
@@ -19,14 +23,16 @@ package helma.extensions;
 import helma.framework.core.Application;
 import helma.main.Server;
 import helma.scripting.ScriptingEngine;
+
 import java.util.HashMap;
 
 /**
- * Helma extensions have to subclass this. The extensions to be loaded are
+ * Helma extensions have to implement this. The extensions to be loaded are
  * defined in <code>server.properties</code> by setting <code>extensions =
  * packagename.classname, packagename.classname</code>.
  */
-public abstract class HelmaExtension {
+public interface InterfaceHelmaExtension {
+
     /**
      * called by the Server at startup time. should check wheter the needed classes
      * are present and throw a ConfigurationException if not.
@@ -38,7 +44,7 @@ public abstract class HelmaExtension {
      * any self-initialization is performed.
      */
     public abstract void applicationStarted(Application app)
-                                     throws ConfigurationException;
+            throws ConfigurationException;
 
     /**
      * called when an Application is stopped.
@@ -59,8 +65,8 @@ public abstract class HelmaExtension {
      * with pairs of varname and ESObjects. This method should be <b>synchronized</b>, if it
      * performs any other self-initialization outside the scripting environment.
      */
-    public abstract HashMap initScripting(Application app, ScriptingEngine engine)
-                                   throws ConfigurationException;
+    public abstract HashMap initScripting(Application app,
+            ScriptingEngine engine) throws ConfigurationException;
 
     /**
      *
@@ -68,4 +74,5 @@ public abstract class HelmaExtension {
      * @return ...
      */
     public abstract String getName();
+
 }

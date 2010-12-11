@@ -7,6 +7,10 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
+ * 
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
  *
  * $RCSfile: Server.java,v $
  * $Author$
@@ -16,7 +20,7 @@
 
 package helma.main;
 
-import helma.extensions.HelmaExtension;
+import helma.extensions.InterfaceHelmaExtension;
 import helma.framework.repository.FileResource;
 import helma.framework.core.*;
 import helma.objectmodel.db.DbSource;
@@ -467,7 +471,7 @@ public class Server implements Runnable {
 
             try {
                 Class extClass = Class.forName(extClassName);
-                HelmaExtension ext = (HelmaExtension) extClass.newInstance();
+                InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extClass.newInstance();
                 ext.init(this);
                 this.extensions.add(ext);
                 this.logger.info(Messages.getString("Server.54") + extClassName); //$NON-NLS-1$
