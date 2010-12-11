@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -18,7 +22,6 @@ package helma.objectmodel.db;
 
 import helma.framework.core.Application;
 import helma.objectmodel.NodeInterface;
-import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.PropertyInterface;
 import helma.util.StringUtils;
 
@@ -1309,7 +1312,7 @@ public final class Relation {
                     throw new RuntimeException(Messages.getString("Relation.13") + cnst.localKey + //$NON-NLS-1$
                        Messages.getString("Relation.14") + //$NON-NLS-1$
                        Relation.this);
-                } else if (foreignIsPrimary && child.getState() == NodeStateInterface.TRANSIENT) {
+                } else if (foreignIsPrimary && child.getState() == NodeInterface.TRANSIENT) {
                     throw new RuntimeException(this.propName + Messages.getString("Relation.15") + //$NON-NLS-1$
                        Messages.getString("Relation.16") + localProp); //$NON-NLS-1$
                 } else {
@@ -1340,15 +1343,15 @@ public final class Relation {
                         // which would most probably not be what we want.
                         if ((currentValue == null) ||
                                 ((currentValue != home) &&
-                                ((currentValue.getState() == NodeStateInterface.TRANSIENT) ||
-                                (home.getState() != NodeStateInterface.TRANSIENT)))) try {
+                                ((currentValue.getState() == NodeInterface.TRANSIENT) ||
+                                (home.getState() != NodeInterface.TRANSIENT)))) try {
                             child.setNode(crel.propName, home);
                         } catch (Exception ignore) {
                             // in some cases, getNonVirtualParent() doesn't work
                             // correctly for transient nodes, so this may fail.
                         }
                     } else if (crel.reftype == PRIMITIVE) {
-                        if (home.getState() == NodeStateInterface.TRANSIENT) {
+                        if (home.getState() == NodeInterface.TRANSIENT) {
                             throw new RuntimeException(Messages.getString("Relation.17") + crel); //$NON-NLS-1$
                         }
                         child.setString(crel.propName, home.getID());

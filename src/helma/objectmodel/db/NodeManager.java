@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -98,7 +102,7 @@ public final class NodeManager {
      * Checks if the given node is the application's root node.
      */
     public boolean isRootNode(Node node) {
-        return node.getState() != NodeStateInterface.TRANSIENT && this.app.getRootId().equals(node.getID()) &&
+        return node.getState() != NodeInterface.TRANSIENT && this.app.getRootId().equals(node.getID()) &&
                DbMapping.areStorageCompatible(this.app.getRootMapping(), node.getDbMapping());
     }
 
@@ -136,7 +140,7 @@ public final class NodeManager {
             synchronized (this) {
                 Transactor tx = Transactor.getInstanceOrFail();
 
-                node.setState(NodeStateInterface.INVALID);
+                node.setState(NodeInterface.INVALID);
                 deleteNode(this.db, tx.txn, node);
             }
         }
@@ -152,14 +156,14 @@ public final class NodeManager {
         // See if Transactor has already come across this node
         Node node = tx.getCleanNode(key);
 
-        if ((node != null) && (node.getState() != NodeStateInterface.INVALID)) {
+        if ((node != null) && (node.getState() != NodeInterface.INVALID)) {
             return node;
         }
 
         // try to get the node from the shared cache
         node = (Node) this.cache.get(key);
 
-        if ((node == null) || (node.getState() == NodeStateInterface.INVALID)) {
+        if ((node == null) || (node.getState() == NodeInterface.INVALID)) {
             // The requested node isn't in the shared cache.
             if (key instanceof SyntheticKey) {
                 Node parent = getNode(key.getParentKey());
@@ -218,7 +222,7 @@ public final class NodeManager {
         // See if Transactor has already come across this node
         Node node = tx.getCleanNode(key);
 
-        if (node != null && node.getState() != NodeStateInterface.INVALID) {
+        if (node != null && node.getState() != NodeInterface.INVALID) {
             // we used to refresh the node in the main cache here to avoid the primary key
             // entry being flushed from cache before the secondary one
             // (risking duplicate nodes in cache) but we don't need to since we fetched
@@ -232,7 +236,7 @@ public final class NodeManager {
 
         // check if we can use the cached node without further checks.
         // we need further checks for subnodes fetched by name if the subnodes were changed.
-        if (node != null && node.getState() != NodeStateInterface.INVALID) {
+        if (node != null && node.getState() != NodeInterface.INVALID) {
             // check if node is null node (cached null)
             if (node.isNullNode()) {
                 // do not check reference nodes against child collection
@@ -256,13 +260,13 @@ public final class NodeManager {
             }
         }
 
-        if (node == null || node.getState() == NodeStateInterface.INVALID) {
+        if (node == null || node.getState() == NodeInterface.INVALID) {
             // The requested node isn't in the shared cache.
             // Synchronize with key to make sure only one version is fetched
             // from the database.
             node = getNodeByRelation(tx.txn, home, kstr, rel, otherDbm);
 
-            if (node != null && node.getState() != NodeStateInterface.DELETED) {
+            if (node != null && node.getState() != NodeInterface.DELETED) {
                 Node newNode = node;
                 if (key.equals(node.getKey())) {
                     node = registerNewNode(node, null);
@@ -290,12 +294,12 @@ public final class NodeManager {
             return null;
         } else {
             // update primary key in cache to keep it from being flushed, see above
-            if (!rel.usesPrimaryKey() && node.getState() != NodeStateInterface.TRANSIENT) {
+            if (!rel.usesPrimaryKey() && node.getState() != NodeInterface.TRANSIENT) {
                 synchronized (this.cache) {
                     Node old = (Node) this.cache.put(node.getKey(), node);
 
                     if (old != node && old != null && !old.isNullNode() && 
-                            old.getState() != NodeStateInterface.INVALID) {
+                            old.getState() != NodeInterface.INVALID) {
                         this.cache.put(node.getKey(), old);
                         this.cache.put(key, old);
                         node = old;
@@ -325,7 +329,7 @@ public final class NodeManager {
         // as we cannot invoke onInit() on it.
         if (reval == null) {
             Node old = (Node) this.cache.get(key);
-            if (old != null && !old.isNullNode() && old.getState() != NodeStateInterface.INVALID) {
+            if (old != null && !old.isNullNode() && old.getState() != NodeInterface.INVALID) {
                 return old;
             }
             return node;
@@ -334,7 +338,7 @@ public final class NodeManager {
         synchronized(this.cache) {
             Node old = (Node) this.cache.put(key, node);
 
-            if (old != null && !old.isNullNode() && old.getState() != NodeStateInterface.INVALID) {
+            if (old != null && !old.isNullNode() && old.getState() != NodeInterface.INVALID) {
                 this.cache.put(key, old);
                 if (secondaryKey != null) {
                     this.cache.put(secondaryKey, old);
@@ -375,7 +379,7 @@ public final class NodeManager {
      * it will be refetched from the database.
      */
     public void evictNode(Node node) {
-        node.setState(NodeStateInterface.INVALID);
+        node.setState(NodeInterface.INVALID);
         this.cache.remove(node.getKey());
     }
 
@@ -387,7 +391,7 @@ public final class NodeManager {
         Node n = (Node) this.cache.remove(key);
 
         if (n != null) {
-            n.setState(NodeStateInterface.INVALID);
+            n.setState(NodeInterface.INVALID);
 
             if (!(key instanceof DbKey)) {
                 this.cache.remove(n.getKey());
@@ -719,7 +723,7 @@ public final class NodeManager {
         }
 
         // node may still be cached via non-primary keys. mark as invalid
-        node.setState(NodeStateInterface.INVALID);
+        node.setState(NodeInterface.INVALID);
     }
 
 
@@ -1635,7 +1639,7 @@ public final class NodeManager {
             // new node if the old one has been marked as INVALID.
             DbKey key = new DbKey(dbmap, id);
             Node dirtyNode = tx.getDirtyNode(key);
-            if (dirtyNode != null && dirtyNode.getState() != NodeStateInterface.INVALID) {
+            if (dirtyNode != null && dirtyNode.getState() != NodeInterface.INVALID) {
                 return dirtyNode;
             }
         }

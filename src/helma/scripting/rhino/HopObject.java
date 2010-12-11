@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -453,7 +457,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             NodeInterface node = getNode();
             if (node instanceof Node) {
                 Node n = (Node) node;
-                if (n.getState() != NodeStateInterface.TRANSIENT && n.getState() != NodeStateInterface.NEW) {
+                if (n.getState() != NodeInterface.TRANSIENT && n.getState() != NodeInterface.NEW) {
                     n.prefetchChildren(start, length);
                 }
             }
@@ -648,7 +652,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                 return true;
             }
             if (childId == Undefined.instance) {
-                if (node.getState() == NodeStateInterface.INVALID) {
+                if (node.getState() == NodeInterface.INVALID) {
                     return true;
                 }
                 ((Node) node).invalidate();
@@ -672,7 +676,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         }
         NodeInterface node = getNode();
         int nodeState = node.getState();
-        return nodeState != NodeStateInterface.TRANSIENT;
+        return nodeState != NodeInterface.TRANSIENT;
     }
 
     /**
@@ -687,7 +691,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         }
         NodeInterface node = getNode();
         int nodeState = node.getState();
-        return nodeState == NodeStateInterface.TRANSIENT;
+        return nodeState == NodeInterface.TRANSIENT;
     }
 
     /**
@@ -1123,7 +1127,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         }
 
         synchronized NodeInterface getNode() {
-            if (this.node == null || this.node.getState() == NodeStateInterface.INVALID) {
+            if (this.node == null || this.node.getState() == NodeInterface.INVALID) {
                 if (this.handle != null) {
                     this.node = this.handle.getNode(HopObject.this.core.app.getWrappedNodeManager());
                     if (this.node != null) {
@@ -1140,7 +1144,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                         }
                     }
                 }
-                if (this.node == null || this.node.getState() == NodeStateInterface.INVALID) {
+                if (this.node == null || this.node.getState() == NodeInterface.INVALID) {
                     // We probably have a deleted node.
                     // Replace with empty transient node to avoid throwing an exception.
                     this.node = new TransientNode();

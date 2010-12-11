@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -16,8 +20,7 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.NodeStateInterface;
-
+import helma.objectmodel.NodeInterface;
 import java.io.Serializable;
 
 /**
@@ -39,7 +42,7 @@ import java.io.Serializable;
  * These two properties guarantee that NodeHandle comparisons are easy and usually correct.
  *
  */
-public final class NodeHandle implements NodeStateInterface, Serializable {
+public final class NodeHandle implements Serializable {
     static final long serialVersionUID = 3067763116576910931L;
 
     // direct reference to the node
@@ -57,7 +60,7 @@ public final class NodeHandle implements NodeStateInterface, Serializable {
     NodeHandle(Node node) {
         int state = node.getState();
 
-        if (state == TRANSIENT) {
+        if (state == NodeInterface.TRANSIENT) {
             this.node = node;
             this.key = null;
         } else {

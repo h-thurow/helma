@@ -25,7 +25,6 @@ import helma.framework.core.RequestEvaluator;
 import helma.framework.core.Application;
 import helma.objectmodel.ConcurrencyException;
 import helma.objectmodel.NodeInterface;
-import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.PropertyInterface;
 import helma.objectmodel.TransientNode;
 
@@ -2501,11 +2500,11 @@ public final class Node implements NodeInterface {
                 break;
             }
 
-            if (node.getState() == NodeStateInterface.TRANSIENT) {
+            if (node.getState() == NodeInterface.TRANSIENT) {
                 DbMapping map = node.getDbMapping();
                 if (map == null || !map.isVirtual())
                     return node;
-            } else if (node.getState() != NodeStateInterface.VIRTUAL) {
+            } else if (node.getState() != NodeInterface.VIRTUAL) {
                 return node;
             }
 

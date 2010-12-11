@@ -7,6 +7,10 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
  */
 
 package helma.scripting.quercus;
@@ -23,7 +27,6 @@ import helma.framework.core.Prototype;
 import helma.framework.core.Skin;
 import helma.framework.repository.ResourceInterface;
 import helma.objectmodel.NodeInterface;
-import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.db.DbKey;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Node;
@@ -607,7 +610,7 @@ public class HopObject extends ObjectExtJavaValue {
      */
     public void invalidate() {
         if (this._node instanceof Node) {
-            if (this._node.getState() == NodeStateInterface.INVALID) {
+            if (this._node.getState() == NodeInterface.INVALID) {
                 return;
             }
 
@@ -639,7 +642,7 @@ public class HopObject extends ObjectExtJavaValue {
      * @return True, if this node is persistent
      */
     public boolean isPersistent() {
-        return this._node instanceof Node && this._node.getState() != NodeStateInterface.TRANSIENT;
+        return this._node instanceof Node && this._node.getState() != NodeInterface.TRANSIENT;
     }
 
     /**
@@ -648,7 +651,7 @@ public class HopObject extends ObjectExtJavaValue {
      * @return True, if this node is transient
      */
     public boolean isTransient() {
-        return !(this._node instanceof Node) || this._node.getState() == NodeStateInterface.TRANSIENT;
+        return !(this._node instanceof Node) || this._node.getState() == NodeInterface.TRANSIENT;
     }
 
     /**

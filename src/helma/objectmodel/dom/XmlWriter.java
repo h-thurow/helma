@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -19,7 +23,6 @@ package helma.objectmodel.dom;
 
 import helma.objectmodel.NodeInterface;
 import helma.objectmodel.PropertyInterface;
-import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Node;
 import helma.util.HtmlEncoder;
@@ -234,8 +237,8 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstantsInterfa
 
         if (this.convertedNodes.contains(node)) {
             writeReferenceTag(node, elementName, propName);
-        } else if (this.rootState == NodeStateInterface.TRANSIENT &&
-                   node.getState() > NodeStateInterface.TRANSIENT) {
+        } else if (this.rootState == NodeInterface.TRANSIENT &&
+                   node.getState() > NodeInterface.TRANSIENT) {
             // if we are writing a transient node, and that node
             // holds a reference to a persistent one, just write a
             // reference tag to that persistent node.

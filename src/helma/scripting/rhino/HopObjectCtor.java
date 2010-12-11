@@ -11,6 +11,8 @@
  * Contributions:
  * 	Daniel Ruthardt
  * 	Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ *  Copyright 2010 dowee Limited. All rights reserved. 
+ * 
  *
  * $RCSfile$
  * $Author$
@@ -24,7 +26,6 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 
 import helma.objectmodel.NodeInterface;
-import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.DbKey;
 import helma.objectmodel.db.Node;
@@ -237,7 +238,7 @@ public class HopObjectCtor extends FunctionObject {
             WrappedNodeManager nmgr = HopObjectCtor.this.core.app.getWrappedNodeManager();
             Node node = new Node("HopQuery", Long.toString(collectionId++), null, nmgr); //$NON-NLS-1$
             node.setDbMapping(dbmap);
-            node.setState(NodeStateInterface.VIRTUAL);
+            node.setState(NodeInterface.VIRTUAL);
             return new HopObject("HopQuery", HopObjectCtor.this.core, node, HopObjectCtor.this.core.hopObjectProto); //$NON-NLS-1$
         }
 

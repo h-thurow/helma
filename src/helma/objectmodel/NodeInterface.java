@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -25,7 +29,16 @@ import java.util.*;
  * Transient nodes which only exist in memory, and persistent Nodes, which are
  * stored in a database (either the internal Object DB or an external relational DB).
  */
-public interface NodeInterface extends NodeStateInterface, PathElementInterface {
+public interface NodeInterface extends PathElementInterface {
+    
+    public final static int TRANSIENT = -3;
+    public final static int VIRTUAL = -2;
+    public final static int INVALID = -1;
+    public final static int CLEAN = 0;
+    public final static int NEW = 1;
+    public final static int MODIFIED = 2;
+    public final static int DELETED = 3;
+    
     /**
      * Get the node's ID.
      */

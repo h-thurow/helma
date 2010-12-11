@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -16,8 +20,7 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.NodeStateInterface;
-
+import helma.objectmodel.NodeInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
@@ -180,7 +183,7 @@ public class SubnodeList implements Serializable {
     protected boolean hasRelationalNodes() {
         DbMapping dbmap = getSubnodeMapping();
         return (dbmap != null && dbmap.isRelational()
-                && ((this.node.getState() != NodeStateInterface.TRANSIENT &&  this.node.getState() != NodeStateInterface.NEW)
+                && ((this.node.getState() != NodeInterface.TRANSIENT &&  this.node.getState() != NodeInterface.NEW)
                     || this.node.getSubnodeRelation() != null));
     }
 

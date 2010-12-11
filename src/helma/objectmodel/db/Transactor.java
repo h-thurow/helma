@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -17,7 +21,7 @@
 package helma.objectmodel.db;
 
 import helma.objectmodel.DatabaseException;
-import helma.objectmodel.NodeStateInterface;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.TransactionInterface;
 
 import java.sql.Connection;
@@ -134,7 +138,7 @@ public class Transactor {
         if (node != null) {
             KeyInterface key = node.getKey();
 
-            if (node.getState() == NodeStateInterface.DELETED && this.dirtyNodes.containsKey(key)) {
+            if (node.getState() == NodeInterface.DELETED && this.dirtyNodes.containsKey(key)) {
             	// remove a known deleted node (will be re-added at the end of the list),
             	// because it might not have been deleted yet when we were last modified
             	// about it being dirty, which could result in a on commit removal order
@@ -416,27 +420,27 @@ public class Transactor {
                 // update nodes in db
                 int nstate = node.getState();
 
-                if (nstate == NodeStateInterface.NEW) {
+                if (nstate == NodeInterface.NEW) {
                     this.nmgr.insertNode(this.nmgr.db, this.txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
-                    node.setState(NodeStateInterface.CLEAN);
+                    node.setState(NodeInterface.CLEAN);
 
                     // register node with nodemanager cache
                     this.nmgr.registerNode(node);
 
                     transaction.addInsertedNode(node);
-                } else if (nstate == NodeStateInterface.MODIFIED) {
+                } else if (nstate == NodeInterface.MODIFIED) {
                     // only mark DbMapping as dirty if updateNode returns true
                     if (this.nmgr.updateNode(this.nmgr.db, this.txn, node)) {
                         dirtyDbMappings.add(node.getDbMapping());
                     }
-                    node.setState(NodeStateInterface.CLEAN);
+                    node.setState(NodeInterface.CLEAN);
 
                     // update node with nodemanager cache
                     this.nmgr.registerNode(node);
 
                     transaction.addModifiedNode(node);
-                } else if (nstate == NodeStateInterface.DELETED) {
+                } else if (nstate == NodeInterface.DELETED) {
                     this.nmgr.deleteNode(this.nmgr.db, this.txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
 
