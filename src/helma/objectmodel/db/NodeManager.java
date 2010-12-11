@@ -37,9 +37,9 @@ import org.apache.commons.logging.LogFactory;
 public final class NodeManager {
 
     protected Application app;
-    private ObjectCache cache;
-    protected IDatabase db;
-    protected IDGenerator idgen;
+    private ObjectCacheInterface cache;
+    protected DatabaseInterface db;
+    protected IDGeneratorInterface idgen;
     private boolean logSql;
     private Log sqlLog = null;
     private ArrayList listeners = new ArrayList();
@@ -65,13 +65,13 @@ public final class NodeManager {
                    IllegalAccessException, InstantiationException {
         String cacheImpl = props.getProperty("cacheimpl", "helma.util.CacheMap");  //$NON-NLS-1$//$NON-NLS-2$
 
-        this.cache = (ObjectCache) Class.forName(cacheImpl).newInstance();
+        this.cache = (ObjectCacheInterface) Class.forName(cacheImpl).newInstance();
         this.cache.init(this.app);
 
         String idgenImpl = props.getProperty("idGeneratorImpl"); //$NON-NLS-1$
 
         if (idgenImpl != null) {
-            this.idgen = (IDGenerator) Class.forName(idgenImpl).newInstance();
+            this.idgen = (IDGeneratorInterface) Class.forName(idgenImpl).newInstance();
             this.idgen.init(this.app);
         }
 
@@ -98,7 +98,7 @@ public final class NodeManager {
      * Checks if the given node is the application's root node.
      */
     public boolean isRootNode(Node node) {
-        return node.getState() != INodeState.TRANSIENT && this.app.getRootId().equals(node.getID()) &&
+        return node.getState() != NodeStateInterface.TRANSIENT && this.app.getRootId().equals(node.getID()) &&
                DbMapping.areStorageCompatible(this.app.getRootMapping(), node.getDbMapping());
     }
 
@@ -136,7 +136,7 @@ public final class NodeManager {
             synchronized (this) {
                 Transactor tx = Transactor.getInstanceOrFail();
 
-                node.setState(INodeState.INVALID);
+                node.setState(NodeStateInterface.INVALID);
                 deleteNode(this.db, tx.txn, node);
             }
         }
@@ -144,22 +144,22 @@ public final class NodeManager {
 
     /**
      *  Get a node by key. This is called from a node that already holds
-     *  a reference to another node via a NodeHandle/Key.
+     *  a reference to another node via a NodeHandle/KeyInterface.
      */
-    public Node getNode(Key key) throws Exception {
+    public Node getNode(KeyInterface key) throws Exception {
         Transactor tx = Transactor.getInstanceOrFail();
 
         // See if Transactor has already come across this node
         Node node = tx.getCleanNode(key);
 
-        if ((node != null) && (node.getState() != INodeState.INVALID)) {
+        if ((node != null) && (node.getState() != NodeStateInterface.INVALID)) {
             return node;
         }
 
         // try to get the node from the shared cache
         node = (Node) this.cache.get(key);
 
-        if ((node == null) || (node.getState() == INodeState.INVALID)) {
+        if ((node == null) || (node.getState() == NodeStateInterface.INVALID)) {
             // The requested node isn't in the shared cache.
             if (key instanceof SyntheticKey) {
                 Node parent = getNode(key.getParentKey());
@@ -187,7 +187,7 @@ public final class NodeManager {
 
     /**
      *  Get a node by relation, using the home node, the relation and a key to apply.
-     *  In contrast to getNode (Key key), this is usually called when we don't yet know
+     *  In contrast to getNode (KeyInterface key), this is usually called when we don't yet know
      *  whether such a node exists.
      */
     public Node getNode(Node home, String kstr, Relation rel)
@@ -198,7 +198,7 @@ public final class NodeManager {
 
         Transactor tx = Transactor.getInstanceOrFail();
 
-        Key key;
+        KeyInterface key;
         DbMapping otherDbm = rel == null ? null : rel.otherType;
         // check what kind of object we're looking for and make an appropriate key
         if (rel.isComplexReference()) {
@@ -218,7 +218,7 @@ public final class NodeManager {
         // See if Transactor has already come across this node
         Node node = tx.getCleanNode(key);
 
-        if (node != null && node.getState() != INodeState.INVALID) {
+        if (node != null && node.getState() != NodeStateInterface.INVALID) {
             // we used to refresh the node in the main cache here to avoid the primary key
             // entry being flushed from cache before the secondary one
             // (risking duplicate nodes in cache) but we don't need to since we fetched
@@ -232,7 +232,7 @@ public final class NodeManager {
 
         // check if we can use the cached node without further checks.
         // we need further checks for subnodes fetched by name if the subnodes were changed.
-        if (node != null && node.getState() != INodeState.INVALID) {
+        if (node != null && node.getState() != NodeStateInterface.INVALID) {
             // check if node is null node (cached null)
             if (node.isNullNode()) {
                 // do not check reference nodes against child collection
@@ -256,13 +256,13 @@ public final class NodeManager {
             }
         }
 
-        if (node == null || node.getState() == INodeState.INVALID) {
+        if (node == null || node.getState() == NodeStateInterface.INVALID) {
             // The requested node isn't in the shared cache.
             // Synchronize with key to make sure only one version is fetched
             // from the database.
             node = getNodeByRelation(tx.txn, home, kstr, rel, otherDbm);
 
-            if (node != null && node.getState() != INodeState.DELETED) {
+            if (node != null && node.getState() != NodeStateInterface.DELETED) {
                 Node newNode = node;
                 if (key.equals(node.getKey())) {
                     node = registerNewNode(node, null);
@@ -290,12 +290,12 @@ public final class NodeManager {
             return null;
         } else {
             // update primary key in cache to keep it from being flushed, see above
-            if (!rel.usesPrimaryKey() && node.getState() != INodeState.TRANSIENT) {
+            if (!rel.usesPrimaryKey() && node.getState() != NodeStateInterface.TRANSIENT) {
                 synchronized (this.cache) {
                     Node old = (Node) this.cache.put(node.getKey(), node);
 
                     if (old != node && old != null && !old.isNullNode() && 
-                            old.getState() != INodeState.INVALID) {
+                            old.getState() != NodeStateInterface.INVALID) {
                         this.cache.put(node.getKey(), old);
                         this.cache.put(key, old);
                         node = old;
@@ -318,14 +318,14 @@ public final class NodeManager {
      * @param node the node to register
      * @return the newly registered node, or the one that was already registered with the node's key
      */
-    private Node registerNewNode(Node node, Key secondaryKey) {
-        Key key = node.getKey();
+    private Node registerNewNode(Node node, KeyInterface secondaryKey) {
+        KeyInterface key = node.getKey();
         RequestEvaluator reval = this.app.getCurrentRequestEvaluator();
         // if no request evaluator is associated with current thread, do not cache node
         // as we cannot invoke onInit() on it.
         if (reval == null) {
             Node old = (Node) this.cache.get(key);
-            if (old != null && !old.isNullNode() && old.getState() != INodeState.INVALID) {
+            if (old != null && !old.isNullNode() && old.getState() != NodeStateInterface.INVALID) {
                 return old;
             }
             return node;
@@ -334,7 +334,7 @@ public final class NodeManager {
         synchronized(this.cache) {
             Node old = (Node) this.cache.put(key, node);
 
-            if (old != null && !old.isNullNode() && old.getState() != INodeState.INVALID) {
+            if (old != null && !old.isNullNode() && old.getState() != NodeStateInterface.INVALID) {
                 this.cache.put(key, old);
                 if (secondaryKey != null) {
                     this.cache.put(secondaryKey, old);
@@ -366,7 +366,7 @@ public final class NodeManager {
     /**
      * Register a node in the node cache using the key argument.
      */
-    protected void registerNode(Node node, Key key) {
+    protected void registerNode(Node node, KeyInterface key) {
         this.cache.put(key, node);
     }
 
@@ -375,7 +375,7 @@ public final class NodeManager {
      * it will be refetched from the database.
      */
     public void evictNode(Node node) {
-        node.setState(INodeState.INVALID);
+        node.setState(NodeStateInterface.INVALID);
         this.cache.remove(node.getKey());
     }
 
@@ -383,11 +383,11 @@ public final class NodeManager {
      * Remove a node from the node cache. If at a later time it is accessed again,
      * it will be refetched from the database.
      */
-    public void evictNodeByKey(Key key) {
+    public void evictNodeByKey(KeyInterface key) {
         Node n = (Node) this.cache.remove(key);
 
         if (n != null) {
-            n.setState(INodeState.INVALID);
+            n.setState(NodeStateInterface.INVALID);
 
             if (!(key instanceof DbKey)) {
                 this.cache.remove(n.getKey());
@@ -399,7 +399,7 @@ public final class NodeManager {
      * Used when a key stops being valid for a node. The cached node itself
      * remains valid, if it is present in the cache by other keys.
      */
-    public void evictKey(Key key) {
+    public void evictKey(KeyInterface key) {
         this.cache.remove(key);
         // also drop key from thread-local transactor cache
         Transactor tx = Transactor.getInstance();
@@ -416,7 +416,7 @@ public final class NodeManager {
      *  Insert a new node in the embedded database or a relational database table,
      *  depending on its db mapping.
      */
-    public void insertNode(IDatabase db, ITransaction txn, Node node)
+    public void insertNode(DatabaseInterface db, TransactionInterface txn, Node node)
                     throws IOException, SQLException, ClassNotFoundException {
         invokeOnPersist(node);
         DbMapping dbm = node.getDbMapping();
@@ -551,7 +551,7 @@ public final class NodeManager {
      * @return true if the DbMapping of the updated Node is to be marked as updated via
      *              DbMapping.setLastDataChange
      */
-    public boolean updateNode(IDatabase db, ITransaction txn, Node node)
+    public boolean updateNode(DatabaseInterface db, TransactionInterface txn, Node node)
                     throws IOException, SQLException, ClassNotFoundException {
         
         invokeOnPersist(node);
@@ -678,7 +678,7 @@ public final class NodeManager {
      *  Performs the actual deletion of a node from either the embedded or an external
      *  SQL database.
      */
-    public void deleteNode(IDatabase db, ITransaction txn, Node node)
+    public void deleteNode(DatabaseInterface db, TransactionInterface txn, Node node)
                     throws Exception {
         DbMapping dbm = node.getDbMapping();
 
@@ -719,16 +719,16 @@ public final class NodeManager {
         }
 
         // node may still be cached via non-primary keys. mark as invalid
-        node.setState(INodeState.INVALID);
+        node.setState(NodeStateInterface.INVALID);
     }
 
 
     /**
-     * Generate a new ID for a given type, delegating to our IDGenerator if set.
+     * Generate a new ID for a given type, delegating to our IDGeneratorInterface if set.
      */
     public String generateID(DbMapping map) throws Exception {
         if (this.idgen != null) {
-            // use our custom IDGenerator
+            // use our custom IDGeneratorInterface
             return this.idgen.generateID(map);
         }
         return doGenerateID(map);
@@ -901,7 +901,7 @@ public final class NodeManager {
             ResultSet result = stmt.executeQuery(query);
 
             // problem: how do we derive a SyntheticKey from a not-yet-persistent Node?
-            Key k = (rel.groupby != null) ? home.getKey() : null;
+            KeyInterface k = (rel.groupby != null) ? home.getKey() : null;
 
             while (result.next()) {
                 String kstr = result.getString(1);
@@ -913,9 +913,9 @@ public final class NodeManager {
                 }
 
                 // make the proper key for the object, either a generic DB key or a groupby key
-                Key key = (rel.groupby == null)
-                        ? (Key) new DbKey(rel.otherType, kstr)
-                        : (Key) new SyntheticKey(k, kstr);
+                KeyInterface key = (rel.groupby == null)
+                        ? (KeyInterface) new DbKey(rel.otherType, kstr)
+                        : (KeyInterface) new SyntheticKey(k, kstr);
                 retval.add(new NodeHandle(key));
 
                 // if these are groupby nodes, evict nullNode keys
@@ -996,7 +996,7 @@ public final class NodeManager {
                 if (node == null) {
                     continue;
                 }
-                Key primKey = node.getKey();
+                KeyInterface primKey = node.getKey();
 
                 retval.add(new NodeHandle(primKey));
 
@@ -1100,8 +1100,8 @@ public final class NodeManager {
                         if (node == null) {
                             continue;
                         }
-                        Key key = node.getKey();
-                        Key secondaryKey = null;
+                        KeyInterface key = node.getKey();
+                        KeyInterface secondaryKey = null;
 
                         // for grouped nodes, collect subnode lists for the intermediary
                         // group nodes.
@@ -1134,7 +1134,7 @@ public final class NodeManager {
                                 if (groupName == null) {
                                     secondaryKey = new SyntheticKey(home.getKey(), accessName);
                                 } else {
-                                    Key groupKey = new SyntheticKey(home.getKey(), groupName);
+                                    KeyInterface groupKey = new SyntheticKey(home.getKey(), groupName);
                                     secondaryKey = new SyntheticKey(groupKey, accessName);
                                 }
                             }
@@ -1288,7 +1288,7 @@ public final class NodeManager {
     ///////////////////////////////////////////////////////////////////////////////////////
     // private getNode methods
     ///////////////////////////////////////////////////////////////////////////////////////
-    private Node getNodeByKey(ITransaction txn, DbKey key)
+    private Node getNodeByKey(TransactionInterface txn, DbKey key)
                        throws Exception {
         // Note: Key must be a DbKey, otherwise will not work for relational objects
         Node node = null;
@@ -1353,7 +1353,7 @@ public final class NodeManager {
         return node;
     }
 
-    private Node getNodeByRelation(ITransaction txn, Node home, String kstr, Relation rel, DbMapping dbm)
+    private Node getNodeByRelation(TransactionInterface txn, Node home, String kstr, Relation rel, DbMapping dbm)
                             throws Exception {
         Node node = null;
 
@@ -1635,7 +1635,7 @@ public final class NodeManager {
             // new node if the old one has been marked as INVALID.
             DbKey key = new DbKey(dbmap, id);
             Node dirtyNode = tx.getDirtyNode(key);
-            if (dirtyNode != null && dirtyNode.getState() != INodeState.INVALID) {
+            if (dirtyNode != null && dirtyNode.getState() != NodeStateInterface.INVALID) {
                 return dirtyNode;
             }
         }
@@ -1719,19 +1719,19 @@ public final class NodeManager {
      * Add a listener that is notified each time a transaction commits 
      * that adds, modifies or deletes any Nodes.
      */
-    public void addNodeChangeListener(NodeChangeListener listener) {
+    public void addNodeChangeListener(NodeChangeListenerInterface listener) {
         this.listeners.add(listener);
     }
     
     /** 
-     * Remove a previously added NodeChangeListener. 
+     * Remove a previously added NodeChangeListenerInterface. 
      */
-    public void removeNodeChangeListener(NodeChangeListener listener) {
+    public void removeNodeChangeListener(NodeChangeListenerInterface listener) {
         this.listeners.remove(listener);
     }
     
     /**
-     * Let transactors know if they should collect and fire NodeChangeListener
+     * Let transactors know if they should collect and fire NodeChangeListenerInterface
      * events
      */
     protected boolean hasNodeChangeListeners() {
@@ -1746,7 +1746,7 @@ public final class NodeManager {
 
         for (int i=0; i<l; i++) {
             try {
-                ((NodeChangeListener) this.listeners.get(i)).nodesChanged(inserted, updated, deleted, parents);
+                ((NodeChangeListenerInterface) this.listeners.get(i)).nodesChanged(inserted, updated, deleted, parents);
             } catch (Error e) {
                 e.printStackTrace();
             } catch (Exception e) {

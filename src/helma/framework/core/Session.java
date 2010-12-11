@@ -45,7 +45,7 @@ public class Session implements Serializable {
 
     // the transient cache node that is exposed to javascript
     // this stays the same across logins and logouts.
-    protected INode cacheNode;
+    protected NodeInterface cacheNode;
 
     // timestamps for creation, last request, last modification
     protected long onSince;
@@ -84,7 +84,7 @@ public class Session implements Serializable {
     /**
      * Attach the given user node to this session.
      */
-    public void login(INode usernode) {
+    public void login(NodeInterface usernode) {
         if (usernode == null) {
             this.userHandle = null;
             this.uid = null;
@@ -169,7 +169,7 @@ public class Session implements Serializable {
     /**
      * Gets the user Node from this Application's NodeManager.
      */
-    public INode getUserNode() {
+    public NodeInterface getUserNode() {
         if (this.userHandle != null) {
             return this.userHandle.getNode(this.app.getWrappedNodeManager());
         }
@@ -179,7 +179,7 @@ public class Session implements Serializable {
     /**
      * Set the cache node for this session.
      */
-    public void setCacheNode(INode node) {
+    public void setCacheNode(NodeInterface node) {
         if (node == null) {
             throw new NullPointerException(Messages.getString("Session.1")); //$NON-NLS-1$
         }
@@ -190,7 +190,7 @@ public class Session implements Serializable {
     /**
      * Gets the transient cache node.
      */
-    public INode getCacheNode() {
+    public NodeInterface getCacheNode() {
         return this.cacheNode;
     }
 

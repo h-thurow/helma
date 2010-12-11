@@ -16,7 +16,7 @@
 
 package helma.objectmodel;
 
-import helma.framework.IPathElement;
+import helma.framework.PathElementInterface;
 import helma.objectmodel.db.DbMapping;
 import java.util.*;
 
@@ -25,7 +25,7 @@ import java.util.*;
  * Transient nodes which only exist in memory, and persistent Nodes, which are
  * stored in a database (either the internal Object DB or an external relational DB).
  */
-public interface INode extends INodeState, IPathElement {
+public interface NodeInterface extends NodeStateInterface, PathElementInterface {
     /**
      * Get the node's ID.
      */
@@ -48,13 +48,13 @@ public interface INode extends INodeState, IPathElement {
 
     /**
      * Get the node's state flag.
-     * @return one of the constants defined in the {@link INodeState} interface.
+     * @return one of the constants defined in the {@link NodeStateInterface} interface.
      */
     public int getState();
 
     /**
      * Set the node's state flag.
-     * @param s one of the constants defined in the {@link INodeState} interface.
+     * @param s one of the constants defined in the {@link NodeStateInterface} interface.
      */
     public void setState(int s);
 
@@ -91,7 +91,7 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Get the cache node associated with this node.
      */
-    public INode getCacheNode();
+    public NodeInterface getCacheNode();
 
     /**
      * Clear the cache node associated with this node.
@@ -106,7 +106,7 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Get the node's parent node.
      */
-    public INode getParent();
+    public NodeInterface getParent();
 
     /**
      * Set an explicit select clause for the node's subnodes
@@ -126,22 +126,22 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Add a child node to this node.
      */
-    public INode addNode(INode node);
+    public NodeInterface addNode(NodeInterface node);
 
     /**
      * Add a child node to this node at the given position
      */
-    public INode addNode(INode node, int where);
+    public NodeInterface addNode(NodeInterface node, int where);
 
     /**
      * Create a new named property with a node value
      */
-    public INode createNode(String name);
+    public NodeInterface createNode(String name);
 
     /**
      * Create a new unnamed child node at the given position.
      */
-    public INode createNode(String name, int where);
+    public NodeInterface createNode(String name, int where);
 
     /**
      * Get an enumeration of this node's unnamed child nodes
@@ -151,17 +151,17 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Get a named child node with the given name or id.
      */
-    public INode getSubnode(String name);
+    public NodeInterface getSubnode(String name);
 
     /**
      * GEt an unnamed child node at the given position
      */
-    public INode getSubnodeAt(int index);
+    public NodeInterface getSubnodeAt(int index);
 
     /**
      * Returns the position of the child or -1.
      */
-    public int contains(INode node);
+    public int contains(NodeInterface node);
 
     /**
      * Remove this node from the database.
@@ -171,7 +171,7 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Remove the given node from this node's child nodes.
      */
-    public void removeNode(INode node);
+    public void removeNode(NodeInterface node);
 
     /**
      *  Get an enumeration over the node's properties.
@@ -181,7 +181,7 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Get a property with the given name.
      */
-    public IProperty get(String name);
+    public PropertyInterface get(String name);
 
     /**
      * Get a string property with the given name.
@@ -211,7 +211,7 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Get a node property with the given name.
      */
-    public INode getNode(String name);
+    public NodeInterface getNode(String name);
 
     /**
      * Get a Java object property with the given name.
@@ -246,7 +246,7 @@ public interface INode extends INodeState, IPathElement {
     /**
      * Set the property with the given name to the given node value.
      */
-    public void setNode(String name, INode value);
+    public void setNode(String name, NodeInterface value);
 
     /**
      * Set the property with the given name to the given Java object value.

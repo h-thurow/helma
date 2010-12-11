@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 import helma.framework.core.*;
-import helma.framework.repository.Resource;
-import helma.framework.repository.Repository;
+import helma.framework.repository.ResourceInterface;
+import helma.framework.repository.RepositoryInterface;
 
 /**
  *  A property dictionary that is updated from property resources
@@ -174,7 +174,7 @@ public class ResourceProperties extends Properties {
      * needed
      * @param resource resource to add
      */
-    public void addResource(Resource resource) {
+    public void addResource(ResourceInterface resource) {
         if (resource != null && !this.resources.contains(resource)) {
             this.resources.add(resource);
             forceUpdate();
@@ -186,7 +186,7 @@ public class ResourceProperties extends Properties {
      * if needed
      * @param resource resource to remove
      */
-    public void removeResource(Resource resource) {
+    public void removeResource(ResourceInterface resource) {
         if (this.resources.contains(resource)) {
             this.resources.remove(resource);
             forceUpdate();
@@ -226,8 +226,8 @@ public class ResourceProperties extends Properties {
                 Iterator iterator = this.app.getRepositories().iterator();
                 while (iterator.hasNext()) {
                     try {
-                        Repository repository = (Repository) iterator.next();
-                        Resource res = repository.getResource(this.resourceName);
+                        RepositoryInterface repository = (RepositoryInterface) iterator.next();
+                        ResourceInterface res = repository.getResource(this.resourceName);
                         if (res != null && res.exists()) {
 							InputStreamReader reader = new InputStreamReader(
 									res.getInputStream());
@@ -260,7 +260,7 @@ public class ResourceProperties extends Properties {
                 Iterator iterator = this.resources.iterator();
                 while (iterator.hasNext()) {
                     try {
-                        Resource res = (Resource) iterator.next();
+                        ResourceInterface res = (ResourceInterface) iterator.next();
                         if (res.exists()) {
 							InputStreamReader reader = new InputStreamReader(
 									res.getInputStream());
@@ -387,8 +387,8 @@ public class ResourceProperties extends Properties {
         if (this.resourceName != null) {
             Iterator iterator = this.app.getRepositories().iterator();
             while (iterator.hasNext()) {
-                Repository repository = (Repository) iterator.next();
-                Resource resource = repository.getResource(this.resourceName);
+                RepositoryInterface repository = (RepositoryInterface) iterator.next();
+                ResourceInterface resource = repository.getResource(this.resourceName);
                 if (resource != null) {
                     checksum += resource.lastModified();
                 }
@@ -398,7 +398,7 @@ public class ResourceProperties extends Properties {
         if (this.resources != null) {
             Iterator iterator = this.resources.iterator();
             while (iterator.hasNext()) {
-                checksum += ((Resource) iterator.next()).lastModified();
+                checksum += ((ResourceInterface) iterator.next()).lastModified();
             }
         }
 

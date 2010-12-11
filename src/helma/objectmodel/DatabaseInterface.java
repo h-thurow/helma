@@ -24,7 +24,7 @@ import java.io.File;
 /**
  * Interface that is implemented by Database wrappers
  */
-public interface IDatabase {
+public interface DatabaseInterface {
 
     /**
      * Initialize the database with the given db directory and application.
@@ -56,7 +56,7 @@ public interface IDatabase {
      * @throws IOException
      * @throws ObjectNotFoundException if no object exists for the key.
      */
-    public INode getNode(ITransaction transaction, String key)
+    public NodeInterface getNode(TransactionInterface transaction, String key)
                   throws IOException, ObjectNotFoundException;
 
     /**
@@ -67,7 +67,7 @@ public interface IDatabase {
      * @param node
      * @throws IOException
      */
-    public void insertNode(ITransaction transaction, String key, INode node)
+    public void insertNode(TransactionInterface transaction, String key, NodeInterface node)
                   throws IOException;
 
     /**
@@ -78,7 +78,7 @@ public interface IDatabase {
      * @param node
      * @throws IOException
      */
-    public void updateNode(ITransaction transaction, String key, INode node)
+    public void updateNode(TransactionInterface transaction, String key, NodeInterface node)
                   throws IOException;
 
     /**
@@ -88,7 +88,7 @@ public interface IDatabase {
      * @param key ...
      * @throws IOException ...
      */
-    public void deleteNode(ITransaction transaction, String key)
+    public void deleteNode(TransactionInterface transaction, String key)
                     throws IOException;
 
     /**
@@ -96,7 +96,7 @@ public interface IDatabase {
      *
      * @return the transaction
      */
-    public ITransaction beginTransaction();
+    public TransactionInterface beginTransaction();
 
     /**
      * Commit a transaction, making all changes persistent
@@ -104,7 +104,7 @@ public interface IDatabase {
      * @param transaction
      * @throws DatabaseException
      */
-    public void commitTransaction(ITransaction transaction)
+    public void commitTransaction(TransactionInterface transaction)
                            throws DatabaseException;
 
     /**
@@ -113,6 +113,6 @@ public interface IDatabase {
      * @param transaction
      * @throws DatabaseException
      */
-    public void abortTransaction(ITransaction transaction)
+    public void abortTransaction(TransactionInterface transaction)
                           throws DatabaseException;
 }

@@ -16,8 +16,8 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.INode;
-import helma.objectmodel.IProperty;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.PropertyInterface;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -31,7 +31,7 @@ import java.util.Date;
  * A property implementation for Nodes stored inside a database. Basically
  * the same as for transient nodes, with a few hooks added.
  */
-public final class Property implements IProperty, Serializable, Cloneable, Comparable {
+public final class Property implements PropertyInterface, Serializable, Cloneable, Comparable {
     static final long serialVersionUID = -1022221688349192379L;
     private String propname;
     private Node node;
@@ -198,7 +198,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
     /**
      *
      *
-     * @return the property's type as defined in helma.objectmodel.IProperty.java
+     * @return the property's type as defined in helma.objectmodel.PropertyInterface.java
      */
     public int getType() {
         return this.type;
@@ -468,7 +468,7 @@ public final class Property implements IProperty, Serializable, Cloneable, Compa
      *
      * @return ...
      */
-    public INode getNodeValue() {
+    public NodeInterface getNodeValue() {
         if ((this.type == NODE) && (this.value != null)) {
             NodeHandle nhandle = (NodeHandle) this.value;
 

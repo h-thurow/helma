@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 
 /**
  *  This file authenticates against a passwd source
@@ -36,7 +36,7 @@ public class CryptResource {
 
     private Properties users;
     private CryptResource parentResource;
-    private Resource resource;
+    private ResourceInterface resource;
     private long lastRead = 0;
 
     /**
@@ -45,7 +45,7 @@ public class CryptResource {
      * @param resource ...
      * @param parentResource ...
      */
-    public CryptResource(Resource resource, CryptResource parentResource) {
+    public CryptResource(ResourceInterface resource, CryptResource parentResource) {
         this.resource = resource;
         this.parentResource = parentResource;
         this.users = new Properties();

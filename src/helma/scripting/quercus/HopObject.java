@@ -21,9 +21,9 @@ import helma.framework.RedirectException;
 import helma.framework.ResponseTrans;
 import helma.framework.core.Prototype;
 import helma.framework.core.Skin;
-import helma.framework.repository.Resource;
-import helma.objectmodel.INode;
-import helma.objectmodel.INodeState;
+import helma.framework.repository.ResourceInterface;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.db.DbKey;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Node;
@@ -56,7 +56,7 @@ public class HopObject extends ObjectExtJavaValue {
     /**
      * The underlying NodeInterface that is wrapped
      */
-    private final INode         _node;
+    private final NodeInterface         _node;
 
     /**
      * The quercus engine we belong to
@@ -68,9 +68,9 @@ public class HopObject extends ObjectExtJavaValue {
      * to the quercus engine
      * 
      * @param node
-     *            The INode to wrap
+     *            The NodeInterface to wrap
      */
-    private HopObject(final INode node) {
+    private HopObject(final NodeInterface node) {
         super(
                 QuercusEngine.ENGINE.get().getEnvironment().getClass(
                         "HopObject"), new Object(), QuercusEngine.ENGINE.get() //$NON-NLS-1$
@@ -84,11 +84,11 @@ public class HopObject extends ObjectExtJavaValue {
      * Default constructor
      * 
      * @param node
-     *            The INode to wrap
+     *            The NodeInterface to wrap
      * @param engine
      *            The quercus engine
      */
-    protected HopObject(final INode node, final QuercusEngine engine) {
+    protected HopObject(final NodeInterface node, final QuercusEngine engine) {
         super(engine.getEnvironment()
                 .getClass(
                         node.getPrototype() != null ? node.getPrototype()
@@ -117,7 +117,7 @@ public class HopObject extends ObjectExtJavaValue {
      * Returns a property's value by name.<br/>
      * This method implements the magic properties known from the JS scripting
      * engine. All other properties are directly taken from the underlying
-     * INode.
+     * NodeInterface.
      * 
      * @param name
      *            The name of the property to return
@@ -321,8 +321,8 @@ public class HopObject extends ObjectExtJavaValue {
     public Object get(final String name) {
         final Object node = this._node.getChildElement(name);
 
-        if (node instanceof INode) {
-            return new HopObject((INode) node, this._engine);
+        if (node instanceof NodeInterface) {
+            return new HopObject((NodeInterface) node, this._engine);
         }
 
         return node;
@@ -350,9 +350,9 @@ public class HopObject extends ObjectExtJavaValue {
         } else if (key instanceof StringValue) {
             // key is a string, we want to call get(String)
             final Object value = get(((StringValue) key).toJavaString());
-            if (value instanceof INode) {
-                // don't forget to wrap the value if it is an INode
-                return new HopObject((INode) value);
+            if (value instanceof NodeInterface) {
+                // don't forget to wrap the value if it is an NodeInterface
+                return new HopObject((NodeInterface) value);
             }
 
             return this._engine.getEnvironment().wrapJava(value);
@@ -396,7 +396,7 @@ public class HopObject extends ObjectExtJavaValue {
 
         final DbKey dbKey = new DbKey(dbMapping, id);
         try {
-            final INode node = this._engine.getApplication().getNodeManager()
+            final NodeInterface node = this._engine.getApplication().getNodeManager()
                     .getNode(dbKey);
             if (node != null) {
                 return new HopObject(node, this._engine);
@@ -442,11 +442,11 @@ public class HopObject extends ObjectExtJavaValue {
     }
 
     /**
-     * Returns the underlying INode
+     * Returns the underlying NodeInterface
      * 
-     * @return The underlying INode
+     * @return The underlying NodeInterface
      */
-    protected INode getNode() {
+    protected NodeInterface getNode() {
         return this._node;
     }
 
@@ -472,13 +472,13 @@ public class HopObject extends ObjectExtJavaValue {
      * @return The resource by the given name or null, if no resource could be
      *         found by the given name
      */
-    public Resource getResource(final String name) {
+    public ResourceInterface getResource(final String name) {
         Prototype prototype = this._engine.getApplication().getPrototypeByName(
                 this._node.getPrototype());
         while (prototype != null) {
-            final Resource[] resources = prototype.getResources();
+            final ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                final Resource resource = resources[i];
+                final ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(name)) {
                     return resource;
                 }
@@ -498,14 +498,14 @@ public class HopObject extends ObjectExtJavaValue {
      * @return All resources by the given name as array or an empty arry, if no
      *         resources could be found by the given name
      */
-    public Resource[] getResources(final String name) {
+    public ResourceInterface[] getResources(final String name) {
         Prototype prototype = this._engine.getApplication().getPrototypeByName(
                 this._node.getPrototype());
-        final ArrayList<Resource> foundResources = new ArrayList<Resource>();
+        final ArrayList<ResourceInterface> foundResources = new ArrayList<ResourceInterface>();
         while (prototype != null) {
-            final Resource[] resources = prototype.getResources();
+            final ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                final Resource resource = resources[i];
+                final ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(name)) {
                     foundResources.add(resource);
                 }
@@ -514,7 +514,7 @@ public class HopObject extends ObjectExtJavaValue {
             prototype = prototype.getParentPrototype();
         }
 
-        return foundResources.toArray(new Resource[0]);
+        return foundResources.toArray(new ResourceInterface[0]);
     }
 
     /**
@@ -607,7 +607,7 @@ public class HopObject extends ObjectExtJavaValue {
      */
     public void invalidate() {
         if (this._node instanceof Node) {
-            if (this._node.getState() == INodeState.INVALID) {
+            if (this._node.getState() == NodeStateInterface.INVALID) {
                 return;
             }
 
@@ -639,7 +639,7 @@ public class HopObject extends ObjectExtJavaValue {
      * @return True, if this node is persistent
      */
     public boolean isPersistent() {
-        return this._node instanceof Node && this._node.getState() != INodeState.TRANSIENT;
+        return this._node instanceof Node && this._node.getState() != NodeStateInterface.TRANSIENT;
     }
 
     /**
@@ -648,7 +648,7 @@ public class HopObject extends ObjectExtJavaValue {
      * @return True, if this node is transient
      */
     public boolean isTransient() {
-        return !(this._node instanceof Node) || this._node.getState() == INodeState.TRANSIENT;
+        return !(this._node instanceof Node) || this._node.getState() == NodeStateInterface.TRANSIENT;
     }
 
     /**
@@ -664,7 +664,7 @@ public class HopObject extends ObjectExtJavaValue {
         final Enumeration subnodes = this._node.getSubnodes();
         while (subnodes.hasMoreElements()) {
             children
-                    .add(new HopObject((INode) subnodes.nextElement(), this._engine));
+                    .add(new HopObject((NodeInterface) subnodes.nextElement(), this._engine));
         }
 
         return children.toArray(new HopObject[0]);

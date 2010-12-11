@@ -27,7 +27,7 @@ import java.io.Serializable;
  *  from the logical table (type) name and the object's primary key
  *  within the table. Currently only single keys are supported.
  */
-public final class DbKey implements Key, Serializable {
+public final class DbKey implements KeyInterface, Serializable {
     // the name of the prototype which defines the storage of this object.
     // this is the name of the object's prototype, or one of its ancestors.
     // If null, the object is stored in the embedded db.
@@ -97,7 +97,7 @@ public final class DbKey implements Key, Serializable {
      *
      * @return the key of this key's object's parent object
      */
-    public Key getParentKey() {
+    public KeyInterface getParentKey() {
         return null;
     }
 

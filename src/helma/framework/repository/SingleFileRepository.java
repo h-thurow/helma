@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class SingleFileRepository implements Repository {
+public class SingleFileRepository implements RepositoryInterface {
 
-    final Resource res;
-    final Repository parent;
-    final Repository[] repositories;
+    final ResourceInterface res;
+    final RepositoryInterface parent;
+    final RepositoryInterface[] repositories;
     final LinkedList resources = new LinkedList();
     final LinkedList allResources = new LinkedList();
     final boolean isScriptFile;
@@ -51,13 +51,13 @@ public class SingleFileRepository implements Repository {
      * @param file the script file
      * @param parent the parent repository, or null
      */
-    public SingleFileRepository(File file, Repository parent) {
+    public SingleFileRepository(File file, RepositoryInterface parent) {
         this.parent = parent;
         this.res = new FileResource(file, this);
         this.allResources.add(this.res);
         this.isScriptFile = file.getName().endsWith(".js"); //$NON-NLS-1$
         if (this.isScriptFile) {
-            this.repositories = new Repository[] { new FakeGlobal() };
+            this.repositories = new RepositoryInterface[] { new FakeGlobal() };
         } else {
             this.repositories = AbstractRepository.emptyRepositories;
             this.resources.add(this.res);
@@ -100,7 +100,7 @@ public class SingleFileRepository implements Repository {
      * @return top-level repository
      * @see {isScriptRoot()}
      */
-    public Repository getRootRepository() {
+    public RepositoryInterface getRootRepository() {
         return this;
     }
 
@@ -110,7 +110,7 @@ public class SingleFileRepository implements Repository {
      *
      * @return the parent repository
      */
-    public Repository getParentRepository() {
+    public RepositoryInterface getParentRepository() {
         return this.parent;
     }
 
@@ -151,7 +151,7 @@ public class SingleFileRepository implements Repository {
      * @return direct repositories
      * @throws java.io.IOException
      */
-    public Repository[] getRepositories() {
+    public RepositoryInterface[] getRepositories() {
         return this.repositories;
     }
 
@@ -181,7 +181,7 @@ public class SingleFileRepository implements Repository {
      * @param resourceName name of the child resource to return
      * @return specified child resource
      */
-    public Resource getResource(String resourceName) {
+    public ResourceInterface getResource(String resourceName) {
         if (!this.isScriptFile && this.res.getName().equals(resourceName)) {
             return this.res;
         }
@@ -202,7 +202,7 @@ public class SingleFileRepository implements Repository {
      * Return our single resource.
      * @return the wrapped resource
      */
-    protected Resource getResource() {
+    protected ResourceInterface getResource() {
         return this.res;
     }
 
@@ -232,7 +232,7 @@ public class SingleFileRepository implements Repository {
                 .append(this.res.getName()).append("]").toString(); //$NON-NLS-1$
     }
 
-    class FakeGlobal implements Repository {
+    class FakeGlobal implements RepositoryInterface {
 
         /**
          * Checksum of the repository and all its content. Implementations
@@ -272,7 +272,7 @@ public class SingleFileRepository implements Repository {
          * @return top-level repository
          * @see {isScriptRoot()}
          */
-        public Repository getRootRepository() {
+        public RepositoryInterface getRootRepository() {
             return SingleFileRepository.this;
         }
 
@@ -282,7 +282,7 @@ public class SingleFileRepository implements Repository {
          *
          * @return the parent repository
          */
-        public Repository getParentRepository() {
+        public RepositoryInterface getParentRepository() {
             return SingleFileRepository.this;
         }
 
@@ -322,7 +322,7 @@ public class SingleFileRepository implements Repository {
          * @return direct repositories
          * @throws java.io.IOException
          */
-        public Repository[] getRepositories() {
+        public RepositoryInterface[] getRepositories() {
             return AbstractRepository.emptyRepositories;
         }
 
@@ -352,7 +352,7 @@ public class SingleFileRepository implements Repository {
          * @param resourceName name of the child resource to return
          * @return specified child resource
          */
-        public Resource getResource(String resourceName) {
+        public ResourceInterface getResource(String resourceName) {
             if (SingleFileRepository.this.res.getName().equals(resourceName)) {
                 return SingleFileRepository.this.res;
             }

@@ -16,32 +16,33 @@
 
 package helma.objectmodel.db;
 
+import helma.framework.core.Application;
+
 
 /**
- * This is the interface for the internal representation of an object key.
- *
+ * An interface for objects that generate IDs (Strings) that are
+ * unique for a specific type.
  */
-public interface Key {
+public interface IDGeneratorInterface {
 
     /**
-     * Get the key's parent key
+     * Init the ID generator for the given application.
      *
-     * @return ...
+     * @param app
      */
-    public Key getParentKey();
+    public void init(Application app);
 
     /**
-     * Get the key's ID part
-     *
-     * @return ...
+     * Shut down the ID generator.
      */
-    public String getID();
+    public void shutdown();
 
     /**
-     *  Get the key's storage type name
+     * Generate a new ID for a specific type.
      *
-     * @return ...
+     * @param dbmap
+     * @return
      */
-    public String getStorageName();
+    public String generateID(DbMapping dbmap) throws Exception;
 
 }

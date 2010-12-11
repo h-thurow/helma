@@ -19,11 +19,11 @@ package helma.framework.core;
 import helma.objectmodel.db.DbMapping;
 import helma.util.ResourceProperties;
 import helma.util.WrappedMap;
-import helma.framework.repository.Resource;
-import helma.framework.repository.Repository;
+import helma.framework.repository.ResourceInterface;
+import helma.framework.repository.RepositoryInterface;
 import helma.framework.repository.ResourceTracker;
 import helma.framework.repository.FileResource;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 
 import java.io.*;
 import java.util.*;
@@ -43,7 +43,7 @@ public final class Prototype {
     String lowerCaseName;
 
     // this prototype's resources
-    Resource[] resources;
+    ResourceInterface[] resources;
 
     // tells us the checksum of the repositories at the time we last updated them
     long lastChecksum = -1;
@@ -76,7 +76,7 @@ public final class Prototype {
      * @param app the application this prototype is a part of
      * @param typeProps custom type mapping properties
      */
-    public Prototype(String name, Repository repository, Application app, Map typeProps) {
+    public Prototype(String name, RepositoryInterface repository, Application app, Map typeProps) {
         // app.logEvent ("Constructing Prototype "+app.getName()+"/"+name);
         this.app = app;
         this.name = name;
@@ -121,17 +121,17 @@ public final class Prototype {
      * @param update indicates whether to immediately update the prototype with the new code
      * @throws IOException if reading/updating from the repository fails
      */
-    public void addRepository(Repository repository, boolean update) throws IOException {
+    public void addRepository(RepositoryInterface repository, boolean update) throws IOException {
         if (!this.repositories.contains(repository)) {
             this.repositories.add(repository);
             this.props.addResource(repository.getResource("type.properties")); //$NON-NLS-1$
             this.props.addResource(repository.getResource(this.name + ".properties")); //$NON-NLS-1$
             if (update) {
                 RequestEvaluator eval = this.app.getCurrentRequestEvaluator();
-                ScriptingEngine engine = eval == null ? null : eval.scriptingEngine;
+                ScriptingEngineInterface engine = eval == null ? null : eval.scriptingEngine;
                 Iterator it = repository.getAllResources().iterator();
                 while (it.hasNext()) {
-                    checkResource((Resource) it.next(), engine);
+                    checkResource((ResourceInterface) it.next(), engine);
                 }
             }
         }
@@ -167,7 +167,7 @@ public final class Prototype {
         }
 
         // next we check if resources have been created or removed
-        Resource[] resources = getResources();
+        ResourceInterface[] resources = getResources();
 
         for (int i = 0; i < resources.length; i++) {
             updatedResources |= checkResource(resources[i], null);
@@ -180,7 +180,7 @@ public final class Prototype {
         }
     }
 
-    private boolean checkResource(Resource res, ScriptingEngine engine) {
+    private boolean checkResource(ResourceInterface res, ScriptingEngineInterface engine) {
         String name = res.getName();
         boolean updated = false;
         if (!this.trackers.containsKey(name)) {
@@ -207,7 +207,7 @@ public final class Prototype {
      *  Returns the list of resources in this prototype's repositories. Used
      *  by checkForUpdates() to see whether there is anything new.
      */
-    public Resource[] getResources() {
+    public ResourceInterface[] getResources() {
         long checksum = getRepositoryChecksum();
         // reload resources if the repositories checksum has changed
         if (checksum != this.lastChecksum) {
@@ -216,13 +216,13 @@ public final class Prototype {
 
             while (iterator.hasNext()) {
                 try {
-                    list.addAll(((Repository) iterator.next()).getAllResources());
+                    list.addAll(((RepositoryInterface) iterator.next()).getAllResources());
                 } catch (IOException iox) {
                     iox.printStackTrace();
                 }
             }
 
-            this.resources = (Resource[]) list.toArray(new Resource[list.size()]);
+            this.resources = (ResourceInterface[]) list.toArray(new ResourceInterface[list.size()]);
             this.lastChecksum = checksum;
         }
         return this.resources;
@@ -231,8 +231,8 @@ public final class Prototype {
     /**
      * Returns an array of repositories containing code for this prototype.
      */
-    public Repository[] getRepositories() {
-        return (Repository[]) this.repositories.toArray(new Repository[this.repositories.size()]);
+    public RepositoryInterface[] getRepositories() {
+        return (RepositoryInterface[]) this.repositories.toArray(new RepositoryInterface[this.repositories.size()]);
     }
 
     /**
@@ -245,7 +245,7 @@ public final class Prototype {
 
         while (iterator.hasNext()) {
             try {
-                checksum += ((Repository) iterator.next()).getChecksum();
+                checksum += ((RepositoryInterface) iterator.next()).getChecksum();
             } catch (IOException iox) {
                 iox.printStackTrace();
             }
@@ -331,7 +331,7 @@ public final class Prototype {
      */
     public Skin getSkin(Prototype proto, String skinname, String subskin, Object[] skinpath)
             throws IOException {
-        Resource res = this.skinMap.getResource(skinname);
+        ResourceInterface res = this.skinMap.getResource(skinname);
         while (res != null) {
             Skin skin = Skin.getSkin(res, this.app);
             if (subskin == null && skin.hasMainskin()) {
@@ -472,7 +472,7 @@ public final class Prototype {
 
         @Override
         public Object get(Object key) {
-            Resource res = (Resource) super.get(key);
+            ResourceInterface res = (ResourceInterface) super.get(key);
 
             if (res == null || !res.exists()) {
                 return null;
@@ -528,7 +528,7 @@ public final class Prototype {
         }
 
         public Skin getSkin(Object key) throws IOException {
-            Resource res = (Resource) get(key);
+            ResourceInterface res = (ResourceInterface) get(key);
 
             if (res != null) {
                 return Skin.getSkin(res, Prototype.this.app);
@@ -536,8 +536,8 @@ public final class Prototype {
             return null;
         }
 
-        public Resource getResource(Object key) {
-            return (Resource) get(key);
+        public ResourceInterface getResource(Object key) {
+            return (ResourceInterface) get(key);
         }
 
         @Override
@@ -613,8 +613,8 @@ public final class Prototype {
 
             // load Skins
             for (Iterator i = Prototype.this.skins.iterator(); i.hasNext();) {
-                Resource res = (Resource) i.next();
-                Resource prev = (Resource) super.put(res.getBaseName(), res);
+                ResourceInterface res = (ResourceInterface) i.next();
+                ResourceInterface prev = (ResourceInterface) super.put(res.getBaseName(), res);
                 res.setOverloadedResource(prev);
             }
 
@@ -650,8 +650,8 @@ public final class Prototype {
                 String name = skinNames[i].substring(0, skinNames[i].length() - 5);
                 File file = new File(dir, skinNames[i]);
 
-                Resource res = new FileResource(file);
-                Resource prev = (Resource) super.put(name, res);
+                ResourceInterface res = new FileResource(file);
+                ResourceInterface prev = (ResourceInterface) super.put(name, res);
                 res.setOverloadedResource(prev);
             }
 

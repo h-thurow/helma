@@ -152,7 +152,7 @@ public final class ZipResource extends AbstractResource {
         }
     }
 
-    public Repository getRepository() {
+    public RepositoryInterface getRepository() {
         return this.repository;
     }
 

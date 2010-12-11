@@ -21,9 +21,9 @@
 package helma.scripting.rhino;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.InterfaceHelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.*;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.framework.core.*;
 import helma.main.Server;
 import helma.objectmodel.*;
@@ -45,7 +45,7 @@ import java.lang.ref.WeakReference;
 /**
  * This is the implementation of ScriptingEnvironment for the Mozilla Rhino EcmaScript interpreter.
  */
-public class RhinoEngine implements ScriptingEngine {
+public class RhinoEngine implements ScriptingEngineInterface {
     // map for Application to RhinoCore binding
     static final Map coreMap = new WeakHashMap();
 
@@ -97,7 +97,7 @@ public class RhinoEngine implements ScriptingEngine {
                 Vector extVec = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extVec.size(); i++) {
-                    InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extVec.get(i);
+                    HelmaExtensionInterface ext = (HelmaExtensionInterface) extVec.get(i);
 
                     try {
                         HashMap tmpGlobals = ext.initScripting(app, this);
@@ -403,8 +403,8 @@ public class RhinoEngine implements ScriptingEngine {
         
         // Treat HopObjects separately - otherwise we risk to fetch database
         // references/child objects just to check for function properties.
-        if (obj instanceof INode) {
-            String protoname = ((INode) obj).getPrototype();
+        if (obj instanceof NodeInterface) {
+            String protoname = ((NodeInterface) obj).getPrototype();
             if (protoname != null && this.core.hasFunction(protoname, fname))
                 return true;
         }
@@ -432,7 +432,7 @@ public class RhinoEngine implements ScriptingEngine {
 
         // if this is a HopObject, check if the property is defined
         // in the type.properties db-mapping.
-        if (obj instanceof INode && ! "hopobject".equalsIgnoreCase(prototypeName)) { //$NON-NLS-1$
+        if (obj instanceof NodeInterface && ! "hopobject".equalsIgnoreCase(prototypeName)) { //$NON-NLS-1$
             DbMapping dbm = this.app.getDbMapping(prototypeName);
             if (dbm != null) {
                 Relation rel = dbm.propertyToRelation(propname);
@@ -520,8 +520,8 @@ public class RhinoEngine implements ScriptingEngine {
             obj = ((Wrapper) obj).unwrap();
         if (obj == null || obj instanceof Map || obj instanceof NativeObject)
             return false;
-        if (obj instanceof IPathElement) {
-            String protoName = ((IPathElement) obj).getPrototype();
+        if (obj instanceof PathElementInterface) {
+            String protoName = ((PathElementInterface) obj).getPrototype();
             return protoName != null && !"hopobject".equalsIgnoreCase(protoName); //$NON-NLS-1$
         }
         // assume java object is typed
@@ -608,8 +608,8 @@ public class RhinoEngine implements ScriptingEngine {
             ObjectInputStream sin = new ScriptableInputStream(in, this.core.global) {
                 @Override
                 protected Object resolveObject(Object obj) throws IOException {
-                    if (obj instanceof SerializationProxy) {
-                        return ((SerializationProxy) obj).getObject(RhinoEngine.this);
+                    if (obj instanceof SerializationProxyInterface) {
+                        return ((SerializationProxyInterface) obj).getObject(RhinoEngine.this);
                     }
                     return super.resolveObject(obj);
                 }
@@ -626,7 +626,7 @@ public class RhinoEngine implements ScriptingEngine {
      * @param typename the type this resource belongs to
      * @param resource a code resource
      */
-    public void injectCodeResource(String typename, Resource resource) {
+    public void injectCodeResource(String typename, ResourceInterface resource) {
         // we activate recording on thread scope to make it forward
         // property puts to the shared scope (bug 504)
         if (this.global != null)

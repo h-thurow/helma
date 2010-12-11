@@ -58,7 +58,7 @@ public final class ZipRepository extends AbstractRepository {
      * @param file a zip file
      * @param parent the parent repository, or null
      */
-    public ZipRepository(File file, Repository parent) {
+    public ZipRepository(File file, RepositoryInterface parent) {
         this(file, parent, null);
     }
 
@@ -69,7 +69,7 @@ public final class ZipRepository extends AbstractRepository {
      * @param zipentry zip entryName
      * @param parent repository
      */
-    private ZipRepository(File file, Repository parent, ZipEntry zipentry) {
+    private ZipRepository(File file, RepositoryInterface parent, ZipEntry zipentry) {
         // make sure our file has an absolute path,
         // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4117557
         if (file.isAbsolute()) {
@@ -147,8 +147,8 @@ public final class ZipRepository extends AbstractRepository {
                     }
                 }
 
-                this.repositories = (Repository[]) newRepositories.values()
-                        .toArray(new Repository[newRepositories.size()]);
+                this.repositories = (RepositoryInterface[]) newRepositories.values()
+                        .toArray(new RepositoryInterface[newRepositories.size()]);
                 this.resources = newResources;
 
             } catch (Exception ex) {
@@ -183,7 +183,7 @@ public final class ZipRepository extends AbstractRepository {
      * Called to create a child resource for this repository
      */
     @Override
-    protected Resource createResource(String name) {
+    protected ResourceInterface createResource(String name) {
         return new ZipResource(this.entryPath + "/" + name, this); //$NON-NLS-1$
     }
 

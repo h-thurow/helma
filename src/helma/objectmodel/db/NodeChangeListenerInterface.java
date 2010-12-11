@@ -14,17 +14,16 @@
  * $Date$
  */
 
-package helma.objectmodel;
+package helma.objectmodel.db;
 
-/**
- * Interface that defines states of nodes
- */
-public interface INodeState {
-    public final static int TRANSIENT = -3;
-    public final static int VIRTUAL = -2;
-    public final static int INVALID = -1;
-    public final static int CLEAN = 0;
-    public final static int NEW = 1;
-    public final static int MODIFIED = 2;
-    public final static int DELETED = 3;
+import java.util.List;
+
+public interface NodeChangeListenerInterface {
+
+    /**
+     * Called when a transaction is committed that has created, modified, 
+     * deleted or changed the child collection one or more nodes.
+     */
+    public void nodesChanged(List inserted, List updated, List deleted, List parents);
+
 }

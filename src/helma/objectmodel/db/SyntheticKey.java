@@ -24,10 +24,10 @@ import java.io.Serializable;
  * symbolic name from another object, like objects mounted via a property name column,
  * virtual nodes and groupby nodes.
  */
-public final class SyntheticKey implements Key, Serializable {
+public final class SyntheticKey implements KeyInterface, Serializable {
 
     // the parent key
-    private final Key parentKey;
+    private final KeyInterface parentKey;
 
     // the name relative to the parent key
     private final String name;
@@ -42,7 +42,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @param key the parent key
      * @param name the property or collection name
      */
-    public SyntheticKey(Key key, String name) {
+    public SyntheticKey(KeyInterface key, String name) {
         this.parentKey = key;
         this.name = name;
     }
@@ -86,7 +86,7 @@ public final class SyntheticKey implements Key, Serializable {
      * Get the parent key part of this key
      * @return the parent key
      */
-    public Key getParentKey() {
+    public KeyInterface getParentKey() {
         return this.parentKey;
     }
 

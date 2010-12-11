@@ -55,7 +55,7 @@ public final class WrappedNodeManager {
      * @param key
      * @return
      */
-    public Node getNode(Key key) {
+    public Node getNode(KeyInterface key) {
         Transactor tx = checkLocalTransactor();
         try {
             beginLocalTransaction(tx, "getNode"); //$NON-NLS-1$
@@ -217,7 +217,7 @@ public final class WrappedNodeManager {
      *
      * @param node
      */
-    public void registerNode(Node node, Key key) {
+    public void registerNode(Node node, KeyInterface key) {
         this.nmgr.registerNode(node, key);
     }
 
@@ -235,7 +235,7 @@ public final class WrappedNodeManager {
      *
      * @param key
      */
-    public void evictNodeByKey(Key key) {
+    public void evictNodeByKey(KeyInterface key) {
         this.nmgr.evictNodeByKey(key);
     }
 
@@ -244,7 +244,7 @@ public final class WrappedNodeManager {
      *
      * @param key
      */
-    public void evictKey(Key key) {
+    public void evictKey(KeyInterface key) {
         this.nmgr.evictKey(key);
     }
 

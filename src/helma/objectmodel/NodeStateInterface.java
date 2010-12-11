@@ -14,12 +14,17 @@
  * $Date$
  */
 
-package helma.objectmodel.dom;
+package helma.objectmodel;
 
 /**
- * 
+ * Interface that defines states of nodes
  */
-public interface XmlConstants {
-    public final String NAMESPACE = "http://www.helma.org/docs/guide/features/database"; //$NON-NLS-1$
-    public final String DATEFORMAT = "dd.MM.yyyy HH:mm:ss z"; //$NON-NLS-1$
+public interface NodeStateInterface {
+    public final static int TRANSIENT = -3;
+    public final static int VIRTUAL = -2;
+    public final static int INVALID = -1;
+    public final static int CLEAN = 0;
+    public final static int NEW = 1;
+    public final static int MODIFIED = 2;
+    public final static int DELETED = 3;
 }

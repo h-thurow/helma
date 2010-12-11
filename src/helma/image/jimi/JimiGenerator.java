@@ -27,7 +27,7 @@ import com.sun.jimi.core.encoder.png.PNGEncoder;
 import com.sun.jimi.core.options.JPGOptions;
 import com.sun.jimi.core.options.PNGOptions;
 
-public class JimiGenerator extends ImageGenerator {
+public class JimiGenerator extends AbstractImageGenerator {
  
     /**
      * Internal function for writing images.
@@ -37,7 +37,7 @@ public class JimiGenerator extends ImageGenerator {
      * @param quality ...
      * @param alpha ...
      * @throws IOException
-     * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
+     * @see helma.image.AbstractImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
      */
     protected boolean write(ImageWrapper wrapper, String type, OutputStream out, float quality, boolean alpha) throws IOException {
         try {
@@ -90,7 +90,7 @@ public class JimiGenerator extends ImageGenerator {
      * @param quality ...
      * @param alpha ...
      * @throws IOException
-     * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
+     * @see helma.image.AbstractImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
      */
     @Override
     public void write(ImageWrapper wrapper, String filename, float quality, boolean alpha) throws IOException {
@@ -125,7 +125,7 @@ public class JimiGenerator extends ImageGenerator {
      * @param quality ...
      * @param alpha ...
      * @throws IOException
-    * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.io.OutputStream, java.lang.String, float, boolean)
+    * @see helma.image.AbstractImageGenerator#write(helma.image.ImageWrapper, java.io.OutputStream, java.lang.String, float, boolean)
      */
     @Override
     public void write(ImageWrapper wrapper, OutputStream out, String mimeType, float quality, boolean alpha) throws IOException {

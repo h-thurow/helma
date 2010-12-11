@@ -16,7 +16,7 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.framework.repository.FileResource;
 
 import java.io.*;
@@ -106,11 +106,11 @@ public final class SkinManager implements FilenameFilter {
 
         // check if the skinset object is a HopObject (db based skin)
         // or a String (file based skin)
-        if (skinset instanceof INode) {
-            INode n = (INode) ((INode) skinset).getChildElement(prototype);
+        if (skinset instanceof NodeInterface) {
+            NodeInterface n = (NodeInterface) ((NodeInterface) skinset).getChildElement(prototype);
 
             if (n != null) {
-                n = (INode) n.getChildElement(skinname);
+                n = (NodeInterface) n.getChildElement(skinname);
 
                 if (n != null) {
                     String skin = n.getString(this.skinProperty);

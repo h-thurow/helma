@@ -17,15 +17,15 @@
 package helma.framework.repository;
 
 /**
- * A utility class that allows Resource consumers to track changes
+ * A utility class that allows ResourceInterface consumers to track changes
  * on resources.
  */
 public class ResourceTracker {
 
-    Resource resource;
+    ResourceInterface resource;
     long lastModified;
 
-    public ResourceTracker(Resource resource) {
+    public ResourceTracker(ResourceInterface resource) {
         this.resource = resource;
         markClean();
     }
@@ -38,7 +38,7 @@ public class ResourceTracker {
         this.lastModified = this.resource.lastModified();
     }
 
-    public Resource getResource() {
+    public ResourceInterface getResource() {
         return this.resource;
     }
 }

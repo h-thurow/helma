@@ -25,16 +25,16 @@ import java.util.Iterator;
 import java.util.Map;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.InterfaceHelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.RedirectException;
 import helma.framework.core.Application;
 import helma.framework.core.Prototype;
 import helma.framework.core.RequestEvaluator;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.main.Server;
-import helma.objectmodel.INode;
-import helma.objectmodel.IProperty;
-import helma.scripting.ScriptingEngine;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.PropertyInterface;
+import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.ScriptingException;
 
 import com.caucho.quercus.Quercus;
@@ -113,7 +113,7 @@ import com.caucho.vfs.WriteStream;
  * 
  * @author daniel.ruthardt
  */
-public class QuercusEngine implements ScriptingEngine {
+public class QuercusEngine implements ScriptingEngineInterface {
 
     /**
      * Indirect (pull) reference to ourself, which can be read in situations,
@@ -209,11 +209,11 @@ public class QuercusEngine implements ScriptingEngine {
             // FIXME: resources need to be named *.js for getCodeResources()
             // scriptExtension should be moved to a getter on Application which
             // gets the information from a static
-            // getter on ScriptingEngine
+            // getter on ScriptingEngineInterface
             // get all code resources
-            final Resource[] resources = globalPrototype.getResources();
+            final ResourceInterface[] resources = globalPrototype.getResources();
             // loop all code resources
-            for (final Resource resource : resources) {
+            for (final ResourceInterface resource : resources) {
                 if (resource.getName().endsWith(".php")) { //$NON-NLS-1$
                     try {
                         // include the code (i.e. load defined functions and add
@@ -331,11 +331,11 @@ public class QuercusEngine implements ScriptingEngine {
             // FIXME: resources need to be named *.js
             // scriptExtension should be moved to a getter on Application which
             // gets the information from a static
-            // getter on ScriptingEngine
+            // getter on ScriptingEngineInterface
             // get all code resources
-            final Resource[] resources = prototype.getResources();
+            final ResourceInterface[] resources = prototype.getResources();
             // loop all code resources
-            for (final Resource resource : resources) {
+            for (final ResourceInterface resource : resources) {
                 if (resource.getName().endsWith(".php")) { //$NON-NLS-1$
                     try {
                         // include the code (i.e. load defined functions and add
@@ -430,14 +430,14 @@ public class QuercusEngine implements ScriptingEngine {
      */
     @Override
     public Object getProperty(final Object thisObject, final String propertyName) {
-        if (thisObject == null || thisObject instanceof INode
-                && ((INode) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
+        if (thisObject == null || thisObject instanceof NodeInterface
+                && ((NodeInterface) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
             return this._environment.getGlobalValue(propertyName);
         } else if (thisObject instanceof HopObject) {
             return ((HopObject) thisObject).getFieldExt(this._environment,
                     StringValue.create(propertyName).toStringValue());
-        } else if (thisObject instanceof INode) {
-            return new HopObject((INode) thisObject, this).getFieldExt(
+        } else if (thisObject instanceof NodeInterface) {
+            return new HopObject((NodeInterface) thisObject, this).getFieldExt(
                     this._environment, StringValue.create(propertyName)
                             .toStringValue());
         } else if (thisObject instanceof Value[]) {
@@ -447,8 +447,8 @@ public class QuercusEngine implements ScriptingEngine {
                         this._environment,
                         StringValue.create(propertyName).toStringValue())
                         .toJavaObject();
-                if (value instanceof IProperty) {
-                    return ((IProperty) value).getValue();
+                if (value instanceof PropertyInterface) {
+                    return ((PropertyInterface) value).getValue();
                 }
 
                 return value;
@@ -486,27 +486,27 @@ public class QuercusEngine implements ScriptingEngine {
             final String functionName, final boolean resolve) {
         QuercusClass classDef = null;
 
-        if (thisObject == null || thisObject instanceof INode
-                && ((INode) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
-            // no thisObject or an INode with prototype Global, look for a
+        if (thisObject == null || thisObject instanceof NodeInterface
+                && ((NodeInterface) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
+            // no thisObject or an NodeInterface with prototype Global, look for a
             // global function
             return this._environment.findFunction(functionName) != null;
         } else if (thisObject instanceof HopObject) {
-            // thisObject is a wrapped INode, look for a method of the
+            // thisObject is a wrapped NodeInterface, look for a method of the
             // corresponding class
             classDef = this._environment
                     .getClass(((HopObject) thisObject).getName());
-        } else if (thisObject instanceof INode) {
-            // thisObject is an unwrapped INode, look for a method of the
+        } else if (thisObject instanceof NodeInterface) {
+            // thisObject is an unwrapped NodeInterface, look for a method of the
             // corresponding class
-            classDef = this._environment.getClass(((INode) thisObject)
+            classDef = this._environment.getClass(((NodeInterface) thisObject)
                     .getPrototype());
         } else if (thisObject instanceof Value[]) {
             // thisObject is an array of values
             final Value[] values = (Value[]) thisObject;
-            // check if the first value is a wrapped INode
+            // check if the first value is a wrapped NodeInterface
             if (values.length > 0 && values[0] instanceof HopObject) {
-                // first value is a wrapped INode, look for a method of the
+                // first value is a wrapped NodeInterface, look for a method of the
                 // corresponding class
                 classDef = this._environment.getClass(((HopObject) values[0])
                         .getName());
@@ -541,26 +541,26 @@ public class QuercusEngine implements ScriptingEngine {
     @Override
     public boolean hasProperty(final Object thisObject,
             final String propertyName) {
-        if (thisObject == null || thisObject instanceof INode
-                && ((INode) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
-            // no thisObject or an INode with prototype Global, look for a
+        if (thisObject == null || thisObject instanceof NodeInterface
+                && ((NodeInterface) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
+            // no thisObject or an NodeInterface with prototype Global, look for a
             // global variable
             return this._environment.getGlobalValue(propertyName) != null;
         } else if (thisObject instanceof HopObject) {
-            // thisObject is a wrapped INode, look for a value in the INode
+            // thisObject is a wrapped NodeInterface, look for a value in the NodeInterface
             return ((HopObject) thisObject).getFieldExt(this._environment,
                     StringValue.create(propertyName).toStringValue()) != null;
-        } else if (thisObject instanceof INode) {
-            // thisObject is an unwrapped INode, look for a value in the INode
-            return new HopObject((INode) thisObject, this).getFieldExt(
+        } else if (thisObject instanceof NodeInterface) {
+            // thisObject is an unwrapped NodeInterface, look for a value in the NodeInterface
+            return new HopObject((NodeInterface) thisObject, this).getFieldExt(
                     this._environment, StringValue.create(propertyName)
                             .toStringValue()) != null;
         } else if (thisObject instanceof Value[]) {
             // thisObject is an array of values
             final Value[] values = (Value[]) thisObject;
-            // check if the first value is a wrapped INode
+            // check if the first value is a wrapped NodeInterface
             if (values.length > 0 && values[0] instanceof HopObject) {
-                // first value is a wrapped INode, look for a value in the INode
+                // first value is a wrapped NodeInterface, look for a value in the NodeInterface
                 return ((HopObject) values[0]).getFieldExt(this._environment,
                         StringValue.create(propertyName).toStringValue())
                         .toJavaObject() != null;
@@ -673,7 +673,7 @@ public class QuercusEngine implements ScriptingEngine {
             // loop all extensions
             while (extensions.hasNext()) {
                 // get next extension
-                final InterfaceHelmaExtension extension = (InterfaceHelmaExtension) extensions
+                final HelmaExtensionInterface extension = (HelmaExtensionInterface) extensions
                         .next();
 
                 HashMap<String, ? extends Object> globals = null;
@@ -703,7 +703,7 @@ public class QuercusEngine implements ScriptingEngine {
     @Override
     public void injectCodeResource(
             final String typename,
-            final Resource resource) {
+            final ResourceInterface resource) {
         // TODO: implement
     }
 
@@ -725,7 +725,7 @@ public class QuercusEngine implements ScriptingEngine {
         }
 
         // check if thisObject is invalid
-        if (thisObject != null && !(thisObject instanceof INode)) {
+        if (thisObject != null && !(thisObject instanceof NodeInterface)) {
             throw new IllegalArgumentException(
                     Messages.getString("QuercusEngine.5")); //$NON-NLS-1$
         }
@@ -759,7 +759,7 @@ public class QuercusEngine implements ScriptingEngine {
         // another function call might be active, store the current this value
         this._lastThisValue = this._environment.getThis();
         // set the new this value
-        this._environment.setThis(new HopObject((INode) thisObject, this));
+        this._environment.setThis(new HopObject((NodeInterface) thisObject, this));
 
         // wrap the arguments (actually this is done to have the arguments a
         // little bit more unwrapped, than a direct
@@ -826,9 +826,9 @@ public class QuercusEngine implements ScriptingEngine {
                         .next();
                 try {
                     // check type of global
-                    if (globalObject.getValue() instanceof INode) {
-                        // global is an INode, we need to wrap it as HopObject
-                        final INode node = (INode) globalObject.getValue();
+                    if (globalObject.getValue() instanceof NodeInterface) {
+                        // global is an NodeInterface, we need to wrap it as HopObject
+                        final NodeInterface node = (NodeInterface) globalObject.getValue();
                         this._environment.setGlobalValue(globalObject.getKey(),
                                 new HopObject(node, this));
                         // System.out.println("Adding global " +

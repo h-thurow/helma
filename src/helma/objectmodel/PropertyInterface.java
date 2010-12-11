@@ -21,7 +21,7 @@ import java.util.Date;
 /**
  * Interface that is implemented by node properties.
  */
-public interface IProperty {
+public interface PropertyInterface {
     public static final int STRING = 1;
     public static final int BOOLEAN = 2;
     public static final int DATE = 3;
@@ -56,7 +56,7 @@ public interface IProperty {
      *
      * @return ...
      */
-    public INode getNodeValue();
+    public NodeInterface getNodeValue();
 
     /**
      *

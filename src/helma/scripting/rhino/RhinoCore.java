@@ -23,7 +23,7 @@ package helma.scripting.rhino;
 import helma.scripting.rhino.extensions.*;
 import helma.scripting.rhino.debug.HelmaDebugger;
 import helma.framework.core.*;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.objectmodel.*;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.NodeHandle;
@@ -292,7 +292,7 @@ public final class RhinoCore implements ScopeProvider {
                 // loop through the prototype's code elements and evaluate them
                 Iterator code = prototype.getCodeResources();
                 while (code.hasNext()) {
-                    evaluate(cx, type, (Resource) code.next());
+                    evaluate(cx, type, (ResourceInterface) code.next());
                 }
                 return null;
             }
@@ -592,14 +592,14 @@ public final class RhinoCore implements ScopeProvider {
             } else if (!(arg instanceof Double)) {
                 return new Integer(n.intValue());
             }
-        } else if (arg instanceof INode) {
+        } else if (arg instanceof NodeInterface) {
             // interpret HopObject as object/dict
-            INode n = (INode) arg;
+            NodeInterface n = (NodeInterface) arg;
             Hashtable ht = new Hashtable();
             Enumeration props = n.properties();
             while (props.hasMoreElements()) {
                 String key = (String) props.nextElement();
-                IProperty prop = n.get(key);
+                PropertyInterface prop = n.get(key);
                 if (prop != null) {
                     ht.put(key, processXmlRpcResponse(prop.getValue()));
                 }
@@ -624,7 +624,7 @@ public final class RhinoCore implements ScopeProvider {
 
 
     /**
-     *  Get a Script wrapper for any given object. If the object implements the IPathElement
+     *  Get a Script wrapper for any given object. If the object implements the PathElementInterface
      *  interface, the getPrototype method will be used to retrieve the name of the prototype
      * to use. Otherwise, a Java-Class-to-Script-Prototype mapping is consulted.
      */
@@ -651,9 +651,9 @@ public final class RhinoCore implements ScopeProvider {
     }
 
     /**
-     *  Get a script wrapper for an instance of helma.objectmodel.INode
+     *  Get a script wrapper for an instance of helma.objectmodel.NodeInterface
      */
-    public Scriptable getNodeWrapper(INode node) {
+    public Scriptable getNodeWrapper(NodeInterface node) {
         if (node == null) {
             return null;
         }
@@ -739,7 +739,7 @@ public final class RhinoCore implements ScopeProvider {
                     try {
                         result = eng.invoke(handler, hrefFunction,
                                                new Object[] {href},
-                                               ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                               ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                                false);
                     } catch (ScriptingException x) {
                         throw new EvaluatorException(Messages.getString("RhinoCore.5") + x); //$NON-NLS-1$
@@ -847,7 +847,7 @@ public final class RhinoCore implements ScopeProvider {
      * @param typename the type this resource belongs to
      * @param code a code resource
      */
-    public void injectCodeResource(String typename, final Resource code) {
+    public void injectCodeResource(String typename, final ResourceInterface code) {
         final TypeInfo type = (TypeInfo) this.prototypes.get(typename.toLowerCase());
         if (type == null || type.lastTypeInfoUpdate == -1)
             return;
@@ -862,11 +862,11 @@ public final class RhinoCore implements ScopeProvider {
     ////////////////////////////////////////////////
     // private evaluation/compilation methods
     ////////////////////////////////////////////////
-    private synchronized void evaluate(Context cx, TypeInfo type, Resource code) {
+    private synchronized void evaluate(Context cx, TypeInfo type, ResourceInterface code) {
         String sourceName = code.getName();
         Reader reader = null;
 
-        Resource previousCurrentResource = this.app.getCurrentCodeResource();
+        ResourceInterface previousCurrentResource = this.app.getCurrentCodeResource();
         this.app.setCurrentCodeResource(code);
 
         String encoding = this.app.getProperty("sourceCharset"); //$NON-NLS-1$
@@ -963,12 +963,12 @@ public final class RhinoCore implements ScopeProvider {
         }
 
         /**
-         * If prototype implements PropertyRecorder tell it to start
+         * If prototype implements PropertyRecorderInterface tell it to start
          * registering property puts.
          */
         public void prepareCompilation() {
-            if (this.objProto instanceof PropertyRecorder) {
-                ((PropertyRecorder) this.objProto).startRecording();
+            if (this.objProto instanceof PropertyRecorderInterface) {
+                ((PropertyRecorderInterface) this.objProto).startRecording();
             }
             // mark this type as updated so injectCodeResource() knows it's initialized
             this.lastTypeInfoUpdate = this.frameworkProto.lastCodeUpdate();
@@ -983,9 +983,9 @@ public final class RhinoCore implements ScopeProvider {
             // loop through properties defined on the prototype object
             // and remove thos properties which haven't been renewed during
             // this compilation/evaluation pass.
-            if (this.objProto instanceof PropertyRecorder) {
+            if (this.objProto instanceof PropertyRecorderInterface) {
 
-                PropertyRecorder recorder = (PropertyRecorder) this.objProto;
+                PropertyRecorderInterface recorder = (PropertyRecorderInterface) this.objProto;
 
                 recorder.stopRecording();
                 Set changedProperties = recorder.getChangeSet();
@@ -1104,8 +1104,8 @@ public final class RhinoCore implements ScopeProvider {
                 return obj;
             }
             // Wrap Nodes
-            if (obj instanceof INode) {
-                return getNodeWrapper((INode) obj);
+            if (obj instanceof NodeInterface) {
+                return getNodeWrapper((NodeInterface) obj);
             }
             if (obj instanceof NodeHandle) {
                 return getNodeWrapper((NodeHandle) obj);
@@ -1139,8 +1139,8 @@ public final class RhinoCore implements ScopeProvider {
             if (obj instanceof Scriptable) {
                 return (Scriptable) obj;
             }
-            if (obj instanceof INode) {
-                return getNodeWrapper((INode) obj);
+            if (obj instanceof NodeInterface) {
+                return getNodeWrapper((NodeInterface) obj);
             }
 
             if (obj != null && RhinoCore.this.app.getPrototypeName(obj) != null) {

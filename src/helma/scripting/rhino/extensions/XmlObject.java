@@ -17,7 +17,7 @@
 package helma.scripting.rhino.extensions;
 
 import helma.scripting.rhino.*;
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.db.Node;
 import helma.objectmodel.dom.*;
 import java.io.ByteArrayOutputStream;
@@ -50,7 +50,7 @@ public class XmlObject {
      * @return true
      * @throws IOException if something went wrong along the way
      */
-    public boolean write(INode node, String file) throws IOException {
+    public boolean write(NodeInterface node, String file) throws IOException {
         return write(node, file, false);
     }
 
@@ -63,7 +63,7 @@ public class XmlObject {
      * @return true
      * @throws IOException if something went wrong along the way
      */
-    public boolean write(INode node, String file, boolean dbmode)
+    public boolean write(NodeInterface node, String file, boolean dbmode)
                   throws IOException {
         // we definitly need a node
         if (node == null) {
@@ -98,7 +98,7 @@ public class XmlObject {
      * @return the XML representing the HopObject
      * @throws IOException if something went wrong along the way
      */
-    public String writeToString(INode node) throws IOException {
+    public String writeToString(NodeInterface node) throws IOException {
         return writeToString(node, false);
     }
 
@@ -111,7 +111,7 @@ public class XmlObject {
      * @param dbmode whether to write a shallow copy
      * @throws IOException if something went wrong
      */
-    public String writeToString(INode node, boolean dbmode) throws IOException {
+    public String writeToString(NodeInterface node, boolean dbmode) throws IOException {
         // we definitly need a node
         if (node == null) {
             throw new RuntimeException(Messages.getString("XmlObject.3")); //$NON-NLS-1$
@@ -147,7 +147,7 @@ public class XmlObject {
      * @param node the HopObject to use for conversion
      * @return the HopObject
      */
-    public Object read(String file, INode node) throws RuntimeException {
+    public Object read(String file, NodeInterface node) throws RuntimeException {
         if (file == null) {
             throw new RuntimeException(Messages.getString("XmlObject.4")); //$NON-NLS-1$
         }
@@ -159,7 +159,7 @@ public class XmlObject {
 
         try {
             XmlReader reader = new XmlReader(this.core.app.getWrappedNodeManager());
-            INode result = reader.read(new File(file), node);
+            NodeInterface result = reader.read(new File(file), node);
 
             return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
@@ -188,7 +188,7 @@ public class XmlObject {
      * @return ...
      * @throws RuntimeException ...
      */
-    public Object readFromString(String str, INode node)
+    public Object readFromString(String str, NodeInterface node)
                           throws RuntimeException {
         if (str == null) {
             throw new RuntimeException(Messages.getString("XmlObject.6")); //$NON-NLS-1$
@@ -201,7 +201,7 @@ public class XmlObject {
 
         try {
             XmlReader reader = new XmlReader(this.core.app.getWrappedNodeManager());
-            INode result = reader.read(new StringReader(str), node);
+            NodeInterface result = reader.read(new StringReader(str), node);
 
             return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
@@ -246,9 +246,9 @@ public class XmlObject {
                 converter = new XmlConverter();
             }
 
-            INode node = new Node(null, null,
+            NodeInterface node = new Node(null, null,
                     this.core.getApplication().getWrappedNodeManager());
-            INode result = converter.convert(url, node);
+            NodeInterface result = converter.convert(url, node);
 
             return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
@@ -290,8 +290,8 @@ public class XmlObject {
                 converter = new XmlConverter();
             }
 
-            INode node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
-            INode result = converter.convertFromString(str, node);
+            NodeInterface node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
+            NodeInterface result = converter.convertFromString(str, node);
 
             return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {

@@ -23,7 +23,7 @@ import java.util.Date;
 /**
  * A property implementation for Nodes stored inside a database.
  */
-public final class TransientProperty implements IProperty, Serializable {
+public final class TransientProperty implements PropertyInterface, Serializable {
     private static final long serialVersionUID = 3128899239601365229L;
 
     protected String propname;
@@ -32,7 +32,7 @@ public final class TransientProperty implements IProperty, Serializable {
     public boolean bvalue;
     public long lvalue;
     public double dvalue;
-    public INode nvalue;
+    public NodeInterface nvalue;
     public Object jvalue;
     public int type;
 
@@ -192,7 +192,7 @@ public final class TransientProperty implements IProperty, Serializable {
      *
      * @param value ...
      */
-    public void setNodeValue(INode value) {
+    public void setNodeValue(NodeInterface value) {
         if (this.type == JAVAOBJECT) {
             this.jvalue = null;
         }
@@ -317,7 +317,7 @@ public final class TransientProperty implements IProperty, Serializable {
      *
      * @return ...
      */
-    public INode getNodeValue() {
+    public NodeInterface getNodeValue() {
         if (this.type == NODE) {
             return this.nvalue;
         }

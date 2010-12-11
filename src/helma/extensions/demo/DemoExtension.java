@@ -22,10 +22,10 @@ package helma.extensions.demo;
 
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.InterfaceHelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.core.Application;
 import helma.main.Server;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.rhino.RhinoEngine;
 import java.util.HashMap;
 
@@ -35,7 +35,7 @@ import java.util.HashMap;
  * a new global object <code>demo</code> that wraps helma.main.Server
  * will be added to the scripting environment.
  */
-public class DemoExtension implements InterfaceHelmaExtension {
+public class DemoExtension implements HelmaExtensionInterface {
     /**
      *
      *
@@ -96,7 +96,7 @@ public class DemoExtension implements InterfaceHelmaExtension {
      * @throws ConfigurationException ...
      */
     @Override
-    public HashMap initScripting(Application app, ScriptingEngine engine)
+    public HashMap initScripting(Application app, ScriptingEngineInterface engine)
                           throws ConfigurationException {
         if (!(engine instanceof RhinoEngine)) {
             throw new ConfigurationException(Messages.getString("DemoExtension.4") + engine.toString() + //$NON-NLS-1$

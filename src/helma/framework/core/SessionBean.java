@@ -16,7 +16,7 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.framework.UploadStatus;
 
 import java.io.Serializable;
@@ -72,7 +72,7 @@ public class SessionBean implements Serializable {
      *
      * @param userNode the HopObject node representing the user.
      */
-    public void login(INode userNode) {
+    public void login(NodeInterface userNode) {
         this.session.login(userNode);
     }
 
@@ -117,7 +117,7 @@ public class SessionBean implements Serializable {
      * to store transient per-session data. It is reflected to the scripting
      * environment as session.data.
      */
-    public INode getData() {
+    public NodeInterface getData() {
         return this.session.getCacheNode();
     }
 
@@ -127,7 +127,7 @@ public class SessionBean implements Serializable {
      *
      * @return ...
      */
-    public INode getUser() {
+    public NodeInterface getUser() {
         return this.session.getUserNode();
     }
 

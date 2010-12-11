@@ -17,7 +17,7 @@
 package helma.main;
 
 import helma.framework.core.*;
-import helma.framework.repository.Repository;
+import helma.framework.repository.RepositoryInterface;
 import helma.framework.repository.FileRepository;
 import helma.util.StringUtils;
 import org.apache.xmlrpc.XmlRpcHandler;
@@ -321,7 +321,7 @@ public class ApplicationManager implements XmlRpcHandler {
         String uploadLimit;
         String uploadSoftfail;
         String debug;
-        Repository[] repositories;
+        RepositoryInterface[] repositories;
         String servletClassName;
 
         /**
@@ -390,7 +390,7 @@ public class ApplicationManager implements XmlRpcHandler {
                     }
 
                     try {
-                        Repository newRepository = (Repository) Class.forName(repositoryImpl)
+                        RepositoryInterface newRepository = (RepositoryInterface) Class.forName(repositoryImpl)
                                 .getConstructor(parameters)
                                 .newInstance(new Object[] {repositoryArgs});
                         repositoryList.add(newRepository);
@@ -415,8 +415,8 @@ public class ApplicationManager implements XmlRpcHandler {
                 repositoryList.add(new FileRepository(
                         new File(ApplicationManager.this.server.getAppsHome(), this.appName)));
             }
-            this.repositories = new Repository[repositoryList.size()];
-            this.repositories = (Repository[]) repositoryList.toArray(this.repositories);
+            this.repositories = new RepositoryInterface[repositoryList.size()];
+            this.repositories = (RepositoryInterface[]) repositoryList.toArray(this.repositories);
         }
 
 

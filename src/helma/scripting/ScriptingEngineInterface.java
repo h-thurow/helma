@@ -16,7 +16,7 @@
 
 package helma.scripting;
 
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.framework.core.Application;
 import helma.framework.core.RequestEvaluator;
 
@@ -32,7 +32,7 @@ import java.util.Map;
  * Implementations of this interface must have a public zero-argument constructor
  * to be usable by the Helma framework.
  */
-public interface ScriptingEngine {
+public interface ScriptingEngineInterface {
 
     /**
      * Argument wrapping mode that indicates arguments are wrapped already
@@ -190,5 +190,5 @@ public interface ScriptingEngine {
      * @param typename the type this resource belongs to
      * @param resource a code resource
      */
-    public void injectCodeResource(String typename, Resource resource);
+    public void injectCodeResource(String typename, ResourceInterface resource);
 }

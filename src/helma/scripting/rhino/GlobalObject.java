@@ -40,14 +40,14 @@ import java.io.*;
 /**
  * Helma global object defines a number of custom global functions.
  */
-public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
+public class GlobalObject extends ImporterTopLevel implements PropertyRecorderInterface {
     private static final long serialVersionUID = -5058912338247265290L;
 
     Application app;
     RhinoCore core;
     boolean isThreadScope = false;
 
-    // fields to implement PropertyRecorder
+    // fields to implement PropertyRecorderInterface
     private volatile boolean isRecording = false;
     private volatile HashSet changedProperties;
 
@@ -103,7 +103,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     }
 
     /**
-     * Override ScriptableObject.put() to implement PropertyRecorder interface
+     * Override ScriptableObject.put() to implement PropertyRecorderInterface interface
      * and to synchronize method.
      *
      * @param name
@@ -112,7 +112,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     @Override
     public void put(String name, Scriptable start, Object value) {
-        // register property for PropertyRecorder interface
+        // register property for PropertyRecorderInterface interface
         if (this.isRecording) {
             // if during compilation a property is set on the thread scope
             // forward it to the shared scope (bug 504)
@@ -135,7 +135,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
      */
     @Override
     public Object get(String name, Scriptable start) {
-        // register property for PropertyRecorder interface
+        // register property for PropertyRecorderInterface interface
         if (this.isRecording) {
             this.changedProperties.add(name);
         }
@@ -373,7 +373,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     public void defineLibraryScope(final String name) {
         Object obj = get(name, this);
         if (obj != NOT_FOUND) {
-            // put the property again to fool PropertyRecorder
+            // put the property again to fool PropertyRecorderInterface
             // into believing it has been renewed
             put(name, this, obj);
             return;
@@ -703,7 +703,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     }
 
     /**
-     * Tell this PropertyRecorder to start recording changes to properties
+     * Tell this PropertyRecorderInterface to start recording changes to properties
      */
     public void startRecording() {
         this.changedProperties = new HashSet();
@@ -711,7 +711,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorder {
     }
 
     /**
-     * Tell this PropertyRecorder to stop recording changes to properties
+     * Tell this PropertyRecorderInterface to stop recording changes to properties
      */
     public void stopRecording() {
         this.isRecording = false;

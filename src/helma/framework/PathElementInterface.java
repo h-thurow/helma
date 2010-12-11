@@ -27,7 +27,7 @@ package helma.framework;
  * parent element. <p>
  *
  */
-public interface IPathElement {
+public interface PathElementInterface {
     /**
      *  Return the name to be used to get this element from its parent
      */
@@ -36,12 +36,12 @@ public interface IPathElement {
     /**
      * Retrieve a child element of this object by name.
      */
-    public IPathElement getChildElement(String name);
+    public PathElementInterface getChildElement(String name);
 
     /**
      * Return the parent element of this object.
      */
-    public IPathElement getParentElement();
+    public PathElementInterface getParentElement();
 
     /**
      * Get the name of the prototype to be used for this object. This will

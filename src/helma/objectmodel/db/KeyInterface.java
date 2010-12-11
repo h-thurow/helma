@@ -16,14 +16,32 @@
 
 package helma.objectmodel.db;
 
-import java.util.List;
 
-public interface NodeChangeListener {
+/**
+ * This is the interface for the internal representation of an object key.
+ *
+ */
+public interface KeyInterface {
 
     /**
-     * Called when a transaction is committed that has created, modified, 
-     * deleted or changed the child collection one or more nodes.
+     * Get the key's parent key
+     *
+     * @return ...
      */
-    public void nodesChanged(List inserted, List updated, List deleted, List parents);
+    public KeyInterface getParentKey();
+
+    /**
+     * Get the key's ID part
+     *
+     * @return ...
+     */
+    public String getID();
+
+    /**
+     *  Get the key's storage type name
+     *
+     * @return ...
+     */
+    public String getStorageName();
 
 }

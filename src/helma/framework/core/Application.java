@@ -21,14 +21,14 @@
 package helma.framework.core;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.InterfaceHelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.*;
 import helma.framework.repository.*;
 import helma.main.Server;
 import helma.objectmodel.*;
 import helma.objectmodel.db.*;
 import helma.util.*;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.ScriptingException;
 
 import java.io.*;
@@ -129,7 +129,7 @@ public final class Application implements Runnable {
     String accessLogName;
 
     // A transient node that is shared among all evaluators
-    protected INode cachenode;
+    protected NodeInterface cachenode;
 
     // some fields for statistics
     protected volatile long requestCount = 0;
@@ -176,7 +176,7 @@ public final class Application implements Runnable {
     Hashtable customCronJobs = null;
 
     private ResourceComparator resourceComparator;
-    private Resource currentCodeResource;
+    private ResourceInterface currentCodeResource;
 
     // Field to cache unmapped java classes
     private final static String CLASS_NOT_MAPPED = Messages.getString("Application.0"); //$NON-NLS-1$
@@ -197,7 +197,7 @@ public final class Application implements Runnable {
      * Build an application with the given name with the given sources. No
      * Server-wide properties are created or used.
      */
-    public Application(String name, Repository[] repositories, File dbDir)
+    public Application(String name, RepositoryInterface[] repositories, File dbDir)
                 throws IllegalArgumentException {
         this(name, null, repositories, null, dbDir);
     }
@@ -208,14 +208,14 @@ public final class Application implements Runnable {
      */
     public Application(String name, Server server)
                 throws IllegalArgumentException {
-        this(name, server, new Repository[0], null, null);
+        this(name, server, new RepositoryInterface[0], null, null);
     }
 
     /**
      * Build an application with the given name, server instance, sources and
      * db directory.
      */
-    public Application(String name, Server server, Repository[] repositories,
+    public Application(String name, Server server, RepositoryInterface[] repositories,
                        File customAppDir, File customDbDir)
                 throws IllegalArgumentException {
         if ((name == null) || (name.trim().length() == 0)) {
@@ -383,7 +383,7 @@ public final class Application implements Runnable {
                 Vector extensions = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extensions.size(); i++) {
-                    InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extensions.get(i);
+                    HelmaExtensionInterface ext = (HelmaExtensionInterface) extensions.get(i);
 
                     try {
                         ext.applicationStarted(Application.this);
@@ -552,7 +552,7 @@ public final class Application implements Runnable {
             Vector extensions = Server.getServer().getExtensions();
 
             for (int i = 0; i < extensions.size(); i++) {
-                InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extensions.get(i);
+                HelmaExtensionInterface ext = (HelmaExtensionInterface) extensions.get(i);
 
                 ext.applicationStopped(this);
             }
@@ -852,7 +852,7 @@ public final class Application implements Runnable {
     /**
      * This method returns the root object of this application's object tree.
      */
-    protected Object getDataRoot(ScriptingEngine engine) throws Exception {
+    protected Object getDataRoot(ScriptingEngineInterface engine) throws Exception {
         if (this.rootObject != null) {
             return this.rootObject;
         }
@@ -895,13 +895,13 @@ public final class Application implements Runnable {
         }
     }
 
-    private Object getDataRootFromEngine(ScriptingEngine engine)
+    private Object getDataRootFromEngine(ScriptingEngineInterface engine)
             throws ScriptingException {
         return this.rootObjectPropertyName != null ?
                 engine.getGlobalProperty(this.rootObjectPropertyName) :
                 engine.invoke(null, this.rootObjectFunctionName,
                         RequestEvaluator.EMPTY_ARGS,
-                        ScriptingEngine.ARGS_WRAP_DEFAULT, true);
+                        ScriptingEngineInterface.ARGS_WRAP_DEFAULT, true);
     }
 
     /**
@@ -921,8 +921,8 @@ public final class Application implements Runnable {
     /**
      * Returns the Object which contains registered users of this application.
      */
-    public INode getUserRoot() {
-        INode users = this.nmgr.safe.getNode("1", this.userRootMapping); //$NON-NLS-1$
+    public NodeInterface getUserRoot() {
+        NodeInterface users = this.nmgr.safe.getNode("1", this.userRootMapping); //$NON-NLS-1$
 
         users.setDbMapping(this.userRootMapping);
 
@@ -958,18 +958,18 @@ public final class Application implements Runnable {
     /**
      *  Return a transient node that is shared by all evaluators of this application ("app node")
      */
-    public INode getCacheNode() {
+    public NodeInterface getCacheNode() {
         return this.cachenode;
     }
 
     /**
      * Returns a Node representing a registered user of this application by his or her user name.
      */
-    public INode getUserNode(String uid) {
+    public NodeInterface getUserNode(String uid) {
         try {
-            INode users = getUserRoot();
+            NodeInterface users = getUserRoot();
 
-            return (INode) users.getChildElement(uid);
+            return (NodeInterface) users.getChildElement(uid);
         } catch (Exception x) {
             return null;
         }
@@ -1062,7 +1062,7 @@ public final class Application implements Runnable {
      */
     public List getRegisteredUsers() {
         ArrayList list = new ArrayList();
-        INode users = getUserRoot();
+        NodeInterface users = getUserRoot();
 
         // add all child nodes to the list
         for (Enumeration e = users.getSubnodes(); e.hasMoreElements();) {
@@ -1111,7 +1111,7 @@ public final class Application implements Runnable {
     /**
      * Register a user with the given user name and password.
      */
-    public INode registerUser(String uname, String password) {
+    public NodeInterface registerUser(String uname, String password) {
         if (uname == null) {
             return null;
         }
@@ -1122,13 +1122,13 @@ public final class Application implements Runnable {
             return null;
         }
 
-        INode unode;
+        NodeInterface unode;
 
         try {
-            INode users = getUserRoot();
+            NodeInterface users = getUserRoot();
 
             // check if a user with this name is already registered
-            unode = (INode) users.getChildElement(uname);
+            unode = (NodeInterface) users.getChildElement(uname);
             if (unode != null) {
                 return null;
             }
@@ -1175,7 +1175,7 @@ public final class Application implements Runnable {
         }
 
         try {
-            INode users = getUserRoot();
+            NodeInterface users = getUserRoot();
             Node unode = (Node) users.getChildElement(uname);
             if (unode == null)
                 return false;
@@ -1396,8 +1396,8 @@ public final class Application implements Runnable {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///   The following methods mimic the IPathElement interface. This allows us
-    ///   to script any Java object: If the object implements IPathElement (as does
+    ///   The following methods mimic the PathElementInterface interface. This allows us
+    ///   to script any Java object: If the object implements PathElementInterface (as does
     ///   the Node class in Helma's internal objectmodel) then the corresponding
     ///   method is called in the object itself. Otherwise, a corresponding script function
     ///   is called on the object.
@@ -1407,8 +1407,8 @@ public final class Application implements Runnable {
      * Return the name to be used to get this element from its parent
      */
     public String getElementName(Object obj) {
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getElementName();
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getElementName();
         }
 
         Object retval = invokeFunction(obj, "getElementName", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
@@ -1424,8 +1424,8 @@ public final class Application implements Runnable {
      * Retrieve a child element of this object by name.
      */
     public Object getChildElement(Object obj, String name) {
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getChildElement(name);
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getChildElement(name);
         }
 
         Object[] arg = new Object[] { name };
@@ -1436,8 +1436,8 @@ public final class Application implements Runnable {
      * Return the parent element of this object.
      */
     public Object getParentElement(Object obj) {
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getParentElement();
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getParentElement();
         }
 
         return invokeFunction(obj, "getParentElement", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
@@ -1451,9 +1451,9 @@ public final class Application implements Runnable {
     public String getPrototypeName(Object obj) {
         if (obj == null) {
             return "global"; //$NON-NLS-1$
-        } else if (obj instanceof IPathElement) {
-            // check if e implements the IPathElement interface
-            return ((IPathElement) obj).getPrototype();
+        } else if (obj instanceof PathElementInterface) {
+            // check if e implements the PathElementInterface interface
+            return ((PathElementInterface) obj).getPrototype();
         }
 
         // How class name to prototype name lookup works:
@@ -1785,7 +1785,7 @@ public final class Application implements Runnable {
      * @param current the current/parent repository
      * @return if the repository was not yet contained
      */
-    public boolean addRepository(Repository rep, Repository current) {
+    public boolean addRepository(RepositoryInterface rep, RepositoryInterface current) {
         if (rep != null && !this.repositories.contains(rep)) {
             // Add the new repository before its parent/current repository.
             // This establishes the order of compilation between FileRepositories
@@ -1813,7 +1813,7 @@ public final class Application implements Runnable {
      * @return  the index of the first occurrence of the argument in this
      *          list; returns <tt>-1</tt> if the object is not found.
      */
-    public int getRepositoryIndex(Repository rep) {
+    public int getRepositoryIndex(RepositoryInterface rep) {
         return this.repositories.indexOf(rep);
     }
 
@@ -1832,7 +1832,7 @@ public final class Application implements Runnable {
      *
      * @param resource the resource being currently evaluated/compiled
      */
-    public void setCurrentCodeResource(Resource resource) {
+    public void setCurrentCodeResource(ResourceInterface resource) {
         this.currentCodeResource = resource;
     }
 
@@ -1843,7 +1843,7 @@ public final class Application implements Runnable {
 
      * @return the resource being currently evaluated/compiled
      */
-    public Resource getCurrentCodeResource() {
+    public ResourceInterface getCurrentCodeResource() {
         return this.currentCodeResource;
     }
 
@@ -1950,7 +1950,7 @@ public final class Application implements Runnable {
                 Vector extensions = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extensions.size(); i++) {
-                    InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extensions.get(i);
+                    HelmaExtensionInterface ext = (HelmaExtensionInterface) extensions.get(i);
 
                     try {
                         ext.applicationUpdated(this);

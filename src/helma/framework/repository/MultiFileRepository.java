@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Repository implementation that provides all of its subdirectories
+ * RepositoryInterface implementation that provides all of its subdirectories
  * as top-level FileRepositories
  *
  * @author Barbara Ondrisek
@@ -81,8 +81,8 @@ public class MultiFileRepository extends FileRepository {
                 }
             }
 
-            this.repositories = (Repository[])
-                    newRepositories.toArray(new Repository[newRepositories.size()]);
+            this.repositories = (RepositoryInterface[])
+                    newRepositories.toArray(new RepositoryInterface[newRepositories.size()]);
             this.resources = newResources;
         }
     }

@@ -20,7 +20,7 @@ package helma.framework;
  * A handle for an asynchronous request execution. This allows to wait for
  * request termination, get the result or the exception of the execution.
  */
-public interface FutureResult {
+public interface FutureResultInterface {
     /**
      * Get the result of the execution. If the execution is still active,
      * or if the invocation threw an exception, this method immediately returns null.

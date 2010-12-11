@@ -22,7 +22,7 @@ import java.io.*;
 public class FileResource extends AbstractResource {
 
     File file;
-    Repository repository;
+    RepositoryInterface repository;
     String name;
     String shortName;
     String baseName;
@@ -31,7 +31,7 @@ public class FileResource extends AbstractResource {
         this(file, null);
     }
 
-    protected FileResource(File file, Repository repository) {
+    protected FileResource(File file, RepositoryInterface repository) {
         this.file = file;
 
         this.repository = repository;
@@ -99,7 +99,7 @@ public class FileResource extends AbstractResource {
         return this.file.exists();
     }
 
-    public Repository getRepository() {
+    public RepositoryInterface getRepository() {
         return this.repository;
     }
 

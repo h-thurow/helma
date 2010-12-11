@@ -20,7 +20,7 @@
 
 package helma.main;
 
-import helma.extensions.InterfaceHelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.repository.FileResource;
 import helma.framework.core.*;
 import helma.objectmodel.db.DbSource;
@@ -471,7 +471,7 @@ public class Server implements Runnable {
 
             try {
                 Class extClass = Class.forName(extClassName);
-                InterfaceHelmaExtension ext = (InterfaceHelmaExtension) extClass.newInstance();
+                HelmaExtensionInterface ext = (HelmaExtensionInterface) extClass.newInstance();
                 ext.init(this);
                 this.extensions.add(ext);
                 this.logger.info(Messages.getString("Server.54") + extClassName); //$NON-NLS-1$

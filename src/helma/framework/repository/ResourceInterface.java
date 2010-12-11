@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Resource represents a pointer to some kind of information (code, skin, ...)
+ * ResourceInterface represents a pointer to some kind of information (code, skin, ...)
  * from which the content can be fetched
  */
-public interface Resource {
+public interface ResourceInterface {
 
     /**
      * Returns the date the resource was last modified
@@ -97,21 +97,21 @@ public interface Resource {
     public URL getUrl() throws UnsupportedOperationException;
 
     /**
-     * Get a Resource this Resource is overloading
+     * Get a ResourceInterface this ResourceInterface is overloading
      * @return the overloaded resource
      */
-    public Resource getOverloadedResource();
+    public ResourceInterface getOverloadedResource();
 
     /**
-     * Method for registering a Resource this Resource is overloading
+     * Method for registering a ResourceInterface this ResourceInterface is overloading
      * @param res the overloaded resource
      */
-    public void setOverloadedResource(Resource res);
+    public void setOverloadedResource(ResourceInterface res);
 
     /**
      * Returns the repository the resource does belong to
      * @return upper repository
      */
-    public Repository getRepository();
+    public RepositoryInterface getRepository();
 
 }

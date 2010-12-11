@@ -45,7 +45,7 @@ public final class RequestEvaluator implements Runnable {
 
     public final Application app;
 
-    protected ScriptingEngine scriptingEngine;
+    protected ScriptingEngineInterface scriptingEngine;
 
     // skin depth counter, used to avoid recursive skin rendering
     protected int skinDepth;
@@ -100,7 +100,7 @@ public final class RequestEvaluator implements Runnable {
                 this.app.setCurrentRequestEvaluator(this);
                 Class clazz = this.app.getClassLoader().loadClass(engineClassName);
 
-                this.scriptingEngine = (ScriptingEngine) clazz.newInstance();
+                this.scriptingEngine = (ScriptingEngineInterface) clazz.newInstance();
                 this.scriptingEngine.init(this.app, this);
             } catch (Exception x) {
                 Throwable t = x;
@@ -386,7 +386,7 @@ public final class RequestEvaluator implements Runnable {
                                     this.scriptingEngine.invoke(currentElement,
                                             "onRequest", //$NON-NLS-1$
                                             EMPTY_ARGS,
-                                            ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                             false);
 
                                     // reset skin recursion detection counter
@@ -405,7 +405,7 @@ public final class RequestEvaluator implements Runnable {
                                         this.result = this.scriptingEngine.invoke(currentElement,
                                                 actionProcessor,
                                                 args.toArray(),
-                                                ScriptingEngine.ARGS_WRAP_XMLRPC,
+                                                ScriptingEngineInterface.ARGS_WRAP_XMLRPC,
                                                 false);
                                         res.writeXmlRpcResponse(this.result);
                                         this.app.xmlrpcCount += 1;
@@ -413,7 +413,7 @@ public final class RequestEvaluator implements Runnable {
                                         this.scriptingEngine.invoke(currentElement,
                                                 actionProcessor,
                                                 EMPTY_ARGS,
-                                                ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                                ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                                 false);
                                     }
 
@@ -422,7 +422,7 @@ public final class RequestEvaluator implements Runnable {
                                     this.scriptingEngine.invoke(currentElement,
                                             "onResponse", //$NON-NLS-1$
                                             EMPTY_ARGS,
-                                            ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                             false);
 
                                 } catch (RedirectException redirect) {
@@ -476,7 +476,7 @@ public final class RequestEvaluator implements Runnable {
                                     }
                                     this.result = this.scriptingEngine.invoke(currentElement,
                                             functionName, this.args,
-                                            ScriptingEngine.ARGS_WRAP_XMLRPC,
+                                            ScriptingEngineInterface.ARGS_WRAP_XMLRPC,
                                             false);
                                     // check if request is still valid, or if the requesting thread has stopped waiting already
                                     if (localThread != this.thread) {
@@ -512,7 +512,7 @@ public final class RequestEvaluator implements Runnable {
                                     this.result = this.scriptingEngine.invoke(this.thisObject,
                                             this.function,
                                             this.args,
-                                            ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                             true);
                                     // check if request is still valid, or if the requesting thread has stopped waiting already
                                     if (localThread != this.thread) {
@@ -891,7 +891,7 @@ public final class RequestEvaluator implements Runnable {
     public Object invokeDirectFunction(Object obj, Object function, Object[] args)
                                 throws Exception {
         return this.scriptingEngine.invoke(obj, function, args,
-                ScriptingEngine.ARGS_WRAP_DEFAULT, true);
+                ScriptingEngineInterface.ARGS_WRAP_DEFAULT, true);
     }
 
     /**
@@ -1018,11 +1018,11 @@ public final class RequestEvaluator implements Runnable {
     private Object getChildElement(Object obj, String name) throws ScriptingException {
         if (this.scriptingEngine.hasFunction(obj, "getChildElement", false)) { //$NON-NLS-1$
             return this.scriptingEngine.invoke(obj, "getChildElement", new Object[] {name}, //$NON-NLS-1$
-                                          ScriptingEngine.ARGS_WRAP_DEFAULT, false);
+                                          ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
         }
 
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getChildElement(name);
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getChildElement(name);
         }
 
         return null;
@@ -1095,7 +1095,7 @@ public final class RequestEvaluator implements Runnable {
     /**
      * Returns this evaluator's scripting engine
      */
-    public ScriptingEngine getScriptingEngine() {
+    public ScriptingEngineInterface getScriptingEngine() {
         if (this.scriptingEngine == null) {
             initScriptingEngine();
         }

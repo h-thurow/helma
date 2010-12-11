@@ -16,7 +16,7 @@
 
 package helma.scripting.rhino;
 
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -28,13 +28,13 @@ import java.util.StringTokenizer;
  */
 public class HacHspConverter {
 
-    public static String convertHac(Resource action, String encoding)
+    public static String convertHac(ResourceInterface action, String encoding)
             throws IOException {
         String functionName = action.getBaseName().replace('.', '_') + "_action"; //$NON-NLS-1$
         return composeFunction(functionName, null, action.getContent(encoding));
     }
 
-    public static String convertHsp(Resource template, String encoding)
+    public static String convertHsp(ResourceInterface template, String encoding)
             throws IOException {
         String functionName = template.getBaseName().replace('.', '_');
         String body = processHspBody(template.getContent(encoding));
@@ -43,7 +43,7 @@ public class HacHspConverter {
                                body);
     }
 
-    public static String convertHspAsString(Resource template, String encoding)
+    public static String convertHspAsString(ResourceInterface template, String encoding)
             throws IOException {
         String functionName = template.getBaseName().replace('.', '_') + "_as_string"; //$NON-NLS-1$
         String body = processHspBody(template.getContent(encoding));

@@ -17,7 +17,7 @@
 package helma.scripting.rhino;
 
 import helma.framework.core.*;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import org.mozilla.javascript.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -202,9 +202,9 @@ public class JavaObject extends NativeJavaObject {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
         Prototype prototype = engine.core.app.getPrototypeByName(this.protoName);
         while (prototype != null) {
-            Resource[] resources = prototype.getResources();
+            ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                Resource resource = resources[i];
+                ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(resourceName))
                     return Context.toObject(resource, this.core.global);
             }
@@ -226,9 +226,9 @@ public class JavaObject extends NativeJavaObject {
         Prototype prototype = engine.core.app.getPrototypeByName(this.protoName);
         ArrayList a = new ArrayList();
         while (prototype != null) {
-            Resource[] resources = prototype.getResources();
+            ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                Resource resource = resources[i];
+                ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(resourceName))
                     a.add(Context.toObject(resource, this.core.global));
             }

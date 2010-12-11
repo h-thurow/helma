@@ -22,7 +22,7 @@ package helma.extensions;
 
 import helma.framework.core.Application;
 import helma.main.Server;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 
 import java.util.HashMap;
 
@@ -31,7 +31,7 @@ import java.util.HashMap;
  * defined in <code>server.properties</code> by setting <code>extensions =
  * packagename.classname, packagename.classname</code>.
  */
-public interface InterfaceHelmaExtension {
+public interface HelmaExtensionInterface {
 
     /**
      * called by the Server at startup time. should check wheter the needed classes
@@ -59,14 +59,14 @@ public interface InterfaceHelmaExtension {
     public void applicationUpdated(Application app);
 
     /**
-     * called by the ScriptingEngine when it is initizalized. Throws a ConfigurationException
-     * when this type of ScriptingEngine is not supported. New methods and prototypes can be
+     * called by the ScriptingEngineInterface when it is initizalized. Throws a ConfigurationException
+     * when this type of ScriptingEngineInterface is not supported. New methods and prototypes can be
      * added to the scripting environment. New global vars should be returned in a HashMap
      * with pairs of varname and ESObjects. This method should be <b>synchronized</b>, if it
      * performs any other self-initialization outside the scripting environment.
      */
     public HashMap initScripting(Application app,
-            ScriptingEngine engine) throws ConfigurationException;
+            ScriptingEngineInterface engine) throws ConfigurationException;
 
     /**
      *

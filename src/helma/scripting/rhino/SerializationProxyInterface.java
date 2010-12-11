@@ -16,7 +16,7 @@
 
 package helma.scripting.rhino;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.db.NodeHandle;
 import helma.objectmodel.db.Node;
 import org.mozilla.javascript.Context;
@@ -27,14 +27,14 @@ import java.io.Serializable;
  * Serialization proxy/placeholder interface. This is used for
  * for various Helma and Rhino related classes.. 
  */
-public interface SerializationProxy extends Serializable {
+public interface SerializationProxyInterface extends Serializable {
     public Object getObject(RhinoEngine engine);
 }
 
 /**
  * Serialization proxy for app, req, res, path objects.
  */
-class ScriptBeanProxy implements SerializationProxy {
+class ScriptBeanProxy implements SerializationProxyInterface {
     private static final long serialVersionUID = -1002489933060844917L;
 
     String name;
@@ -57,7 +57,7 @@ class ScriptBeanProxy implements SerializationProxy {
 /**
  * Serialization proxy for global scope
  */
-class GlobalProxy implements SerializationProxy {
+class GlobalProxy implements SerializationProxyInterface {
     private static final long serialVersionUID = -3200125667487274257L;
 
     boolean shared;
@@ -79,14 +79,14 @@ class GlobalProxy implements SerializationProxy {
 /**
  * Serialization proxy for various flavors of HopObjects/Nodes
  */
-class HopObjectProxy implements SerializationProxy {
+class HopObjectProxy implements SerializationProxyInterface {
     private static final long serialVersionUID = -4808579296683836009L;
 
     Object ref;
     boolean wrapped = false;
 
     HopObjectProxy(HopObject obj) {
-        INode n = obj.getNode();
+        NodeInterface n = obj.getNode();
         if (n == null) {
             this.ref = obj.getClassName();
         } else {

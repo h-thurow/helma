@@ -17,8 +17,8 @@
 package helma.objectmodel.db;
 
 import helma.objectmodel.DatabaseException;
-import helma.objectmodel.INodeState;
-import helma.objectmodel.ITransaction;
+import helma.objectmodel.NodeStateInterface;
+import helma.objectmodel.TransactionInterface;
 
 import java.sql.Connection;
 import java.sql.Statement;
@@ -50,7 +50,7 @@ public class Transactor {
     private volatile boolean killed;
 
     // Transaction for the embedded database
-    protected ITransaction txn;
+    protected TransactionInterface txn;
 
     // Transactions for SQL data sources
     private Map sqlConnections;
@@ -132,9 +132,9 @@ public class Transactor {
      */
     public void visitDirtyNode(Node node) {
         if (node != null) {
-            Key key = node.getKey();
+            KeyInterface key = node.getKey();
 
-            if (node.getState() == INodeState.DELETED && this.dirtyNodes.containsKey(key)) {
+            if (node.getState() == NodeStateInterface.DELETED && this.dirtyNodes.containsKey(key)) {
             	// remove a known deleted node (will be re-added at the end of the list),
             	// because it might not have been deleted yet when we were last modified
             	// about it being dirty, which could result in a on commit removal order
@@ -154,7 +154,7 @@ public class Transactor {
      */
     public void dropDirtyNode(Node node) {
         if (node != null) {
-            Key key = node.getKey();
+            KeyInterface key = node.getKey();
 
             this.dirtyNodes.remove(key);
         }
@@ -165,7 +165,7 @@ public class Transactor {
      * @param key the key
      * @return the dirty node associated with the key, or null
      */
-    public Node getDirtyNode(Key key) {
+    public Node getDirtyNode(KeyInterface key) {
         return (Node) this.dirtyNodes.get(key);
     }
 
@@ -176,7 +176,7 @@ public class Transactor {
      */
     public void visitCleanNode(Node node) {
         if (node != null) {
-            Key key = node.getKey();
+            KeyInterface key = node.getKey();
 
             if (!this.cleanNodes.containsKey(key)) {
                 this.cleanNodes.put(key, node);
@@ -190,7 +190,7 @@ public class Transactor {
      * @param key the key to register with
      * @param node the node to register
      */
-    public void visitCleanNode(Key key, Node node) {
+    public void visitCleanNode(KeyInterface key, Node node) {
         if (node != null) {
             if (!this.cleanNodes.containsKey(key)) {
                 this.cleanNodes.put(key, node);
@@ -202,7 +202,7 @@ public class Transactor {
      * Drop a reference to an unmodified Node previously registered with visitCleanNode().
      * @param key the key
      */
-    public void dropCleanNode(Key key) {
+    public void dropCleanNode(KeyInterface key) {
         this.cleanNodes.remove(key);
     }
 
@@ -416,27 +416,27 @@ public class Transactor {
                 // update nodes in db
                 int nstate = node.getState();
 
-                if (nstate == INodeState.NEW) {
+                if (nstate == NodeStateInterface.NEW) {
                     this.nmgr.insertNode(this.nmgr.db, this.txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
-                    node.setState(INodeState.CLEAN);
+                    node.setState(NodeStateInterface.CLEAN);
 
                     // register node with nodemanager cache
                     this.nmgr.registerNode(node);
 
                     transaction.addInsertedNode(node);
-                } else if (nstate == INodeState.MODIFIED) {
+                } else if (nstate == NodeStateInterface.MODIFIED) {
                     // only mark DbMapping as dirty if updateNode returns true
                     if (this.nmgr.updateNode(this.nmgr.db, this.txn, node)) {
                         dirtyDbMappings.add(node.getDbMapping());
                     }
-                    node.setState(INodeState.CLEAN);
+                    node.setState(NodeStateInterface.CLEAN);
 
                     // update node with nodemanager cache
                     this.nmgr.registerNode(node);
 
                     transaction.addModifiedNode(node);
-                } else if (nstate == INodeState.DELETED) {
+                } else if (nstate == NodeStateInterface.DELETED) {
                     this.nmgr.deleteNode(this.nmgr.db, this.txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
 

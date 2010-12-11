@@ -17,9 +17,9 @@
 package helma.objectmodel.dom;
 
 
-import helma.objectmodel.INode;
-import helma.objectmodel.IProperty;
-import helma.objectmodel.INodeState;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.PropertyInterface;
+import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Node;
 import helma.util.HtmlEncoder;
@@ -33,7 +33,7 @@ import java.util.Vector;
 /**
  * 
  */
-public class XmlWriter extends OutputStreamWriter implements XmlConstants {
+public class XmlWriter extends OutputStreamWriter implements XmlConstantsInterface {
     private final static String LINESEPARATOR = System.getProperty("line.separator"); //$NON-NLS-1$
     private static int fileid;
     private Vector convertedNodes;
@@ -43,7 +43,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
     private SimpleDateFormat format = new SimpleDateFormat(DATEFORMAT);
     private boolean dbmode = true;
 
-    // the helma.objectmodel.INodeState of the node we're writing
+    // the helma.objectmodel.NodeStateInterface of the node we're writing
     public int rootState;
 
     // Only add encoding to XML declaration if it was explicitly set, not when we're using
@@ -184,7 +184,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * creates document header too and initializes
      * the cache of already converted nodes.
      */
-    public boolean write(INode node) throws IOException {
+    public boolean write(NodeInterface node) throws IOException {
         this.rootState = node.getState();
         this.convertedNodes = new Vector();
 
@@ -213,7 +213,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * references are made here if a node already has been fully printed
      * or if this is the last level that's going to be dumped
      */
-    public void write(INode node, String elementName, String propName, int level)
+    public void write(NodeInterface node, String elementName, String propName, int level)
                throws IOException {
         if (node == null) {
             return;
@@ -234,8 +234,8 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
 
         if (this.convertedNodes.contains(node)) {
             writeReferenceTag(node, elementName, propName);
-        } else if (this.rootState == INodeState.TRANSIENT &&
-                   node.getState() > INodeState.TRANSIENT) {
+        } else if (this.rootState == NodeStateInterface.TRANSIENT &&
+                   node.getState() > NodeStateInterface.TRANSIENT) {
             // if we are writing a transient node, and that node
             // holds a reference to a persistent one, just write a
             // reference tag to that persistent node.
@@ -245,7 +245,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
             this.convertedNodes.addElement(node);
             writeTagOpen(node, elementName, propName);
 
-            INode parent = node.getParent();
+            NodeInterface parent = node.getParent();
 
             if (parent != null) {
                 writeReferenceTag(parent, "hop:parent", null); //$NON-NLS-1$
@@ -263,7 +263,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * loop through properties and print them with their property-name
      * as elementname
      */
-    private void writeProperties(INode node, int level)
+    private void writeProperties(NodeInterface node, int level)
                           throws IOException {
         Enumeration e = null;
 
@@ -286,7 +286,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
             if (this.dbmode && key.charAt(0) == '_') {
                 continue;
             }
-            IProperty prop = node.get(key);
+            PropertyInterface prop = node.get(key);
 
             if (prop != null) {
                 boolean validName = isValidElementName(key);
@@ -303,7 +303,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
 
                 int type = prop.getType();
 
-                if (type == IProperty.NODE) {
+                if (type == PropertyInterface.NODE) {
                     write(prop.getNodeValue(), elementName, propName, level);
                 } else {
                     writeProperty(prop, elementName, propName);
@@ -325,12 +325,12 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * write a single property, set attribute type according to type,
      * apply xml-encoding.
      */
-    public void writeProperty(IProperty property, String elementName, String propName)
+    public void writeProperty(PropertyInterface property, String elementName, String propName)
                        throws IOException {
         int propType = property.getType();
 
         // we can't encode java objects in XML
-        if (propType == IProperty.JAVAOBJECT) {
+        if (propType == PropertyInterface.JAVAOBJECT) {
             return;
         }
 
@@ -346,31 +346,31 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
         }
 
         switch (propType) {
-            case IProperty.BOOLEAN:
+            case PropertyInterface.BOOLEAN:
                 write(" type=\"boolean\">"); //$NON-NLS-1$
                 write(property.getStringValue());
 
                 break;
 
-            case IProperty.FLOAT:
+            case PropertyInterface.FLOAT:
                 write(" type=\"float\">"); //$NON-NLS-1$
                 write(property.getStringValue());
 
                 break;
 
-            case IProperty.INTEGER:
+            case PropertyInterface.INTEGER:
                 write(" type=\"integer\">"); //$NON-NLS-1$
                 write(property.getStringValue());
 
                 break;
 
-            case IProperty.DATE:
+            case PropertyInterface.DATE:
                 write(" type=\"date\">"); //$NON-NLS-1$
                 write(this.format.format(property.getDateValue()));
 
                 break;
 
-            case IProperty.STRING:
+            case PropertyInterface.STRING:
                 write(">"); //$NON-NLS-1$
 
                 String str = HtmlEncoder.encodeXml(property.getStringValue());
@@ -390,7 +390,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
     /**
      * loop through the children-array and print them as <hop:child>
      */
-    private void writeChildren(INode node, int level) throws IOException {
+    private void writeChildren(NodeInterface node, int level) throws IOException {
         if (this.dbmode && node instanceof Node) {
             Node dbNode = (Node) node;
             DbMapping smap = (dbNode.getDbMapping() == null) ? null
@@ -405,7 +405,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
         Enumeration e = node.getSubnodes();
 
         while (e.hasMoreElements()) {
-            INode nextNode = (INode) e.nextElement();
+            NodeInterface nextNode = (NodeInterface) e.nextElement();
 
             write(nextNode, "hop:child", null, level); //$NON-NLS-1$
         }
@@ -415,7 +415,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * write an opening tag for a node. Include id and prototype, use a
      * name if parameter is non-empty.
      */
-    public void writeTagOpen(INode node, String name, String propName)
+    public void writeTagOpen(NodeInterface node, String name, String propName)
                       throws IOException {
         write(this.prefix.toString());
         write("<"); //$NON-NLS-1$
@@ -459,7 +459,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
      * been written out before.
      * e.g. <parent idref="35" prototyperef="hopobject"/>
      */
-    public void writeReferenceTag(INode node, String name, String propName)
+    public void writeReferenceTag(NodeInterface node, String name, String propName)
                            throws IOException {
         write(this.prefix.toString());
         write("<"); //$NON-NLS-1$
@@ -481,7 +481,7 @@ public class XmlWriter extends OutputStreamWriter implements XmlConstants {
     /**
      * retrieve prototype-string of a node, defaults to "hopobject"
      */
-    private String getNodePrototype(INode node) {
+    private String getNodePrototype(NodeInterface node) {
         if ((node.getPrototype() == null) || "".equals(node.getPrototype())) { //$NON-NLS-1$
             return "hopobject"; //$NON-NLS-1$
         }

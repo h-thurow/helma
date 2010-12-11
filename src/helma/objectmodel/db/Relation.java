@@ -17,9 +17,9 @@
 package helma.objectmodel.db;
 
 import helma.framework.core.Application;
-import helma.objectmodel.INode;
-import helma.objectmodel.INodeState;
-import helma.objectmodel.IProperty;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.NodeStateInterface;
+import helma.objectmodel.PropertyInterface;
 import helma.util.StringUtils;
 
 import java.sql.SQLException;
@@ -1026,7 +1026,7 @@ public final class Relation {
     /**
      *  Build the filter.
      */
-    protected void appendFilter(StringBuffer q, INode nonvirtual, String prefix) {
+    protected void appendFilter(StringBuffer q, NodeInterface nonvirtual, String prefix) {
         q.append(prefix);
         q.append('(');
         if (this.filterFragments == null) {
@@ -1045,7 +1045,7 @@ public final class Relation {
                         String propertyName = dbmap.columnNameToProperty(columnName);
                         if (propertyName == null)
                             propertyName = columnName;
-                        IProperty property = nonvirtual.get(propertyName);
+                        PropertyInterface property = nonvirtual.get(propertyName);
                         if (property != null) {
                             value = property.getStringValue();
                         }
@@ -1235,7 +1235,7 @@ public final class Relation {
         int count = 0;
         int satisfied = 0;
 
-        INode nonvirtual = parent.getNonVirtualParent();
+        NodeInterface nonvirtual = parent.getNonVirtualParent();
         DbMapping otherDbm = child.getDbMapping();
         if (otherDbm == null) {
             otherDbm = this.otherType;
@@ -1246,7 +1246,7 @@ public final class Relation {
             String propname = cnst.foreignProperty(otherDbm);
 
             if (propname != null) {
-                INode home = cnst.isGroupby ? parent
+                NodeInterface home = cnst.isGroupby ? parent
                                             : nonvirtual;
                 String value = null;
 
@@ -1309,7 +1309,7 @@ public final class Relation {
                     throw new RuntimeException(Messages.getString("Relation.13") + cnst.localKey + //$NON-NLS-1$
                        Messages.getString("Relation.14") + //$NON-NLS-1$
                        Relation.this);
-                } else if (foreignIsPrimary && child.getState() == INodeState.TRANSIENT) {
+                } else if (foreignIsPrimary && child.getState() == NodeStateInterface.TRANSIENT) {
                     throw new RuntimeException(this.propName + Messages.getString("Relation.15") + //$NON-NLS-1$
                        Messages.getString("Relation.16") + localProp); //$NON-NLS-1$
                 } else {
@@ -1332,7 +1332,7 @@ public final class Relation {
                 if (cnst.localKeyIsPrimary(home.getDbMapping())) {
                     // only set node if property in child object is defined as reference.
                     if (crel.reftype == REFERENCE) {
-                        INode currentValue = child.getNode(crel.propName);
+                        NodeInterface currentValue = child.getNode(crel.propName);
 
                         // we set the backwards reference iff the reference is currently unset, if
                         // is set to a transient object, or if the new target is not transient. This
@@ -1340,15 +1340,15 @@ public final class Relation {
                         // which would most probably not be what we want.
                         if ((currentValue == null) ||
                                 ((currentValue != home) &&
-                                ((currentValue.getState() == INodeState.TRANSIENT) ||
-                                (home.getState() != INodeState.TRANSIENT)))) try {
+                                ((currentValue.getState() == NodeStateInterface.TRANSIENT) ||
+                                (home.getState() != NodeStateInterface.TRANSIENT)))) try {
                             child.setNode(crel.propName, home);
                         } catch (Exception ignore) {
                             // in some cases, getNonVirtualParent() doesn't work
                             // correctly for transient nodes, so this may fail.
                         }
                     } else if (crel.reftype == PRIMITIVE) {
-                        if (home.getState() == INodeState.TRANSIENT) {
+                        if (home.getState() == NodeStateInterface.TRANSIENT) {
                             throw new RuntimeException(Messages.getString("Relation.17") + crel); //$NON-NLS-1$
                         }
                         child.setString(crel.propName, home.getID());
@@ -1375,7 +1375,7 @@ public final class Relation {
     /**
      * Unset the constraints that link two objects together.
      */
-    public void unsetConstraints(Node parent, INode child) {
+    public void unsetConstraints(Node parent, NodeInterface child) {
         Node home = parent.getNonVirtualParent();
 
         for (int i = 0; i < this.constraints.length; i++) {
@@ -1408,7 +1408,7 @@ public final class Relation {
                 if (cnst.localKeyIsPrimary(home.getDbMapping())) {
                     // only set node if property in child object is defined as reference.
                     if (crel.reftype == REFERENCE) {
-                        INode currentValue = child.getNode(crel.propName);
+                        NodeInterface currentValue = child.getNode(crel.propName);
 
                         if ((currentValue == home)) {
                             child.setString(crel.propName, null);
@@ -1426,7 +1426,7 @@ public final class Relation {
     /**
      *  Returns a map containing the key/value pairs for a specific Node
      */
-    public Map getKeyParts(INode home) {
+    public Map getKeyParts(NodeInterface home) {
         Map map = new HashMap();
         for (int i=0; i<this.constraints.length; i++) {
             Constraint cnst = this.constraints[i];
@@ -1484,10 +1484,10 @@ public final class Relation {
             this.isGroupby = groupby;
         }
 
-        public void addToQuery(StringBuffer q, INode home, INode nonvirtual, DbMapping otherDbm)
+        public void addToQuery(StringBuffer q, NodeInterface home, NodeInterface nonvirtual, DbMapping otherDbm)
                         throws SQLException, ClassNotFoundException {
             String local;
-            INode ref = this.isGroupby ? home : nonvirtual;
+            NodeInterface ref = this.isGroupby ? home : nonvirtual;
 
             if (localKeyIsPrimary(ref.getDbMapping())) {
                 local = ref.getID();

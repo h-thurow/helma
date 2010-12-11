@@ -17,10 +17,10 @@
 package helma.framework.core;
 
 import helma.framework.*;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.objectmodel.ConcurrencyException;
 import helma.util.*;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 
 import java.util.*;
 import java.io.Reader;
@@ -117,7 +117,7 @@ public final class Skin {
         parse();
     }
 
-    public static Skin getSkin(Resource res, Application app) throws IOException {
+    public static Skin getSkin(ResourceInterface res, Application app) throws IOException {
         String encoding = app.getProperty("skinCharset"); //$NON-NLS-1$
         Reader reader;
         if (encoding == null) {
@@ -666,7 +666,7 @@ public final class Skin {
 
             Object handler = null;
             Object value = null;
-            ScriptingEngine engine = cx.reval.scriptingEngine;
+            ScriptingEngineInterface engine = cx.reval.scriptingEngine;
 
             if (this.handlerType != HANDLER_GLOBAL) {
                 handler = cx.resolveHandler(this.path[0], this.handlerType);
@@ -914,7 +914,7 @@ public final class Skin {
         }
 
         private String resolveFunctionName(Object handler, String functionName,
-                                           ScriptingEngine engine) {
+                                           ScriptingEngineInterface engine) {
             if (this.handlerType == HANDLER_GLOBAL) {
                 String[] macroPath = Skin.this.app.globalMacroPath;
                 if (macroPath == null || macroPath.length == 0) {
@@ -1076,7 +1076,7 @@ public final class Skin {
                 Skin.this.app.logEvent(Messages.getString("Skin.12") + value); //$NON-NLS-1$
         }
 
-        boolean verboseFailmode(Object handler, ScriptingEngine engine) {
+        boolean verboseFailmode(Object handler, ScriptingEngineInterface engine) {
             return (this.failmode == FAIL_VERBOSE) ||
                    (this.failmode == FAIL_DEFAULT &&
                        (handler == null ||

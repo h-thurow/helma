@@ -17,8 +17,8 @@
 package helma.framework.core;
 
 import helma.objectmodel.db.DbMapping;
-import helma.framework.repository.Resource;
-import helma.framework.repository.Repository;
+import helma.framework.repository.ResourceInterface;
+import helma.framework.repository.RepositoryInterface;
 import helma.util.StringUtils;
 
 import java.io.*;
@@ -126,8 +126,8 @@ public final class TypeManager {
         this.lastCheck = System.currentTimeMillis();
     }
 
-    protected synchronized void checkRepository(Repository repository, boolean update) throws IOException {
-        Repository[] list = repository.getRepositories();
+    protected synchronized void checkRepository(RepositoryInterface repository, boolean update) throws IOException {
+        RepositoryInterface[] list = repository.getRepositories();
         for (int i = 0; i < list.length; i++) {
  
             // ignore dir name found - compare to shortname (= Prototype name)
@@ -164,7 +164,7 @@ public final class TypeManager {
         Iterator resources = repository.getResources();
         while (resources.hasNext()) {
             // check for jar files to add to class loader
-            Resource resource = (Resource) resources.next();
+            ResourceInterface resource = (ResourceInterface) resources.next();
             String name = resource.getName();
             if (name.endsWith(".jar")) { //$NON-NLS-1$
                 if (!this.jarfiles.contains(name)) {
@@ -188,7 +188,7 @@ public final class TypeManager {
 
         // walk through repositories and check if any of them have changed.
         for (int i = 0; i < list.size(); i++) {
-            Repository repository = (Repository) list.get(i);
+            RepositoryInterface repository = (RepositoryInterface) list.get(i);
             long lastScan = this.lastRepoScan.containsKey(repository) ?
                     ((Long) this.lastRepoScan.get(repository)).longValue() : 0;
             if (repository.lastModified() != lastScan) {
@@ -297,7 +297,7 @@ public final class TypeManager {
      * @param typeProps custom type mapping properties
      * @return the newly created prototype
      */
-    public synchronized Prototype createPrototype(String typename, Repository repository, Map typeProps) {
+    public synchronized Prototype createPrototype(String typename, RepositoryInterface repository, Map typeProps) {
         if ("true".equalsIgnoreCase(this.app.getProperty("helma.debugTypeManager"))) { //$NON-NLS-1$ //$NON-NLS-2$
             System.err.println(Messages.getString("TypeManager.6") + typename + Messages.getString("TypeManager.7") + repository + Messages.getString("TypeManager.8") + Thread.currentThread()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             // Thread.dumpStack();

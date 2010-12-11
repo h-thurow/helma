@@ -16,7 +16,7 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.INodeState;
+import helma.objectmodel.NodeStateInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -180,7 +180,7 @@ public class SubnodeList implements Serializable {
     protected boolean hasRelationalNodes() {
         DbMapping dbmap = getSubnodeMapping();
         return (dbmap != null && dbmap.isRelational()
-                && ((this.node.getState() != INodeState.TRANSIENT &&  this.node.getState() != INodeState.NEW)
+                && ((this.node.getState() != NodeStateInterface.TRANSIENT &&  this.node.getState() != NodeStateInterface.NEW)
                     || this.node.getSubnodeRelation() != null));
     }
 

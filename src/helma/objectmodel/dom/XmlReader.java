@@ -16,7 +16,7 @@
 
 package helma.objectmodel.dom;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.db.WrappedNodeManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -36,10 +36,10 @@ import java.util.Stack;
 /**
  * 
  */
-public final class XmlReader extends DefaultHandler implements XmlConstants {
+public final class XmlReader extends DefaultHandler implements XmlConstantsInterface {
     static SAXParserFactory factory = SAXParserFactory.newInstance();
-    private INode rootNode;
-    private INode currentNode;
+    private NodeInterface rootNode;
+    private NodeInterface currentNode;
     private Stack nodeStack;
     private HashMap convertedNodes;
     private String elementType = null;
@@ -58,7 +58,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
     /**
      * main entry to read an xml-file.
      */
-    public INode read(File file, INode helmaNode)
+    public NodeInterface read(File file, NodeInterface helmaNode)
                throws ParserConfigurationException, SAXException, IOException {
         try {
             return read(new FileInputStream(file), helmaNode);
@@ -72,7 +72,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
     /**
      * read an InputStream with xml-content.
      */
-    public INode read(InputStream in, INode helmaNode)
+    public NodeInterface read(InputStream in, NodeInterface helmaNode)
                throws ParserConfigurationException, SAXException, IOException {
         return read(new InputSource(in), helmaNode);
     }
@@ -80,7 +80,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
     /**
      * read an character reader with xml-content.
      */
-    public INode read(Reader in, INode helmaNode)
+    public NodeInterface read(Reader in, NodeInterface helmaNode)
                throws ParserConfigurationException, SAXException, IOException {
         return read(new InputSource(in), helmaNode);
     }
@@ -88,7 +88,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
     /**
      * read an InputSource with xml-content.
      */
-    public INode read(InputSource in, INode helmaNode)
+    public NodeInterface read(InputSource in, NodeInterface helmaNode)
                throws ParserConfigurationException, SAXException, IOException {
         if (helmaNode == null) {
             throw new RuntimeException(Messages.getString("XmlReader.1")); //$NON-NLS-1$
@@ -193,7 +193,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
             // and lying in our cache of parsed nodes.
             String prototyperef = atts.getValue("prototyperef"); //$NON-NLS-1$
             String key = idref + "-" + prototyperef; //$NON-NLS-1$
-            INode n = (INode) this.convertedNodes.get(key);
+            NodeInterface n = (NodeInterface) this.convertedNodes.get(key);
 
             // if not a reference to a node we already read, try to
             // resolve against the NodeManager.
@@ -313,7 +313,7 @@ public final class XmlReader extends DefaultHandler implements XmlConstants {
         }
 
         if (this.parsingHopObject && !this.nodeStack.isEmpty()) {
-            this.currentNode = (INode) this.nodeStack.pop();
+            this.currentNode = (NodeInterface) this.nodeStack.pop();
         } else {
             this.parsingHopObject = true; // the next element end tag closes a hopobject again
         }

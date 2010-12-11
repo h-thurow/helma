@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import helma.framework.core.Application;
-import helma.objectmodel.ObjectCache;
+import helma.objectmodel.ObjectCacheInterface;
 
 
 /// A Hashtable that expires least-recently-used objects.
@@ -48,7 +48,7 @@ import helma.objectmodel.ObjectCache;
 // <P>
 // @see java.util.Hashtable
 
-public class CacheMap implements ObjectCache {
+public class CacheMap implements ObjectCacheInterface {
 
     // Load factor.
     private float loadFactor;

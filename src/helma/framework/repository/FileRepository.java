@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Repository implementation for directories providing file resources
+ * RepositoryInterface implementation for directories providing file resources
  */
 public class FileRepository extends AbstractRepository {
 
@@ -61,7 +61,7 @@ public class FileRepository extends AbstractRepository {
      * @param dir directory
      * @param parent the parent repository, or null
      */
-    public FileRepository(File dir, Repository parent) {
+    public FileRepository(File dir, RepositoryInterface parent) {
         // make sure our directory has an absolute path,
         // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4117557
         if (dir.isAbsolute()) {
@@ -168,8 +168,8 @@ public class FileRepository extends AbstractRepository {
                 }
             }
 
-            this.repositories = (Repository[])
-                    newRepositories.toArray(new Repository[newRepositories.size()]);
+            this.repositories = (RepositoryInterface[])
+                    newRepositories.toArray(new RepositoryInterface[newRepositories.size()]);
             this.resources = newResources;
         }
     }
@@ -178,7 +178,7 @@ public class FileRepository extends AbstractRepository {
      * Called to create a child resource for this repository
      */
     @Override
-    protected Resource createResource(String name) {
+    protected ResourceInterface createResource(String name) {
         return new FileResource(new File(this.directory, name), this);
     }
 

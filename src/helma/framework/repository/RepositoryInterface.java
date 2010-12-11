@@ -21,11 +21,11 @@ import java.util.Iterator;
 import java.io.IOException;
 
 /**
- * Repository represents an abstract container of resources (e.g. code, skins, ...).
+ * RepositoryInterface represents an abstract container of resources (e.g. code, skins, ...).
  * In addition to resources, repositories may contain other repositories, building
  * a hierarchical structure.
  */
-public interface Repository {
+public interface RepositoryInterface {
 
     /**
      * Checksum of the repository and all its content. Implementations
@@ -51,7 +51,7 @@ public interface Repository {
      * @param resourceName name of the child resource to return
      * @return specified child resource
      */
-    public Resource getResource(String resourceName);
+    public ResourceInterface getResource(String resourceName);
 
     /**
      * Returns all direct resources
@@ -75,7 +75,7 @@ public interface Repository {
      * @return direct repositories
      * @throws IOException
      */
-    public Repository[] getRepositories() throws IOException;
+    public RepositoryInterface[] getRepositories() throws IOException;
 
     /**
      * Checks wether the repository actually (or still) exists
@@ -108,7 +108,7 @@ public interface Repository {
      *
      * @return the parent repository
      */
-    public Repository getParentRepository();
+    public RepositoryInterface getParentRepository();
 
     /**
      * Get this repository's logical script root repository.
@@ -116,7 +116,7 @@ public interface Repository {
      * @see {isScriptRoot()}
      * @return top-level repository
      */
-    public Repository getRootRepository();
+    public RepositoryInterface getRootRepository();
 
     /**
      * Returns the name of the repository; this is a full name including all

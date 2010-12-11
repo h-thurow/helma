@@ -20,7 +20,7 @@
 
 package helma.objectmodel;
 
-import helma.framework.IPathElement;
+import helma.framework.PathElementInterface;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Relation;
 import helma.objectmodel.db.Node;
@@ -34,11 +34,11 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * A transient implementation of INode. An instance of this class can't be
+ * A transient implementation of NodeInterface. An instance of this class can't be
  * made persistent by reachability from a persistent node. To make a persistent-capable
  * object, class helma.objectmodel.db.Node has to be used.
  */
-public class TransientNode implements INode, Serializable {
+public class TransientNode implements NodeInterface, Serializable {
     private static final long serialVersionUID = -4599844796152072979L;
 
     private static long idgen = 0;
@@ -55,7 +55,7 @@ public class TransientNode implements INode, Serializable {
     // is the main identity a named property or an anonymous node in a collection?
     protected boolean anonymous = false;
     transient DbMapping dbmap;
-    INode cacheNode;
+    NodeInterface cacheNode;
 
     /**
      * Creates a new TransientNode object.
@@ -119,7 +119,7 @@ public class TransientNode implements INode, Serializable {
         return getFullName(null);
     }
 
-    public String getFullName(INode root) {
+    public String getFullName(NodeInterface root) {
         String divider = null;
         StringBuffer b = new StringBuffer();
         TransientNode p = this;
@@ -161,7 +161,7 @@ public class TransientNode implements INode, Serializable {
         this.prototype = proto;
     }
 
-    public INode getParent() {
+    public NodeInterface getParent() {
         return this.parent;
     }
 
@@ -177,11 +177,11 @@ public class TransientNode implements INode, Serializable {
         return (this.nodes == null) ? 0 : this.nodes.size();
     }
 
-    public INode addNode(INode elem) {
+    public NodeInterface addNode(NodeInterface elem) {
         return addNode(elem, numberOfNodes());
     }
 
-    public INode addNode(INode elem, int where) {
+    public NodeInterface addNode(NodeInterface elem, int where) {
         if ((where < 0) || (where > numberOfNodes())) {
             where = numberOfNodes();
         }
@@ -224,26 +224,26 @@ public class TransientNode implements INode, Serializable {
         return elem;
     }
 
-    public INode createNode() {
+    public NodeInterface createNode() {
         return createNode(null, 0); // where is ignored since this is an anonymous node
     }
 
-    public INode createNode(int where) {
+    public NodeInterface createNode(int where) {
         return createNode(null, where);
     }
 
-    public INode createNode(String nm) {
+    public NodeInterface createNode(String nm) {
         return createNode(nm, numberOfNodes()); // where is usually ignored (if nm != null)
     }
 
-    public INode createNode(String nm, int where) {
+    public NodeInterface createNode(String nm, int where) {
         boolean anon = false;
 
         if ((nm == null) || "".equals(nm.trim())) { //$NON-NLS-1$
             anon = true;
         }
 
-        INode n = new TransientNode(nm);
+        NodeInterface n = new TransientNode(nm);
 
         if (anon) {
             addNode(n, where);
@@ -255,15 +255,15 @@ public class TransientNode implements INode, Serializable {
     }
 
 
-    public IPathElement getParentElement() {
+    public PathElementInterface getParentElement() {
         return getParent();
     }
 
-    public IPathElement getChildElement(String name) {
+    public PathElementInterface getChildElement(String name) {
         return getNode(name);
     }
 
-    public INode getSubnode(String name) {
+    public NodeInterface getSubnode(String name) {
         StringTokenizer st = new StringTokenizer(name, "/"); //$NON-NLS-1$
         TransientNode retval = this;
         TransientNode runner;
@@ -288,11 +288,11 @@ public class TransientNode implements INode, Serializable {
         return retval;
     }
 
-    public INode getSubnodeAt(int index) {
-        return (this.nodes == null) ? null : (INode) this.nodes.elementAt(index);
+    public NodeInterface getSubnodeAt(int index) {
+        return (this.nodes == null) ? null : (NodeInterface) this.nodes.elementAt(index);
     }
 
-    public int contains(INode n) {
+    public int contains(NodeInterface n) {
         if ((n == null) || (this.nodes == null)) {
             return -1;
         }
@@ -310,7 +310,7 @@ public class TransientNode implements INode, Serializable {
         return true;
     }
 
-    public void removeNode(INode node) {
+    public void removeNode(NodeInterface node) {
         // IServer.getLogger().log ("removing: "+ node);
         releaseNode(node);
 
@@ -337,7 +337,7 @@ public class TransientNode implements INode, Serializable {
      * "Physically" remove a subnode from the subnodes table.
      * the logical stuff necessary for keeping data consistent is done elsewhere (in removeNode).
      */
-    protected void releaseNode(INode node) {
+    protected void releaseNode(NodeInterface node) {
         if ((this.nodes == null) || (this.nodeMap == null)) {
 
             return;
@@ -389,7 +389,7 @@ public class TransientNode implements INode, Serializable {
     }
 
     private TransientProperty makeVirtualNode(String propname, Relation rel) {
-        INode node = new Node(rel.getPropName(), rel.getPrototype(),
+        NodeInterface node = new Node(rel.getPropName(), rel.getPrototype(),
                                                    this.dbmap.getWrappedNodeManager());
 
         node.setDbMapping(rel.getVirtualMapping());
@@ -398,7 +398,7 @@ public class TransientNode implements INode, Serializable {
         return (TransientProperty) this.propMap.get(propname);
     }
 
-    public IProperty get(String propname) {
+    public PropertyInterface get(String propname) {
         return getProperty(propname);
     }
 
@@ -463,7 +463,7 @@ public class TransientNode implements INode, Serializable {
         return false;
     }
 
-    public INode getNode(String propname) {
+    public NodeInterface getNode(String propname) {
         TransientProperty prop = getProperty(propname);
 
         try {
@@ -538,7 +538,7 @@ public class TransientNode implements INode, Serializable {
         this.lastmodified = System.currentTimeMillis();
     }
 
-    public void setNode(String propname, INode value) {
+    public void setNode(String propname, NodeInterface value) {
         TransientProperty prop = initProperty(propname);
         prop.setNodeValue(value);
 
@@ -582,7 +582,7 @@ public class TransientNode implements INode, Serializable {
      * be used to store transient cache data per node
      * from Javascript.
      */
-    public synchronized INode getCacheNode() {
+    public synchronized NodeInterface getCacheNode() {
         if (this.cacheNode == null) {
             this.cacheNode = new TransientNode();
         }

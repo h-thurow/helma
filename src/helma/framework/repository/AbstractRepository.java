@@ -26,18 +26,18 @@ import java.io.IOException;
  * Provides common methods and fields for the default implementations of the
  * repository interface
  */
-public abstract class AbstractRepository implements Repository {
+public abstract class AbstractRepository implements RepositoryInterface {
 
 
     /**
      * Parent repository this repository is contained in.
      */
-    Repository parent;
+    RepositoryInterface parent;
 
     /**
      * Holds direct child repositories
      */
-    Repository[] repositories;
+    RepositoryInterface[] repositories;
 
     /**
      * Holds direct resources
@@ -57,7 +57,7 @@ public abstract class AbstractRepository implements Repository {
     /*
      * empty repository array for convenience
      */
-    final static Repository[] emptyRepositories = new Repository[0]; 
+    final static RepositoryInterface[] emptyRepositories = new RepositoryInterface[0]; 
 
     /**
      * Called to check the repository's content.
@@ -67,7 +67,7 @@ public abstract class AbstractRepository implements Repository {
     /**
      * Called to create a child resource for this repository
      */
-    protected abstract Resource createResource(String name);
+    protected abstract ResourceInterface createResource(String name);
 
     /**
      * Get the full name that identifies this repository globally
@@ -89,7 +89,7 @@ public abstract class AbstractRepository implements Repository {
      *
      *@see {isScriptRoot()}
      */
-    public Repository getRootRepository() {
+    public RepositoryInterface getRootRepository() {
         if (this.parent == null || isScriptRoot()) {
             return this;
         }
@@ -99,12 +99,12 @@ public abstract class AbstractRepository implements Repository {
     /**
      * Get a resource contained in this repository identified by the given local name.
      * If the name can't be resolved to a resource, a resource object is returned
-     * for which {@link Resource exists()} returns <code>false<code>.
+     * for which {@link ResourceInterface exists()} returns <code>false<code>.
      */
-    public synchronized Resource getResource(String name) {
+    public synchronized ResourceInterface getResource(String name) {
         update();
 
-        Resource res = (Resource) this.resources.get(name);
+        ResourceInterface res = (ResourceInterface) this.resources.get(name);
         // if resource does not exist, create it
         if (res == null) {
             res = createResource(name);
@@ -125,7 +125,7 @@ public abstract class AbstractRepository implements Repository {
     /**
      * Get an iterator over the sub-repositories contained in this repository.
      */
-    public synchronized Repository[] getRepositories() {
+    public synchronized RepositoryInterface[] getRepositories() {
         update();
 
         return this.repositories;
@@ -134,7 +134,7 @@ public abstract class AbstractRepository implements Repository {
     /**
      * Get this repository's parent repository.
      */
-    public Repository getParentRepository() {
+    public RepositoryInterface getParentRepository() {
         return this.parent;
     }
 

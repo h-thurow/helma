@@ -38,8 +38,8 @@ public class ResourceComparator implements Comparator {
 
     /**
      * Compares two Repositories, Resources or RepositoryTrackers
-     * @param obj1 Repository, Resource or RepositoryTrackers
-     * @param obj2 Repository, Resource or RepositoryTrackers
+     * @param obj1 RepositoryInterface, ResourceInterface or RepositoryTrackers
+     * @param obj2 RepositoryInterface, ResourceInterface or RepositoryTrackers
      * @return a negative integer, zero, or a positive integer as the
      * 	       first argument is less than, equal to, or greater than the
      *	       second.
@@ -50,8 +50,8 @@ public class ResourceComparator implements Comparator {
         if (obj1.equals(obj2))
             return 0;
 
-        Repository rep1 = getRootRepository(obj1);
-        Repository rep2 = getRootRepository(obj2);
+        RepositoryInterface rep1 = getRootRepository(obj1);
+        RepositoryInterface rep2 = getRootRepository(obj2);
 
         int pos1 = this.app.getRepositoryIndex(rep1);
         int pos2 = this.app.getRepositoryIndex(rep2);
@@ -88,22 +88,22 @@ public class ResourceComparator implements Comparator {
         return this.app;
     }
 
-    private Repository getRootRepository(Object obj) {
-        if (obj instanceof Resource)
-            return ((Resource) obj).getRepository()
+    private RepositoryInterface getRootRepository(Object obj) {
+        if (obj instanceof ResourceInterface)
+            return ((ResourceInterface) obj).getRepository()
                                    .getRootRepository();
-        if (obj instanceof Repository)
-            return ((Repository) obj).getRootRepository();
+        if (obj instanceof RepositoryInterface)
+            return ((RepositoryInterface) obj).getRootRepository();
 
         // something we can't compare
         throw new IllegalArgumentException(Messages.getString("ResourceComparator.0")+obj); //$NON-NLS-1$
     }
 
     private String getFullName(Object obj) {
-        if (obj instanceof Resource)
-            return ((Resource) obj).getName();
-        if (obj instanceof Repository)
-            return ((Repository) obj).getName();
+        if (obj instanceof ResourceInterface)
+            return ((ResourceInterface) obj).getName();
+        if (obj instanceof RepositoryInterface)
+            return ((RepositoryInterface) obj).getName();
 
         // something we can't compare
         throw new IllegalArgumentException(Messages.getString("ResourceComparator.1")+obj); //$NON-NLS-1$

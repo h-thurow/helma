@@ -16,13 +16,13 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.db.DbSource;
 import helma.util.CronJob;
 import helma.util.SystemMap;
 import helma.util.WrappedMap;
 import helma.framework.repository.*;
-import helma.framework.FutureResult;
+import helma.framework.FutureResultInterface;
 import helma.main.Server;
 
 import java.io.File;
@@ -140,10 +140,10 @@ public class ApplicationBean implements Serializable {
      * @param obj the repository, relative or absolute path to the library.
      */
     public synchronized void addRepository(Object obj) {
-        Resource current = this.app.getCurrentCodeResource();
-        Repository parent = current == null ?
+        ResourceInterface current = this.app.getCurrentCodeResource();
+        RepositoryInterface parent = current == null ?
                 null : current.getRepository().getRootRepository();
-        Repository rep;
+        RepositoryInterface rep;
         if (obj instanceof String) {
             String path = (String) obj;
             File file = findResource(null, path);
@@ -164,8 +164,8 @@ public class ApplicationBean implements Serializable {
             } else {
                 throw new RuntimeException(Messages.getString("ApplicationBean.1") + file); //$NON-NLS-1$
             }
-        } else if (obj instanceof Repository) {
-            rep = (Repository) obj;
+        } else if (obj instanceof RepositoryInterface) {
+            rep = (RepositoryInterface) obj;
         } else {
             throw new RuntimeException(Messages.getString("ApplicationBean.2") + obj); //$NON-NLS-1$
         }
@@ -273,7 +273,7 @@ public class ApplicationBean implements Serializable {
      * @param password the user password
      * @return the newly registered user, or null if we failed
      */
-    public INode registerUser(String username, String password) {
+    public NodeInterface registerUser(String username, String password) {
         if ((username == null) || (password == null) || "".equals(username.trim()) || //$NON-NLS-1$
                 "".equals(password.trim())) { //$NON-NLS-1$
             return null;
@@ -286,7 +286,7 @@ public class ApplicationBean implements Serializable {
      * @param username the user name
      * @return the user object, or null
      */
-    public INode getUser(String username) {
+    public NodeInterface getUser(String username) {
         if ((username == null) || "".equals(username.trim())) { //$NON-NLS-1$
             return null;
         }
@@ -298,20 +298,20 @@ public class ApplicationBean implements Serializable {
      * Get an array of currently active registered users
      * @return an array of user nodes
      */
-    public INode[] getActiveUsers() {
+    public NodeInterface[] getActiveUsers() {
         List activeUsers = this.app.getActiveUsers();
 
-        return (INode[]) activeUsers.toArray(new INode[0]);
+        return (NodeInterface[]) activeUsers.toArray(new NodeInterface[0]);
     }
 
     /**
      * Get an array of all registered users
      * @return an array containing all registered users
      */
-    public INode[] getRegisteredUsers() {
+    public NodeInterface[] getRegisteredUsers() {
         List registeredUsers = this.app.getRegisteredUsers();
 
-        return (INode[]) registeredUsers.toArray(new INode[0]);
+        return (NodeInterface[]) registeredUsers.toArray(new NodeInterface[0]);
     }
 
     /**
@@ -319,7 +319,7 @@ public class ApplicationBean implements Serializable {
      * @param usernode the user node
      * @return an array of sessions for the given user
      */
-    public SessionBean[] getSessionsForUser(INode usernode) {
+    public SessionBean[] getSessionsForUser(NodeInterface usernode) {
         if (usernode == null) {
             return new SessionBean[0];
         }
@@ -399,7 +399,7 @@ public class ApplicationBean implements Serializable {
      *
      * @return the app.data node
      */
-    public INode getData() {
+    public NodeInterface getData() {
         return this.app.getCacheNode();
     }
 
@@ -715,7 +715,7 @@ public class ApplicationBean implements Serializable {
      * this long, we will try to interrupt the invocation
      * @return an object with the properties described above
      */
-    public FutureResult invokeAsync(Object thisObject,
+    public FutureResultInterface invokeAsync(Object thisObject,
                               final Object function,
                               final Object[] args) {
         // default timeout of 15 minutes
@@ -745,7 +745,7 @@ public class ApplicationBean implements Serializable {
      * this long, we will try to interrupt the invocation
      * @return an object with the properties described above
      */
-    public FutureResult invokeAsync(Object thisObject, Object function,
+    public FutureResultInterface invokeAsync(Object thisObject, Object function,
                               Object[] args, long timeout) {
         return new AsyncInvoker(thisObject, function, args, timeout);
     }
@@ -759,7 +759,7 @@ public class ApplicationBean implements Serializable {
         return "[Application " + this.app.getName() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    class AsyncInvoker extends Thread implements FutureResult {
+    class AsyncInvoker extends Thread implements FutureResultInterface {
 
         private Object thisObject;
         private Object function;

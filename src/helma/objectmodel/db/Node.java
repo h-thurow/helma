@@ -20,22 +20,22 @@
 
 package helma.objectmodel.db;
 
-import helma.framework.IPathElement;
+import helma.framework.PathElementInterface;
 import helma.framework.core.RequestEvaluator;
 import helma.framework.core.Application;
 import helma.objectmodel.ConcurrencyException;
-import helma.objectmodel.INode;
-import helma.objectmodel.INodeState;
-import helma.objectmodel.IProperty;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.NodeStateInterface;
+import helma.objectmodel.PropertyInterface;
 import helma.objectmodel.TransientNode;
 
 import java.util.*;
 
 /**
- * An implementation of INode that can be stored in the internal database or
+ * An implementation of NodeInterface that can be stored in the internal database or
  * an external relational database.
  */
-public final class Node implements INode {
+public final class Node implements NodeInterface {
 
     // The handle to the node's parent
     protected NodeHandle parentHandle;
@@ -59,10 +59,10 @@ public final class Node implements INode {
     protected short version = 0;
     private String prototype;
     private NodeHandle handle;
-    private INode cacheNode;
+    private NodeInterface cacheNode;
     final WrappedNodeManager nmgr;
     DbMapping dbmap;
-    Key primaryKey = null;
+    KeyInterface primaryKey = null;
     String subnodeRelation = null;
     long lastNameCheck = 0;
     long lastParentSet = 0;
@@ -127,7 +127,7 @@ public final class Node implements INode {
         }
         this.nmgr = nmgr;
         setParent(home);
-        // generate a key for the virtual node that can't be mistaken for a Database Key
+        // generate a key for the virtual node that can't be mistaken for a Database KeyInterface
         this.primaryKey = new SyntheticKey(home.getKey(), propname);
         this.id = this.primaryKey.getID();
         this.name = propname;
@@ -315,7 +315,7 @@ public final class Node implements INode {
     }
 
     /**
-     *  Gets this node's stateas defined in the INode interface
+     *  Gets this node's stateas defined in the NodeInterface interface
      *
      * @return this node's state
      */
@@ -324,7 +324,7 @@ public final class Node implements INode {
     }
 
     /**
-     * Sets this node's state as defined in the INode interface
+     * Sets this node's state as defined in the NodeInterface interface
      *
      * @param s this node's new state
      */
@@ -448,7 +448,7 @@ public final class Node implements INode {
     public String getPath() {
         String divider = null;
         StringBuffer b = new StringBuffer();
-        INode p = this;
+        NodeInterface p = this;
         int loopWatch = 0;
 
         while (p != null && p.getParent() != null) {
@@ -511,7 +511,7 @@ public final class Node implements INode {
     /**
      * Get the node's key.
      */
-    public Key getKey() {
+    public KeyInterface getKey() {
         if (this.primaryKey == null && this.state == TRANSIENT) {
             throw new RuntimeException(Messages.getString("Node.5") + this); //$NON-NLS-1$
         }
@@ -595,7 +595,7 @@ public final class Node implements INode {
     /**
      * Get parent, retrieving it if necessary.
      */
-    public INode getParent() {
+    public NodeInterface getParent() {
         // check what's specified in the type.properties for this node.
         ParentInfo[] parentInfo = null;
 
@@ -707,9 +707,9 @@ public final class Node implements INode {
     }
 
     /**
-     *  INode-related
+     *  NodeInterface-related
      */
-    public INode addNode(INode elem) {
+    public NodeInterface addNode(NodeInterface elem) {
         return addNode(elem, -1);
     }
 
@@ -722,7 +722,7 @@ public final class Node implements INode {
      *
      * @return the added node itselve
      */
-    public INode addNode(INode elem, int where) {
+    public NodeInterface addNode(NodeInterface elem, int where) {
         Node node = null;
 
         if (elem instanceof Node) {
@@ -808,7 +808,7 @@ public final class Node implements INode {
                     String prop = node.getString(propname);
 
                     if (prop != null && prop.length() > 0) {
-                        INode old = (INode) getChildElement(prop);
+                        NodeInterface old = (NodeInterface) getChildElement(prop);
 
                         if (old != null && old != node) {
                             // A node with this name already exists. This is a
@@ -866,7 +866,7 @@ public final class Node implements INode {
      *
      * @return ...
      */
-    public INode createNode() {
+    public NodeInterface createNode() {
         // create new node at end of subnode array
         return createNode(null, -1);
     }
@@ -878,7 +878,7 @@ public final class Node implements INode {
      *
      * @return ...
      */
-    public INode createNode(int where) {
+    public NodeInterface createNode(int where) {
         return createNode(null, where);
     }
 
@@ -889,7 +889,7 @@ public final class Node implements INode {
      *
      * @return ...
      */
-    public INode createNode(String nm) {
+    public NodeInterface createNode(String nm) {
         // parameter where is  ignored if nm != null so we try to avoid calling numberOfNodes()
         return createNode(nm, -1);
     }
@@ -902,7 +902,7 @@ public final class Node implements INode {
      *
      * @return ...
      */
-    public INode createNode(String nm, int where) {
+    public NodeInterface createNode(String nm, int where) {
         // checkWriteLock();
 
         boolean anon = false;
@@ -936,9 +936,9 @@ public final class Node implements INode {
 
 
     /**
-     * This implements the getChildElement() method of the IPathElement interface
+     * This implements the getChildElement() method of the PathElementInterface interface
      */
-    public IPathElement getChildElement(String name) {
+    public PathElementInterface getChildElement(String name) {
         if (this.dbmap != null) {
             // if a dbmapping is provided, check what it tells us about
             // getting this specific child element
@@ -957,7 +957,7 @@ public final class Node implements INode {
                 // Do what we have to do: loop through subnodes and
                 // check if any one matches
                 String propname = rel.groupby != null ? "groupname" : rel.accessName; //$NON-NLS-1$
-                INode node = null;
+                NodeInterface node = null;
                 Enumeration e = getSubnodes();
                 while (e.hasMoreElements()) {
                     Node n = (Node) e.nextElement();
@@ -976,7 +976,7 @@ public final class Node implements INode {
             return getSubnode(name);
         }
         // no dbmapping - just try child collection first, then named property.
-        INode child = getSubnode(name);
+        NodeInterface child = getSubnode(name);
 
         if (child == null) {
             child = getNode(name);
@@ -986,16 +986,16 @@ public final class Node implements INode {
     }
 
     /**
-     * This implements the getParentElement() method of the IPathElement interface
+     * This implements the getParentElement() method of the PathElementInterface interface
      */
-    public IPathElement getParentElement() {
+    public PathElementInterface getParentElement() {
         return getParent();
     }
 
     /**
      * Get a named child node with the given id.
      */
-    public INode getSubnode(String subid) {
+    public NodeInterface getSubnode(String subid) {
         if (subid == null || subid.length() == 0) {
             return null;
         }
@@ -1044,7 +1044,7 @@ public final class Node implements INode {
      * @param index the subnode index
      * @return the node at the given index
      */
-    public INode getSubnodeAt(int index) {
+    public NodeInterface getSubnodeAt(int index) {
         loadNodes();
         if (this.subnodes == null) {
             return null;
@@ -1176,7 +1176,7 @@ public final class Node implements INode {
      * @return ...
      */
     public boolean remove() {
-        INode parent = getParent();
+        NodeInterface parent = getParent();
         if (parent != null) {
             try {
                 parent.removeNode(this);
@@ -1194,7 +1194,7 @@ public final class Node implements INode {
      *
      * @param node ...
      */
-    public void removeNode(INode node) {
+    public void removeNode(NodeInterface node) {
         Node n = (Node) node;
         releaseNode(n);
     }
@@ -1202,7 +1202,7 @@ public final class Node implements INode {
     /**
      * "Locally" remove a subnode from the subnodes table.
      * The logical stuff necessary for keeping data consistent is done in
-     * {@link #removeNode(INode)}.
+     * {@link #removeNode(NodeInterface)}.
      */
     protected void releaseNode(Node node) {
 
@@ -1212,7 +1212,7 @@ public final class Node implements INode {
             return;
         }
 
-        INode parent = node.getParent();
+        NodeInterface parent = node.getParent();
 
         checkWriteLock();
         node.checkWriteLock();
@@ -1301,7 +1301,7 @@ public final class Node implements INode {
             for (Enumeration en = this.propMap.elements(); en.hasMoreElements();) {
                 Property p = (Property) en.nextElement();
 
-                if ((p != null) && (p.getType() == IProperty.NODE)) {
+                if ((p != null) && (p.getType() == PropertyInterface.NODE)) {
                     Node n = (Node) p.getNodeValue();
                     if (n != null && !n.isRelational() && n.getParent() == this) {
                         n.deepRemoveNode();
@@ -1349,7 +1349,7 @@ public final class Node implements INode {
      *
      * @return the node's index position in the child list, or -1
      */
-    public int contains(INode n) {
+    public int contains(NodeInterface n) {
         if (n == null) {
             return -1;
         }
@@ -1373,7 +1373,7 @@ public final class Node implements INode {
 
     /**
      * Check if the given node is contained in this node's child list. This
-     * is similar to <code>contains(INode)</code> but does not load the
+     * is similar to <code>contains(NodeInterface)</code> but does not load the
      * child index for relational nodes.
      *
      * @param n a node
@@ -1570,7 +1570,7 @@ public final class Node implements INode {
      *
      * @return ...
      */
-    public IProperty get(String propname) {
+    public PropertyInterface get(String propname) {
         return getProperty(propname);
     }
 
@@ -1605,7 +1605,7 @@ public final class Node implements INode {
         if (prop != null) {
             if (rel != null) {
                 // Is a relational node stored by id but things it's a string or int. Fix it.
-                if (rel.otherType != null && prop.getType() != IProperty.NODE) {
+                if (rel.otherType != null && prop.getType() != PropertyInterface.NODE) {
                     prop.convertToNodeReference(rel);
                 }
                 if (rel.isVirtual()) {
@@ -1750,7 +1750,7 @@ public final class Node implements INode {
      *
      * @return ...
      */
-    public INode getNode(String propname) {
+    public NodeInterface getNode(String propname) {
         Property prop = getProperty(propname);
 
         try {
@@ -1869,7 +1869,7 @@ public final class Node implements INode {
                     if (subrel.accessName != null &&
                             subrel.accessName.equals(dbcolumn)) {
                         // if any other node is contained with the new value, remove it
-                        INode n = (INode) parent.getChildElement(value);
+                        NodeInterface n = (NodeInterface) parent.getChildElement(value);
 
                         if ((n != null) && (n != this)) {
                             throw new RuntimeException(this +
@@ -1879,7 +1879,7 @@ public final class Node implements INode {
                         // check if this node is already registered with the old name;
                         // if so, remove it, then add again with the new acessname
                         if (oldvalue != null) {
-                            n = (INode) parent.getChildElement(oldvalue);
+                            n = (NodeInterface) parent.getChildElement(oldvalue);
 
                             if (n == this) {
                                 parent.unset(oldvalue);
@@ -2115,7 +2115,7 @@ public final class Node implements INode {
      * @param propname ...
      * @param value ...
      */
-    public void setNode(String propname, INode value) {
+    public void setNode(String propname, NodeInterface value) {
         // nmgr.logEvent ("setting node prop");
         // check if types match, otherwise throw exception
         Relation rel = (this.dbmap == null) ?
@@ -2183,7 +2183,7 @@ public final class Node implements INode {
         if (rel != null && this.state != TRANSIENT && (rel.countConstraints() > 1 || rel.isComplexReference())) {
             rel.setConstraints(this, n);
             if (rel.isComplexReference()) {
-                Key key = new MultiKey(n.getDbMapping(), rel.getKeyParts(this));
+                KeyInterface key = new MultiKey(n.getDbMapping(), rel.getKeyParts(this));
                 this.nmgr.nmgr.registerNode(n, key);
                 return;
             }
@@ -2192,7 +2192,7 @@ public final class Node implements INode {
         Property prop = (this.propMap == null) ? null : (Property) this.propMap.get(propname);
 
         if (prop != null) {
-            if ((prop.getType() == IProperty.NODE) &&
+            if ((prop.getType() == PropertyInterface.NODE) &&
                     n.getHandle().equals(prop.getNodeHandle())) {
                 // nothing to do, just clean up locks and return
                 if (this.state == CLEAN) {
@@ -2240,7 +2240,7 @@ public final class Node implements INode {
 
             // if the field is not the primary key of the property, also register it
             if ((rel != null) && (rel.accessName != null) && (this.state != TRANSIENT)) {
-                Key secKey = new SyntheticKey(getKey(), propname);
+                KeyInterface secKey = new SyntheticKey(getKey(), propname);
                 this.nmgr.registerNode(n, secKey);
                 tx.visitCleanNode(secKey, n);
             }
@@ -2427,9 +2427,9 @@ public final class Node implements INode {
 
         for (Enumeration e = properties(); e.hasMoreElements();) {
             String propname = (String) e.nextElement();
-            IProperty next = get(propname);
+            PropertyInterface next = get(propname);
 
-            if (next == null || next.getType() != IProperty.NODE) {
+            if (next == null || next.getType() != PropertyInterface.NODE) {
                 continue;
             }
 
@@ -2474,7 +2474,7 @@ public final class Node implements INode {
      * Get the cache node for this node. This can be
      * used to store transient cache data per node from Javascript.
      */
-    public synchronized INode getCacheNode() {
+    public synchronized NodeInterface getCacheNode() {
         if (this.cacheNode == null) {
             this.cacheNode = new TransientNode();
         }
@@ -2501,11 +2501,11 @@ public final class Node implements INode {
                 break;
             }
 
-            if (node.getState() == INodeState.TRANSIENT) {
+            if (node.getState() == NodeStateInterface.TRANSIENT) {
                 DbMapping map = node.getDbMapping();
                 if (map == null || !map.isVirtual())
                     return node;
-            } else if (node.getState() != INodeState.VIRTUAL) {
+            } else if (node.getState() != NodeStateInterface.VIRTUAL) {
                 return node;
             }
 

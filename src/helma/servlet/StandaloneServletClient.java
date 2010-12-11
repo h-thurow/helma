@@ -16,7 +16,7 @@
 
 package helma.servlet;
 
-import helma.framework.repository.Repository;
+import helma.framework.repository.RepositoryInterface;
 import helma.framework.core.Application;
 import helma.framework.repository.FileRepository;
 import helma.main.ServerConfig;
@@ -46,7 +46,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
     private String appDir;
     private String dbDir;
     private String hopDir;
-    private Repository[] repositories;
+    private RepositoryInterface[] repositories;
 
     /**
      *
@@ -101,7 +101,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
                 }
         
                 try {
-                    Repository newRepository = (Repository) Class.forName(repositoryImpl)
+                    RepositoryInterface newRepository = (RepositoryInterface) Class.forName(repositoryImpl)
                         .getConstructor(parameters)
                         .newInstance(new Object[] {repositoryArgs});
                     repositoryList.add(newRepository);
@@ -125,8 +125,8 @@ public final class StandaloneServletClient extends AbstractServletClient {
             repositoryList.add(appRep);
         }
 
-        this.repositories = new Repository[repositoryList.size()];
-        this.repositories = (Repository[]) repositoryList.toArray(this.repositories);
+        this.repositories = new RepositoryInterface[repositoryList.size()];
+        this.repositories = (RepositoryInterface[]) repositoryList.toArray(this.repositories);
 
     }
 

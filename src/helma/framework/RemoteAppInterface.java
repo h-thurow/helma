@@ -21,7 +21,7 @@ import java.rmi.*;
 /**
  * RMI interface for an application. Currently only execute is used and supported.
  */
-public interface IRemoteApp extends Remote {
+public interface RemoteAppInterface extends Remote {
     /**
      *
      *

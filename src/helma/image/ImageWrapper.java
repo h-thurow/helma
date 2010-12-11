@@ -18,7 +18,7 @@
  * A few explanations:
  * 
  * - this.image is either an AWT Image or a BufferedImage.
- *   It depends on the ImageGenerator in what form the Image initially is.
+ *   It depends on the AbstractImageGenerator in what form the Image initially is.
  *   (the ImageIO implementation only uses BufferedImages for example.)
  * 
  *   As soon as some action that needs the graphics object is performed and the  
@@ -27,9 +27,9 @@
  *   Any internal function that performs graphical actions needs to call
  *   getGraphics, never rely on this.graphics being set correctly!
  * 
- * - ImageWrapper objects are created and safed by the ImageGenerator class
+ * - ImageWrapper objects are created and safed by the AbstractImageGenerator class
  *   all different implementations of Imaging functionallity are implemented
- *   as a ImageGenerator extending class.
+ *   as a AbstractImageGenerator extending class.
  * 
  */
 
@@ -47,7 +47,7 @@ public class ImageWrapper {
     protected Image image;
     protected int width;
     protected int height;
-    protected ImageGenerator generator;
+    protected AbstractImageGenerator generator;
     private Graphics2D graphics;
 
     /**
@@ -58,7 +58,7 @@ public class ImageWrapper {
      * @param height ...
      */
     public ImageWrapper(Image image, int width, int height,
-        ImageGenerator generator) {
+        AbstractImageGenerator generator) {
         this.image = image;
         this.width = width;
         this.height = height;
@@ -67,7 +67,7 @@ public class ImageWrapper {
         this.graphics = null;
     }
     
-    public ImageWrapper(Image image, ImageGenerator generator) {
+    public ImageWrapper(Image image, AbstractImageGenerator generator) {
         this(image, image.getWidth(null), image.getHeight(null), generator);
     }
 

@@ -34,7 +34,7 @@ import java.util.Hashtable;
 /**
  * 
  */
-public final class XmlDatabaseReader extends DefaultHandler implements XmlConstants {
+public final class XmlDatabaseReader extends DefaultHandler implements XmlConstantsInterface {
     static SAXParserFactory factory = SAXParserFactory.newInstance();
     private NodeManager nmgr = null;
     private Node currentNode;

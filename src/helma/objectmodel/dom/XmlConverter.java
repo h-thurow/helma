@@ -16,7 +16,7 @@
 
 package helma.objectmodel.dom;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.util.SystemProperties;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -31,7 +31,7 @@ import java.util.Properties;
 /**
  * 
  */
-public class XmlConverter implements XmlConstants {
+public class XmlConverter implements XmlConstantsInterface {
     private boolean DEBUG = false;
     private boolean sparse = false;
     private Properties props;
@@ -84,7 +84,7 @@ public class XmlConverter implements XmlConstants {
      *
      * @throws RuntimeException ...
      */
-    public INode convert(String desc, INode helmaNode)
+    public NodeInterface convert(String desc, NodeInterface helmaNode)
                   throws RuntimeException {
         try {
             return convert(new URL(desc), helmaNode);
@@ -110,7 +110,7 @@ public class XmlConverter implements XmlConstants {
      * @throws RuntimeException ...
      * @throws FileNotFoundException ...
      */
-    public INode convert(File file, INode helmaNode)
+    public NodeInterface convert(File file, NodeInterface helmaNode)
                   throws RuntimeException, FileNotFoundException {
         return convert(new FileInputStream(file), helmaNode);
     }
@@ -127,7 +127,7 @@ public class XmlConverter implements XmlConstants {
      * @throws IOException ...
      * @throws MalformedURLException ...
      */
-    public INode convert(URL url, INode helmaNode)
+    public NodeInterface convert(URL url, NodeInterface helmaNode)
                   throws RuntimeException, IOException, MalformedURLException {
         return convert(url.openConnection().getInputStream(), helmaNode);
     }
@@ -142,7 +142,7 @@ public class XmlConverter implements XmlConstants {
      *
      * @throws RuntimeException ...
      */
-    public INode convert(InputStream in, INode helmaNode)
+    public NodeInterface convert(InputStream in, NodeInterface helmaNode)
                   throws RuntimeException {
         Document document = XmlUtil.parse(in);
 
@@ -162,7 +162,7 @@ public class XmlConverter implements XmlConstants {
      *
      * @throws RuntimeException ...
      */
-    public INode convertFromString(String xml, INode helmaNode)
+    public NodeInterface convertFromString(String xml, NodeInterface helmaNode)
                             throws RuntimeException {
         Document document = XmlUtil.parse(new InputSource(new StringReader(xml)));
 
@@ -181,7 +181,7 @@ public class XmlConverter implements XmlConstants {
      *
      * @return ...
      */
-    public INode convert(Element element, INode helmaNode, Map nodeCache) {
+    public NodeInterface convert(Element element, NodeInterface helmaNode, Map nodeCache) {
         this.offset++;
 
         // previousNode is used to cache previous nodes with the same prototype
@@ -227,7 +227,7 @@ public class XmlConverter implements XmlConstants {
     /**
      * parse xml children and create hopobject-children
      */
-    private INode children(Element element, helma.objectmodel.INode helmaNode,
+    private NodeInterface children(Element element, helma.objectmodel.NodeInterface helmaNode,
                            Map nodeCache) {
         NodeList list = element.getChildNodes();
         int len = list.getLength();
@@ -290,7 +290,7 @@ public class XmlConverter implements XmlConstants {
 
                     if (dot > -1) {
                         String prototype = helmaKey.substring(0, dot);
-                        INode node = (INode) nodeCache.get(prototype);
+                        NodeInterface node = (NodeInterface) nodeCache.get(prototype);
 
                         helmaKey = helmaKey.substring(dot + 1);
 
@@ -328,14 +328,14 @@ public class XmlConverter implements XmlConstants {
 
                     // get the node on which to opererate, depending on the helmaKey
                     // value from the properties file.
-                    INode node = helmaNode;
+                    NodeInterface node = helmaNode;
                     int dot = helmaKey.indexOf("."); //$NON-NLS-1$
 
                     if (dot > -1) {
                         String prototype = helmaKey.substring(0, dot);
 
                         if (!prototype.equalsIgnoreCase(node.getPrototype())) {
-                            node = (INode) nodeCache.get(prototype);
+                            node = (NodeInterface) nodeCache.get(prototype);
                         }
 
                         helmaKey = helmaKey.substring(dot + 1);
@@ -358,7 +358,7 @@ public class XmlConverter implements XmlConstants {
                 }
 
                 // map it to one of the children-lists
-                helma.objectmodel.INode newHelmaNode = null;
+                helma.objectmodel.NodeInterface newHelmaNode = null;
                 String childrenMapping = this.props.getProperty(element.getNodeName() +
                                                            "._children"); //$NON-NLS-1$
 
@@ -390,14 +390,14 @@ public class XmlConverter implements XmlConstants {
 
                 // get the node on which to opererate, depending on the helmaKey
                 // value from the properties file.
-                INode node = helmaNode;
+                NodeInterface node = helmaNode;
                 int dot = helmaKey.indexOf("."); //$NON-NLS-1$
 
                 if (dot > -1) {
                     String prototype = helmaKey.substring(0, dot);
 
                     if (!prototype.equalsIgnoreCase(node.getPrototype())) {
-                        node = (INode) nodeCache.get(prototype);
+                        node = (NodeInterface) nodeCache.get(prototype);
                     }
 
                     helmaKey = helmaKey.substring(dot + 1);
@@ -408,7 +408,7 @@ public class XmlConverter implements XmlConstants {
                 }
 
                 // try to get the virtual node
-                INode worknode = null;
+                NodeInterface worknode = null;
 
                 if ("_children".equals(helmaKey)) { //$NON-NLS-1$
                     worknode = node;
@@ -460,7 +460,7 @@ public class XmlConverter implements XmlConstants {
     /**
      * set element's attributes as properties of helmaNode
      */
-    private INode attributes(Element element, INode helmaNode, Map nodeCache) {
+    private NodeInterface attributes(Element element, NodeInterface helmaNode, Map nodeCache) {
         NamedNodeMap nnm = element.getAttributes();
         int len = nnm.getLength();
 
@@ -482,7 +482,7 @@ public class XmlConverter implements XmlConstants {
 
                 if (dot > -1) {
                     String prototype = helmaKey.substring(0, dot);
-                    INode node = (INode) nodeCache.get(prototype);
+                    NodeInterface node = (NodeInterface) nodeCache.get(prototype);
 
                     if (node != null) {
                         node.setString(helmaKey.substring(dot + 1), attr.getNodeValue());

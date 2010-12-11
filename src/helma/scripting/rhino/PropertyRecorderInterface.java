@@ -24,15 +24,15 @@ import java.util.Set;
  * to be able to remove properties from prototypes that haven't been
  * renewed in the compilation step.
  */
-public interface PropertyRecorder {
+public interface PropertyRecorderInterface {
 
     /**
-     * Tell this PropertyRecorder to start recording changes to properties
+     * Tell this PropertyRecorderInterface to start recording changes to properties
      */
     public void startRecording();
 
     /**
-     * Tell this PropertyRecorder to stop recording changes to properties
+     * Tell this PropertyRecorderInterface to stop recording changes to properties
      */
     public void stopRecording();
 

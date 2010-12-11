@@ -16,7 +16,7 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.INodeState;
+import helma.objectmodel.NodeStateInterface;
 
 import java.io.Serializable;
 
@@ -39,14 +39,14 @@ import java.io.Serializable;
  * These two properties guarantee that NodeHandle comparisons are easy and usually correct.
  *
  */
-public final class NodeHandle implements INodeState, Serializable {
+public final class NodeHandle implements NodeStateInterface, Serializable {
     static final long serialVersionUID = 3067763116576910931L;
 
     // direct reference to the node
     private Node node;
 
     // the node's key
-    private Key key;
+    private KeyInterface key;
 
     /**
      * Builds a handle for a node. This constructor is package private in order to make
@@ -72,7 +72,7 @@ public final class NodeHandle implements INodeState, Serializable {
      * application code.
      * @param key the key
      */
-    public NodeHandle(Key key) {
+    public NodeHandle(KeyInterface key) {
         this.node = null;
         this.key = key;
     }
@@ -99,7 +99,7 @@ public final class NodeHandle implements INodeState, Serializable {
      *  Get the key for the node described by this handle.
      *  This will return null for transient Nodes.
      */
-    public Key getKey() {
+    public KeyInterface getKey() {
         return this.key;
     }
 

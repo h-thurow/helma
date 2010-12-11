@@ -17,7 +17,7 @@
 package helma.scripting.rhino;
 
 import helma.framework.core.*;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.objectmodel.*;
 import helma.objectmodel.db.*;
 import helma.objectmodel.db.Node;
@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  *
  */
-public class HopObject extends ScriptableObject implements Wrapper, PropertyRecorder {
+public class HopObject extends ScriptableObject implements Wrapper, PropertyRecorderInterface {
 
     private static final long serialVersionUID = 1329862822101428427L;
 
@@ -39,7 +39,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     final NodeProxy proxy;
     final RhinoCore core;
 
-    // fields to implement PropertyRecorder
+    // fields to implement PropertyRecorderInterface
     private boolean isRecording = false;
     private HashSet changedProperties;
 
@@ -65,7 +65,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      * @param proto the object's prototype
      */
     protected HopObject(String className, RhinoCore core,
-                        INode node, Scriptable proto) {
+                        NodeInterface node, Scriptable proto) {
         this.className = className;
         this.core = core;
         this.proxy = new NodeProxy(node);
@@ -166,11 +166,11 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     }
 
     /**
-     *  Return the INode wrapped by this HopObject.
+     *  Return the NodeInterface wrapped by this HopObject.
      *
-     * @return the wrapped INode instance
+     * @return the wrapped NodeInterface instance
      */
-    public INode getNode() {
+    public NodeInterface getNode() {
         if (this.proxy != null) {
             return this.proxy.getNode();
         }
@@ -195,7 +195,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public Object jsGet_cache() {
         if (this.proxy != null) {
-            INode cache = this.proxy.getNode().getCacheNode();
+            NodeInterface cache = this.proxy.getNode().getCacheNode();
             if (cache != null) {
                 return Context.toObject(cache, this.core.global);
             }
@@ -216,7 +216,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
         Skin skin = engine.toSkin(skinobj, this.className);
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (skin != null) {
             skin.render(engine.reval, node, 
@@ -238,9 +238,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
         Prototype prototype = engine.app.getPrototypeByName(this.className);
         while (prototype != null) {
-            Resource[] resources = prototype.getResources();
+            ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                Resource resource = resources[i];
+                ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(resourceName))
                     return Context.toObject(resource, this.core.global);
             }
@@ -262,9 +262,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         Prototype prototype = engine.core.app.getPrototypeByName(this.className);
         ArrayList a = new ArrayList();
         while (prototype != null) {
-            Resource[] resources = prototype.getResources();
+            ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                Resource resource = resources[i];
+                ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(resourceName))
                     a.add(Context.toObject(resource, this.core.global));
             }
@@ -285,7 +285,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             throws UnsupportedEncodingException, IOException {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
         Skin skin = engine.toSkin(skinobj, this.className);
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (skin != null) {
             return skin.renderAsString(engine.reval, node,
@@ -312,7 +312,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         String actionName = null;
         Map queryParams = params instanceof Scriptable ?
                 this.core.scriptableToProperties((Scriptable) params) : null;
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (action != null) {
             if (action instanceof Wrapper) {
@@ -340,7 +340,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         }
 
         Object child;
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (id instanceof Number) {
             child = node.getSubnodeAt(((Number) id).intValue());
@@ -366,7 +366,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             return null;
         }
 
-        INode node = getNode();
+        NodeInterface node = getNode();
         String idString = (id instanceof Double) ?
                           Long.toString(((Double) id).longValue()) :
                           id.toString();
@@ -398,10 +398,10 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                 throw new EvaluatorException(Messages.getString("HopObject.1")); //$NON-NLS-1$
             }
 
-            INode node = getNode();
+            NodeInterface node = getNode();
 
             int idx = (((Number) id).intValue());
-            INode n = ((HopObject) value).getNode();
+            NodeInterface n = ((HopObject) value).getNode();
 
             node.addNode(n, idx);
 
@@ -421,7 +421,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         if (this.proxy == null) {
             return 0;
         }
-        INode node = getNode();
+        NodeInterface node = getNode();
         return node.numberOfNodes();
     }
 
@@ -450,10 +450,10 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
 
     private void prefetchChildren(int start, int length) {
         if (this.proxy != null) {
-            INode node = getNode();
+            NodeInterface node = getNode();
             if (node instanceof Node) {
                 Node n = (Node) node;
-                if (n.getState() != INodeState.TRANSIENT && n.getState() != INodeState.NEW) {
+                if (n.getState() != NodeStateInterface.TRANSIENT && n.getState() != NodeStateInterface.NEW) {
                     n.prefetchChildren(start, length);
                 }
             }
@@ -465,7 +465,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public void jsFunction_clearCache() {
         if (this.proxy != null) {
-            INode node = getNode();
+            NodeInterface node = getNode();
             node.clearCacheNode();
         }
     }
@@ -538,13 +538,13 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             return false;
         }
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (child instanceof HopObject) {
             node.addNode(((HopObject) child).getNode());
             return true;
-        } else if (child instanceof INode) {
-            node.addNode((INode) child);
+        } else if (child instanceof NodeInterface) {
+            node.addNode((NodeInterface) child);
             return true;
         }
 
@@ -564,14 +564,14 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             return false;
         }
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (child instanceof HopObject) {
             node.addNode(((HopObject) child).getNode(), index);
 
             return true;
-        } else if (child instanceof INode) {
-            node.addNode((INode) child, index);
+        } else if (child instanceof NodeInterface) {
+            node.addNode((NodeInterface) child, index);
 
             return true;
         }
@@ -597,7 +597,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             throw new RuntimeException(Messages.getString("HopObject.12")); //$NON-NLS-1$
         }
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         return node.remove();
     }
@@ -608,7 +608,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public boolean jsFunction_removeChild(Object child) {
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (child instanceof HopObject) {
             HopObject hobj = (HopObject) child;
@@ -629,7 +629,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public Object jsFunction_persist() {
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         if (node instanceof Node) {
             ((Node) node).persist();
@@ -643,12 +643,12 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
      */
     public boolean jsFunction_invalidate(Object childId) {
         if (childId != null && this.proxy != null) {
-            INode node = getNode();
+            NodeInterface node = getNode();
             if (!(node instanceof Node)) {
                 return true;
             }
             if (childId == Undefined.instance) {
-                if (node.getState() == INodeState.INVALID) {
+                if (node.getState() == NodeStateInterface.INVALID) {
                     return true;
                 }
                 ((Node) node).invalidate();
@@ -670,9 +670,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         if (this.proxy == null) {
             return false;
         }
-        INode node = getNode();
+        NodeInterface node = getNode();
         int nodeState = node.getState();
-        return nodeState != INodeState.TRANSIENT;
+        return nodeState != NodeStateInterface.TRANSIENT;
     }
 
     /**
@@ -685,9 +685,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         if (this.proxy == null) {
             return true;
         }
-        INode node = getNode();
+        NodeInterface node = getNode();
         int nodeState = node.getState();
-        return nodeState == INodeState.TRANSIENT;
+        return nodeState == NodeStateInterface.TRANSIENT;
     }
 
     /**
@@ -697,7 +697,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     public int jsFunction_indexOf(Object obj) {
 
         if (this.proxy != null && obj instanceof HopObject) {
-            INode node = getNode();
+            NodeInterface node = getNode();
             return node.contains(((HopObject) obj).getNode());
         }
         return -1;
@@ -728,7 +728,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             if ("constructor".equals(name) && value instanceof NativeFunction) { //$NON-NLS-1$
                 name = "__constructor__"; //$NON-NLS-1$
             }
-            // register property for PropertyRecorder interface
+            // register property for PropertyRecorderInterface interface
             if (this.isRecording) {
                 this.changedProperties.add(name);
                 if (value instanceof Function) {
@@ -752,7 +752,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             // use ScriptableObject.put to set it
             super.put(name, start, value);
         } else {
-            INode node = getNode();
+            NodeInterface node = getNode();
 
             if ("subnodeRelation".equals(name)) { //$NON-NLS-1$
                 node.setSubnodeRelation(value == null ? null : value.toString());
@@ -786,8 +786,8 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                 node.setFloat(name, ((Number) value).doubleValue());
             } else if (value instanceof Date) {
                 node.setDate(name, (Date) value);
-            } else if (value instanceof INode) {
-                node.setNode(name, (INode) value);
+            } else if (value instanceof NodeInterface) {
+                node.setNode(name, (NodeInterface) value);
             } else {
                 node.setJavaObject(name, value);
             }
@@ -804,7 +804,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     @Override
     public boolean has(String name, Scriptable start) {
         if (this.proxy != null) {
-            INode node = getNode();
+            NodeInterface node = getNode();
             if (node.get(name) != null) {
             	return true;
             }
@@ -820,7 +820,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     @Override
     public void delete(String name) {
         if ((this.proxy != null)) {
-            INode node = getNode();
+            NodeInterface node = getNode();
             node.unset(name);
         }
         super.delete(name);
@@ -851,7 +851,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     private Object getFromNode(String name) {
         if (this.proxy != null && name != null && name.length() > 0) {
 
-            INode node = getNode();
+            NodeInterface node = getNode();
 
             // Property names starting with an underscore is interpreted
             // as internal properties
@@ -865,20 +865,20 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                 return node.getSubnodeRelation();
             }
 
-            IProperty p = node.get(name);
+            PropertyInterface p = node.get(name);
 
             if (p != null) {
                 switch (p.getType()) {
-                    case IProperty.STRING:
-                    case IProperty.INTEGER:
-                    case IProperty.FLOAT:
-                    case IProperty.BOOLEAN:
+                    case PropertyInterface.STRING:
+                    case PropertyInterface.INTEGER:
+                    case PropertyInterface.FLOAT:
+                    case PropertyInterface.BOOLEAN:
                         return p.getValue();
                 }
 
                 Context cx = Context.getCurrentContext();
 
-                if (p.getType() == IProperty.DATE) {
+                if (p.getType() == PropertyInterface.DATE) {
                     Date d = p.getDateValue();
 
                     if (d == null) {
@@ -892,8 +892,8 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                     }
                 }
 
-                if (p.getType() == IProperty.NODE) {
-                    INode n = p.getNodeValue();
+                if (p.getType() == PropertyInterface.NODE) {
+                    NodeInterface n = p.getNodeValue();
 
                     if (n == null) {
                         return null;
@@ -901,7 +901,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                     return Context.toObject(n, this.core.global);
                 }
 
-                if (p.getType() == IProperty.JAVAOBJECT) {
+                if (p.getType() == PropertyInterface.JAVAOBJECT) {
                     Object obj = p.getJavaObjectValue();
 
                     if (obj == null) {
@@ -920,7 +920,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
         return NOT_FOUND;
     }
 
-    private Object getInternalProperty(INode node, String name) {
+    private Object getInternalProperty(NodeInterface node, String name) {
         if ("__id__".equals(name) || "_id".equals(name)) { //$NON-NLS-1$ //$NON-NLS-2$
             return node.getID();
         }
@@ -990,7 +990,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             return new Object[0];
         }
 
-        INode node = getNode();
+        NodeInterface node = getNode();
 
         Enumeration en = node.properties();
         ArrayList list = new ArrayList();
@@ -1012,7 +1012,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     @Override
     public boolean has(int idx, Scriptable start) {
         if (this.proxy != null) {
-            INode node = getNode();
+            NodeInterface node = getNode();
 
             return (0 <= idx && idx < node.numberOfNodes());
         }
@@ -1031,9 +1031,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     @Override
     public Object get(int idx, Scriptable start) {
         if (this.proxy != null) {
-            INode node = getNode();
+            NodeInterface node = getNode();
 
-            INode n = node.getSubnodeAt(idx);
+            NodeInterface n = node.getSubnodeAt(idx);
 
             if (n != null) {
                 return Context.toObject(n, this.core.global);
@@ -1076,7 +1076,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     }
 
     /**
-     * Tell this PropertyRecorder to start recording changes to properties
+     * Tell this PropertyRecorderInterface to start recording changes to properties
      */
     public void startRecording() {
         this.changedProperties = new HashSet();
@@ -1084,7 +1084,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     }
 
     /**
-     * Tell this PropertyRecorder to stop recording changes to properties
+     * Tell this PropertyRecorderInterface to stop recording changes to properties
      */
     public void stopRecording() {
         this.isRecording = false;
@@ -1108,10 +1108,10 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
     }
 
     class NodeProxy {
-        private INode node;
+        private NodeInterface node;
         private NodeHandle handle;
 
-        NodeProxy(INode node) {
+        NodeProxy(NodeInterface node) {
             this.node = node;
             if (node instanceof Node) {
                 this.handle = ((Node) node).getHandle();
@@ -1122,8 +1122,8 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             this.handle = handle;
         }
 
-        synchronized INode getNode() {
-            if (this.node == null || this.node.getState() == INodeState.INVALID) {
+        synchronized NodeInterface getNode() {
+            if (this.node == null || this.node.getState() == NodeStateInterface.INVALID) {
                 if (this.handle != null) {
                     this.node = this.handle.getNode(HopObject.this.core.app.getWrappedNodeManager());
                     if (this.node != null) {
@@ -1140,7 +1140,7 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                         }
                     }
                 }
-                if (this.node == null || this.node.getState() == INodeState.INVALID) {
+                if (this.node == null || this.node.getState() == NodeStateInterface.INVALID) {
                     // We probably have a deleted node.
                     // Replace with empty transient node to avoid throwing an exception.
                     this.node = new TransientNode();

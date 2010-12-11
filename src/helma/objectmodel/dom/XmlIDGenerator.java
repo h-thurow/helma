@@ -32,7 +32,7 @@ public class XmlIDGenerator {
     transient volatile boolean dirty;
 
     /**
-     * Builds a new IDGenerator starting with 0.
+     * Builds a new IDGeneratorInterface starting with 0.
      */
     public XmlIDGenerator() {
         this.counter = 0L;
@@ -40,7 +40,7 @@ public class XmlIDGenerator {
     }
 
     /**
-     * Builds a new IDGenerator starting with value.
+     * Builds a new IDGeneratorInterface starting with value.
      */
     public XmlIDGenerator(long value) {
         this.counter = value;
@@ -73,15 +73,15 @@ public class XmlIDGenerator {
     }
 
     /**
-     * Returns a string representation of this IDGenerator
+     * Returns a string representation of this IDGeneratorInterface
      */
     @Override
     public String toString() {
-        return "IDGenerator[counter=" + this.counter + ",dirty=" + this.dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "IDGeneratorInterface[counter=" + this.counter + ",dirty=" + this.dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
-     * Read an IDGenerator from file
+     * Read an IDGeneratorInterface from file
      *
      * @param file
      * @return

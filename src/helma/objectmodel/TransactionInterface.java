@@ -21,7 +21,7 @@ package helma.objectmodel;
  * This interface is kept for databases that are able
  * to run transactions.
  */
-public interface ITransaction {
+public interface TransactionInterface {
 
     public final int ADDED = 0;
     public final int UPDATED = 1;

@@ -15,10 +15,10 @@
  */
 package helma.framework.core;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.db.NodeHandle;
 import helma.objectmodel.db.Transactor;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 
 import java.util.*;
 import java.io.*;
@@ -122,7 +122,7 @@ public class SessionManager {
             if (s != null && s.isLoggedIn()) {
                 // returns a session if it is logged in and has not been
                 // returned before (so for each logged-in user is only added once)
-                INode node = s.getUserNode();
+                NodeInterface node = s.getUserNode();
 
                 // we check again because user may have been logged out between the first check
                 if (node != null && !list.contains(node)) {
@@ -140,7 +140,7 @@ public class SessionManager {
      *
      * @param f the file to write session into, or null to use the default sesssion store.
      */
-    public void storeSessionData(File f, ScriptingEngine engine) {
+    public void storeSessionData(File f, ScriptingEngineInterface engine) {
         if (f == null) {
             f = new File(this.app.dbDir, "sessions"); //$NON-NLS-1$
         }
@@ -174,7 +174,7 @@ public class SessionManager {
     /**
      * loads the serialized session table from a given file or from dbdir/sessions
      */
-    public void loadSessionData(File f, ScriptingEngine engine) {
+    public void loadSessionData(File f, ScriptingEngineInterface engine) {
         if (f == null) {
             f = new File(this.app.dbDir, "sessions"); //$NON-NLS-1$
         }

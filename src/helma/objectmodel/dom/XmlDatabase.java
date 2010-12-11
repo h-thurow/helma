@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
 /**
  * A simple XML-database
  */
-public final class XmlDatabase implements IDatabase {
+public final class XmlDatabase implements DatabaseInterface {
 
     protected File dbHomeDir;
     protected Application app;
@@ -77,7 +77,7 @@ public final class XmlDatabase implements IDatabase {
             idBaseValue = 1L;
         }
 
-        ITransaction txn = null;
+        TransactionInterface txn = null;
 
         try {
             txn = beginTransaction();
@@ -170,7 +170,7 @@ public final class XmlDatabase implements IDatabase {
      * @return the new tranaction object
      * @throws DatabaseException
      */
-    public ITransaction beginTransaction() throws DatabaseException {
+    public TransactionInterface beginTransaction() throws DatabaseException {
         return new XmlTransaction();
     }
 
@@ -180,7 +180,7 @@ public final class XmlDatabase implements IDatabase {
      * @param txn
      * @throws DatabaseException
      */
-    public void commitTransaction(ITransaction txn) throws DatabaseException {
+    public void commitTransaction(TransactionInterface txn) throws DatabaseException {
         if (this.idgen.dirty) {
             try {
                 saveIDGenerator(txn);
@@ -198,7 +198,7 @@ public final class XmlDatabase implements IDatabase {
      * @param txn
      * @throws DatabaseException
      */
-    public void abortTransaction(ITransaction txn) throws DatabaseException {
+    public void abortTransaction(TransactionInterface txn) throws DatabaseException {
         txn.abort();
     }
 
@@ -223,7 +223,7 @@ public final class XmlDatabase implements IDatabase {
      * @return the id-generator for this database
      * @throws ObjectNotFoundException
      */
-    public XmlIDGenerator getIDGenerator(ITransaction txn)
+    public XmlIDGenerator getIDGenerator(TransactionInterface txn)
                                throws ObjectNotFoundException {
         File file = new File(this.dbHomeDir, "idgen.xml"); //$NON-NLS-1$
 
@@ -238,7 +238,7 @@ public final class XmlDatabase implements IDatabase {
      * @param txn
      * @throws IOException
      */
-    public void saveIDGenerator(ITransaction txn)
+    public void saveIDGenerator(TransactionInterface txn)
                          throws IOException {
         File tmp = File.createTempFile("idgen.xml.", ".tmp", this.dbHomeDir); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -249,7 +249,7 @@ public final class XmlDatabase implements IDatabase {
             throw new IOException(Messages.getString("XmlDatabase.4")+file); //$NON-NLS-1$
         }
         Resource res = new Resource(file, tmp);
-        txn.addResource(res, ITransaction.ADDED);
+        txn.addResource(res, TransactionInterface.ADDED);
     }
 
     /**
@@ -261,7 +261,7 @@ public final class XmlDatabase implements IDatabase {
      * @throws IOException if an I/O error occurred loading the object.
      * @throws ObjectNotFoundException if no object is stored by this key.
      */
-    public INode getNode(ITransaction txn, String kstr)
+    public NodeInterface getNode(TransactionInterface txn, String kstr)
                   throws IOException, ObjectNotFoundException {
         File f = new File(this.dbHomeDir, kstr + ".xml"); //$NON-NLS-1$
 
@@ -291,7 +291,7 @@ public final class XmlDatabase implements IDatabase {
      * @param node
      * @throws java.io.IOException
      */
-    public void insertNode(ITransaction txn, String kstr, INode node)
+    public void insertNode(TransactionInterface txn, String kstr, NodeInterface node)
                 throws IOException {
         File f = new File(this.dbHomeDir, kstr + ".xml"); //$NON-NLS-1$
 
@@ -312,7 +312,7 @@ public final class XmlDatabase implements IDatabase {
      * @param node
      * @throws java.io.IOException
      */
-    public void updateNode(ITransaction txn, String kstr, INode node)
+    public void updateNode(TransactionInterface txn, String kstr, NodeInterface node)
                 throws IOException {
         XmlWriter writer = null;
         File tmp = File.createTempFile(kstr + ".xml.", ".tmp", this.dbHomeDir); //$NON-NLS-1$ //$NON-NLS-2$
@@ -332,7 +332,7 @@ public final class XmlDatabase implements IDatabase {
             throw new IOException(Messages.getString("XmlDatabase.9")+file); //$NON-NLS-1$
         }
         Resource res = new Resource(file, tmp);
-        txn.addResource(res, ITransaction.ADDED);
+        txn.addResource(res, TransactionInterface.ADDED);
     }
 
     /**
@@ -342,9 +342,9 @@ public final class XmlDatabase implements IDatabase {
      * @param kstr
      * @throws IOException
      */
-    public void deleteNode(ITransaction txn, String kstr) {
+    public void deleteNode(TransactionInterface txn, String kstr) {
         Resource res = new Resource(new File(this.dbHomeDir, kstr+".xml"), null); //$NON-NLS-1$
-        txn.addResource(res, ITransaction.DELETED);
+        txn.addResource(res, TransactionInterface.DELETED);
     }
 
     /**
@@ -365,7 +365,7 @@ public final class XmlDatabase implements IDatabase {
         return this.encoding;
     }
 
-    class XmlTransaction implements ITransaction {
+    class XmlTransaction implements TransactionInterface {
 
         ArrayList writeFiles = new ArrayList();
         ArrayList deleteFiles = new ArrayList();

@@ -29,21 +29,21 @@ import java.net.URL;
  * Factory class for generating Image objects from various sources.
  *  
  */
-public abstract class ImageGenerator {
-    protected static ImageGenerator generator = null;
+public abstract class AbstractImageGenerator {
+    protected static AbstractImageGenerator generator = null;
 
     /**
-     * Returns an ImageGenerator singleton, creating it if necessary. If the JIMI
+     * Returns an AbstractImageGenerator singleton, creating it if necessary. If the JIMI
      * package is installed, an instance of {@link helma.image.jimi.JimiGenerator JimiGenerator}
      * will be returned. Otherwise, if the javax.imageio package is available,
      * an instance of {@link helma.image.imageio.ImageIOGenerator ImageIOGenerator}
-     * is returned. Additionally, the class of the ImageGenerator implementation
+     * is returned. Additionally, the class of the AbstractImageGenerator implementation
      * to be used can be set using the <code>imageGenerator</code> property in either
      * the app.properties or server.properties file.
      *
-     * @return a new ImageGenerator instance
+     * @return a new AbstractImageGenerator instance
      */
-    public static ImageGenerator getInstance() {
+    public static AbstractImageGenerator getInstance() {
         if (generator == null) {
             // first see wether an image wrapper class was specified in
             // server.properties:
@@ -67,7 +67,7 @@ public abstract class ImageGenerator {
                         // if we're still here, JimiWrapper can be used
                         className = "helma.image.jimi.JimiGenerator"; //$NON-NLS-1$
                     } catch (ClassNotFoundException e2) {
-                        throw new RuntimeException(Messages.getString("ImageGenerator.0")); //$NON-NLS-1$
+                        throw new RuntimeException(Messages.getString("AbstractImageGenerator.0")); //$NON-NLS-1$
                     }
                 }
             }
@@ -76,13 +76,13 @@ public abstract class ImageGenerator {
                 generatorClass = Class.forName(className);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(
-                    Messages.getString("ImageGenerator.1") + className); //$NON-NLS-1$
+                    Messages.getString("AbstractImageGenerator.1") + className); //$NON-NLS-1$
             }
             try {
-                generator = (ImageGenerator)generatorClass.newInstance();
+                generator = (AbstractImageGenerator)generatorClass.newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(
-                    Messages.getString("ImageGenerator.2") //$NON-NLS-1$
+                    Messages.getString("AbstractImageGenerator.2") //$NON-NLS-1$
                         + className);
             }
         }

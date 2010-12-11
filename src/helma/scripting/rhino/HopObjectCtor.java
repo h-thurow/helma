@@ -23,8 +23,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
-import helma.objectmodel.INode;
-import helma.objectmodel.INodeState;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.NodeStateInterface;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.DbKey;
 import helma.objectmodel.db.Node;
@@ -102,7 +102,7 @@ public class HopObjectCtor extends FunctionObject {
                 throw new EvaluatorException(x.toString());
             }
         }
-        INode node = new Node(protoname, protoname,
+        NodeInterface node = new Node(protoname, protoname,
                 core.app.getWrappedNodeManager());
         Scriptable proto = core.getPrototype(protoname);
         HopObject hobj = new HopObject(protoname, core, node, proto);
@@ -237,7 +237,7 @@ public class HopObjectCtor extends FunctionObject {
             WrappedNodeManager nmgr = HopObjectCtor.this.core.app.getWrappedNodeManager();
             Node node = new Node("HopQuery", Long.toString(collectionId++), null, nmgr); //$NON-NLS-1$
             node.setDbMapping(dbmap);
-            node.setState(INodeState.VIRTUAL);
+            node.setState(NodeStateInterface.VIRTUAL);
             return new HopObject("HopQuery", HopObjectCtor.this.core, node, HopObjectCtor.this.core.hopObjectProto); //$NON-NLS-1$
         }
 
