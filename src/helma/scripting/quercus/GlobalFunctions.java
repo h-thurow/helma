@@ -7,6 +7,11 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ * 
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  */
 
 package helma.scripting.quercus;
