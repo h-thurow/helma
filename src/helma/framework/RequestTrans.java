@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -16,13 +20,15 @@
 
 package helma.framework;
 
-import helma.util.Base64;
 import helma.util.SystemMap;
 import helma.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
+
+import org.apache.commons.codec.binary.Base64;
+
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -602,10 +608,10 @@ public class RequestTrans implements Serializable {
         StringTokenizer tok;
 
         if (auth.startsWith("Basic ")) { //$NON-NLS-1$
-            tok = new StringTokenizer(new String(Base64.decode((auth.substring(6)).toCharArray())),
+            tok = new StringTokenizer(new String(Base64.decodeBase64((auth.substring(6)))),
                                       ":"); //$NON-NLS-1$
         } else {
-            tok = new StringTokenizer(new String(Base64.decode(auth.toCharArray())), ":"); //$NON-NLS-1$
+            tok = new StringTokenizer(new String(Base64.decodeBase64(auth)), ":"); //$NON-NLS-1$
         }
 
         try {

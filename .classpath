@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/activation.jar"/>
 	<classpathentry kind="lib" path="lib/apache-dom.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
@@ -20,5 +19,6 @@
 	<classpathentry kind="lib" path="lib/quercus.jar"/>
 	<classpathentry kind="lib" path="lib/resin.jar"/>
 	<classpathentry kind="lib" path="lib/rhino.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

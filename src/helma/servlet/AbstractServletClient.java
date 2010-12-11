@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *  
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -29,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.*;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
@@ -513,7 +518,7 @@ public abstract class AbstractServletClient extends HttpServlet {
             checksum[i] = (byte) (n);
             n >>>= 8;
         }
-        String etag = "\"" + new String(Base64.encode(checksum)) + "\"";  //$NON-NLS-1$//$NON-NLS-2$
+        String etag = "\"" + new String(Base64.encodeBase64(checksum)) + "\"";  //$NON-NLS-1$//$NON-NLS-2$
         res.setHeader("ETag", etag); //$NON-NLS-1$
         String etagHeader = req.getHeader("If-None-Match"); //$NON-NLS-1$
         if (etagHeader != null) {

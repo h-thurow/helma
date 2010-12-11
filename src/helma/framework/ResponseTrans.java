@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ * 
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -26,6 +30,7 @@ import java.io.*;
 import java.security.*;
 import java.util.*;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.xmlrpc.XmlRpcResponseProcessor;
 
 /**
@@ -721,7 +726,7 @@ public final class ResponseTrans extends Writer implements Serializable {
                 // if (contentType != null)
                 //     digest.update (contentType.getBytes());
                 byte[] b = this.digest.digest(this.response);
-                this.etag = "\"" + new String(Base64.encode(b)) + "\""; //$NON-NLS-1$ //$NON-NLS-2$
+                this.etag = "\"" + new String(Base64.encodeBase64(b)) + "\""; //$NON-NLS-1$ //$NON-NLS-2$
                 // only set response to 304 not modified if no cookies were set
                 if (this.reqtrans.hasETag(this.etag) && countCookies() == 0) {
                     this.response = new byte[0];
@@ -898,7 +903,7 @@ public final class ResponseTrans extends Writer implements Serializable {
         // generation sensitive to changes in the app
         byte[] b = this.digest.digest(MD5Encoder.toBytes(this.app.getChecksum()));
 
-        setETag(new String(Base64.encode(b)));
+        setETag(new String(Base64.encodeBase64(b)));
     }
 
     /**
