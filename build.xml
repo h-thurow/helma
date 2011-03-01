@@ -8,7 +8,7 @@
     <target name="init">
         <property name="Name" value="helma"/>
         <property name="year" value="1998-${year}"/>
-        <property name="version" value="1.7.0"/>
+        <property name="version" value="2.0.0"/>
         <property name="project" value="helma"/>
 
         <property name="home.dir" value="."/>
@@ -98,6 +98,9 @@
         <mkdir dir="${build.work}/src" />
         <copy todir="${build.work}/src" overwrite="true">
             <fileset dir="${build.src}" includes="**/*.java"/>
+        </copy>
+        <copy todir="${build.classes}/">
+            <fileset dir="${build.src}" includes="**/*.properties"/>
         </copy>
         <replace file="${build.work}/src/helma/main/Server.java"
             token="__builddate__" value="${TODAY}"/>
