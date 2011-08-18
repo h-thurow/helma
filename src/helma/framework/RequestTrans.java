@@ -10,7 +10,8 @@
  *
  * Contributions:
  *   Daniel Ruthardt
- *   Copyright 2010 dowee Limited. All rights reserved. 
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *   Tobi Schäfer
  *
  * $RCSfile$
  * $Author$
@@ -622,6 +623,17 @@ public class RequestTrans implements Serializable {
 
         try {
             this.httpPassword = tok.nextToken();
+            
+            /**
+             * @author Tobi Schäfer
+             * @see https://github.com/p3k/helma/commit/a094f59a282b05513d5420c679d13e18443d3078
+             */
+            StringBuffer buffer = new StringBuffer(tok.nextToken());
+            while (tok.hasMoreTokens()) {
+                buffer.append(":"); //$NON-NLS-1$
+                buffer.append(tok.nextToken());
+            }
+            this.httpPassword = buffer.toString();
         } catch (NoSuchElementException e) {
             this.httpPassword = null;
         }
