@@ -40,7 +40,7 @@ import com.caucho.quercus.env.ObjectExtJavaValue;
 import com.caucho.quercus.env.StringValue;
 import com.caucho.quercus.env.Value;
 import com.caucho.quercus.env.Var;
-import com.caucho.quercus.program.AbstractFunction;
+import com.caucho.quercus.function.AbstractFunction;
 
 /**
  * The HopObject is used to wrap NodeInterface objects for use in the Quercus
@@ -257,17 +257,12 @@ public class HopObject extends ObjectExtJavaValue {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * com.caucho.quercus.env.ObjectExtValue#callMethod(com.caucho.quercus.env
-     * .Env, int, char[], int, com.caucho.quercus.env.Value[])
-     */
+    
     @Override
-    public Value callMethod(final Env env, final int hash, final char[] name,
-            final int nameLen, final Value[] args) {
+    public Value callMethod(Env env, StringValue methodName, int hash,
+            Value []args) {
         // TODO: implement the generic callee (__call)
-        return super.callMethod(env, hash, name, nameLen, args);
+        return super.callMethod(env, methodName, hash, args);
     }
 
     /**
@@ -415,10 +410,10 @@ public class HopObject extends ObjectExtJavaValue {
      * (non-Javadoc)
      * @see
      * com.caucho.quercus.env.ObjectExtValue#getFieldArg(com.caucho.quercus.
-     * env.Env, com.caucho.quercus.env.StringValue)
+     * env.Env, com.caucho.quercus.env.StringValue, boolean isTop)
      */
     @Override
-    public Value getFieldArg(final Env env, final StringValue name) {
+    public Value getFieldArg(final Env env, final StringValue name, boolean isTop) {
         return getFieldExt(env, name);
     }
 
@@ -430,8 +425,7 @@ public class HopObject extends ObjectExtJavaValue {
      */
     @Override
     protected Value getFieldExt(final Env environment, final StringValue name) {
-        final AbstractFunction function = findFunction("__get"); //$NON-NLS-1$
-        if (function != null) {
+        if (findFunction("__get") != null) { //$NON-NLS-1$
             return callMethod(environment, StringValue.create("__get") //$NON-NLS-1$
                     .toStringValue(), new Value[] {name});
         }
@@ -724,8 +718,7 @@ public class HopObject extends ObjectExtJavaValue {
             final Value value) {
         final Value oldValue = getFieldExt(environment, name);
 
-        final AbstractFunction function = findFunction("__set"); //$NON-NLS-1$
-        if (function != null) {
+        if (findFunction("__set") != null) { //$NON-NLS-1$
             callMethod(environment,
                     StringValue.create("__set").toStringValue(), new Value[] { //$NON-NLS-1$
                             name, value});

@@ -59,7 +59,6 @@ import com.caucho.quercus.lib.HtmlModule;
 import com.caucho.quercus.lib.HttpModule;
 import com.caucho.quercus.lib.ImageModule;
 import com.caucho.quercus.lib.JavaModule;
-import com.caucho.quercus.lib.MailModule;
 import com.caucho.quercus.lib.MathModule;
 import com.caucho.quercus.lib.MhashModule;
 import com.caucho.quercus.lib.MiscModule;
@@ -68,39 +67,35 @@ import com.caucho.quercus.lib.OptionsModule;
 import com.caucho.quercus.lib.OutputModule;
 import com.caucho.quercus.lib.QuercusModule;
 import com.caucho.quercus.lib.TokenModule;
-import com.caucho.quercus.lib.UrlModule;
 import com.caucho.quercus.lib.VariableModule;
-import com.caucho.quercus.lib.curl.CurlModule;
 import com.caucho.quercus.lib.date.DateModule;
 import com.caucho.quercus.lib.db.MysqlModule;
 import com.caucho.quercus.lib.db.MysqliModule;
 import com.caucho.quercus.lib.db.OracleModule;
 import com.caucho.quercus.lib.db.PDOModule;
 import com.caucho.quercus.lib.db.PostgresModule;
+import com.caucho.quercus.lib.dom.QuercusDOMModule;
 import com.caucho.quercus.lib.file.FileModule;
 import com.caucho.quercus.lib.file.SocketModule;
 import com.caucho.quercus.lib.file.StreamModule;
-import com.caucho.quercus.lib.gettext.GettextModule;
 import com.caucho.quercus.lib.i18n.MbstringModule;
 import com.caucho.quercus.lib.i18n.UnicodeModule;
 import com.caucho.quercus.lib.jms.JMSModule;
 import com.caucho.quercus.lib.json.JsonModule;
+import com.caucho.quercus.lib.mail.MailModule;
 import com.caucho.quercus.lib.mcrypt.McryptModule;
+import com.caucho.quercus.lib.pdf.PDFModule;
 import com.caucho.quercus.lib.reflection.ReflectionModule;
-import com.caucho.quercus.lib.regexp.CauchoRegexpModule;
-import com.caucho.quercus.lib.regexp.JavaRegexpModule;
 import com.caucho.quercus.lib.regexp.RegexpModule;
 import com.caucho.quercus.lib.session.SessionModule;
 import com.caucho.quercus.lib.simplexml.SimpleXMLModule;
 import com.caucho.quercus.lib.spl.SplModule;
 import com.caucho.quercus.lib.string.StringModule;
-import com.caucho.quercus.lib.xml.DomModule;
-import com.caucho.quercus.lib.xml.XMLWriterModule;
 import com.caucho.quercus.lib.xml.XmlModule;
 import com.caucho.quercus.lib.zip.ZipModule;
 import com.caucho.quercus.lib.zlib.ZlibModule;
 import com.caucho.quercus.module.ModuleContext;
-import com.caucho.quercus.program.AbstractFunction;
+import com.caucho.quercus.function.AbstractFunction;
 import com.caucho.quercus.program.Function;
 import com.caucho.quercus.program.InterpretedClassDef;
 import com.caucho.quercus.program.JavaClassDef;
@@ -243,7 +238,7 @@ public class QuercusEngine implements ScriptingEngineInterface {
         // but at least it is confusing to have a
         // class called HopObjectJava and one called HopObject.
         final JavaClassDef classDefHopObject = new JavaClassDef(
-                new ModuleContext(ClassLoader.getSystemClassLoader()),
+                new ModuleContext(null, ClassLoader.getSystemClassLoader()),
                 "HopObjectJava", HopObject.class); //$NON-NLS-1$
         this._environment.addClassDef("HopObjectJava", classDefHopObject); //$NON-NLS-1$
 
@@ -594,23 +589,18 @@ public class QuercusEngine implements ScriptingEngineInterface {
         this._quercus.addModule(new ApcModule());
         this._quercus.addModule(new ArrayModule());
         this._quercus.addModule(new BcmathModule());
-        this._quercus.addModule(new CauchoRegexpModule());
         this._quercus.addModule(new ClassesModule());
         this._quercus.addModule(new CtypeModule());
-        this._quercus.addModule(new CurlModule());
         this._quercus.addModule(new DateModule());
-        this._quercus.addModule(new DomModule());
         this._quercus.addModule(new ErrorModule());
         this._quercus.addModule(new ExifModule());
         this._quercus.addModule(new FileModule());
         this._quercus.addModule(new FunctionModule());
-        this._quercus.addModule(new GettextModule());
         this._quercus.addModule(new HashModule());
         this._quercus.addModule(new HtmlModule());
         this._quercus.addModule(new HttpModule());
         this._quercus.addModule(new ImageModule());
         this._quercus.addModule(new JavaModule());
-        this._quercus.addModule(new JavaRegexpModule());
         this._quercus.addModule(new JMSModule());
         this._quercus.addModule(new JsonModule());
         this._quercus.addModule(new MailModule());
@@ -623,10 +613,12 @@ public class QuercusEngine implements ScriptingEngineInterface {
         this._quercus.addModule(new MysqlModule());
         this._quercus.addModule(new NetworkModule());
         this._quercus.addModule(new OptionsModule());
-        this._quercus.addModule(new OutputModule());
         this._quercus.addModule(new OracleModule());
+        this._quercus.addModule(new OutputModule());
+        this._quercus.addModule(new PDFModule());
         this._quercus.addModule(new PDOModule());
         this._quercus.addModule(new PostgresModule());
+        this._quercus.addModule(new QuercusDOMModule());
         this._quercus.addModule(new QuercusModule());
         this._quercus.addModule(new ReflectionModule());
         this._quercus.addModule(new RegexpModule());
@@ -638,9 +630,7 @@ public class QuercusEngine implements ScriptingEngineInterface {
         this._quercus.addModule(new StringModule());
         this._quercus.addModule(new TokenModule());
         this._quercus.addModule(new UnicodeModule());
-        this._quercus.addModule(new UrlModule());
         this._quercus.addModule(new VariableModule());
-        this._quercus.addModule(new XMLWriterModule());
         this._quercus.addModule(new XmlModule());
         this._quercus.addModule(new ZipModule());
         this._quercus.addModule(new ZlibModule());
@@ -764,9 +754,9 @@ public class QuercusEngine implements ScriptingEngineInterface {
         // wrap the arguments (actually this is done to have the arguments a
         // little bit more unwrapped, than a direct
         // call to Env.wrapJava(arguments) would result in
-        final Expr[] parameters = new Expr[arguments.length];
+        final Value[] parameters = new Value[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            parameters[i] = new LiteralExpr(this._environment.wrapJava(arguments[i]));
+            parameters[i] = this._environment.wrapJava(arguments[i]);
         }
 
         Object result = null;
