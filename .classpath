@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="lib/tagsoup.jar"/>
 	<classpathentry kind="lib" path="lib/xmlrpc.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/quercus.jar"/>
 	<classpathentry kind="lib" path="lib/resin.jar"/>
 	<classpathentry kind="lib" path="lib/rhino.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
