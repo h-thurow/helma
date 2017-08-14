@@ -41,7 +41,7 @@ public class Main {
                                             "commons-logging.jar", "crimson.jar",
                                             "xmlrpc.jar", "servlet.jar",
                                             "mail.jar", "activation.jar",
-                                            "commons-fileupload.jar", "commons-codec.jar",
+                                            "commons-fileupload.jar", "commons-codec-1.4.jar",
                                             "commons-io.jar", "commons-net.jar", 
                                             "tagsoup.jar"
                                         };
