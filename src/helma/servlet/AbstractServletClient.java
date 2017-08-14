@@ -203,7 +203,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                     }
                 } else {
                     String host = (String) reqtrans.get("http_host");
-                    // http_host is guaranteed to be lower case
+                    // http_host is guaranteed to be lower case 
                     if (host != null && host.indexOf(resCookieDomain) == -1) {
                         resCookieDomain = null;
                     }
@@ -475,11 +475,11 @@ public abstract class AbstractServletClient extends HttpServlet {
         }
         try {
             OutputStream out = res.getOutputStream();
-
+            
             int bufferSize = 4096;
             byte buffer[] = new byte[bufferSize];
             int l;
-
+            
             while (length > 0) {
                 if (length < bufferSize) {
                     l = in.read(buffer, 0, length);
@@ -489,7 +489,7 @@ public abstract class AbstractServletClient extends HttpServlet {
                 if (l == -1) {
                     break;
                 }
-
+                
                 length -= l;
                 out.write(buffer, 0, l);
             }
@@ -513,9 +513,9 @@ public abstract class AbstractServletClient extends HttpServlet {
             checksum[i] = (byte) (n);
             n >>>= 8;
         }
-        String etag = "\"" + new String(Base64.encodeBase64(checksum)) + "\"";  //$NON-NLS-1$//$NON-NLS-2$
-        res.setHeader("ETag", etag); //$NON-NLS-1$
-        String etagHeader = req.getHeader("If-None-Match"); //$NON-NLS-1$
+        String etag = "\"" + new String(Base64.encodeBase64(checksum)) + "\"";
+        res.setHeader("ETag", etag);
+        String etagHeader = req.getHeader("If-None-Match");
         if (etagHeader != null) {
             StringTokenizer st = new StringTokenizer(etagHeader, ", \r\n");
             while (st.hasMoreTokens()) {
