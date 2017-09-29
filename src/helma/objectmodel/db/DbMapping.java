@@ -960,9 +960,6 @@ public final class DbMapping {
             allColumns.put(this.columns[i].getName(), this.columns[i]);
         }
         
-        System.out.println(this.getTypeName() + " ==================================================");
-        System.out.println("Columns before: " + allColumns.keySet().toString());
-        
         // caching
         ResultSetMetaData metaData = resultSet.getMetaData();
         int numberOfColumns = metaData.getColumnCount();
@@ -987,8 +984,6 @@ public final class DbMapping {
                         columnNameToRelation(columnName), this));
             }
         }
-        
-        System.out.println("Columns after: " + allColumns.keySet().toString());
         
         // overwrite the existing array
         this.columns = allColumns.values().toArray(new DbColumn[allColumns.size()]);
