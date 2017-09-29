@@ -1784,7 +1784,7 @@ public final class Application implements Runnable {
         }
 
         try {
-            dbs = new DbSource(name, dbProps);
+            dbs = new DbSource(name, dbProps, getClassLoader());
             dbSources.put(dbSrcName, dbs);
         } catch (Exception problem) {
             logEvent("Error creating DbSource " + name +": ");

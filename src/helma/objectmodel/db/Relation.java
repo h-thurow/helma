@@ -955,19 +955,25 @@ public final class Relation {
     /**
      *  Build the second half of an SQL select statement according to this relation
      *  and a local object.
+     *  
+     * @throws SQLException 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void buildQuery(StringBuffer q, Node home, boolean useOrder, boolean isCount)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NoDriverException {
         buildQuery(q, home, otherType, null, useOrder, isCount);
     }
 
     /**
      *  Build the second half of an SQL select statement according to this relation
      *  and a local object.
+     *  
+     * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
      */
     public void buildQuery(StringBuffer q, Node home, DbMapping otherDbm, String kstr,
                            boolean useOrder, boolean isCount)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NoDriverException {
         String prefix = " WHERE ";
         Node nonvirtual = home.getNonVirtualParent();
 
@@ -1083,10 +1089,10 @@ public final class Relation {
      * @param prefix the prefix to use to append to the existing query (e.g. " AND ")
      *
      * @throws SQLException sql related exception
-     * @throws ClassNotFoundException driver class not found
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
      */
     public void renderConstraints(StringBuffer q, Node home, String prefix)
-                             throws SQLException, ClassNotFoundException {
+                             throws SQLException, NoDriverException {
         renderConstraints(q, home, home.getNonVirtualParent(), otherType, prefix);
     }
 
@@ -1098,13 +1104,13 @@ public final class Relation {
      * @param nonvirtual our non-virtual home nod
      * @param otherDbm the DbMapping of the remote Node
      * @param prefix the prefix to use to append to the existing query (e.g. " AND ")
-     *
+     * 
      * @throws SQLException sql related exception
-     * @throws ClassNotFoundException driver class not found
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void renderConstraints(StringBuffer q, Node home, Node nonvirtual,
                                   DbMapping otherDbm, String prefix)
-                             throws SQLException, ClassNotFoundException {
+                             throws SQLException, NoDriverException {
 
         if (constraints.length > 1 && logicalOperator != AND) {
             q.append(prefix);
@@ -1486,8 +1492,12 @@ public final class Relation {
             isGroupby = groupby;
         }
 
+        /**
+         * @throws SQLException
+         * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+         */
         public void addToQuery(StringBuffer q, INode home, INode nonvirtual, DbMapping otherDbm)
-                        throws SQLException, ClassNotFoundException {
+                        throws SQLException, NoDriverException {
             String local;
             INode ref = isGroupby ? home : nonvirtual;
 

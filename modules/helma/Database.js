@@ -17,7 +17,7 @@
 /**
  * @fileoverview Properties and methods of the helma.Database prototype.
  * <br /><br />
- * To use this optional module, its repository needs to be added to the 
+ * To use this optional module, its repository needs to be added to the
  * application, for example by calling app.addRepository('modules/helma/Database.js')
  */
 
@@ -115,16 +115,11 @@ helma.Database = function(source) {
         var statement = connection.createStatement();
         var resultSet = statement.executeQuery(sql);
         var metaData = resultSet.getMetaData();
-        var max = metaData.getColumnCount();
-        var types = [];
-        for (var i=1; i <= max; i++) {
-            types[i] = metaData.getColumnType(i);
-        }
         var result = [];
         while (resultSet.next()) {
             var row = {}
-            for (var i=1; i<=max; i+=1) {
-                switch (types[i]) {
+            for (var i=1; i<=metaData.getColumnCount(); i+=1) {
+                 switch (metaData.getColumnType(i)) {
                     case Types.BIT:
                     case Types.BOOLEAN:
                         row[metaData.getColumnLabel(i)] = resultSet.getBoolean(i);
@@ -296,7 +291,7 @@ helma.Database.createInstance = function(driver, url, name, user, password) {
     if (password) {
         props.put(name + ".password", password);
     }
-    return new helma.Database(new DbSource(name, props));
+    return new helma.Database(new DbSource(name, props, app.__app__.getClassLoader()));
 }
 
 /**

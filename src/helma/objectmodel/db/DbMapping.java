@@ -466,8 +466,11 @@ public final class DbMapping {
 
     /**
      * Get a JDBC connection for this DbMapping.
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     * @throws SQLException 
      */
-    public Connection getConnection() throws ClassNotFoundException, SQLException {
+    public Connection getConnection() throws NoDriverException, SQLException {
         if (dbSourceName == null) {
             if (parentMapping != null) {
                 return parentMapping.getConnection();
@@ -926,14 +929,82 @@ public final class DbMapping {
     }
 
     /**
-     * Return an array of DbColumns for the relational table mapped by this DbMapping.
+     * Update and return the columns meta-information for this database mapping based on the given result-set's
+     * meta-information.
+     * New columns meta-information will be added, but missing columns meta-information will bot be removed. Consecutive
+     * calls can as such only extend the missing columns meta-information.
+     * 
+     * Some JDBC drivers, especially JDBC drivers for NoSQL databases or other schema-less databases (e.g. LDAP) only
+     * provide schema-meta-information togehter with result-sets. While this is true for some relational databases as
+     * well, for relational databases it is easy to work around this limitation retrieving a fake result-set (e.g. 
+     * something like "SELECT * FROM Table WHERE 1 = 0"). Some JDBC drivers for the above mentioned non-relational
+     * databases (e.g. LDAP) do however not even fully support SQL, so the generic workaround can not be used and 
+     * specific workaround for specific drivers would be needed, so rather than retrieving the schema-meta-information
+     * from fake result-sets, the schema-metainformation is gradually updated and extended from real result-sets. 
+     * 
+     * @param resultSet
+     *  The result-set to use for updating the columns meta-information. 
+     * @return
+     *  The columns meta-information for this database mapping based on the given result-set's meta-information, but not
+     *  the updated columns meta-information.
+     *  
+     * @throws SQLException
      */
-    public synchronized DbColumn[] getColumns()
-                                       throws ClassNotFoundException, SQLException {
-        if (!isRelational()) {
-            throw new SQLException("Can't get columns for non-relational data mapping " + this);
+    public synchronized DbColumn[] getColumns(ResultSet resultSet) throws SQLException {
+        // create a temporary hash table for all columns to avoid duplicates
+        Hashtable<String, DbColumn> allColumns = new Hashtable<String, DbColumn>();
+        
+        // loop the existing columns (if there are existing columns)
+        for (int i = 0; this.columns != null && i < this.columns.length; i++) {
+            // put the current column to the hash table
+            allColumns.put(this.columns[i].getName(), this.columns[i]);
         }
-
+        
+        System.out.println(this.getTypeName() + " ==================================================");
+        System.out.println("Columns before: " + allColumns.keySet().toString());
+        
+        // caching
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int numberOfColumns = metaData.getColumnCount();
+        
+        // create a temporary array for the result set's columns
+        DbColumn[] columns = new DbColumn[numberOfColumns];
+        
+        // loop the result-set's columns
+        for (int i = 0; i < numberOfColumns; i++) {
+            // get the current column's column name
+            String columnName = metaData.getColumnName(i + 1);
+            // create the db column
+            DbColumn dbColumn = new DbColumn(columnName, metaData.getColumnType(i + 1), 
+                    columnNameToRelation(columnName), this);
+            // add the column to the result set's columns
+            columns[i] = dbColumn;
+            
+            // check if the column is not known yet
+            if (!allColumns.containsKey(columnName)) {
+                // create a db column and add it to the hash table
+                allColumns.put(columnName, new DbColumn(columnName, metaData.getColumnType(i + 1), 
+                        columnNameToRelation(columnName), this));
+            }
+        }
+        
+        System.out.println("Columns after: " + allColumns.keySet().toString());
+        
+        // overwrite the existing array
+        this.columns = allColumns.values().toArray(new DbColumn[allColumns.size()]);
+        
+        // return the result-set's columns
+        return columns;
+    }
+    
+    /**
+     * Return an array of DbColumns for the relational table mapped by this DbMapping.
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     * @throws SQLException 
+     */
+    public synchronized DbColumn[] getColumns() 
+                                        throws NoDriverException, SQLException {
         // Use local variable cols to avoid synchronization (schema may be nulled elsewhere)
         if (columns == null) {
             // we do two things here: set the SQL type on the Relation mappings
@@ -954,20 +1025,7 @@ public final class DbMapping {
                 throw new SQLException("Error retrieving columns for " + this);
             }
 
-            ResultSetMetaData meta = rs.getMetaData();
-
-            // ok, we have the meta data, now loop through mapping...
-            int ncols = meta.getColumnCount();
-            ArrayList list = new ArrayList(ncols);
-
-            for (int i = 0; i < ncols; i++) {
-                String colName = meta.getColumnName(i + 1);
-                Relation rel = columnNameToRelation(colName);
-
-                DbColumn col = new DbColumn(colName, meta.getColumnType(i + 1), rel, this);
-                list.add(col);
-            }
-            columns = (DbColumn[]) list.toArray(new DbColumn[list.size()]);
+            this.getColumns(rs);
         }
 
         return columns;
@@ -986,12 +1044,12 @@ public final class DbMapping {
      * @param columnName ...
      *
      * @return ...
-     *
-     * @throws ClassNotFoundException ...
-     * @throws SQLException ...
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     * @throws SQLException 
      */
     public DbColumn getColumn(String columnName)
-                       throws ClassNotFoundException, SQLException {
+                       throws NoDriverException, SQLException {
         DbColumn col = (DbColumn) columnMap.get(columnName);
         if (col == null) {
             DbColumn[] cols = columns;
@@ -1096,8 +1154,11 @@ public final class DbMapping {
      *
      *
      * @return ...
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     * @throws SQLException 
      */
-    public String getInsert() throws ClassNotFoundException, SQLException {
+    public String getInsert() throws NoDriverException, SQLException {
         String ins = insertString;
 
         if (ins != null) {
@@ -1118,7 +1179,8 @@ public final class DbMapping {
                     b1.append(", ");
                     b2.append(", ");
                 }
-                b1.append(cols[i].getName());
+                b1.append(getDbSource().getConnection().getMetaData().getIdentifierQuoteString() + cols[i].getName() + 
+                        getDbSource().getConnection().getMetaData().getIdentifierQuoteString());
                 b2.append("?");
                 needsComma = true;
             }
@@ -1160,8 +1222,11 @@ public final class DbMapping {
     /**
      *  Return true if values for the column identified by the parameter need
      *  to be quoted in SQL queries.
+     *  
+     * @throws SQLException 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
-    public boolean needsQuotes(String columnName) throws SQLException, ClassNotFoundException {
+    public boolean needsQuotes(String columnName) throws SQLException, NoDriverException {
         if ((tableName == null) && (parentMapping != null)) {
             return parentMapping.needsQuotes(columnName);
         }
@@ -1252,6 +1317,21 @@ public final class DbMapping {
         }
         if (parentMapping != null) {
             return parentMapping.isH2();
+        }
+        return false;
+    }
+    
+    /**
+     * Is the database behind this a SQLite db?
+     *
+     * @return true if the dbsource is using a SQLite JDBC driver
+     */
+    public boolean isSQLite() {
+        if (dbSource != null) {
+            return dbSource.isSQLite();
+        }
+        if (parentMapping != null) {
+            return parentMapping.isSQLite();
         }
         return false;
     }
@@ -1518,10 +1598,12 @@ public final class DbMapping {
      * @param q the StringBuffer to append to
      * @param column the column which must match one of the values
      * @param values the list of values
-     * @throws SQLException
+     * 
+     * @throws SQLException 
+     * @throws NoDriverException  if the JDBC driver could not be loaded or is unusable
      */
     protected void appendCondition(StringBuffer q, String column, String[] values)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NoDriverException {
         if (values.length == 1) {
             appendCondition(q, column, values[0]);
             return;
@@ -1553,10 +1635,12 @@ public final class DbMapping {
      * @param q the StringBuffer to append to
      * @param column the column which must match one of the values
      * @param val the value
+     * 
      * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
      */
     protected void appendCondition(StringBuffer q, String column, String val)
-            throws SQLException, ClassNotFoundException {
+            throws SQLException, NoDriverException {
         if (column.indexOf('(') == -1 && column.indexOf('.') == -1) {
             q.append(getTableName()).append(".");
         }

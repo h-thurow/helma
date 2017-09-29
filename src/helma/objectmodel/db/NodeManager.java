@@ -416,9 +416,13 @@ public final class NodeManager {
     /**
      *  Insert a new node in the embedded database or a relational database table,
      *  depending on its db mapping.
+     *
+     * @throws IOException
+     * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void insertNode(IDatabase db, ITransaction txn, Node node)
-                    throws IOException, SQLException, ClassNotFoundException {
+                    throws IOException, SQLException, NoDriverException {
         invokeOnPersist(node);
         DbMapping dbm = node.getDbMapping();
 
@@ -431,9 +435,12 @@ public final class NodeManager {
 
     /**
      *  Insert a node into a different (relational) database than its default one.
+     *
+     * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void exportNode(Node node, DbSource dbs)
-                    throws SQLException, ClassNotFoundException {
+                    throws SQLException, NoDriverException {
         if (node == null) {
             throw new IllegalArgumentException("Node can't be null in exportNode");
         }
@@ -451,9 +458,12 @@ public final class NodeManager {
 
     /**
      *  Insert a node into a different (relational) database than its default one.
+     *
+     * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void exportNode(Node node, DbMapping dbm)
-                    throws SQLException, ClassNotFoundException {
+                    throws SQLException, NoDriverException {
         if (node == null) {
             throw new IllegalArgumentException("Node can't be null in exportNode");
         }
@@ -469,16 +479,19 @@ public final class NodeManager {
 
     /**
      * Insert a node into a relational database.
+     *
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     * @throws SQLException
      */
     protected void insertRelationalNode(Node node, DbMapping dbm, Connection con)
-                throws ClassNotFoundException, SQLException {
+                throws NoDriverException, SQLException {
 
         if (con == null) {
             throw new NullPointerException("Error inserting relational node: Connection is null");
         }
 
         // set connection to write mode
-        if (con.isReadOnly()) con.setReadOnly(false);
+        if (con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(false);
 
         String insertString = dbm.getInsert();
         PreparedStatement stmt = con.prepareStatement(insertString);
@@ -551,9 +564,13 @@ public final class NodeManager {
      *
      * @return true if the DbMapping of the updated Node is to be marked as updated via
      *              DbMapping.setLastDataChange
+     *
+     * @throws IOException
+     * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public boolean updateNode(IDatabase db, ITransaction txn, Node node)
-                    throws IOException, SQLException, ClassNotFoundException {
+                    throws IOException, SQLException, NoDriverException {
 
         invokeOnPersist(node);
         DbMapping dbm = node.getDbMapping();
@@ -619,7 +636,7 @@ public final class NodeManager {
 
             Connection con = dbm.getConnection();
             // set connection to write mode
-            if (con.isReadOnly()) con.setReadOnly(false);
+            if (con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(false);
             PreparedStatement stmt = con.prepareStatement(b.toString());
 
             int stmtNumber = 0;
@@ -698,7 +715,7 @@ public final class NodeManager {
             try {
                 Connection con = dbm.getConnection();
                 // set connection to write mode
-                if (con.isReadOnly()) con.setReadOnly(false);
+                if (con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(false);
 
                 st = con.createStatement();
 
@@ -780,7 +797,7 @@ public final class NodeManager {
         try {
             Connection con = map.getConnection();
             // set connection to read-only mode
-            if (!con.isReadOnly()) con.setReadOnly(true);
+            if (!con.isReadOnly() && !map.isSQLite()) con.setReadOnly(true);
 
             stmt = con.createStatement();
 
@@ -832,7 +849,7 @@ public final class NodeManager {
         try {
             Connection con = map.getConnection();
             // TODO is it necessary to set connection to write mode here?
-            if (con.isReadOnly()) con.setReadOnly(false);
+            if (con.isReadOnly() && !map.isSQLite()) con.setReadOnly(false);
 
             stmt = con.createStatement();
 
@@ -876,7 +893,7 @@ public final class NodeManager {
         // retrieve the value of that field instead of the primary key
         Connection con = type.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        if (!con.isReadOnly() && !type.isSQLite()) con.setReadOnly(true);
 
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
@@ -966,7 +983,7 @@ public final class NodeManager {
 
         Connection con = dbm.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        if (!con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(true);
 
         Statement stmt = con.createStatement();
         DbColumn[] columns = dbm.getColumns();
@@ -993,6 +1010,9 @@ public final class NodeManager {
             ResultSet rs = stmt.executeQuery(query);
 
             while (rs.next()) {
+                // re-get and re-cache the columns from the resultset
+                columns = dbm.getColumns(rs);
+                
                 // create new Nodes.
                 Node node = createNode(rel.otherType, rs, columns, 0);
                 if (node == null) {
@@ -1053,7 +1073,7 @@ public final class NodeManager {
             if (missing != null) {
                 Connection con = dbm.getConnection();
                 // set connection to read-only mode
-                if (!con.isReadOnly()) con.setReadOnly(true);
+                if (!con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(true);
 
                 Statement stmt = con.createStatement();
                 DbColumn[] columns = dbm.getColumns();
@@ -1097,6 +1117,9 @@ public final class NodeManager {
                     }
 
                     while (rs.next()) {
+                        // re-get and re-cache the columns from the resultset
+                        columns = dbm.getColumns(rs);
+                        
                         // create new Nodes.
                         Node node = createNode(dbm, rs, columns, 0);
                         if (node == null) {
@@ -1181,7 +1204,7 @@ public final class NodeManager {
         int retval = 0;
         Connection con = type.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        if (!con.isReadOnly() && !type.isSQLite()) con.setReadOnly(true);
 
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
@@ -1238,7 +1261,7 @@ public final class NodeManager {
 
         Connection con = rel.otherType.getConnection();
         // set connection to read-only mode
-        if (!con.isReadOnly()) con.setReadOnly(true);
+        if (!con.isReadOnly() && !type.isSQLite()) con.setReadOnly(true);
 
         Statement stmt = null;
         long logTimeStart = logSql ? System.currentTimeMillis() : 0;
@@ -1312,7 +1335,7 @@ public final class NodeManager {
             try {
                 Connection con = dbm.getConnection();
                 // set connection to read-only mode
-                if (!con.isReadOnly()) con.setReadOnly(true);
+                if (!con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(true);
 
                 stmt = con.createStatement();
 
@@ -1329,6 +1352,10 @@ public final class NodeManager {
                 if (!rs.next()) {
                     return null;
                 }
+                
+                // re-get and re-cache the columns from the resultset
+                columns = dbm.getColumns(rs);
+                
                 node = createNode(dbm, rs, columns, 0);
 
                 fetchJoinedNodes(rs, joins, columns.length);
@@ -1388,8 +1415,7 @@ public final class NodeManager {
             try {
                 Connection con = dbm.getConnection();
                 // set connection to read-only mode
-                if (!con.isReadOnly()) con.setReadOnly(true);
-                DbColumn[] columns = dbm.getColumns();
+                if (!con.isReadOnly() && !dbm.isSQLite()) con.setReadOnly(true);
                 Relation[] joins = dbm.getJoins();
                 StringBuffer b = dbm.getSelect(rel);
 
@@ -1420,6 +1446,9 @@ public final class NodeManager {
                     return null;
                 }
 
+                // get and re-cache the columns from the current result set
+                DbColumn[] columns = dbm.getColumns(rs);
+
                 node = createNode(dbm, rs, columns, 0);
 
                 fetchJoinedNodes(rs, joins, columns.length);
@@ -1449,9 +1478,13 @@ public final class NodeManager {
 
     /**
      *  Create a new Node from a ResultSet.
+     *
+     * @throws SQLException
+     * @throws IOException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public Node createNode(DbMapping dbm, ResultSet rs, DbColumn[] columns, int offset)
-                throws SQLException, IOException, ClassNotFoundException {
+                throws SQLException, IOException, NoDriverException {
         HashMap propBuffer = new HashMap();
         String id = null;
         String name = null;
@@ -1671,18 +1704,25 @@ public final class NodeManager {
 
     /**
      *  Fetch nodes that are fetched additionally to another node via join.
+     *
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     * @throws SQLException
+     * @throws IOException
      */
     private void fetchJoinedNodes(ResultSet rs, Relation[] joins, int offset)
-            throws ClassNotFoundException, SQLException, IOException {
+            throws NoDriverException, SQLException, IOException {
         int resultSetOffset = offset;
         // create joined objects
         for (int i = 0; i < joins.length; i++) {
             DbMapping jdbm = joins[i].otherType;
-            Node node = createNode(jdbm, rs, jdbm.getColumns(), resultSetOffset);
+            // get and re-cache the columns from the resultset
+            DbColumn[] columns = jdbm.getColumns(rs);
+            
+            Node node = createNode(jdbm, rs, columns, resultSetOffset);
             if (node != null) {
                 registerNewNode(node, null);
             }
-            resultSetOffset += jdbm.getColumns().length;
+            resultSetOffset += columns.length;
         }
     }
 

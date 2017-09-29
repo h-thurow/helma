@@ -19,11 +19,16 @@ package helma.objectmodel.db;
 import helma.util.ResourceProperties;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.logging.Logger;
+
 import java.util.Hashtable;
 
 /**
@@ -36,25 +41,32 @@ public class DbSource {
     private ResourceProperties props, subProps;
     protected String url;
     private String driver;
-    private boolean isOracle, isMySQL, isPostgreSQL, isH2;
+    private boolean isOracle, isMySQL, isPostgreSQL, isH2, isSQLite;
     private long lastRead = 0L;
     private Hashtable dbmappings = new Hashtable();
     // compute hashcode statically because it's expensive and we need it often
     private int hashcode;
     // thread local connection holder for non-transactor threads
     private ThreadLocal connection;
+    
+    /**
+     * The class loader to use for loading JDBC driver classes.
+     */
+    private ClassLoader classLoader;
 
     /**
      * Creates a new DbSource object.
      *
      * @param name the db source name
      * @param props the properties
-     * @throws ClassNotFoundException if the JDBC driver couldn't be loaded
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
      */
-    public DbSource(String name, ResourceProperties props)
-             throws ClassNotFoundException {
+    public DbSource(String name, ResourceProperties props, ClassLoader classLoader) 
+             throws NoDriverException {
         this.name = name;
         this.props = props;
+        this.classLoader = classLoader;
         init();
     }
 
@@ -62,12 +74,12 @@ public class DbSource {
      * Get a JDBC connection to the db source.
      *
      * @return a JDBC connection
-     *
-     * @throws ClassNotFoundException if the JDBC driver couldn't be loaded
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      * @throws SQLException if the connection couldn't be created
      */
     public synchronized Connection getConnection()
-            throws ClassNotFoundException, SQLException {
+            throws NoDriverException, SQLException {
         Connection con;
         Transactor tx = Transactor.getInstance();
         if (tx != null) {
@@ -126,10 +138,11 @@ public class DbSource {
      * Set the db properties to newProps, and return the old properties.
      * @param newProps the new properties to use for this db source
      * @return the old properties
-     * @throws ClassNotFoundException if jdbc driver class couldn't be found
+     * 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
      */
     public synchronized ResourceProperties switchProperties(ResourceProperties newProps) 
-            throws ClassNotFoundException {
+            throws NoDriverException {
         ResourceProperties oldProps = props;
         props = newProps;
         init();
@@ -139,9 +152,9 @@ public class DbSource {
     /**
      * Initialize the db source from the properties
      *
-     * @throws ClassNotFoundException if the JDBC driver couldn't be loaded
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
-    private synchronized void init() throws ClassNotFoundException {
+    private synchronized void init() throws NoDriverException {
         lastRead = (defaultProps == null) ? props.lastModified()
                                           : Math.max(props.lastModified(),
                                                      defaultProps.lastModified());
@@ -165,8 +178,30 @@ public class DbSource {
                   driver.startsWith("org.gjt.mm.mysql");
         isPostgreSQL = driver.equals("org.postgresql.Driver");
         isH2 = driver.equals("org.h2.Driver");
-        // test if driver class is available
-        Class.forName(driver);
+        isSQLite = driver.equals("org.sqlite.JDBC");
+        
+        // check if a custom class loader shall be tried
+        if (classLoader != null) {
+            try {
+                // get the driver's class
+                Class driverClass = Class.forName(driver, true, classLoader);
+                // register the driver with the driver manager
+                DriverManager.registerDriver(new DriverWrapper((Driver) driverClass.newInstance()));
+            } catch (ClassNotFoundException exception) {
+                // ignore, the class might still be loadable by the default class loader
+            } catch (Exception e) {
+                // generalize the exception
+                throw new NoDriverException(e);
+            }
+        } else {
+            try {
+                // let the default class loader load the class (and thus register the driver with the driver manager)
+                Class.forName(driver);
+            } catch (ClassNotFoundException e) {
+                // generalize the exception
+                throw new NoDriverException(e);
+            }
+        }
 
         // set up driver connection properties
         conProps=new Properties();
@@ -256,6 +291,15 @@ public class DbSource {
     public boolean isH2() {
         return isH2;
     }
+    
+    /**
+     * Check if this DbSource represents a SQLite database
+     *
+     * @return true if we're using a SQLite JDBC driver
+     */
+    public boolean isSQLite() {
+        return isSQLite;
+    }
 
     /**
      * Register a dbmapping by its table name.
@@ -290,5 +334,74 @@ public class DbSource {
      */
     public boolean equals(Object obj) {
         return obj instanceof DbSource && subProps.equals(((DbSource) obj).subProps);
+    }
+}
+
+/**
+ * Wraps a JDBC driver so that JDBC drivers loaded from custom class loaders can be registered in the JDBC Driver 
+ * Manager.
+ * 
+ * @see "http://www.kfu.com/~nsayer/Java/dyn-jdbc.html"
+ * @todo Future versions of Java (8+) might not need this workaround anymore, review and remove if and when not
+ *  necessary anymore.
+ */
+class DriverWrapper implements Driver {
+    
+    /**
+     * The actual driver wrapped by this wrapper.
+     */
+    private Driver driver;
+    
+    /**
+     * Wraps the given driver.
+     * 
+     * @param d
+     *  The driver to wrap.
+     */
+    DriverWrapper(Driver d) {
+        // remember the driver being wrapped
+        this.driver = d;
+    }
+    
+    @Override
+    public boolean acceptsURL(String u) throws SQLException {
+        // delegate
+        return this.driver.acceptsURL(u);
+    }
+    
+    @Override
+    public Connection connect(String u, Properties p) throws SQLException {
+        // delegate
+        return this.driver.connect(u, p);
+    }
+    
+    @Override
+    public int getMajorVersion() {
+        // delegate
+        return this.driver.getMajorVersion();
+    }
+    
+    @Override
+    public int getMinorVersion() {
+        // delegate
+        return this.driver.getMinorVersion();
+    }
+    
+    @Override
+    public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
+        // delegate
+        return this.driver.getPropertyInfo(u, p);
+    }
+    
+    @Override
+    public boolean jdbcCompliant() {
+        // delegate
+        return this.driver.jdbcCompliant();
+    }
+
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        // delegate
+        return this.driver.getParentLogger();
     }
 }
