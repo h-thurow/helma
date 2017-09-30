@@ -21,7 +21,7 @@ EXPOSE 8080
 VOLUME ["/opt/helma/apps", "/opt/helma/log", "/opt/helma/db", "/opt/helma/lib/ext"]
 
 # otpional Java options
-ENV JAVA_OPTIONS="-server"
+ENV JAVA_OPTIONS="-server -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 # starts the HTTP server on the given port
 # the HTTP server will not be started, if no port is given
 ENV HTTP_PORT=""
