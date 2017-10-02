@@ -1,0 +1,241 @@
+/*
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font: normal small Verdana, Arial, Helvetica, sans-serif;
+	color: #999999;
+}
+
+form {
+}
+
+fieldset {
+}
+
+legend {
+}
+
+h1, h2, h3 {
+	text-transform: lowercase;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #6D8EDE;
+}
+
+h2 {
+	font-size: 2em;
+}
+
+h3 {
+	font-size: 1em;
+	font-weight: bold;
+}
+
+p, blockquote, ul, ol {
+	margin-bottom: 1.4em;
+	line-height: 1.8em;
+}
+
+p {
+}
+
+blockquote {
+	margin-left: 1.2em;
+	margin-right: 1.2em;
+	padding: 0 1em;
+	background: #EEEEEE;
+	border-left: 1px dotted #CCCCCC;
+}
+
+ul {
+	margin-left: 3em;
+}
+
+ul li {
+}
+
+ol {
+	margin-left: 3em;
+}
+
+ol li {
+}
+
+a {
+	text-decoration: none;
+	color: #6D8EDE;
+}
+
+a:hover {
+	text-decoration: underline;
+	color: #C1C443;
+}
+
+img {
+}
+
+/* Wrapper */
+
+#wrapper {
+	width: 720px;
+	margin: 0 auto;
+}
+
+/* Logo */
+
+#logo {
+	float: left;
+	width: 180px;
+	padding: 40px 20px 0 0;
+	text-align: right;
+}
+
+#logo h1 {
+	font-size: 3em;
+}
+
+#logo h2 {
+}
+
+#logo a {
+	color: #C5C5C5;
+}
+
+/* Sidebar */
+
+#sidebar {
+	float: left;
+	width: 200px;
+	background: #CDCC52 url(images/img01.gif) repeat-y;
+}
+
+/* Sidebar > Boxed */
+
+#sidebar .boxed {
+	padding: 0 5px;
+}
+
+#sidebar .boxed .title {
+	height: 26px;
+	padding: 14px 0 0 10px;
+	background: url(images/img05.gif) no-repeat;
+	text-transform: capitalize;
+	font-size: 1em;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+#sidebar .boxed .content {
+	padding: 10px;
+}
+
+#sidebar .boxed ul {
+	margin: 0;
+	list-style: none;
+}
+
+#sidebar .boxed li {
+	padding: 0 0 0 12px;
+	background: url(images/img06.gif) no-repeat left center;
+}
+
+#sidebar .boxed h3 {
+	font: bold x-small Verdana, Arial, Helvetica, sans-serif;
+	color: #FFFFFF;
+}
+
+#sidebar .boxed a {
+	color: #FFFFFF;
+}
+
+#sidebar .boxed a:hover {
+	text-decoration: underline;
+}
+
+#sidebar .extra {
+	height: 35px;
+	background: url(images/img08.gif);
+}
+
+/* Menu */
+
+#menu {
+	padding: 40px 15px;
+}
+
+#menu ul {
+	margin: 0;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu a {
+	display: block;
+	width: 170px;
+	height: 27px;
+	margin: 0 0 5px 0;
+	padding: 3px 0 0 0;
+	background: #DDDC8A url(images/img02.gif) no-repeat;
+	text-transform: lowercase;
+	text-align: center;
+	letter-spacing: -1px;
+	font: normal 1.4em "Trebuchet MS", Arial, Helvetica, sans-serif;
+	color: #FFFFFF;
+}
+
+#menu a:hover {
+	background-image: url(images/img03.gif);
+	text-decoration: none;
+}
+
+#menu .active a {
+	background: #FF8C68 url(images/img04.gif) no-repeat;
+}
+
+/* Content */
+
+#content {
+	float: right;
+	width: 300px;
+}
+
+#content h2 {
+	margin: 1.6em 0 1em 0;
+	background: url(images/img07.gif) repeat-x left bottom;
+}
+
+/* Footer */
+
+#footer {
+	clear: both;
+	width: 720px;
+	margin: 0 auto;
+	padding: 1em 0;
+	background: url(images/img09.gif) repeat-x;
+}
+
+#footer p {
+	margin: 0;
+	font-size: x-small;
+}
+
+/* Footer > Legal */
+
+#legal {
+}
+
+/* Footer > Links */
+
+#links {
+}

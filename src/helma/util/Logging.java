@@ -51,7 +51,7 @@ public class Logging extends LogFactory {
      *  helma.logdir system property.
      */
     public Logging() {
-        logdir = System.getProperty("helma.logdir", "log");
+        this.logdir = System.getProperty("helma.logdir", "log"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -59,17 +59,18 @@ public class Logging extends LogFactory {
      * directory specified by the "log.dir" System property. If the
      * logname is "console" a log that writes to System.out is returned.
      */
+    @Override
     public Log getInstance(String logname) {
         if (logname == null) {
-            throw new LogConfigurationException("No logname specified!");
+            throw new LogConfigurationException(Messages.getString("Logging.0")); //$NON-NLS-1$
         }
         // normalize log name
-        logname = logname.replaceAll("[^\\w\\d\\.]", "");
-        if ("console".equals(logdir)) {
+        logname = logname.replaceAll("[^\\w\\d\\.]", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        if ("console".equals(this.logdir)) { //$NON-NLS-1$
             return getConsoleLog();
-        } else {
-            return getFileLog(logname);
         }
+
+        return getFileLog(logname);
     }
 
     /**
@@ -91,7 +92,7 @@ public class Logging extends LogFactory {
         Logger log = (Logger) loggerMap.get(logname);
 
         if (log == null) {
-            log = new FileLogger(logdir, logname);
+            log = new FileLogger(this.logdir, logname);
             loggerMap.put(logname, log);
             loggers.add(log);
         }
@@ -100,25 +101,30 @@ public class Logging extends LogFactory {
         return log;
     }
 
+    @Override
     public synchronized Log getInstance (Class clazz) {
         return getInstance(clazz.getPackage().getName());
     }
 
+    @Override
     public void setAttribute(String name, Object value) {
         // FIXME: make log dir changeable at runtime
     }
 
+    @Override
     public Object getAttribute(String name) {
-        if ("logdir".equals(name)) {
-            return logdir;
+        if ("logdir".equals(name)) { //$NON-NLS-1$
+            return this.logdir;
         }
         return null;
     }
 
+    @Override
     public String[] getAttributeNames() {
         return new String[] {};
     }
 
+    @Override
     public void removeAttribute(String parm1) {
         // nothing to do
     }
@@ -126,6 +132,7 @@ public class Logging extends LogFactory {
     /**
      * Flush all logs and shut down.
      */
+    @Override
     public void release() {
         shutdown();
     }
@@ -184,14 +191,9 @@ public class Logging extends LogFactory {
         for (int i = nloggers - 1; i >= 0; i--) {
             FileLogger log = (FileLogger) loggers.get(i);
 
-            try {
-                File file = log.rotateLogFile();
-                if (file != null) {
-                    files.add(file);
-                }
-            } catch (IOException io) {
-                System.err.println("Error rotating log " + log.getName() + ": " +
-                                    io.toString());
+            File file = log.rotateLogFile();
+            if (file != null) {
+                files.add(file);
             }
         }
 
@@ -232,6 +234,7 @@ public class Logging extends LogFactory {
      */
     static class Runner extends Thread {
 
+        @Override
         public synchronized void run() {
             long nextMidnight = nextMidnight();
 
@@ -261,7 +264,7 @@ public class Logging extends LogFactory {
                             log.closeFile();
                         }
                     } catch (Exception x) {
-                        System.err.println("Error in Logger main loop: " + x);
+                        System.err.println(Messages.getString("Logging.3") + x); //$NON-NLS-1$
                     }
                 }
 
@@ -275,4 +278,3 @@ public class Logging extends LogFactory {
 
     }
 }
-

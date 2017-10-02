@@ -16,7 +16,7 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.framework.repository.FileResource;
 
 import java.io.*;
@@ -38,8 +38,8 @@ public final class SkinManager implements FilenameFilter {
      */
     public SkinManager(Application app) {
         this.app = app;
-        skinProperty = app.getProperty("skinProperty", "skin");
-        skinExtension = ".skin";
+        this.skinProperty = app.getProperty("skinProperty", "skin"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.skinExtension = ".skin"; //$NON-NLS-1$
     }
 
     public Skin getSkin(Prototype prototype, String skinname, Object[] skinpath)
@@ -106,17 +106,17 @@ public final class SkinManager implements FilenameFilter {
 
         // check if the skinset object is a HopObject (db based skin)
         // or a String (file based skin)
-        if (skinset instanceof INode) {
-            INode n = (INode) ((INode) skinset).getChildElement(prototype);
+        if (skinset instanceof NodeInterface) {
+            NodeInterface n = (NodeInterface) ((NodeInterface) skinset).getChildElement(prototype);
 
             if (n != null) {
-                n = (INode) n.getChildElement(skinname);
+                n = (NodeInterface) n.getChildElement(skinname);
 
                 if (n != null) {
-                    String skin = n.getString(skinProperty);
+                    String skin = n.getString(this.skinProperty);
 
                     if (skin != null) {
-                        return new Skin(skin, app);
+                        return new Skin(skin, this.app);
                     }
                 }
             }
@@ -125,14 +125,14 @@ public final class SkinManager implements FilenameFilter {
             // retrieve the skin
             StringBuffer b = new StringBuffer(skinset.toString());
             b.append(File.separatorChar).append(prototype).append(File.separatorChar)
-                         .append(skinname).append(skinExtension);
+                         .append(skinname).append(this.skinExtension);
 
             // TODO: check for lower case prototype name for backwards compat
 
             File f = new File(b.toString());
 
             if (f.exists() && f.canRead()) {
-                return Skin.getSkin(new FileResource(f), app);
+                return Skin.getSkin(new FileResource(f), this.app);
             }
         }
 
@@ -145,6 +145,6 @@ public final class SkinManager implements FilenameFilter {
      * Implements java.io.FilenameFilter.accept()
      */
     public boolean accept(File d, String n) {
-        return n.endsWith(skinExtension);
+        return n.endsWith(this.skinExtension);
     }
 }

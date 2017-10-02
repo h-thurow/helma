@@ -101,12 +101,12 @@ public class GIFEncoder {
         if (bi.getType() != BufferedImage.TYPE_BYTE_INDEXED)
             bi = ColorQuantizer.quantizeImage(bi, 256, false, true);
 
-        raster = bi.getRaster();
+        this.raster = bi.getRaster();
 
-        width = bi.getWidth();
-        height = bi.getHeight();
+        this.width = bi.getWidth();
+        this.height = bi.getHeight();
 
-        int numPixels = width * height;
+        int numPixels = this.width * this.height;
 
         IndexColorModel icm = (IndexColorModel) bi.getColorModel();
         int transparentIndex = icm.getTransparentPixel();
@@ -126,10 +126,10 @@ public class GIFEncoder {
         int initCodeSize;
 
         // Calculate number of bits we are expecting
-        countdown = numPixels;
+        this.countdown = numPixels;
 
         // Indicate which pass we are on (if interlace)
-        pass = 0;
+        this.pass = 0;
 
         // The initial code size
         if (bitsPerPixel <= 1)
@@ -138,16 +138,16 @@ public class GIFEncoder {
             initCodeSize = bitsPerPixel;
 
         // Set up the current x and y position
-        curx = 0;
-        cury = 0;
-        row = new int[width];
+        this.curx = 0;
+        this.cury = 0;
+        this.row = new int[this.width];
 
         // Write the Magic header
-        writeString("GIF89a");
+        writeString("GIF89a"); //$NON-NLS-1$
 
         // Write out the screen width and height
-        writeWord(width);
-        writeWord(height);
+        writeWord(this.width);
+        writeWord(this.height);
 
         // Indicate that there is a global colour map
         byte flags = (byte) 0x80; // Yes, there is a color map
@@ -202,8 +202,8 @@ public class GIFEncoder {
         // Write the Image header
         writeWord(0); // leftOfs
         writeWord(0); // topOfs
-        writeWord(width);
-        writeWord(height);
+        writeWord(this.width);
+        writeWord(this.height);
 
         // Write out whether or not the image is interlaced
         if (interlace)
@@ -234,55 +234,55 @@ public class GIFEncoder {
     }
 
     // Return the next pixel from the image
-    int getNextPixel() throws IOException {
-        if (countdown == 0)
+    int getNextPixel() {
+        if (this.countdown == 0)
             return -1;
 
-        --countdown;
+        --this.countdown;
 
-        if (curx == 0)
-            row = raster.getSamples(0, cury, width, 1, 0, row);
-        int index = row[curx];
+        if (this.curx == 0)
+            this.row = this.raster.getSamples(0, this.cury, this.width, 1, 0, this.row);
+        int index = this.row[this.curx];
 
         // Bump the current X position
-        ++curx;
+        ++this.curx;
 
         // If we are at the end of a scan line, set curx back to the beginning
         // If we are interlaced, bump the cury to the appropriate spot,
         // otherwise, just increment it.
-        if (curx == width) {
-            curx = 0;
+        if (this.curx == this.width) {
+            this.curx = 0;
 
-            if (!interlace) {
-                ++cury;
+            if (!this.interlace) {
+                ++this.cury;
             } else {
-                switch (pass) {
+                switch (this.pass) {
                 case 0:
-                    cury += 8;
-                    if (cury >= height) {
-                        ++pass;
-                        cury = 4;
+                    this.cury += 8;
+                    if (this.cury >= this.height) {
+                        ++this.pass;
+                        this.cury = 4;
                     }
                     break;
 
                 case 1:
-                    cury += 8;
-                    if (cury >= height) {
-                        ++pass;
-                        cury = 2;
+                    this.cury += 8;
+                    if (this.cury >= this.height) {
+                        ++this.pass;
+                        this.cury = 2;
                     }
                     break;
 
                 case 2:
-                    cury += 4;
-                    if (cury >= height) {
-                        ++pass;
-                        cury = 1;
+                    this.cury += 4;
+                    if (this.cury >= this.height) {
+                        ++this.pass;
+                        this.cury = 1;
                     }
                     break;
 
                 case 3:
-                    cury += 2;
+                    this.cury += 2;
                     break;
                 }
             }
@@ -292,13 +292,13 @@ public class GIFEncoder {
 
     void writeString(String str) throws IOException {
         byte[] buf = str.getBytes();
-        out.write(buf);
+        this.out.write(buf);
     }
 
     // Write out a word to the GIF file
     void writeWord(int w) throws IOException {
-        out.write((byte) (w & 0xff));
-        out.write((byte) ((w >> 8) & 0xff));
+        this.out.write((byte) (w & 0xff));
+        this.out.write((byte) ((w >> 8) & 0xff));
     }
 
     // GIFCOMPR.C       - GIF Image compression routines
@@ -363,13 +363,13 @@ public class GIFEncoder {
         this.initBits = initBits;
 
         // Set up the necessary values
-        clearFlag = false;
-        numBits = initBits;
-        maxCode = getMaxCode(numBits);
+        this.clearFlag = false;
+        this.numBits = initBits;
+        this.maxCode = getMaxCode(this.numBits);
 
-        clearCode = 1 << (initBits - 1);
-        EOFCode = clearCode + 1;
-        freeEntry = clearCode + 2;
+        this.clearCode = 1 << (initBits - 1);
+        this.EOFCode = this.clearCode + 1;
+        this.freeEntry = this.clearCode + 2;
 
         charInit();
 
@@ -382,17 +382,17 @@ public class GIFEncoder {
 
         clearHash(); // clear hash table
 
-        output(clearCode);
+        output(this.clearCode);
 
         int c;
         outerLoop: while ((c = getNextPixel()) != -1) {
-            int fcode = (c << maxBits) + ent;
+            int fcode = (c << this.maxBits) + ent;
             int i = (c << hashShift) ^ ent; // xor hashing
 
-            if (hashTable[i] == fcode) {
-                ent = codeTable[i];
+            if (this.hashTable[i] == fcode) {
+                ent = this.codeTable[i];
                 continue;
-            } else if (hashTable[i] >= 0) { // non-empty slot
+            } else if (this.hashTable[i] >= 0) { // non-empty slot
                 int disp = HASH_SIZE - i; // secondary hash (after G. Knott)
                 if (i == 0)
                     disp = 1;
@@ -400,23 +400,23 @@ public class GIFEncoder {
                     if ((i -= disp) < 0)
                         i += HASH_SIZE;
 
-                    if (hashTable[i] == fcode) {
-                        ent = codeTable[i];
+                    if (this.hashTable[i] == fcode) {
+                        ent = this.codeTable[i];
                         continue outerLoop;
                     }
-                } while (hashTable[i] >= 0);
+                } while (this.hashTable[i] >= 0);
             }
             output(ent);
             ent = c;
-            if (freeEntry < maxMaxCode) {
-                codeTable[i] = freeEntry++; // code -> hashtable
-                hashTable[i] = fcode;
+            if (this.freeEntry < this.maxMaxCode) {
+                this.codeTable[i] = this.freeEntry++; // code -> hashtable
+                this.hashTable[i] = fcode;
             } else
                 clearBlock();
         }
         // Put out the final code.
         output(ent);
-        output(EOFCode);
+        output(this.EOFCode);
     }
 
     // output
@@ -442,42 +442,42 @@ public class GIFEncoder {
             0x7FFF, 0xFFFF };
 
     void output(int code) throws IOException {
-        curAccum &= masks[curBits];
+        this.curAccum &= this.masks[this.curBits];
 
-        if (curBits > 0)
-            curAccum |= (code << curBits);
+        if (this.curBits > 0)
+            this.curAccum |= (code << this.curBits);
         else
-            curAccum = code;
+            this.curAccum = code;
 
-        curBits += numBits;
+        this.curBits += this.numBits;
 
-        while (curBits >= 8) {
-            charOut((byte) (curAccum & 0xff));
-            curAccum >>= 8;
-            curBits -= 8;
+        while (this.curBits >= 8) {
+            charOut((byte) (this.curAccum & 0xff));
+            this.curAccum >>= 8;
+            this.curBits -= 8;
         }
 
         // If the next entry is going to be too big for the code size,
         // then increase it, if possible.
-        if (freeEntry > maxCode || clearFlag) {
-            if (clearFlag) {
-                maxCode = getMaxCode(numBits = initBits);
-                clearFlag = false;
+        if (this.freeEntry > this.maxCode || this.clearFlag) {
+            if (this.clearFlag) {
+                this.maxCode = getMaxCode(this.numBits = this.initBits);
+                this.clearFlag = false;
             } else {
-                ++numBits;
-                if (numBits == maxBits)
-                    maxCode = maxMaxCode;
+                ++this.numBits;
+                if (this.numBits == this.maxBits)
+                    this.maxCode = this.maxMaxCode;
                 else
-                    maxCode = getMaxCode(numBits);
+                    this.maxCode = getMaxCode(this.numBits);
             }
         }
 
-        if (code == EOFCode) {
+        if (code == this.EOFCode) {
             // At EOF, write the rest of the buffer.
-            while (curBits > 0) {
-                charOut((byte) (curAccum & 0xff));
-                curAccum >>= 8;
-                curBits -= 8;
+            while (this.curBits > 0) {
+                charOut((byte) (this.curAccum & 0xff));
+                this.curAccum >>= 8;
+                this.curBits -= 8;
             }
 
             charFlush();
@@ -489,16 +489,16 @@ public class GIFEncoder {
     // table clear for block compress
     void clearBlock() throws IOException {
         clearHash();
-        freeEntry = clearCode + 2;
-        clearFlag = true;
+        this.freeEntry = this.clearCode + 2;
+        this.clearFlag = true;
 
-        output(clearCode);
+        output(this.clearCode);
     }
 
     // reset code table
     void clearHash() {
         for (int i = 0; i < HASH_SIZE; ++i)
-            hashTable[i] = -1;
+            this.hashTable[i] = -1;
     }
 
     // GIF Specific routines
@@ -508,7 +508,7 @@ public class GIFEncoder {
 
     // Set up the 'byte output' routine
     void charInit() {
-        a_count = 0;
+        this.a_count = 0;
     }
 
     // Define the storage for the packet accumulator
@@ -517,17 +517,17 @@ public class GIFEncoder {
     // Add a character to the end of the current packet, and if it is 254
     // characters, flush the packet to disk.
     void charOut(byte c) throws IOException {
-        accum[a_count++] = c;
-        if (a_count >= 254)
+        this.accum[this.a_count++] = c;
+        if (this.a_count >= 254)
             charFlush();
     }
 
     // Flush the packet to disk, and reset the accumulator
     void charFlush() throws IOException {
-        if (a_count > 0) {
-            out.write(a_count);
-            out.write(accum, 0, a_count);
-            a_count = 0;
+        if (this.a_count > 0) {
+            this.out.write(this.a_count);
+            this.out.write(this.accum, 0, this.a_count);
+            this.a_count = 0;
         }
     }
 }

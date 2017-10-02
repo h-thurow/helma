@@ -16,9 +16,6 @@
 
 package helma.main;
 
-import helma.util.*;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * ShutdownHook that shuts down all running Helma applications on exit.
  */
@@ -28,8 +25,9 @@ public class HelmaShutdownHook extends Thread {
     /**
      *
      */
+    @Override
     public void run() {
-        System.err.println("Shutting down Helma - please stand by...");
+        System.err.println(Messages.getString("HelmaShutdownHook.0")); //$NON-NLS-1$
 
         Server server = Server.getServer();
         if (server != null) {

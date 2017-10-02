@@ -22,7 +22,7 @@
 
 package helma.image.imageio;
 
-import helma.image.ImageGenerator;
+import helma.image.AbstractImageGenerator;
 import helma.image.ImageWrapper;
 
 import java.awt.image.BufferedImage;
@@ -43,7 +43,7 @@ import javax.imageio.stream.ImageOutputStream;
 /**
  * A wrapper for an image that uses the ImageIO Framework.
  */
-public class ImageIOGenerator extends ImageGenerator {
+public class ImageIOGenerator extends AbstractImageGenerator {
 
     protected void write(ImageWrapper wrapper, ImageWriter writer, float quality, boolean alpha) throws IOException {
         BufferedImage bi = wrapper.getBufferedImage();
@@ -97,8 +97,9 @@ public class ImageIOGenerator extends ImageGenerator {
      * @param quality image quality
      * @param alpha to enable alpha
      * @throws IOException
-     * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
+     * @see helma.image.AbstractImageGenerator#write(helma.image.ImageWrapper, java.lang.String, float, boolean)
      */
+    @Override
     public void write(ImageWrapper wrapper, String filename, float quality, boolean alpha) throws IOException {
         // determine suffix:
         int pos = filename.lastIndexOf('.');
@@ -138,8 +139,9 @@ public class ImageIOGenerator extends ImageGenerator {
      * @param quality image quality
      * @param alpha to enable alpha
      * @throws IOException
-     * @see helma.image.ImageGenerator#write(helma.image.ImageWrapper, java.io.OutputStream, java.lang.String, float, boolean)
+     * @see helma.image.AbstractImageGenerator#write(helma.image.ImageWrapper, java.io.OutputStream, java.lang.String, float, boolean)
      */
+    @Override
     public void write(ImageWrapper wrapper, OutputStream out, String mimeType, float quality, boolean alpha) throws IOException {
             // Find a writer for that type
         ImageWriter writer = null;

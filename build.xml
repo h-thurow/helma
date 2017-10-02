@@ -99,6 +99,9 @@
         <copy todir="${build.work}/src" overwrite="true">
             <fileset dir="${build.src}" includes="**/*.java"/>
         </copy>
+        <copy todir="${build.classes}/">
+            <fileset dir="${build.src}" includes="**/*.properties"/>
+        </copy>
         <replace file="${build.work}/src/helma/main/Server.java"
             token="__builddate__" value="${TODAY}"/>
         <javac srcdir="${build.work}/src"

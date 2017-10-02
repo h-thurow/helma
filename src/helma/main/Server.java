@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *
  * $RCSfile: Server.java,v $
  * $Author$
  * $Revision$
@@ -16,7 +20,7 @@
 
 package helma.main;
 
-import helma.extensions.HelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.repository.FileResource;
 import helma.framework.core.*;
 import helma.objectmodel.db.DbSource;
@@ -26,8 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.xmlrpc.*;
 
 import java.io.*;
-import java.rmi.registry.*;
-import java.rmi.server.*;
 import java.util.*;
 import java.net.*;
 
@@ -38,7 +40,7 @@ import helma.util.ResourceProperties;
  */
 public class Server implements Runnable {
     // version string
-    public static final String version = "1.7.3 (__builddate__)";
+    public static final String version = "1.7.3 (__builddate__)"; //$NON-NLS-1$
 
     // static server instance
     private static Server server;
@@ -89,18 +91,18 @@ public class Server implements Runnable {
      */
     public Server(ServerConfig config) {
         server = this;
-        starttime = System.currentTimeMillis();
+        this.starttime = System.currentTimeMillis();
 
         this.config = config;
-        hopHome    = config.getHomeDir();
-        if (hopHome == null) {
-            throw new RuntimeException("helma.home property not set");
+        this.hopHome    = config.getHomeDir();
+        if (this.hopHome == null) {
+            throw new RuntimeException(Messages.getString("Server.0")); //$NON-NLS-1$
         }
 
         // create system properties
-        sysProps = new ResourceProperties();
+        this.sysProps = new ResourceProperties();
         if (config.hasPropFile()) {
-            sysProps.addResource(new FileResource(config.getPropFile()));
+            this.sysProps.addResource(new FileResource(config.getPropFile()));
         }
     }
 
@@ -129,7 +131,7 @@ public class Server implements Runnable {
         try {
             config = getConfig(args);
         } catch (Exception cex) {
-            printUsageError("error reading configuration: " + cex.getMessage());
+            printUsageError(Messages.getString("Server.1") + cex.getMessage()); //$NON-NLS-1$
             System.exit(1);
         }
 
@@ -145,21 +147,21 @@ public class Server implements Runnable {
       * check if we are running on a Java 2 VM - otherwise exit with an error message
       */
     public static void checkJavaVersion() {
-        String javaVersion = System.getProperty("java.version");
+        String javaVersion = System.getProperty("java.version"); //$NON-NLS-1$
 
-        if ((javaVersion == null) || javaVersion.startsWith("1.5")
-                                  || javaVersion.startsWith("1.4")
-                                  || javaVersion.startsWith("1.3")
-                                  || javaVersion.startsWith("1.2")
-                                  || javaVersion.startsWith("1.1")
-                                  || javaVersion.startsWith("1.0")) {
-            System.err.println("This version of Helma requires Java 1.6 or greater.");
+        if ((javaVersion == null) || javaVersion.startsWith("1.5") //$NON-NLS-1$
+                                  || javaVersion.startsWith("1.4") //$NON-NLS-1$
+                                  || javaVersion.startsWith("1.3") //$NON-NLS-1$
+                                  || javaVersion.startsWith("1.2") //$NON-NLS-1$
+                                  || javaVersion.startsWith("1.1") //$NON-NLS-1$
+                                  || javaVersion.startsWith("1.0")) { //$NON-NLS-1$
+            System.err.println(Messages.getString("Server.2")); //$NON-NLS-1$
 
             if (javaVersion == null) { // don't think this will ever happen, but you never know
-                System.err.println("Your Java Runtime did not provide a version number. Please update to a more recent version.");
+                System.err.println(Messages.getString("Server.3")); //$NON-NLS-1$
             } else {
-                System.err.println("Your Java Runtime is version " + javaVersion +
-                                   ". Please update to a more recent version.");
+                System.err.println(Messages.getString("Server.4") + javaVersion + //$NON-NLS-1$
+                                   Messages.getString("Server.5")); //$NON-NLS-1$
             }
 
             System.exit(1);
@@ -178,8 +180,8 @@ public class Server implements Runnable {
         ServerConfig config = new ServerConfig();
 
         // get possible environment setting for helma home
-        if (System.getProperty("helma.home")!=null) {
-            config.setHomeDir(new File(System.getProperty("helma.home")));
+        if (System.getProperty("helma.home")!=null) { //$NON-NLS-1$
+            config.setHomeDir(new File(System.getProperty("helma.home"))); //$NON-NLS-1$
         }
 
         parseArgs(config, args);
@@ -191,27 +193,27 @@ public class Server implements Runnable {
         sysProps.addResource(new FileResource(config.getPropFile()));
 
         // check if there's a property setting for those ports not specified via command line
-        if (!config.hasWebsrvPort() && sysProps.getProperty("webPort") != null) {
+        if (!config.hasWebsrvPort() && sysProps.getProperty("webPort") != null) { //$NON-NLS-1$
             try {
-                config.setWebsrvPort(getInetSocketAddress(sysProps.getProperty("webPort")));
+                config.setWebsrvPort(getInetSocketAddress(sysProps.getProperty("webPort"))); //$NON-NLS-1$
             } catch (Exception portx) {
-                throw new Exception("Error parsing web server port property from server.properties: " + portx);
+                throw new Exception(Messages.getString("Server.6") + portx); //$NON-NLS-1$
             }
         }
 
-        if (!config.hasAjp13Port() && sysProps.getProperty("ajp13Port") != null) {
+        if (!config.hasAjp13Port() && sysProps.getProperty("ajp13Port") != null) { //$NON-NLS-1$
             try {
-                config.setAjp13Port(getInetSocketAddress(sysProps.getProperty("ajp13Port")));
+                config.setAjp13Port(getInetSocketAddress(sysProps.getProperty("ajp13Port"))); //$NON-NLS-1$
             } catch (Exception portx) {
-                throw new Exception("Error parsing AJP1.3 server port property from server.properties: " + portx);
+                throw new Exception(Messages.getString("Server.7") + portx); //$NON-NLS-1$
             }
         }
 
-        if (!config.hasXmlrpcPort() && sysProps.getProperty("xmlrpcPort") != null) {
+        if (!config.hasXmlrpcPort() && sysProps.getProperty("xmlrpcPort") != null) { //$NON-NLS-1$
             try {
-                config.setXmlrpcPort(getInetSocketAddress(sysProps.getProperty("xmlrpcPort")));
+                config.setXmlrpcPort(getInetSocketAddress(sysProps.getProperty("xmlrpcPort"))); //$NON-NLS-1$
             } catch (Exception portx) {
-                throw new Exception("Error parsing XML-RPC server port property from server.properties: " + portx);
+                throw new Exception(Messages.getString("Server.8") + portx); //$NON-NLS-1$
             }
         }
         return config;
@@ -226,37 +228,37 @@ public class Server implements Runnable {
       */
     public static void parseArgs(ServerConfig config, String[] args) throws Exception {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-h") && ((i + 1) < args.length)) {
+            if (args[i].equals("-h") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 config.setHomeDir(new File(args[++i]));
-            } else if (args[i].equals("-f") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-f") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 config.setPropFile(new File(args[++i]));
-            } else if (args[i].equals("-a") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-a") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 config.setApps(StringUtils.split(args[++i]));
-            } else if (args[i].equals("-x") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-x") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 try {
                     config.setXmlrpcPort(getInetSocketAddress(args[++i]));
                 } catch (Exception portx) {
-                    throw new Exception("Error parsing XML-RPC server port property: " + portx);
+                    throw new Exception(Messages.getString("Server.9") + portx); //$NON-NLS-1$
                 }
-            } else if (args[i].equals("-w") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-w") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 try {
                     config.setWebsrvPort(getInetSocketAddress(args[++i]));
                 } catch (Exception portx) {
-                    throw new Exception("Error parsing web server port property: " + portx);
+                    throw new Exception(Messages.getString("Server.10") + portx); //$NON-NLS-1$
                 }
-            } else if (args[i].equals("-jk") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-jk") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 try {
                     config.setAjp13Port(getInetSocketAddress(args[++i]));
                 } catch (Exception portx) {
-                    throw new Exception("Error parsing AJP1.3 server port property: " + portx);
+                    throw new Exception(Messages.getString("Server.11") + portx); //$NON-NLS-1$
                 }
-            } else if (args[i].equals("-c") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-c") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 config.setConfigFile(new File(args[++i]));
-            } else if (args[i].equals("-i") && ((i + 1) < args.length)) {
+            } else if (args[i].equals("-i") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 // eat away the -i parameter which is meant for helma.main.launcher.Main
                 i++;
             } else {
-                throw new Exception("Unknown command line token: " + args[i]);
+                throw new Exception(Messages.getString("Server.12") + args[i]); //$NON-NLS-1$
             }
         }
     }
@@ -270,9 +272,9 @@ public class Server implements Runnable {
         // get property file from hopHome:
         if (!config.hasPropFile()) {
             if (config.hasHomeDir()) {
-                config.setPropFile(new File(config.getHomeDir(), "server.properties"));
+                config.setPropFile(new File(config.getHomeDir(), "server.properties")); //$NON-NLS-1$
             } else {
-                config.setPropFile(new File("server.properties"));
+                config.setPropFile(new File("server.properties")); //$NON-NLS-1$
             }
         }
 
@@ -281,8 +283,8 @@ public class Server implements Runnable {
         sysProps.addResource(new FileResource(config.getPropFile()));
 
         // try to get hopHome from property file
-        if (!config.hasHomeDir() && sysProps.getProperty("hophome") != null) {
-            config.setHomeDir(new File(sysProps.getProperty("hophome")));
+        if (!config.hasHomeDir() && sysProps.getProperty("hophome") != null) { //$NON-NLS-1$
+            config.setHomeDir(new File(sysProps.getProperty("hophome"))); //$NON-NLS-1$
         }
 
         // use the directory where server.properties is located:
@@ -291,11 +293,11 @@ public class Server implements Runnable {
         }
 
         if (!config.hasPropFile()) {
-            throw new Exception ("no server.properties found");
+            throw new Exception (Messages.getString("Server.13")); //$NON-NLS-1$
         }
 
         if (!config.hasHomeDir()) {
-            throw new Exception ("couldn't determine helma directory");
+            throw new Exception (Messages.getString("Server.14")); //$NON-NLS-1$
         }
     }
 
@@ -313,24 +315,24 @@ public class Server implements Runnable {
       * print the usage hints
       */
     public static void printUsageError() {
-        System.out.println("");
-        System.out.println("Usage: java helma.main.Server [options]");
-        System.out.println("Possible options:");
-        System.out.println("  -a app[,...]      Specify applications to start");
-        System.out.println("  -h dir            Specify hop home directory");
-        System.out.println("  -f file           Specify server.properties file");
-        System.out.println("  -c jetty.xml      Specify Jetty XML configuration file");
-        System.out.println("  -w [ip:]port      Specify embedded web server address/port");
-        System.out.println("  -x [ip:]port      Specify XML-RPC address/port");
-        System.out.println("  -jk [ip:]port     Specify AJP13 address/port");
-        System.out.println("");
-        System.out.println("Supported formats for server ports:");
-        System.out.println("   <port-number>");
-        System.out.println("   <ip-address>:<port-number>");
-        System.out.println("   <hostname>:<port-number>");
-        System.out.println("");
-        System.err.println("Usage Error - exiting");
-        System.out.println("");
+        System.out.println(""); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.15")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.16")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.17")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.18")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.19")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.20")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.21")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.22")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.23")); //$NON-NLS-1$
+        System.out.println(""); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.24")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.25")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.26")); //$NON-NLS-1$
+        System.out.println(Messages.getString("Server.27")); //$NON-NLS-1$
+        System.out.println(""); //$NON-NLS-1$
+        System.err.println(Messages.getString("Server.28")); //$NON-NLS-1$
+        System.out.println(""); //$NON-NLS-1$
     }
 
 
@@ -370,7 +372,7 @@ public class Server implements Runnable {
             sock.bind(endpoint);
             sock.close();
         } catch (IOException x) {
-            throw new IOException("Error binding to " + endpoint + ": " + x.getMessage());
+            throw new IOException(Messages.getString("Server.29") + endpoint + Messages.getString("Server.30") + x.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -381,62 +383,62 @@ public class Server implements Runnable {
     public void init() throws IOException {
 
         // set the log factory property
-        String logFactory = sysProps.getProperty("loggerFactory",
-                                                 "helma.util.Logging");
+        String logFactory = this.sysProps.getProperty(Messages.getString("Server.31"), //$NON-NLS-1$
+                                                 Messages.getString("Server.32")); //$NON-NLS-1$
 
-        helmaLogging = "helma.util.Logging".equals(logFactory);
-        System.setProperty("org.apache.commons.logging.LogFactory", logFactory);
+        this.helmaLogging = Messages.getString("Server.33").equals(logFactory); //$NON-NLS-1$
+        System.setProperty(Messages.getString("Server.34"), logFactory); //$NON-NLS-1$
 
         // set the current working directory to the helma home dir.
         // note that this is not a real cwd, which is not supported
         // by java. It makes sure relative to absolute path name
         // conversion is done right, so for Helma code, this should work.
-        System.setProperty("user.dir", hopHome.getPath());
+        System.setProperty(Messages.getString("Server.35"), this.hopHome.getPath()); //$NON-NLS-1$
 
         // from now on it's safe to call getLogger() because hopHome is set up
         getLogger();
 
-        String startMessage = "Starting Helma " + version + " on Java " +
-                              System.getProperty("java.version");
+        String startMessage = Messages.getString("Server.36") + version + Messages.getString("Server.37") + //$NON-NLS-1$ //$NON-NLS-2$
+                              System.getProperty(Messages.getString("Server.38")); //$NON-NLS-1$
 
-        logger.info(startMessage);
+        this.logger.info(startMessage);
 
         // also print a msg to System.out
         System.out.println(startMessage);
 
-        logger.info("Setting Helma Home to " + hopHome);
+        this.logger.info(Messages.getString("Server.39") + this.hopHome); //$NON-NLS-1$
 
 
         // read db.properties file in helma home directory
-        String dbPropfile = sysProps.getProperty("dbPropFile");
+        String dbPropfile = this.sysProps.getProperty(Messages.getString("Server.40")); //$NON-NLS-1$
         File file;
-        if ((dbPropfile != null) && !"".equals(dbPropfile.trim())) {
+        if ((dbPropfile != null) && !Messages.getString("Server.41").equals(dbPropfile.trim())) { //$NON-NLS-1$
             file = new File(dbPropfile);
         } else {
-            file = new File(hopHome, "db.properties");
+            file = new File(this.hopHome, Messages.getString("Server.42")); //$NON-NLS-1$
         }
 
-        dbProps = new ResourceProperties();
-        dbProps.setIgnoreCase(false);
-        dbProps.addResource(new FileResource(file));
-        DbSource.setDefaultProps(dbProps);
+        this.dbProps = new ResourceProperties();
+        this.dbProps.setIgnoreCase(false);
+        this.dbProps.addResource(new FileResource(file));
+        DbSource.setDefaultProps(this.dbProps);
 
         // read apps.properties file
-        String appsPropfile = sysProps.getProperty("appsPropFile");
-        if ((appsPropfile != null) && !"".equals(appsPropfile.trim())) {
+        String appsPropfile = this.sysProps.getProperty(Messages.getString("Server.43")); //$NON-NLS-1$
+        if ((appsPropfile != null) && !Messages.getString("Server.44").equals(appsPropfile.trim())) { //$NON-NLS-1$
             file = new File(appsPropfile);
         } else {
-            file = new File(hopHome, "apps.properties");
+            file = new File(this.hopHome, Messages.getString("Server.45")); //$NON-NLS-1$
         }
-        appsProps = new ResourceProperties();
-        appsProps.setIgnoreCase(true);
-        appsProps.addResource(new FileResource(file));
+        this.appsProps = new ResourceProperties();
+        this.appsProps.setIgnoreCase(true);
+        this.appsProps.addResource(new FileResource(file));
 
-        paranoid = "true".equalsIgnoreCase(sysProps.getProperty("paranoid"));
+        this.paranoid = Messages.getString("Server.46").equalsIgnoreCase(this.sysProps.getProperty(Messages.getString("Server.47"))); //$NON-NLS-1$ //$NON-NLS-2$
 
-        String language = sysProps.getProperty("language");
-        String country = sysProps.getProperty("country");
-        String timezone = sysProps.getProperty("timezone");
+        String language = this.sysProps.getProperty(Messages.getString("Server.48")); //$NON-NLS-1$
+        String country = this.sysProps.getProperty(Messages.getString("Server.49")); //$NON-NLS-1$
+        String timezone = this.sysProps.getProperty(Messages.getString("Server.50")); //$NON-NLS-1$
 
         if ((language != null) && (country != null)) {
             Locale.setDefault(new Locale(language, country));
@@ -450,14 +452,14 @@ public class Server implements Runnable {
         // logger.debug("TimeZone = " +
         //                 TimeZone.getDefault().getDisplayName(Locale.getDefault()));
 
-        dbSources = new Hashtable();
+        this.dbSources = new Hashtable();
 
         // try to load the extensions
-        extensions = new Vector();
-        if (sysProps.getProperty("extensions") != null) {
+        this.extensions = new Vector();
+        if (this.sysProps.getProperty(Messages.getString("Server.51")) != null) { //$NON-NLS-1$
             initExtensions();
         }
-        jetty = JettyServer.init(this, config);
+        this.jetty = JettyServer.init(this, this.config);
     }
 
 
@@ -465,18 +467,18 @@ public class Server implements Runnable {
       * initialize extensions
       */
     private void initExtensions() {
-        StringTokenizer tok = new StringTokenizer(sysProps.getProperty("extensions"), ",");
+        StringTokenizer tok = new StringTokenizer(this.sysProps.getProperty(Messages.getString("Server.52")), Messages.getString("Server.53")); //$NON-NLS-1$ //$NON-NLS-2$
         while (tok.hasMoreTokens()) {
             String extClassName = tok.nextToken().trim();
 
             try {
                 Class extClass = Class.forName(extClassName);
-                HelmaExtension ext = (HelmaExtension) extClass.newInstance();
+                HelmaExtensionInterface ext = (HelmaExtensionInterface) extClass.newInstance();
                 ext.init(this);
-                extensions.add(ext);
-                logger.info("Loaded: " + extClassName);
+                this.extensions.add(ext);
+                this.logger.info(Messages.getString("Server.54") + extClassName); //$NON-NLS-1$
             } catch (Throwable e) {
-                logger.error("Error loading extension " + extClassName + ": " + e.toString());
+                this.logger.error(Messages.getString("Server.55") + extClassName + Messages.getString("Server.56") + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
     }
@@ -486,49 +488,49 @@ public class Server implements Runnable {
     public void start() {
         // Start running, finishing setup and then entering a loop to check changes
         // in the apps.properties file.
-        mainThread = new Thread(this);
-        mainThread.start();
+        this.mainThread = new Thread(this);
+        this.mainThread.start();
     }
 
     public void stop() {
-        mainThread = null;
-        appManager.stopAll();
+        this.mainThread = null;
+        this.appManager.stopAll();
     }
 
     public void shutdown() {
-        getLogger().info("Shutting down Helma");
+        getLogger().info(Messages.getString("Server.57")); //$NON-NLS-1$
 
-        if (jetty != null) {
+        if (this.jetty != null) {
             try {
-                jetty.stop();
-                jetty.destroy();
+                this.jetty.stop();
+                this.jetty.destroy();
             } catch (Exception x) {
                 // exception in jettx stop. ignore.
             }
         }
 
-        if (xmlrpc != null) {
+        if (this.xmlrpc != null) {
             try {
-                xmlrpc.shutdown();
+                this.xmlrpc.shutdown();
             } catch (Exception x) {
                 // exception in xmlrpc server shutdown, ignore.
             }
         }
 
-        if (helmaLogging) {
+        if (this.helmaLogging) {
             Logging.shutdown();
         }
 
         server = null;
 
         try {
-            Runtime.getRuntime().removeShutdownHook(shutdownhook);
+            Runtime.getRuntime().removeShutdownHook(this.shutdownhook);
             // HACK: running the shutdownhook seems to be necessary in order
             // to prevent it from blocking garbage collection of helma
             // classes/classloaders. Since we already set server to null it
             // won't do anything anyhow.
-            shutdownhook.start();
-            shutdownhook = null;
+            this.shutdownhook.start();
+            this.shutdownhook = null;
         } catch (Exception x) {
             // invalid shutdown hook or already shutting down. ignore.
         }
@@ -541,87 +543,87 @@ public class Server implements Runnable {
      */
     public void run() {
         try {
-            if (config.hasXmlrpcPort()) {
-                InetSocketAddress xmlrpcPort = config.getXmlrpcPort();
-                String xmlparser = sysProps.getProperty("xmlparser");
+            if (this.config.hasXmlrpcPort()) {
+                InetSocketAddress xmlrpcPort = this.config.getXmlrpcPort();
+                String xmlparser = this.sysProps.getProperty(Messages.getString("Server.58")); //$NON-NLS-1$
 
                 if (xmlparser != null) {
                     XmlRpc.setDriver(xmlparser);
                 }
 
                 if (xmlrpcPort.getAddress() != null) {
-                    xmlrpc = new WebServer(xmlrpcPort.getPort(), xmlrpcPort.getAddress());
+                    this.xmlrpc = new WebServer(xmlrpcPort.getPort(), xmlrpcPort.getAddress());
                 } else {
-                    xmlrpc = new WebServer(xmlrpcPort.getPort());
+                    this.xmlrpc = new WebServer(xmlrpcPort.getPort());
                 }
 
-                if (paranoid) {
-                    xmlrpc.setParanoid(true);
+                if (this.paranoid) {
+                    this.xmlrpc.setParanoid(true);
 
-                    String xallow = sysProps.getProperty("allowXmlRpc");
+                    String xallow = this.sysProps.getProperty(Messages.getString("Server.59")); //$NON-NLS-1$
 
                     if (xallow != null) {
-                        StringTokenizer st = new StringTokenizer(xallow, " ,;");
+                        StringTokenizer st = new StringTokenizer(xallow, Messages.getString("Server.60")); //$NON-NLS-1$
 
                         while (st.hasMoreTokens())
-                            xmlrpc.acceptClient(st.nextToken());
+                            this.xmlrpc.acceptClient(st.nextToken());
                     }
                 }
-                xmlrpc.start();
-                logger.info("Starting XML-RPC server on port " + (xmlrpcPort));
+                this.xmlrpc.start();
+                this.logger.info(Messages.getString("Server.61") + (xmlrpcPort)); //$NON-NLS-1$
             }
 
-            appManager = new ApplicationManager(appsProps, this);
+            this.appManager = new ApplicationManager(this.appsProps, this);
 
-            if (xmlrpc != null) {
-                xmlrpc.addHandler("$default", appManager);
+            if (this.xmlrpc != null) {
+                this.xmlrpc.addHandler(Messages.getString("Server.62"), this.appManager); //$NON-NLS-1$
             }
 
             // add shutdown hook to close running apps and servers on exit
-            shutdownhook = new HelmaShutdownHook();
-            Runtime.getRuntime().addShutdownHook(shutdownhook);
+            this.shutdownhook = new HelmaShutdownHook();
+            Runtime.getRuntime().addShutdownHook(this.shutdownhook);
         } catch (Exception x) {
-            throw new RuntimeException("Error setting up Server", x);
+            throw new RuntimeException(Messages.getString("Server.63"), x); //$NON-NLS-1$
         }
 
         // set the security manager.
         // the default implementation is helma.main.HelmaSecurityManager.
         try {
-            String secManClass = sysProps.getProperty("securityManager");
+            String secManClass = this.sysProps.getProperty(Messages.getString("Server.64")); //$NON-NLS-1$
 
             if (secManClass != null) {
                 SecurityManager secMan = (SecurityManager) Class.forName(secManClass)
                                                                 .newInstance();
 
                 System.setSecurityManager(secMan);
-                logger.info("Setting security manager to " + secManClass);
+                this.logger.info(Messages.getString("Server.65") + secManClass); //$NON-NLS-1$
             }
         } catch (Exception x) {
-            logger.error("Error setting security manager", x);
+            this.logger.error(Messages.getString("Server.66"), x); //$NON-NLS-1$
         }
 
         // start applications
         appManager.startAll();
 
         // start embedded web server
-        if (jetty != null) {
+        if (this.jetty != null) {
             try {
-                jetty.start();
+                this.jetty.start();
             } catch (Exception m) {
-                throw new RuntimeException("Error starting embedded web server", m);
+                throw new RuntimeException(Messages.getString("Server.67"), m); //$NON-NLS-1$
             }
         }
 
-        while (Thread.currentThread() == mainThread) {
+        while (Thread.currentThread() == this.mainThread) {
             try {
                 Thread.sleep(3000L);
             } catch (InterruptedException ie) {
             }
 
             try {
-                appManager.checkForChanges();
+                this.appManager.checkForChanges();
             } catch (Exception x) {
-                logger.warn("Caught in app manager loop: " + x);
+                this.logger.warn(Messages.getString("Server.68") + x); //$NON-NLS-1$
             }
         }
     }
@@ -631,8 +633,8 @@ public class Server implements Runnable {
      * accessed from CommandlineRunner)
      */
     public void checkAppManager() {
-        if (appManager == null) {
-            appManager = new ApplicationManager(appsProps, this);
+        if (this.appManager == null) {
+            this.appManager = new ApplicationManager(this.appsProps, this);
         }
     }
 
@@ -640,49 +642,49 @@ public class Server implements Runnable {
      *  Get an Iterator over the applications currently running on this Server.
      */
     public Object[] getApplications() {
-        return appManager.getApplications();
+        return this.appManager.getApplications();
     }
 
     /**
      * Get an Application by name
      */
     public Application getApplication(String name) {
-        return appManager.getApplication(name);
+        return this.appManager.getApplication(name);
     }
 
     /**
      *  Get a logger to use for output in this server.
      */
     public Log getLogger() {
-        if (logger == null) {
-            if (helmaLogging) {
+        if (this.logger == null) {
+            if (this.helmaLogging) {
                 // set up system properties for helma.util.Logging
-                String logDir = sysProps.getProperty("logdir", "log");
+                String logDir = this.sysProps.getProperty(Messages.getString("Server.69"), Messages.getString("Server.70")); //$NON-NLS-1$ //$NON-NLS-2$
 
-                if (!"console".equals(logDir)) {
+                if (!Messages.getString("Server.71").equals(logDir)) { //$NON-NLS-1$
                     // try to get the absolute logdir path
 
                     // set up helma.logdir system property
                     File dir = new File(logDir);
                     if (!dir.isAbsolute()) {
-                        dir = new File(hopHome, logDir);
+                        dir = new File(this.hopHome, logDir);
                     }
 
                     logDir = dir.getAbsolutePath();
                 }
-                System.setProperty("helma.logdir", logDir);
+                System.setProperty(Messages.getString("Server.72"), logDir); //$NON-NLS-1$
             }
-            logger = LogFactory.getLog("helma.server");
+            this.logger = LogFactory.getLog(Messages.getString("Server.73")); //$NON-NLS-1$
         }
 
-        return logger;
+        return this.logger;
     }
 
     /**
      *  Get the Home directory of this server.
      */
     public File getHopHome() {
-        return hopHome;
+        return this.hopHome;
     }
 
     /**
@@ -690,7 +692,7 @@ public class Server implements Runnable {
      * @return
      */
     public String[] getApplicationsOption() {
-        return config.getApps();
+        return this.config.getApps();
     }
 
     /**
@@ -715,7 +717,7 @@ public class Server implements Runnable {
      * @return ...
      */
     public String getProperty(String key) {
-        return (String) sysProps.get(key);
+        return (String) this.sysProps.get(key);
     }
 
     /**
@@ -723,7 +725,7 @@ public class Server implements Runnable {
      * @return the server.properties
      */
     public ResourceProperties getProperties() {
-        return sysProps;
+        return this.sysProps;
     }
 
     /**
@@ -731,7 +733,7 @@ public class Server implements Runnable {
      * @return the server-wide db.properties
      */
     public ResourceProperties getDbProperties() {
-        return dbProps;
+        return this.dbProps;
     }
 
     /**
@@ -741,10 +743,9 @@ public class Server implements Runnable {
      */
     public ResourceProperties getAppsProperties(String appName) {
         if (appName == null) {
-            return appsProps;
-        } else {
-            return appsProps.getSubProperties(appName + ".");
+            return this.appsProps;
         }
+        return this.appsProps.getSubProperties(appName + Messages.getString("Server.74")); //$NON-NLS-1$
     }
 
     /**
@@ -753,13 +754,12 @@ public class Server implements Runnable {
      * @return ...
      */
     public File getAppsHome() {
-        String appHome = sysProps.getProperty("appHome", "");
+        String appHome = this.sysProps.getProperty(Messages.getString("Server.75"), Messages.getString("Server.76")); //$NON-NLS-1$ //$NON-NLS-2$
 
         if (appHome.trim().length() != 0) {
             return new File(appHome);
-        } else {
-            return new File(hopHome, "apps");
         }
+        return new File(this.hopHome, Messages.getString("Server.77")); //$NON-NLS-1$
     }
 
     /**
@@ -768,13 +768,12 @@ public class Server implements Runnable {
      * @return ...
      */
     public File getDbHome() {
-        String dbHome = sysProps.getProperty("dbHome", "");
+        String dbHome = this.sysProps.getProperty(Messages.getString("Server.78"), Messages.getString("Server.79")); //$NON-NLS-1$ //$NON-NLS-2$
 
         if (dbHome.trim().length() != 0) {
             return new File(dbHome);
-        } else {
-            return new File(hopHome, "db");
         }
+        return new File(this.hopHome, Messages.getString("Server.80")); //$NON-NLS-1$
     }
 
     /**
@@ -783,7 +782,7 @@ public class Server implements Runnable {
      * @return ...
      */
     public Vector getExtensions() {
-        return extensions;
+        return this.extensions;
     }
 
     /**
@@ -792,8 +791,8 @@ public class Server implements Runnable {
      * @param name ...
      */
     public void startApplication(String name) {
-        appManager.start(name);
-        appManager.register(name);
+        this.appManager.start(name);
+        this.appManager.register(name);
     }
 
     /**
@@ -802,7 +801,7 @@ public class Server implements Runnable {
      * @param name ...
      */
     public void stopApplication(String name) {
-        appManager.stop(name);
+        this.appManager.stop(name);
     }
 
     private static InetSocketAddress getInetSocketAddress(String inetAddrPort)
@@ -815,7 +814,7 @@ public class Server implements Runnable {
                 a = a.substring(a.indexOf('/') + 1);
             inetAddrPort = inetAddrPort.substring(c + 1);
 
-            if (a.length() > 0 && !"0.0.0.0".equals(a)) {
+            if (a.length() > 0 && !Messages.getString("Server.81").equals(a)) { //$NON-NLS-1$
                 addr = InetAddress.getByName(a);
             }
         }
@@ -823,5 +822,3 @@ public class Server implements Runnable {
         return new InetSocketAddress(addr, port);
     }
 }
-
-

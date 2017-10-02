@@ -53,7 +53,7 @@ public class ImageFilterOp implements BufferedImageOp {
         
         BufferedImageConsumer consumer = new BufferedImageConsumer(dst);
 
-        ImageFilter fltr = filter.getFilterInstance(consumer);
+        ImageFilter fltr = this.filter.getFilterInstance(consumer);
         fltr.setDimensions(width, height);
         
         /*
@@ -138,6 +138,7 @@ public class ImageFilterOp implements BufferedImageOp {
             super(bits);
         }
         
+        @Override
         public int getRGB(int rgb) {
             // This is the part that speeds up most.
             // java.awt.image.ColorModel would return the same value, but with
@@ -145,18 +146,22 @@ public class ImageFilterOp implements BufferedImageOp {
             return rgb;
         }
 
+        @Override
         public int getAlpha(int pixel) {
             return pixel  >> 24;
         }
 
+        @Override
         public int getRed(int pixel) {
             return (pixel >> 16) & 0xff;
         }
 
+        @Override
         public int getGreen(int pixel) {
             return (pixel >>  8) & 0xff;
         }
 
+        @Override
         public int getBlue(int pixel) {
             return pixel & 0xff;
         }
@@ -193,52 +198,52 @@ public class ImageFilterOp implements BufferedImageOp {
         }
         
         public BufferedImage getImage() {
-            return image;
+            return this.image;
         }
 
         public void setDimensions(int w, int h) {
-            if (image == null) {
-                if (compatible != null) {
+            if (this.image == null) {
+                if (this.compatible != null) {
                     // create a compatible image with the new dimensions:
-                    image = new BufferedImage(
-                        compatible.getColorModel(),
-                        compatible.getRaster().createCompatibleWritableRaster(w, h),
-                        compatible.isAlphaPremultiplied(),
+                    this.image = new BufferedImage(
+                        this.compatible.getColorModel(),
+                        this.compatible.getRaster().createCompatibleWritableRaster(w, h),
+                        this.compatible.isAlphaPremultiplied(),
                         null
                     );
                 } else {
                     // assume standard format:
-                    image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    this.image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
                 }
             }
-            width = image.getWidth();
-            height = image.getHeight();
+            this.width = this.image.getWidth();
+            this.height = this.image.getHeight();
         }
 
         public void setPixels(int x, int y, int w, int h, ColorModel model, int[] pixels, int off, int scansize) {
             // Cropping may be necessary: It's possible that the size of the 
             // specified destination image is not the same as the size the 
             // ImageFilter would produce!
-            if (x < width && y < height) {
-                if (x + w > width)
-                    w = width - x;
-                if (y + h > height)
-                    h = height - y;
+            if (x < this.width && y < this.height) {
+                if (x + w > this.width)
+                    w = this.width - x;
+                if (y + h > this.height)
+                    h = this.height - y;
                 
                 if (w > 0 && h > 0)
-                    image.setRGB(x, y, w, h, pixels, off, scansize);
+                    this.image.setRGB(x, y, w, h, pixels, off, scansize);
             }
         }
 
         public void setPixels(int x, int y, int w, int h, ColorModel model, byte[] pixels, int off, int scansize) {
-            if (x < width && y < height) {
-                if (x + w > width)
-                    w = width - x;
-                if (y + h > height)
-                    h = height - y;
+            if (x < this.width && y < this.height) {
+                if (x + w > this.width)
+                    w = this.width - x;
+                if (y + h > this.height)
+                    h = this.height - y;
 
                 if (w > 0 && h > 0)
-                    image.getRaster().setDataElements(x, y, w, h, pixels);
+                    this.image.getRaster().setDataElements(x, y, w, h, pixels);
             }
         }
 

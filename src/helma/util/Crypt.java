@@ -366,7 +366,7 @@ public class Crypt {
 
    private static final int byteToUnsigned(byte b)
    {
-      int value = (int)b;
+      int value = b;
 
       return(value >= 0 ? value : value + 256);
    }
@@ -559,9 +559,9 @@ public class Crypt {
    public static final String crypt(String salt, String original)
    {
       while(salt.length() < 2)
-         salt += "A";
+         salt += "A"; //$NON-NLS-1$
 
-      StringBuffer buffer = new StringBuffer("             ");
+      StringBuffer buffer = new StringBuffer("             "); //$NON-NLS-1$
 
       char charZero = salt.charAt(0);
       char charOne  = salt.charAt(1);
@@ -569,8 +569,8 @@ public class Crypt {
       buffer.setCharAt(0, charZero);
       buffer.setCharAt(1, charOne);
 
-      int Eswap0 = con_salt[(int)charZero];
-      int Eswap1 = con_salt[(int)charOne] << 4;
+      int Eswap0 = con_salt[charZero];
+      int Eswap1 = con_salt[charOne] << 4;
 
       byte key[] = new byte[8];
 
@@ -579,7 +579,7 @@ public class Crypt {
 
       for(int i = 0; i < key.length && i < original.length(); i ++)
       {
-         int iChar = (int)original.charAt(i);
+         int iChar = original.charAt(i);
 
          key[i] = (byte)(iChar << 1);
       }
@@ -599,7 +599,7 @@ public class Crypt {
          {
             c <<= 1;
 
-            if(((int)b[y] & u) != 0)
+            if((b[y] & u) != 0)
                c |= 1;
 
             u >>>= 1;
@@ -621,8 +621,8 @@ public class Crypt {
       {
          System.out.println
          (
-            "[" + args[0] + "] [" + args[1] + "] => [" +
-            Crypt.crypt(args[0], args[1]) + "]"
+            "[" + args[0] + "] [" + args[1] + "] => [" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            Crypt.crypt(args[0], args[1]) + "]" //$NON-NLS-1$
          );
       }
    }

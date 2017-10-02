@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -16,8 +20,7 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.INodeState;
-
+import helma.objectmodel.NodeInterface;
 import java.io.Serializable;
 
 /**
@@ -39,14 +42,14 @@ import java.io.Serializable;
  * These two properties guarantee that NodeHandle comparisons are easy and usually correct.
  *
  */
-public final class NodeHandle implements INodeState, Serializable {
+public final class NodeHandle implements Serializable {
     static final long serialVersionUID = 3067763116576910931L;
 
     // direct reference to the node
     private Node node;
 
     // the node's key
-    private Key key;
+    private KeyInterface key;
 
     /**
      * Builds a handle for a node. This constructor is package private in order to make
@@ -57,12 +60,12 @@ public final class NodeHandle implements INodeState, Serializable {
     NodeHandle(Node node) {
         int state = node.getState();
 
-        if (state == TRANSIENT) {
+        if (state == NodeInterface.TRANSIENT) {
             this.node = node;
-            key = null;
+            this.key = null;
         } else {
             this.node = null;
-            key = node.getKey();
+            this.key = node.getKey();
         }
     }
 
@@ -72,7 +75,7 @@ public final class NodeHandle implements INodeState, Serializable {
      * application code.
      * @param key the key
      */
-    public NodeHandle(Key key) {
+    public NodeHandle(KeyInterface key) {
         this.node = null;
         this.key = key;
     }
@@ -81,10 +84,10 @@ public final class NodeHandle implements INodeState, Serializable {
      *  Get the node described by this node handle
      */
     public Node getNode(WrappedNodeManager nodemgr) {
-        if (node != null) {
-            return node;
+        if (this.node != null) {
+            return this.node;
         }
-        return nodemgr.getNode(key);
+        return nodemgr.getNode(this.key);
     }
 
     /**
@@ -92,15 +95,15 @@ public final class NodeHandle implements INodeState, Serializable {
      * @return true if we alreay have a reference to our node
      */
     public boolean hasNode() {
-        return node != null;
+        return this.node != null;
     }
 
     /**
      *  Get the key for the node described by this handle.
      *  This will return null for transient Nodes.
      */
-    public Key getKey() {
-        return key;
+    public KeyInterface getKey() {
+        return this.key;
     }
 
     /**
@@ -108,18 +111,17 @@ public final class NodeHandle implements INodeState, Serializable {
      *  This may only be called on persistent Nodes.
      */
     public String getID() {
-        if (key == null) {
-            return node.getID();
+        if (this.key == null) {
+            return this.node.getID();
         }
-        return key.getID();
+        return this.key.getID();
     }
 
     private Object getObject() {
-        if (node != null) {
-            return node;
-        } else {
-            return key;
+        if (this.node != null) {
+            return this.node;
         }
+        return this.key;
     }
 
     /**
@@ -129,6 +131,7 @@ public final class NodeHandle implements INodeState, Serializable {
      *
      * @return ...
      */
+    @Override
     public boolean equals(Object other) {
         if (other instanceof NodeHandle) {
             Object obj1 = getObject();
@@ -143,9 +146,9 @@ public final class NodeHandle implements INodeState, Serializable {
      * persistent and we have to refer to it via the key from now on.
      */
     protected void becomePersistent() {
-        if (node != null) {
-            key = node.getKey();
-            node = null;
+        if (this.node != null) {
+            this.key = this.node.getKey();
+            this.node = null;
         }
     }
 
@@ -154,11 +157,11 @@ public final class NodeHandle implements INodeState, Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
-        if (node != null) {
-            return "NodeHandle[transient:" + node + "]";
-        } else {
-            return "NodeHandle[" + key + "]";
+        if (this.node != null) {
+            return "NodeHandle[transient:" + this.node + "]";  //$NON-NLS-1$//$NON-NLS-2$
         }
+        return "NodeHandle[" + this.key + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Repository implementation for directories providing file resources
+ * RepositoryInterface implementation for directories providing file resources
  */
 public class FileRepository extends AbstractRepository {
 
@@ -61,36 +61,36 @@ public class FileRepository extends AbstractRepository {
      * @param dir directory
      * @param parent the parent repository, or null
      */
-    public FileRepository(File dir, Repository parent) {
+    public FileRepository(File dir, RepositoryInterface parent) {
         // make sure our directory has an absolute path,
         // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4117557
         if (dir.isAbsolute()) {
-            directory = dir;
+            this.directory = dir;
         } else {
-            directory = dir.getAbsoluteFile();
+            this.directory = dir.getAbsoluteFile();
         }
-        if (!directory.exists()) {
+        if (!this.directory.exists()) {
             create();
-        } else if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("File " + directory + " is not a directory");
+        } else if (!this.directory.isDirectory()) {
+            throw new IllegalArgumentException(Messages.getString("FileRepository.0") + this.directory + Messages.getString("FileRepository.1")); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         if (parent == null) {
-            name = shortName = directory.getAbsolutePath();
+            this.name = this.shortName = this.directory.getAbsolutePath();
         } else {
             this.parent = parent;
-            shortName = directory.getName();
-            name = directory.getAbsolutePath();
+            this.shortName = this.directory.getName();
+            this.name = this.directory.getAbsolutePath();
         }
     }
 
     public boolean exists() {
-        return directory.exists() && directory.isDirectory();
+        return this.directory.exists() && this.directory.isDirectory();
     }
 
     public void create() {
-        if (!directory.exists() || !directory.isDirectory()) {
-            directory.mkdirs();
+        if (!this.directory.exists() || !this.directory.isDirectory()) {
+            this.directory.mkdirs();
         }
     }
 
@@ -103,29 +103,29 @@ public class FileRepository extends AbstractRepository {
      * @return true if the repository is to be considered a top-level script repository
      */
     public boolean isScriptRoot() {
-        return parent == null || parent instanceof MultiFileRepository;
+        return this.parent == null || this.parent instanceof MultiFileRepository;
     }
 
     public long lastModified() {
-        return directory.lastModified();
+        return this.directory.lastModified();
     }
 
     public synchronized long getChecksum() throws IOException {
         // delay checksum check if already checked recently
-        if (System.currentTimeMillis() > lastChecksumTime + cacheTime) {
+        if (System.currentTimeMillis() > this.lastChecksumTime + this.cacheTime) {
 
             update();
-            long checksum = lastModified;
+            long checksum = this.lastModified;
 
-            for (int i = 0; i < repositories.length; i++) {
-                checksum += repositories[i].getChecksum();
+            for (int i = 0; i < this.repositories.length; i++) {
+                checksum += this.repositories[i].getChecksum();
             }
 
-            lastChecksum = checksum;
-            lastChecksumTime = System.currentTimeMillis();
+            this.lastChecksum = checksum;
+            this.lastChecksumTime = System.currentTimeMillis();
         }
 
-        return lastChecksum;
+        return this.lastChecksum;
     }
 
     /**
@@ -133,22 +133,23 @@ public class FileRepository extends AbstractRepository {
      * Gets called from within all methods returning sub-repositories or
      * resources
      */
+    @Override
     public synchronized void update() {
-        if (!directory.exists()) {
-            repositories = emptyRepositories;
-            if (resources == null) {
-                resources = new HashMap();
+        if (!this.directory.exists()) {
+            this.repositories = emptyRepositories;
+            if (this.resources == null) {
+                this.resources = new HashMap();
             } else {
-                resources.clear();
+                this.resources.clear();
             }
-            lastModified = 0;
+            this.lastModified = 0;
             return;
         }
 
-        if (directory.lastModified() != lastModified) {
-            lastModified = directory.lastModified();
+        if (this.directory.lastModified() != this.lastModified) {
+            this.lastModified = this.directory.lastModified();
 
-            File[] list = directory.listFiles();
+            File[] list = this.directory.listFiles();
 
             ArrayList newRepositories = new ArrayList(list.length);
             HashMap newResources = new HashMap(list.length);
@@ -157,7 +158,7 @@ public class FileRepository extends AbstractRepository {
                 if (list[i].isDirectory()) {
                     // a nested directory aka child file repository
                     newRepositories.add(new FileRepository(list[i], this));
-                } else if (list[i].getName().endsWith(".zip")) {
+                } else if (list[i].getName().endsWith(".zip")) { //$NON-NLS-1$
                     // a nested zip repository
                     newRepositories.add(new ZipRepository(list[i], this));
                 } else if (list[i].isFile()) {
@@ -167,36 +168,40 @@ public class FileRepository extends AbstractRepository {
                 }
             }
 
-            repositories = (Repository[])
-                    newRepositories.toArray(new Repository[newRepositories.size()]);
-            resources = newResources;
+            this.repositories = (RepositoryInterface[])
+                    newRepositories.toArray(new RepositoryInterface[newRepositories.size()]);
+            this.resources = newResources;
         }
     }
 
     /**
      * Called to create a child resource for this repository
      */
-    protected Resource createResource(String name) {
-        return new FileResource(new File(directory, name), this);
+    @Override
+    protected ResourceInterface createResource(String name) {
+        return new FileResource(new File(this.directory, name), this);
     }
 
     /**
      * Get the repository's directory
      */
     public File getDirectory() {
-        return directory;
+        return this.directory;
     }
 
+    @Override
     public int hashCode() {
-        return 17 + (37 * directory.hashCode());
+        return 17 + (37 * this.directory.hashCode());
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof FileRepository &&
-               directory.equals(((FileRepository) obj).directory);
+               this.directory.equals(((FileRepository) obj).directory);
     }
 
+    @Override
     public String toString() {
-        return new StringBuffer("FileRepository[").append(name).append("]").toString();
+        return new StringBuffer("FileRepository[").append(this.name).append("]").toString();  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

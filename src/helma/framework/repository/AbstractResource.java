@@ -19,25 +19,25 @@ package helma.framework.repository;
 /**
  * Abstract resource base class that implents get/setOverloadedResource.
  */
-public abstract class AbstractResource implements Resource {
+public abstract class AbstractResource implements ResourceInterface {
 
-    protected Resource overloaded = null;
+    protected ResourceInterface overloaded = null;
 
     /**
-     * Method for registering a Resource this Resource is overloading
+     * Method for registering a ResourceInterface this ResourceInterface is overloading
      *
      * @param res the overloaded resource
      */
-    public void setOverloadedResource(Resource res) {
-        overloaded = res;
+    public void setOverloadedResource(ResourceInterface res) {
+        this.overloaded = res;
     }
 
     /**
-     * Get a Resource this Resource is overloading
+     * Get a ResourceInterface this ResourceInterface is overloading
      *
      * @return the overloaded resource
      */
-    public Resource getOverloadedResource() {
-        return overloaded;
+    public ResourceInterface getOverloadedResource() {
+        return this.overloaded;
     }
 }

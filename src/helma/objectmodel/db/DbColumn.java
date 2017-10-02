@@ -39,55 +39,55 @@ public final class DbColumn {
         this.type = type;
         this.relation = rel;
 
-        if (relation != null) {
-            relation.setColumnType(type);
+        if (this.relation != null) {
+            this.relation.setColumnType(type);
         }
 
-        isId = name.equalsIgnoreCase(dbmap.getIDField());
-        isPrototype = name.equalsIgnoreCase(dbmap.getPrototypeField());
-        isName = name.equalsIgnoreCase(dbmap.getNameField());
+        this.isId = name.equalsIgnoreCase(dbmap.getIDField());
+        this.isPrototype = name.equalsIgnoreCase(dbmap.getPrototypeField());
+        this.isName = name.equalsIgnoreCase(dbmap.getNameField());
     }
 
     /**
      * Get the column name.
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
      * Get this columns SQL data type.
      */
     public int getType() {
-        return type;
+        return this.type;
     }
 
     /**
      * Return the relation associated with this column. May be null.
      */
     public Relation getRelation() {
-        return relation;
+        return this.relation;
     }
 
     /**
      * Returns true if this column serves as ID field for the prototype.
      */
     public boolean isIdField() {
-        return isId;
+        return this.isId;
     }
 
     /**
      * Returns true if this column serves as prototype field for the prototype.
      */
     public boolean isPrototypeField() {
-        return isPrototype;
+        return this.isPrototype;
     }
 
     /**
      * Returns true if this column serves as name field for the prototype.
      */
     public boolean isNameField() {
-        return isName;
+        return this.isName;
     }
 
     /**
@@ -96,8 +96,8 @@ public final class DbColumn {
     public boolean isMapped() {
         // Note: not sure if check for primitive or reference relation is really
         // needed, but we did it before, so we leave it in for safety.
-        return isId || isPrototype || isName || 
-               (relation != null && relation.isPrimitiveOrReference());
+        return this.isId || this.isPrototype || this.isName || 
+               (this.relation != null && this.relation.isPrimitiveOrReference());
     }
 
     /**
@@ -107,7 +107,7 @@ public final class DbColumn {
      * @return true if values need to be wrapped in quotes
      */
     public boolean needsQuotes() {
-        switch (type) {
+        switch (this.type) {
         case Types.CHAR:
         case Types.VARCHAR:
         case Types.LONGVARCHAR:

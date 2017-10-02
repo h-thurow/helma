@@ -48,7 +48,7 @@ public class DbSource {
     private int hashcode;
     // thread local connection holder for non-transactor threads
     private ThreadLocal connection;
-    
+
     /**
      * The class loader to use for loading JDBC driver classes.
      */
@@ -59,10 +59,10 @@ public class DbSource {
      *
      * @param name the db source name
      * @param props the properties
-     * 
-     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
+     *
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
-    public DbSource(String name, ResourceProperties props, ClassLoader classLoader) 
+    public DbSource(String name, ResourceProperties props, ClassLoader classLoader)
              throws NoDriverException {
         this.name = name;
         this.props = props;
@@ -74,7 +74,7 @@ public class DbSource {
      * Get a JDBC connection to the db source.
      *
      * @return a JDBC connection
-     * 
+     *
      * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      * @throws SQLException if the connection couldn't be created
      */
@@ -88,20 +88,23 @@ public class DbSource {
             con = getThreadLocalConnection();
         }
 
-        boolean fileUpdated = props.lastModified() > lastRead ||
-                (defaultProps != null && defaultProps.lastModified() > lastRead);
+        boolean fileUpdated = this.props.lastModified() > this.lastRead ||
+                (defaultProps != null && defaultProps.lastModified() > this.lastRead);
 
         if (con == null || con.isClosed() || fileUpdated) {
             init();
-            con = DriverManager.getConnection(url, conProps);
+            con = DriverManager.getConnection(this.url, this.conProps);
 
-            // If we wanted to use SQL transactions, we'd set autoCommit to
-            // false here and make commit/rollback invocations in Transactor methods;
+            if ("false".equalsIgnoreCase(this.subProps.getProperty("autoCommit"))) {  //$NON-NLS-1$//$NON-NLS-2$
+            	con.setAutoCommit(false);
+            }
+
             // System.err.println ("Created new Connection to "+url);
+
             if (tx != null) {
                 tx.registerConnection(this, con);
             } else {
-                connection.set(con);
+                this.connection.set(con);
             }
         }
 
@@ -113,16 +116,16 @@ public class DbSource {
      * @return a thread local tested connection, or null
      */
     private Connection getThreadLocalConnection() {
-        if (connection == null) {
-            connection = new ThreadLocal();
+        if (this.connection == null) {
+            this.connection = new ThreadLocal();
             return null;
         }
-        Connection con = (Connection) connection.get();
+        Connection con = (Connection) this.connection.get();
         if (con != null) {
             // test if connection is still ok
             try {
                 Statement stmt = con.createStatement();
-                stmt.execute("SELECT 1");
+                stmt.execute("SELECT 1"); //$NON-NLS-1$
                 stmt.close();
             } catch (SQLException sx) {
                 try {
@@ -138,13 +141,13 @@ public class DbSource {
      * Set the db properties to newProps, and return the old properties.
      * @param newProps the new properties to use for this db source
      * @return the old properties
-     * 
-     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
+     *
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
-    public synchronized ResourceProperties switchProperties(ResourceProperties newProps) 
+    public synchronized ResourceProperties switchProperties(ResourceProperties newProps)
             throws NoDriverException {
-        ResourceProperties oldProps = props;
-        props = newProps;
+        ResourceProperties oldProps = this.props;
+        this.props = newProps;
         init();
         return oldProps;
     }
@@ -155,36 +158,36 @@ public class DbSource {
      * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     private synchronized void init() throws NoDriverException {
-        lastRead = (defaultProps == null) ? props.lastModified()
-                                          : Math.max(props.lastModified(),
+        this.lastRead = (defaultProps == null) ? this.props.lastModified()
+                                          : Math.max(this.props.lastModified(),
                                                      defaultProps.lastModified());
         // refresh sub-properties for this DbSource
-        subProps = props.getSubProperties(name + '.');
+        this.subProps = this.props.getSubProperties(this.name + '.');
         // use properties hashcode for ourselves
-        hashcode = subProps.hashCode();
+        this.hashcode = this.subProps.hashCode();
         // get JDBC URL and driver class name
-        url = subProps.getProperty("url");
-        driver = subProps.getProperty("driver");
+        this.url = this.subProps.getProperty("url"); //$NON-NLS-1$
+        this.driver = this.subProps.getProperty("driver"); //$NON-NLS-1$
         // sanity checks
-        if (url == null) {
-            throw new NullPointerException(name+".url is not defined in db.properties");
+        if (this.url == null) {
+            throw new NullPointerException(this.name+Messages.getString("DbSource.0")); //$NON-NLS-1$
         }
-        if (driver == null) {
-            throw new NullPointerException(name+".driver class not defined in db.properties");
+        if (this.driver == null) {
+            throw new NullPointerException(this.name+Messages.getString("DbSource.1")); //$NON-NLS-1$
         }
         // test if this is an Oracle or MySQL driver
-        isOracle = driver.startsWith("oracle.jdbc.driver");
-        isMySQL = driver.startsWith("com.mysql.jdbc") ||
-                  driver.startsWith("org.gjt.mm.mysql");
-        isPostgreSQL = driver.equals("org.postgresql.Driver");
-        isH2 = driver.equals("org.h2.Driver");
-        isSQLite = driver.equals("org.sqlite.JDBC");
-        
+        this.isOracle = this.driver.startsWith("oracle.jdbc.driver"); //$NON-NLS-1$
+        this.isMySQL = this.driver.startsWith("com.mysql.jdbc") || //$NON-NLS-1$
+                  this.driver.startsWith("org.gjt.mm.mysql"); //$NON-NLS-1$
+        this.isPostgreSQL = this.driver.equals("org.postgresql.Driver"); //$NON-NLS-1$
+        this.isH2 = this.driver.equals("org.h2.Driver"); //$NON-NLS-1$
+        this.isSQLite = this.driver.equals("org.sqlite.JDBC"); //$NON-NLS-1$
+
         // check if a custom class loader shall be tried
-        if (classLoader != null) {
+        if (this.classLoader != null) {
             try {
                 // get the driver's class
-                Class driverClass = Class.forName(driver, true, classLoader);
+                Class driverClass = Class.forName(this.driver, true, this.classLoader);
                 // register the driver with the driver manager
                 DriverManager.registerDriver(new DriverWrapper((Driver) driverClass.newInstance()));
             } catch (ClassNotFoundException exception) {
@@ -196,7 +199,7 @@ public class DbSource {
         } else {
             try {
                 // let the default class loader load the class (and thus register the driver with the driver manager)
-                Class.forName(driver);
+                Class.forName(this.driver);
             } catch (ClassNotFoundException e) {
                 // generalize the exception
                 throw new NoDriverException(e);
@@ -204,28 +207,29 @@ public class DbSource {
         }
 
         // set up driver connection properties
-        conProps=new Properties();
-        String prop = subProps.getProperty("user");
+        this.conProps=new Properties();
+        String prop = this.subProps.getProperty("user"); //$NON-NLS-1$
         if (prop != null) {
-            conProps.put("user", prop);
+            this.conProps.put("user", prop); //$NON-NLS-1$
         }
-        prop = subProps.getProperty("password");
+        prop = this.subProps.getProperty("password"); //$NON-NLS-1$
         if (prop != null) {
-            conProps.put("password", prop);
+            this.conProps.put("password", prop); //$NON-NLS-1$
         }
 
         // read any remaining extra properties to be passed to the driver
-        for (Enumeration e = subProps.keys(); e.hasMoreElements(); ) {
+        for (Enumeration e = this.subProps.keys(); e.hasMoreElements(); ) {
             String key = (String) e.nextElement();
 
             // filter out properties we alread have
-            if ("url".equalsIgnoreCase(key) ||
-                "driver".equalsIgnoreCase(key) ||
-                "user".equalsIgnoreCase(key) ||
-                "password".equalsIgnoreCase(key)) {
+            if ("url".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "driver".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "user".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "password".equalsIgnoreCase(key) || //$NON-NLS-1$
+                "autoCommit".equalsIgnoreCase(key)) { //$NON-NLS-1$
                 continue;
             }
-            conProps.setProperty(key, subProps.getProperty(key));
+            this.conProps.setProperty(key, this.subProps.getProperty(key));
         }
     }
 
@@ -235,7 +239,7 @@ public class DbSource {
      * @return the class name of the JDBC driver
      */
     public String getDriverName() {
-        return driver;
+        return this.driver;
     }
 
     /**
@@ -244,7 +248,7 @@ public class DbSource {
      * @return the name of the db dource
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -262,7 +266,7 @@ public class DbSource {
      * @return true if we're using an oracle JDBC driver
      */
     public boolean isOracle() {
-        return isOracle;
+        return this.isOracle;
     }
 
     /**
@@ -271,7 +275,7 @@ public class DbSource {
      * @return true if we're using a MySQL JDBC driver
      */
     public boolean isMySQL() {
-        return isMySQL;
+        return this.isMySQL;
     }
 
     /**
@@ -280,7 +284,7 @@ public class DbSource {
      * @return true if we're using a PostgreSQL JDBC driver
      */
     public boolean isPostgreSQL() {
-        return isPostgreSQL;
+        return this.isPostgreSQL;
     }
 
     /**
@@ -289,9 +293,9 @@ public class DbSource {
      * @return true if we're using a H2 JDBC driver
      */
     public boolean isH2() {
-        return isH2;
+        return this.isH2;
     }
-    
+
     /**
      * Check if this DbSource represents a SQLite database
      *
@@ -308,7 +312,7 @@ public class DbSource {
      */
     protected void registerDbMapping(DbMapping dbmap) {
         if (!dbmap.inheritsStorage() && dbmap.getTableName() != null) {
-            dbmappings.put(dbmap.getTableName().toUpperCase(), dbmap);
+            this.dbmappings.put(dbmap.getTableName().toUpperCase(), dbmap);
         }
     }
 
@@ -319,42 +323,44 @@ public class DbSource {
      * @return the matching DbMapping instance
      */
     protected DbMapping getDbMapping(String tablename) {
-        return (DbMapping) dbmappings.get(tablename.toUpperCase());
+        return (DbMapping) this.dbmappings.get(tablename.toUpperCase());
     }
 
     /**
      * Returns a hash code value for the object.
      */
+    @Override
     public int hashCode() {
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
      * Indicates whether some other object is "equal to" this one.
      */
+    @Override
     public boolean equals(Object obj) {
-        return obj instanceof DbSource && subProps.equals(((DbSource) obj).subProps);
+        return obj instanceof DbSource && this.subProps.equals(((DbSource) obj).subProps);
     }
 }
 
 /**
- * Wraps a JDBC driver so that JDBC drivers loaded from custom class loaders can be registered in the JDBC Driver 
+ * Wraps a JDBC driver so that JDBC drivers loaded from custom class loaders can be registered in the JDBC Driver
  * Manager.
- * 
+ *
  * @see "http://www.kfu.com/~nsayer/Java/dyn-jdbc.html"
  * @todo Future versions of Java (8+) might not need this workaround anymore, review and remove if and when not
  *  necessary anymore.
  */
 class DriverWrapper implements Driver {
-    
+
     /**
      * The actual driver wrapped by this wrapper.
      */
     private Driver driver;
-    
+
     /**
      * Wraps the given driver.
-     * 
+     *
      * @param d
      *  The driver to wrap.
      */
@@ -362,37 +368,37 @@ class DriverWrapper implements Driver {
         // remember the driver being wrapped
         this.driver = d;
     }
-    
+
     @Override
     public boolean acceptsURL(String u) throws SQLException {
         // delegate
         return this.driver.acceptsURL(u);
     }
-    
+
     @Override
     public Connection connect(String u, Properties p) throws SQLException {
         // delegate
         return this.driver.connect(u, p);
     }
-    
+
     @Override
     public int getMajorVersion() {
         // delegate
         return this.driver.getMajorVersion();
     }
-    
+
     @Override
     public int getMinorVersion() {
         // delegate
         return this.driver.getMinorVersion();
     }
-    
+
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
         // delegate
         return this.driver.getPropertyInfo(u, p);
     }
-    
+
     @Override
     public boolean jdbcCompliant() {
         // delegate

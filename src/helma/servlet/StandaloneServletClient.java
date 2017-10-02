@@ -16,7 +16,7 @@
 
 package helma.servlet;
 
-import helma.framework.repository.Repository;
+import helma.framework.repository.RepositoryInterface;
 import helma.framework.core.Application;
 import helma.framework.repository.FileRepository;
 import helma.main.ServerConfig;
@@ -46,7 +46,7 @@ public final class StandaloneServletClient extends AbstractServletClient {
     private String appDir;
     private String dbDir;
     private String hopDir;
-    private Repository[] repositories;
+    private RepositoryInterface[] repositories;
 
     /**
      *
@@ -55,59 +55,60 @@ public final class StandaloneServletClient extends AbstractServletClient {
      *
      * @throws ServletException ...
      */
+    @Override
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
 
-        hopDir = init.getInitParameter("hopdir");
+        this.hopDir = init.getInitParameter("hopdir"); //$NON-NLS-1$
 
-        if (hopDir == null) {
+        if (this.hopDir == null) {
             // assume helmaDir to be current directory
-            hopDir = ".";
+            this.hopDir = "."; //$NON-NLS-1$
         }
 
-        appName = init.getInitParameter("application");
+        this.appName = init.getInitParameter("application"); //$NON-NLS-1$
 
-        if ((appName == null) || (appName.trim().length() == 0)) {
-            throw new ServletException("application parameter not specified");
+        if ((this.appName == null) || (this.appName.trim().length() == 0)) {
+            throw new ServletException(Messages.getString("StandaloneServletClient.0")); //$NON-NLS-1$
         }
 
-        appDir = init.getInitParameter("appdir");
+        this.appDir = init.getInitParameter("appdir"); //$NON-NLS-1$
 
-        dbDir = init.getInitParameter("dbdir");
+        this.dbDir = init.getInitParameter("dbdir"); //$NON-NLS-1$
 
-        if ((dbDir == null) || (dbDir.trim().length() == 0)) {
-            throw new ServletException("dbdir parameter not specified");
+        if ((this.dbDir == null) || (this.dbDir.trim().length() == 0)) {
+            throw new ServletException(Messages.getString("StandaloneServletClient.1")); //$NON-NLS-1$
         }
 
         Class[] parameters = { String.class };
         ArrayList repositoryList = new ArrayList();
 
         for (int i = 0; true; i++) {
-            String repositoryArgs = init.getInitParameter("repository." + i);
+            String repositoryArgs = init.getInitParameter("repository." + i); //$NON-NLS-1$
             if (repositoryArgs != null) {
                 // lookup repository implementation
-                String repositoryImpl = init.getInitParameter("repository." + i +
-                        ".implementation");
+                String repositoryImpl = init.getInitParameter("repository." + i + //$NON-NLS-1$
+                        ".implementation"); //$NON-NLS-1$
                 if (repositoryImpl == null) {
                     // implementation not set manually, have to guess it
-                    if (repositoryArgs.endsWith(".zip")) {
-                        repositoryImpl = "helma.framework.repository.ZipRepository";
-                    } else if (repositoryArgs.endsWith(".js")) {
-                        repositoryImpl = "helma.framework.repository.SingleFileRepository";
+                    if (repositoryArgs.endsWith(".zip")) { //$NON-NLS-1$
+                        repositoryImpl = "helma.framework.repository.ZipRepository"; //$NON-NLS-1$
+                    } else if (repositoryArgs.endsWith(".js")) { //$NON-NLS-1$
+                        repositoryImpl = "helma.framework.repository.SingleFileRepository"; //$NON-NLS-1$
                     } else {
-                        repositoryImpl = "helma.framework.repository.FileRepository";
+                        repositoryImpl = "helma.framework.repository.FileRepository"; //$NON-NLS-1$
                     }
                 }
         
                 try {
-                    Repository newRepository = (Repository) Class.forName(repositoryImpl)
+                    RepositoryInterface newRepository = (RepositoryInterface) Class.forName(repositoryImpl)
                         .getConstructor(parameters)
                         .newInstance(new Object[] {repositoryArgs});
                     repositoryList.add(newRepository);
-                    log("adding repository: " + repositoryArgs);
+                    log(Messages.getString("StandaloneServletClient.2") + repositoryArgs); //$NON-NLS-1$
                 } catch (Exception ex) {
-                    log("Adding repository " + repositoryArgs + " failed. " +
-                        "Will not use that repository. Check your initArgs!", ex);
+                    log(Messages.getString("StandaloneServletClient.3") + repositoryArgs + Messages.getString("StandaloneServletClient.4") + //$NON-NLS-1$ //$NON-NLS-2$
+                        Messages.getString("StandaloneServletClient.5"), ex); //$NON-NLS-1$
                 }
             } else {
                 // we always scan repositories 0-9, beyond that only if defined
@@ -118,14 +119,14 @@ public final class StandaloneServletClient extends AbstractServletClient {
         }
         
         // add app dir
-        FileRepository appRep = new FileRepository(appDir);
-        log("adding repository: " + appDir);
+        FileRepository appRep = new FileRepository(this.appDir);
+        log(Messages.getString("StandaloneServletClient.6") + this.appDir); //$NON-NLS-1$
         if (!repositoryList.contains(appRep)) {
             repositoryList.add(appRep);
         }
 
-        repositories = new Repository[repositoryList.size()];
-        repositories = (Repository[]) repositoryList.toArray(repositories);
+        this.repositories = new RepositoryInterface[repositoryList.size()];
+        this.repositories = (RepositoryInterface[]) repositoryList.toArray(this.repositories);
 
     }
 
@@ -135,12 +136,13 @@ public final class StandaloneServletClient extends AbstractServletClient {
      *
      * @return this servlet's application instance
      */
+    @Override
     public Application getApplication() {
-        if (app == null) {
+        if (this.app == null) {
             createApp();
         }
 
-        return app;
+        return this.app;
     }
 
     /**
@@ -149,25 +151,25 @@ public final class StandaloneServletClient extends AbstractServletClient {
      */
     protected synchronized void createApp() {
 
-        if (app != null) {
+        if (this.app != null) {
             return;
         }
 
         try {
-            File dbHome = new File(dbDir);
-            File appHome = new File(appDir);
-            File hopHome = new File(hopDir);
+            File dbHome = new File(this.dbDir);
+            File appHome = new File(this.appDir);
+            File hopHome = new File(this.hopDir);
 
             ServerConfig config = new ServerConfig();
             config.setHomeDir(hopHome);
             Server server = new Server(config);
             server.init();
 
-            app = new Application(appName, server, repositories, appHome, dbHome);
-            app.init();
-            app.start();
+            this.app = new Application(this.appName, server, this.repositories, appHome, dbHome);
+            this.app.init();
+            this.app.start();
         } catch (Exception x) {
-            log("Error starting Application " + appName + ": " + x);
+            log(Messages.getString("StandaloneServletClient.7") + this.appName + Messages.getString("StandaloneServletClient.8") + x); //$NON-NLS-1$ //$NON-NLS-2$
             x.printStackTrace();
         }
     }
@@ -176,16 +178,17 @@ public final class StandaloneServletClient extends AbstractServletClient {
      * The servlet is being destroyed. Close and release the application if
      * it does exist.
      */
+    @Override
     public void destroy() {
-        if (app != null) {
+        if (this.app != null) {
             try {
-                app.stop();
+                this.app.stop();
             } catch (Exception x) {
-                log("Error shutting down app " + app.getName() + ": ");
+                log(Messages.getString("StandaloneServletClient.9") + this.app.getName() + Messages.getString("StandaloneServletClient.10")); //$NON-NLS-1$ //$NON-NLS-2$
                 x.printStackTrace();
             }
         }
 
-        app = null;
+        this.app = null;
     }
 }

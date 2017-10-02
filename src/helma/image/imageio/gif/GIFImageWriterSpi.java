@@ -20,7 +20,6 @@
 
 package helma.image.imageio.gif;
 
-import java.io.*;
 import java.util.*;
 import javax.imageio.*;
 import javax.imageio.spi.*;
@@ -29,12 +28,12 @@ public class GIFImageWriterSpi extends ImageWriterSpi {
 	
     public GIFImageWriterSpi() {
         super(
-            "Helma Object Publisher, http://helma.org/",
-            "1.0",
-            new String[] {"gif", "GIF"},
-            new String[] {"gif", "GIF"},
-            new String[] {"image/gif", "image/x-gif"},
-            "helma.image.imageio.gif.GIFImageWriter",
+            "Helma Object Publisher, http://helma.org/", //$NON-NLS-1$
+            "1.0", //$NON-NLS-1$
+            new String[] {"gif", "GIF"}, //$NON-NLS-1$ //$NON-NLS-2$
+            new String[] {"gif", "GIF"},  //$NON-NLS-1$//$NON-NLS-2$
+            new String[] {"image/gif", "image/x-gif"},  //$NON-NLS-1$//$NON-NLS-2$
+            "helma.image.imageio.gif.GIFImageWriter", //$NON-NLS-1$
             STANDARD_OUTPUT_TYPE,
             null,
             false, null, null, null, null,
@@ -42,15 +41,17 @@ public class GIFImageWriterSpi extends ImageWriterSpi {
         );
     }
 
+    @Override
     public String getDescription(Locale locale) {
-        return "Graphics Interchange Format";
+        return "Graphics Interchange Format"; //$NON-NLS-1$
     }
 
-    public ImageWriter createWriterInstance(Object extension)
-        throws IOException {
+    @Override
+    public ImageWriter createWriterInstance(Object extension) {
         return new GIFImageWriter(this);
     }
 
+    @Override
     public boolean canEncodeImage(ImageTypeSpecifier type) {
         // FIXME handle # colors
         return true;

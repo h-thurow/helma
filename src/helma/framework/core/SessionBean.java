@@ -16,7 +16,7 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.framework.UploadStatus;
 
 import java.io.Serializable;
@@ -46,8 +46,9 @@ public class SessionBean implements Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
-        return session.toString();
+        return this.session.toString();
     }
 
     /**
@@ -61,7 +62,7 @@ public class SessionBean implements Serializable {
      * @return true if the user exists and the password matches the user's password property.
      */
     public boolean login(String username, String password) {
-        return session.login(username, password);
+        return this.session.login(username, password);
     }
 
     /**
@@ -71,15 +72,15 @@ public class SessionBean implements Serializable {
      *
      * @param userNode the HopObject node representing the user.
      */
-    public void login(INode userNode) {
-        session.login(userNode);
+    public void login(NodeInterface userNode) {
+        this.session.login(userNode);
     }
 
     /**
      * Disassociate this session from any user object it may have been associated with.
      */
     public void logout() {
-        session.logout();
+        this.session.logout();
     }
 
     /**
@@ -88,7 +89,7 @@ public class SessionBean implements Serializable {
      * a request. This method may be used to artificially keep a session alive.
      */
     public void touch() {
-        session.touch();
+        this.session.touch();
     }
 
     /**
@@ -97,7 +98,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public Date lastActive() {
-        return new Date(session.lastTouched());
+        return new Date(this.session.lastTouched());
     }
 
     /**
@@ -106,7 +107,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public Date onSince() {
-        return new Date(session.onSince());
+        return new Date(this.session.onSince());
     }
 
     // property-related methods:
@@ -116,8 +117,8 @@ public class SessionBean implements Serializable {
      * to store transient per-session data. It is reflected to the scripting
      * environment as session.data.
      */
-    public INode getData() {
-        return session.getCacheNode();
+    public NodeInterface getData() {
+        return this.session.getCacheNode();
     }
 
     /**
@@ -126,8 +127,8 @@ public class SessionBean implements Serializable {
      *
      * @return ...
      */
-    public INode getUser() {
-        return session.getUserNode();
+    public NodeInterface getUser() {
+        return this.session.getUserNode();
     }
 
     /**
@@ -136,7 +137,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public String get_id() {
-        return session.getSessionId();
+        return this.session.getSessionId();
     }
 
     /**
@@ -145,7 +146,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public String getCookie() {
-        return session.getSessionId();
+        return this.session.getSessionId();
     }
 
     /**
@@ -154,7 +155,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public Date getLastActive() {
-        return new Date(session.lastTouched());
+        return new Date(this.session.lastTouched());
     }
 
     /**
@@ -163,7 +164,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public Date getOnSince() {
-        return new Date(session.onSince());
+        return new Date(this.session.onSince());
     }
 
     /**
@@ -173,7 +174,7 @@ public class SessionBean implements Serializable {
      * @return ...
      */
     public Date getLastModified() {
-        return new Date(session.lastModified());
+        return new Date(this.session.lastModified());
     }
 
     /**
@@ -184,7 +185,7 @@ public class SessionBean implements Serializable {
      */
     public void setLastModified(Date date) {
         if (date != null) {
-            session.setLastModified(date.getTime());
+            this.session.setLastModified(date.getTime());
         }
     }
 
@@ -195,7 +196,7 @@ public class SessionBean implements Serializable {
      * @return the message, or null if none was set.
      */
     public String getMessage() {
-        return session.message;
+        return this.session.message;
     }
 
     /**
@@ -207,7 +208,7 @@ public class SessionBean implements Serializable {
      * @param msg
      */
     public void setMessage(String msg) {
-        session.message = msg;
+        this.session.message = msg;
     }
 
     /**
@@ -216,7 +217,7 @@ public class SessionBean implements Serializable {
      * @return the upload status
      */
     public UploadStatus getUploadStatus(String uploadId) {
-        return session.getUpload(uploadId);
+        return this.session.getUpload(uploadId);
     }
 
 }

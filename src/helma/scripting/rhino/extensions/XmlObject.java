@@ -17,7 +17,7 @@
 package helma.scripting.rhino.extensions;
 
 import helma.scripting.rhino.*;
-import helma.objectmodel.INode;
+import helma.objectmodel.NodeInterface;
 import helma.objectmodel.db.Node;
 import helma.objectmodel.dom.*;
 import java.io.ByteArrayOutputStream;
@@ -50,7 +50,7 @@ public class XmlObject {
      * @return true
      * @throws IOException if something went wrong along the way
      */
-    public boolean write(INode node, String file) throws IOException {
+    public boolean write(NodeInterface node, String file) throws IOException {
         return write(node, file, false);
     }
 
@@ -63,19 +63,19 @@ public class XmlObject {
      * @return true
      * @throws IOException if something went wrong along the way
      */
-    public boolean write(INode node, String file, boolean dbmode)
+    public boolean write(NodeInterface node, String file, boolean dbmode)
                   throws IOException {
         // we definitly need a node
         if (node == null) {
-            throw new RuntimeException("First argument in Xml.write() is not an hopobject");
+            throw new RuntimeException(Messages.getString("XmlObject.0")); //$NON-NLS-1$
         }
 
         if (file == null) {
-            throw new RuntimeException("Second argument file name must not be null");
+            throw new RuntimeException(Messages.getString("XmlObject.1")); //$NON-NLS-1$
         }
 
-        File tmpFile = new File(file + ".tmp." + XmlWriter.generateID());
-        XmlWriter writer = new XmlWriter(tmpFile, "UTF-8");
+        File tmpFile = new File(file + ".tmp." + XmlWriter.generateID()); //$NON-NLS-1$
+        XmlWriter writer = new XmlWriter(tmpFile, "UTF-8"); //$NON-NLS-1$
 
         writer.setDatabaseMode(dbmode);
         writer.write(node);
@@ -86,7 +86,7 @@ public class XmlObject {
             finalFile.delete();
         }
         tmpFile.renameTo(finalFile);
-        core.getApplication().logEvent("wrote xml to " + finalFile.getAbsolutePath());
+        this.core.getApplication().logEvent(Messages.getString("XmlObject.2") + finalFile.getAbsolutePath()); //$NON-NLS-1$
 
         return true;
     }
@@ -98,7 +98,7 @@ public class XmlObject {
      * @return the XML representing the HopObject
      * @throws IOException if something went wrong along the way
      */
-    public String writeToString(INode node) throws IOException {
+    public String writeToString(NodeInterface node) throws IOException {
         return writeToString(node, false);
     }
 
@@ -111,14 +111,14 @@ public class XmlObject {
      * @param dbmode whether to write a shallow copy
      * @throws IOException if something went wrong
      */
-    public String writeToString(INode node, boolean dbmode) throws IOException {
+    public String writeToString(NodeInterface node, boolean dbmode) throws IOException {
         // we definitly need a node
         if (node == null) {
-            throw new RuntimeException("First argument in Xml.write() is not an hopobject");
+            throw new RuntimeException(Messages.getString("XmlObject.3")); //$NON-NLS-1$
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        XmlWriter writer = new XmlWriter(out, "UTF-8");
+        XmlWriter writer = new XmlWriter(out, "UTF-8"); //$NON-NLS-1$
 
         // in case we ever want to limit serialization depth...
         // if (arguments.length > 1 && arguments[1] instanceof ESNumber)
@@ -126,7 +126,8 @@ public class XmlObject {
         writer.setDatabaseMode(dbmode);
         writer.write(node);
         writer.flush();
-        return out.toString("UTF-8");
+        writer.close();
+        return out.toString("UTF-8"); //$NON-NLS-1$
     }
 
     /**
@@ -147,23 +148,23 @@ public class XmlObject {
      * @param node the HopObject to use for conversion
      * @return the HopObject
      */
-    public Object read(String file, INode node) throws RuntimeException {
+    public Object read(String file, NodeInterface node) throws RuntimeException {
         if (file == null) {
-            throw new RuntimeException("Missing arguments in Xml.read()");
+            throw new RuntimeException(Messages.getString("XmlObject.4")); //$NON-NLS-1$
         }
 
         if (node == null) {
             // make sure we have a node, even if 2nd arg doesn't exist or is not a node
-            node = new Node(null, null, core.getApplication().getWrappedNodeManager());
+            node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
         }
 
         try {
-            XmlReader reader = new XmlReader(core.app.getWrappedNodeManager());
-            INode result = reader.read(new File(file), node);
+            XmlReader reader = new XmlReader(this.core.app.getWrappedNodeManager());
+            NodeInterface result = reader.read(new File(file), node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load XML parser:" + e);
+            throw new RuntimeException(Messages.getString("XmlObject.5") + e); //$NON-NLS-1$
         } catch (Exception f) {
             throw new RuntimeException(f.toString());
         }
@@ -188,24 +189,24 @@ public class XmlObject {
      * @return ...
      * @throws RuntimeException ...
      */
-    public Object readFromString(String str, INode node)
+    public Object readFromString(String str, NodeInterface node)
                           throws RuntimeException {
         if (str == null) {
-            throw new RuntimeException("Missing arguments in Xml.read()");
+            throw new RuntimeException(Messages.getString("XmlObject.6")); //$NON-NLS-1$
         }
 
         if (node == null) {
             // make sure we have a node, even if 2nd arg doesn't exist or is not a node
-            node = new Node(null, null, core.getApplication().getWrappedNodeManager());
+            node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
         }
 
         try {
-            XmlReader reader = new XmlReader(core.app.getWrappedNodeManager());
-            INode result = reader.read(new StringReader(str), node);
+            XmlReader reader = new XmlReader(this.core.app.getWrappedNodeManager());
+            NodeInterface result = reader.read(new StringReader(str), node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load XML parser:" + e);
+            throw new RuntimeException(Messages.getString("XmlObject.7") + e); //$NON-NLS-1$
         } catch (Exception f) {
             f.printStackTrace();
             throw new RuntimeException(f.toString());
@@ -234,7 +235,7 @@ public class XmlObject {
      */
     public Object get(String url, String conversionRules) {
         if (url == null) {
-            throw new RuntimeException("Xml.get() needs a location as an argument");
+            throw new RuntimeException(Messages.getString("XmlObject.8")); //$NON-NLS-1$
         }
 
         try {
@@ -246,13 +247,13 @@ public class XmlObject {
                 converter = new XmlConverter();
             }
 
-            INode node = new Node(null, null,
-                    core.getApplication().getWrappedNodeManager());
-            INode result = converter.convert(url, node);
+            NodeInterface node = new Node(null, null,
+                    this.core.getApplication().getWrappedNodeManager());
+            NodeInterface result = converter.convert(url, node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load dom-capable xml parser.");
+            throw new RuntimeException(Messages.getString("XmlObject.9")); //$NON-NLS-1$
         }
     }
 
@@ -278,7 +279,7 @@ public class XmlObject {
      */
     public Object getFromString(String str, String conversionRules) {
         if (str == null) {
-            throw new RuntimeException("Xml.getFromString() needs an XML string as parameter");
+            throw new RuntimeException(Messages.getString("XmlObject.10")); //$NON-NLS-1$
         }
 
         try {
@@ -290,12 +291,12 @@ public class XmlObject {
                 converter = new XmlConverter();
             }
 
-            INode node = new Node(null, null, core.getApplication().getWrappedNodeManager());
-            INode result = converter.convertFromString(str, node);
+            NodeInterface node = new Node(null, null, this.core.getApplication().getWrappedNodeManager());
+            NodeInterface result = converter.convertFromString(str, node);
 
-            return core.getNodeWrapper(result);
+            return this.core.getNodeWrapper(result);
         } catch (NoClassDefFoundError e) {
-            throw new RuntimeException("Can't load dom-capable xml parser.");
+            throw new RuntimeException(Messages.getString("XmlObject.11")); //$NON-NLS-1$
         }
     }
 

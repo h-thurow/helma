@@ -22,7 +22,7 @@ import java.io.*;
 public class FileResource extends AbstractResource {
 
     File file;
-    Repository repository;
+    RepositoryInterface repository;
     String name;
     String shortName;
     String baseName;
@@ -31,48 +31,48 @@ public class FileResource extends AbstractResource {
         this(file, null);
     }
 
-    protected FileResource(File file, Repository repository) {
+    protected FileResource(File file, RepositoryInterface repository) {
         this.file = file;
 
         this.repository = repository;
-        name = file.getAbsolutePath();
-        shortName = file.getName();
+        this.name = file.getAbsolutePath();
+        this.shortName = file.getName();
         // base name is short name with extension cut off
-        int lastDot = shortName.lastIndexOf(".");
-        baseName = (lastDot == -1) ? shortName : shortName.substring(0, lastDot);
+        int lastDot = this.shortName.lastIndexOf("."); //$NON-NLS-1$
+        this.baseName = (lastDot == -1) ? this.shortName : this.shortName.substring(0, lastDot);
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getShortName() {
-        return shortName;
+        return this.shortName;
     }
 
     public String getBaseName() {
-        return baseName;
+        return this.baseName;
     }
 
     public InputStream getInputStream() throws IOException {
-        return new FileInputStream(file);
+        return new FileInputStream(this.file);
     }
 
     public URL getUrl() {
         try {
-            return new URL("file:" + file.getAbsolutePath());
+            return new URL("file:" + this.file.getAbsolutePath()); //$NON-NLS-1$
         } catch (MalformedURLException ex) {
             return null;
         }
     }
 
     public long lastModified() {
-        return file.lastModified();
+        return this.file.lastModified();
     }
 
     public String getContent(String encoding) throws IOException {
         InputStream in = getInputStream();
-        int size = (int) file.length();
+        int size = (int) this.file.length();
         byte[] buf = new byte[size];
         int read = 0;
         while (read < size) {
@@ -92,25 +92,28 @@ public class FileResource extends AbstractResource {
     }
 
     public long getLength() {
-        return file.length();
+        return this.file.length();
     }
 
     public boolean exists() {
-        return file.exists();
+        return this.file.exists();
     }
 
-    public Repository getRepository() {
-        return repository;
+    public RepositoryInterface getRepository() {
+        return this.repository;
     }
 
+    @Override
     public int hashCode() {
-        return 17 + name.hashCode();
+        return 17 + this.name.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
-        return obj instanceof FileResource && name.equals(((FileResource)obj).name);
+        return obj instanceof FileResource && this.name.equals(((FileResource)obj).name);
     }
 
+    @Override
     public String toString() {
         return getName();
     }

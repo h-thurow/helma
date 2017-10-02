@@ -1,0 +1,7 @@
+<div class="boxed">
+	<form method="post" action="<% this.href page="save" %>">
+		<h2>Title: <input type="text" name="title" value="" /></h2>
+		<p>Text: <textarea name="text" cols="30" rows="5"></textarea></p>
+		<p><input type="submit" value="add" /></p>
+	</form>
+</div>

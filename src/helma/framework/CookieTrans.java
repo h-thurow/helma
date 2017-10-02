@@ -59,7 +59,7 @@ public final class CookieTrans implements Serializable {
      * @return ...
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -68,7 +68,7 @@ public final class CookieTrans implements Serializable {
      * @return ...
      */
     public String getValue() {
-        return value;
+        return this.value;
     }
 
     /**
@@ -77,7 +77,7 @@ public final class CookieTrans implements Serializable {
      * @return ...
      */
     public int getDays() {
-        return days;
+        return this.days;
     }
 
     /**
@@ -86,7 +86,7 @@ public final class CookieTrans implements Serializable {
      * @return ...
      */
     public String getPath() {
-        return path;
+        return this.path;
     }
 
     /**
@@ -95,7 +95,7 @@ public final class CookieTrans implements Serializable {
      * @return ...
      */
     public String getDomain() {
-        return domain;
+        return this.domain;
     }
 
     /**
@@ -107,24 +107,24 @@ public final class CookieTrans implements Serializable {
      * @return ...
      */
     public Cookie getCookie(String defaultPath, String defaultDomain) {
-        Cookie c = new Cookie(name, value);
+        Cookie c = new Cookie(this.name, this.value);
 
         // NOTE: If cookie version is set to 1, cookie values will be quoted.
         // c.setVersion(1);
 
-        if (days > -1) {
+        if (this.days > -1) {
             // Cookie time to live, days -> seconds
-            c.setMaxAge(days * 60 * 60 * 24);
+            c.setMaxAge(this.days * 60 * 60 * 24);
         }
 
-        if (path != null) {
-            c.setPath(path);
+        if (this.path != null) {
+            c.setPath(this.path);
         } else if (defaultPath != null) {
             c.setPath(defaultPath);
         }
 
-        if (domain != null) {
-            c.setDomain(domain);
+        if (this.domain != null) {
+            c.setDomain(this.domain);
         } else if (defaultDomain != null) {
             c.setDomain(defaultDomain);
         }

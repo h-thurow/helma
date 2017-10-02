@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -17,7 +21,8 @@
 package helma.objectmodel.db;
 
 import helma.objectmodel.DatabaseException;
-import helma.objectmodel.ITransaction;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.TransactionInterface;
 
 import java.sql.Connection;
 import java.sql.Statement;
@@ -49,7 +54,7 @@ public class Transactor {
     private volatile boolean killed;
 
     // Transaction for the embedded database
-    protected ITransaction txn;
+    protected TransactionInterface txn;
 
     // Transactions for SQL data sources
     private Map<DbSource, Connection> sqlConnections;
@@ -66,6 +71,8 @@ public class Transactor {
     // the thread we're associated with
     private Thread thread;
 
+    private ArrayList<Transaction> transactions = new ArrayList<Transaction>();
+
     private static final ThreadLocal txtor = new ThreadLocal();
 
     /**
@@ -77,14 +84,14 @@ public class Transactor {
         this.thread = Thread.currentThread();
         this.nmgr = nmgr;
 
-        dirtyNodes = new LinkedHashMap();
-        cleanNodes = new HashMap();
-        parentNodes = new HashSet();
+        this.dirtyNodes = new LinkedHashMap();
+        this.cleanNodes = new HashMap();
+        this.parentNodes = new HashSet();
 
-        sqlConnections = new HashMap<DbSource, Connection>();
-        testedConnections = new HashMap<DbSource, Long>();
-        active = false;
-        killed = false;
+        this.sqlConnections = new HashMap();
+        this.testedConnections = new HashMap();
+        this.active = false;
+        this.killed = false;
     }
 
     /**
@@ -103,8 +110,8 @@ public class Transactor {
     public static Transactor getInstanceOrFail() throws IllegalStateException {
         Transactor tx = (Transactor) txtor.get();
         if (tx == null)
-            throw new IllegalStateException("Operation requires a Transactor, " +
-                "but current thread does not have one.");
+            throw new IllegalStateException(Messages.getString("Transactor.0") + //$NON-NLS-1$
+                Messages.getString("Transactor.1")); //$NON-NLS-1$
         return tx;
     }
 
@@ -129,9 +136,18 @@ public class Transactor {
      */
     public void visitDirtyNode(Node node) {
         if (node != null) {
-            Key key = node.getKey();
+            KeyInterface key = node.getKey();
 
-            dirtyNodes.put(key, node);
+            if (node.getState() == NodeInterface.DELETED && this.dirtyNodes.containsKey(key)) {
+            	// remove a known deleted node (will be re-added at the end of the list),
+            	// because it might not have been deleted yet when we were last modified
+            	// about it being dirty, which could result in a on commit removal order
+            	// which does not equal the removal order as done in the request's
+            	// application code
+            	this.dirtyNodes.remove(key);
+            }
+
+            this.dirtyNodes.put(key, node);
         }
     }
 
@@ -142,9 +158,9 @@ public class Transactor {
      */
     public void dropDirtyNode(Node node) {
         if (node != null) {
-            Key key = node.getKey();
+            KeyInterface key = node.getKey();
 
-            dirtyNodes.remove(key);
+            this.dirtyNodes.remove(key);
         }
     }
 
@@ -153,8 +169,8 @@ public class Transactor {
      * @param key the key
      * @return the dirty node associated with the key, or null
      */
-    public Node getDirtyNode(Key key) {
-        return (Node) dirtyNodes.get(key);
+    public Node getDirtyNode(KeyInterface key) {
+        return (Node) this.dirtyNodes.get(key);
     }
 
     /**
@@ -164,10 +180,10 @@ public class Transactor {
      */
     public void visitCleanNode(Node node) {
         if (node != null) {
-            Key key = node.getKey();
+            KeyInterface key = node.getKey();
 
-            if (!cleanNodes.containsKey(key)) {
-                cleanNodes.put(key, node);
+            if (!this.cleanNodes.containsKey(key)) {
+                this.cleanNodes.put(key, node);
             }
         }
     }
@@ -178,10 +194,10 @@ public class Transactor {
      * @param key the key to register with
      * @param node the node to register
      */
-    public void visitCleanNode(Key key, Node node) {
+    public void visitCleanNode(KeyInterface key, Node node) {
         if (node != null) {
-            if (!cleanNodes.containsKey(key)) {
-                cleanNodes.put(key, node);
+            if (!this.cleanNodes.containsKey(key)) {
+                this.cleanNodes.put(key, node);
             }
         }
     }
@@ -190,8 +206,8 @@ public class Transactor {
      * Drop a reference to an unmodified Node previously registered with visitCleanNode().
      * @param key the key
      */
-    public void dropCleanNode(Key key) {
-        cleanNodes.remove(key);
+    public void dropCleanNode(KeyInterface key) {
+        this.cleanNodes.remove(key);
     }
 
     /**
@@ -202,7 +218,7 @@ public class Transactor {
      * @return ...
      */
     public Node getCleanNode(Object key) {
-        return (key == null) ? null : (Node) cleanNodes.get(key);
+        return (key == null) ? null : (Node) this.cleanNodes.get(key);
     }
 
     /**
@@ -211,7 +227,7 @@ public class Transactor {
      * @param node ...
      */
     public void visitParentNode(Node node) {
-        parentNodes.add(node);
+        this.parentNodes.add(node);
     }
 
 
@@ -220,7 +236,7 @@ public class Transactor {
      * @return true if currently a transaction is active
      */
     public boolean isActive() {
-        return active;
+        return this.active;
     }
 
     /**
@@ -229,7 +245,7 @@ public class Transactor {
      * @return true if the thread running this transactor is currently alive.
      */
     public boolean isAlive() {
-        return thread != null && thread.isAlive();
+        return this.thread != null && this.thread.isAlive();
     }
 
     /**
@@ -238,9 +254,9 @@ public class Transactor {
      * @param con the connection
      */
     public void registerConnection(DbSource src, Connection con) {
-        sqlConnections.put(src, con);
+        this.sqlConnections.put(src, con);
         // we assume a freshly created connection is ok.
-        testedConnections.put(src, new Long(System.currentTimeMillis()));
+        this.testedConnections.put(src, new Long(System.currentTimeMillis()));
     }
 
     /**
@@ -249,20 +265,16 @@ public class Transactor {
      * @return the connection
      */
     public Connection getConnection(DbSource src) {
-        Connection con = sqlConnections.get(src);
-        Long tested = testedConnections.get(src);
+        Connection con = (Connection) this.sqlConnections.get(src);
+        Long tested = (Long) this.testedConnections.get(src);
         long now = System.currentTimeMillis();
         if (con != null && (tested == null || now - tested.longValue() > 60000)) {
             // Check if the connection is still alive by executing a simple statement.
             try {
                 Statement stmt = con.createStatement();
-                if (src.isOracle()) {
-                    stmt.execute("SELECT 1 FROM DUAL");
-                } else {
-                    stmt.execute("SELECT 1");
-                }
+                stmt.execute("SELECT 1"); //$NON-NLS-1$
                 stmt.close();
-                testedConnections.put(src, new Long(now));
+                this.testedConnections.put(src, new Long(now));
             } catch (SQLException sx) {
                 try {
                     con.close();
@@ -282,19 +294,19 @@ public class Transactor {
      * @throws Exception ...
      */
     public synchronized void begin(String name) throws Exception {
-        if (killed) {
-            throw new DatabaseException("Transaction started on killed thread");
-        } else if (active) {
+        if (this.killed) {
+            throw new DatabaseException(Messages.getString("Transactor.2")); //$NON-NLS-1$
+        } else if (this.active) {
             abort();
         }
 
-        dirtyNodes.clear();
-        cleanNodes.clear();
-        parentNodes.clear();
-        txn = nmgr.db.beginTransaction();
-        active = true;
-        tstart = System.currentTimeMillis();
-        tname = name;
+        this.dirtyNodes.clear();
+        this.cleanNodes.clear();
+        this.parentNodes.clear();
+        this.txn = this.nmgr.db.beginTransaction();
+        this.active = true;
+        this.tstart = System.currentTimeMillis();
+        this.tname = name;
     }
 
     /**
@@ -303,35 +315,104 @@ public class Transactor {
      * @throws Exception ...
      */
     public synchronized void commit() throws Exception {
-        if (killed) {
-            throw new DatabaseException("commit() called on killed transactor thread");
-        } else if (!active) {
-            return;
-        }
-        int inserted = 0;
-        int updated = 0;
-        int deleted = 0;
+    	execute();
 
-        ArrayList insertedNodes = null;
-        ArrayList updatedNodes = null;
-        ArrayList deletedNodes = null;
-        ArrayList modifiedParentNodes = null;
-        // if nodemanager has listeners collect dirty nodes
-        boolean hasListeners = nmgr.hasNodeChangeListeners();
-
-        if (hasListeners) {
-            insertedNodes = new ArrayList();
-            updatedNodes = new ArrayList();
-            deletedNodes = new ArrayList();
-            modifiedParentNodes = new ArrayList();
+    	Iterator connections = this.sqlConnections.values().iterator();
+        while (connections.hasNext()) {
+        	Connection connection = (Connection) connections.next();
+        	if (!connection.getAutoCommit()) {
+        		connection.commit();
+        	}
         }
 
-        if (!dirtyNodes.isEmpty()) {
-            Object[] dirty = dirtyNodes.values().toArray();
+        int numberOfInsertedNodes = 0;
+        int numberOfModifiedNodes = 0;
+        int numberOfDeletedNodes = 0;
+
+        boolean hasListeners = this.nmgr.hasNodeChangeListeners();
+
+        Iterator<Transaction> iterator = this.transactions.iterator();
+        while (iterator.hasNext()) {
+        	Transaction transaction = iterator.next();
+
+        	if (hasListeners) {
+                this.nmgr.fireNodeChangeEvent(transaction.getInsertedNodes(),
+                	transaction.getModifiedNodes(),
+                	transaction.getDeletedNodes(),
+                	transaction.getUpdatedParentNodes());
+            }
+
+        	Log eventLog = this.nmgr.app.getEventLog();
+
+        	if (eventLog.isDebugEnabled()) {
+    	    	Iterator<Node> insertedNodes = transaction.getInsertedNodes().iterator();
+    	    	while (insertedNodes.hasNext()) {
+    	    		Node node = insertedNodes.next();
+    	            eventLog.debug(Messages.getString("Transactor.3") + node.getPrototype() + Messages.getString("Transactor.4") + node.getID()); //$NON-NLS-1$ //$NON-NLS-2$
+        		}
+
+    	    	Iterator<Node> modifiedNodes = transaction.getModifiedNodes().iterator();
+    	    	while (modifiedNodes.hasNext()) {
+    	    		Node node = modifiedNodes.next();
+                    eventLog.debug(Messages.getString("Transactor.5") + node.getPrototype() + Messages.getString("Transactor.6") + node.getID());	             //$NON-NLS-1$ //$NON-NLS-2$
+        		}
+
+    	    	Iterator<Node> deletedNodes = transaction.getDeletedNodes().iterator();
+    	    	while (deletedNodes.hasNext()) {
+    	    		Node node = deletedNodes.next();
+                    eventLog.debug(Messages.getString("Transactor.7") + node.getPrototype() + Messages.getString("Transactor.8") + node.getID());	             //$NON-NLS-1$ //$NON-NLS-2$
+        		}
+        	}
+
+        	numberOfInsertedNodes += transaction.getNumberOfInsertedNodes();
+        	numberOfModifiedNodes += transaction.getNumberOfModifiedNodes();
+        	numberOfDeletedNodes += transaction.getNumberOfDeletedNodes();
+        }
+
+        StringBuffer msg = new StringBuffer(this.tname).append(Messages.getString("Transactor.9")) //$NON-NLS-1$
+			.append(System.currentTimeMillis() - this.tstart).append(Messages.getString("Transactor.10")); //$NON-NLS-1$
+        if (numberOfInsertedNodes +
+        	numberOfModifiedNodes +
+        	numberOfDeletedNodes > 0) {
+        	msg.append(" [+") //$NON-NLS-1$
+        		.append(numberOfInsertedNodes).append(", ~") //$NON-NLS-1$
+        		.append(numberOfModifiedNodes).append(", -") //$NON-NLS-1$
+        		.append(numberOfDeletedNodes).append("]"); //$NON-NLS-1$
+        }
+        this.nmgr.app.logAccess(msg.toString());
+
+        this.transactions.clear();
+
+    	if (this.active) {
+	        this.active = false;
+	        this.nmgr.db.commitTransaction(this.txn);
+	        this.txn = null;
+	    }
+
+	    // unset transaction name
+	    this.tname = null;
+    }
+
+    /**
+     * Execute the current transaction, persisting all changes to the database,
+     * but not yet commiting the changes.
+     *
+     * @throws Exception
+     */
+    public synchronized Transaction execute() throws Exception {
+        if (this.killed) {
+            throw new DatabaseException(Messages.getString("Transactor.11")); //$NON-NLS-1$
+        } else if (!this.active) {
+            return new Transaction();
+        }
+
+        Transaction transaction = new Transaction();
+
+        if (!this.dirtyNodes.isEmpty()) {
+            Object[] dirty = this.dirtyNodes.values().toArray();
 
             // the set to collect DbMappings to be marked as changed
             HashSet dirtyDbMappings = new HashSet();
-            Log eventLog = nmgr.app.getEventLog();
 
             for (int i = 0; i < dirty.length; i++) {
                 Node node = (Node) dirty[i];
@@ -339,65 +420,40 @@ public class Transactor {
                 // update nodes in db
                 int nstate = node.getState();
 
-                if (nstate == Node.NEW) {
-                    nmgr.insertNode(nmgr.db, txn, node);
+                if (nstate == NodeInterface.NEW) {
+                    this.nmgr.insertNode(this.nmgr.db, this.txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
-                    node.setState(Node.CLEAN);
+                    node.setState(NodeInterface.CLEAN);
 
                     // register node with nodemanager cache
-                    nmgr.registerNode(node);
+                    this.nmgr.registerNode(node);
 
-                    if (hasListeners) {
-                        insertedNodes.add(node);
-                    }
-
-                    inserted++;
-                    if (eventLog.isDebugEnabled()) {
-                        eventLog.debug("inserted node: " + node.getPrototype() + "/" +
-                                node.getID());
-                    }
-                } else if (nstate == Node.MODIFIED) {
+                    transaction.addInsertedNode(node);
+                } else if (nstate == NodeInterface.MODIFIED) {
                     // only mark DbMapping as dirty if updateNode returns true
-                    if (nmgr.updateNode(nmgr.db, txn, node)) {
+                    if (this.nmgr.updateNode(this.nmgr.db, this.txn, node)) {
                         dirtyDbMappings.add(node.getDbMapping());
                     }
-                    node.setState(Node.CLEAN);
+                    node.setState(NodeInterface.CLEAN);
 
                     // update node with nodemanager cache
-                    nmgr.registerNode(node);
+                    this.nmgr.registerNode(node);
 
-                    if (hasListeners) {
-                        updatedNodes.add(node);
-                    }
-
-                    updated++;
-                    if (eventLog.isDebugEnabled()) {
-                        eventLog.debug("updated node: " + node.getPrototype() + "/" +
-                                node.getID());
-                    }
-                } else if (nstate == Node.DELETED) {
-                    nmgr.deleteNode(nmgr.db, txn, node);
+                    transaction.addModifiedNode(node);
+                } else if (nstate == NodeInterface.DELETED) {
+                    this.nmgr.deleteNode(this.nmgr.db, this.txn, node);
                     dirtyDbMappings.add(node.getDbMapping());
 
                     // remove node from nodemanager cache
-                    nmgr.evictNode(node);
+                    this.nmgr.evictNode(node);
 
-                    if (hasListeners) {
-                        deletedNodes.add(node);
-                    }
-
-                    deleted++;
-                    if (eventLog.isDebugEnabled()) {
-                        eventLog.debug("removed node: " + node.getPrototype() + "/" +
-                                node.getID());
-                    }
+                    transaction.addDeletedNode(node);
                 }
 
                 node.clearWriteLock();
             }
 
             // set last data change times in db-mappings
-            // long now = System.currentTimeMillis();
             for (Iterator i = dirtyDbMappings.iterator(); i.hasNext(); ) {
                 DbMapping dbm = (DbMapping) i.next();
                 if (dbm != null) {
@@ -406,90 +462,83 @@ public class Transactor {
             }
         }
 
-        long now = System.currentTimeMillis();
-
-        if (!parentNodes.isEmpty()) {
+        if (!this.parentNodes.isEmpty()) {
             // set last subnode change times in parent nodes
-            for (Iterator i = parentNodes.iterator(); i.hasNext(); ) {
+            for (Iterator i = this.parentNodes.iterator(); i.hasNext(); ) {
                 Node node = (Node) i.next();
                 node.markSubnodesChanged();
-                if (hasListeners) {
-                    modifiedParentNodes.add(node);
-                }
-            }
-        }
 
-        if (hasListeners) {
-            nmgr.fireNodeChangeEvent(insertedNodes, updatedNodes,
-                                     deletedNodes, modifiedParentNodes);
+                transaction.addUpdatedParentNode(node);
+            }
         }
 
         // clear the node collections
         recycle();
 
-        if (active) {
-            active = false;
-            nmgr.db.commitTransaction(txn);
-            txn = null;
-        }
-
-        StringBuffer msg = new StringBuffer(tname).append(" done in ")
-                .append(now - tstart).append(" millis");
-        if(inserted + updated + deleted > 0) {
-            msg.append(" [+")
-                    .append(inserted).append(", ~")
-                    .append(updated).append(", -")
-                    .append(deleted).append("]");
-        }
-        nmgr.app.logAccess(msg.toString());
-
-        // unset transaction name
-        tname = null;
+        this.transactions.add(transaction);
+        return transaction;
     }
 
     /**
      * Abort the current transaction, rolling back all changes made.
      */
     public synchronized void abort() {
-        Object[] dirty = dirtyNodes.values().toArray();
+    	Iterator<Transaction> iterator = this.transactions.iterator();
+    	while (iterator.hasNext()) {
+    		Transaction transaction = iterator.next();
 
-        // evict dirty nodes from cache
-        for (int i = 0; i < dirty.length; i++) {
-            Node node = (Node) dirty[i];
+    		// evict dirty nodes from cache
+    		Iterator<Node> dirtyNodes = transaction.getDirtyNodes().iterator();
+    		while (dirtyNodes.hasNext()) {
+    			Node node = dirtyNodes.next();
 
-            // Declare node as invalid, so it won't be used by other threads
-            // that want to write on it and remove it from cache
-            nmgr.evictNode(node);
-            node.clearWriteLock();
-        }
+    			// Declare node as invalid, so it won't be used by other threads
+                // that want to write on it and remove it from cache
+    			this.nmgr.evictNode(node);
+                node.clearWriteLock();
+    		}
 
-        long now = System.currentTimeMillis();
+            // set last subnode change times in parent nodes
+            Iterator<Node> updatedParentNodes = transaction.getUpdatedParentNodes().iterator();
+            while (updatedParentNodes.hasNext()) {
+            	Node node = updatedParentNodes.next();
+                node.markSubnodesChanged();
+            }
+    	}
 
-        // set last subnode change times in parent nodes
-        for (Iterator i = parentNodes.iterator(); i.hasNext(); ) {
-            Node node = (Node) i.next();
-            node.markSubnodesChanged();
-        }
-
-        // clear the node collections
+    	// clear the node collections
         recycle();
+        this.transactions.clear();
+
+        Iterator connections = this.sqlConnections.values().iterator();
+        while (connections.hasNext()) {
+        	Connection connection = (Connection) connections.next();
+        	try {
+				if (!connection.getAutoCommit()) {
+					connection.rollback();
+				}
+			} catch (SQLException e) {
+				this.nmgr.app.logError(Messages.getString("Transactor.12"), e); //$NON-NLS-1$
+			}
+        }
+
         // close any JDBC connections associated with this transactor thread
         closeConnections();
 
-        if (active) {
-            active = false;
+        if (this.active) {
+            this.active = false;
 
-            if (txn != null) {
-                nmgr.db.abortTransaction(txn);
-                txn = null;
+            if (this.txn != null) {
+                this.nmgr.db.abortTransaction(this.txn);
+                this.txn = null;
             }
 
-            nmgr.app.logAccess(tname + " aborted after " +
-                               (System.currentTimeMillis() - tstart) + " millis");
+            this.nmgr.app.logAccess(this.tname + Messages.getString("Transactor.13") + //$NON-NLS-1$
+                               (System.currentTimeMillis() - this.tstart) + Messages.getString("Transactor.14")); //$NON-NLS-1$
         }
 
         // unset transaction name
-        tname = null;
+        this.tname = null;
     }
 
     /**
@@ -498,28 +547,28 @@ public class Transactor {
     @SuppressWarnings("deprecation")
     public synchronized void kill() {
 
-        killed = true;
-        thread.interrupt();
+        this.killed = true;
+        this.thread.interrupt();
 
         // Interrupt the thread if it has not noticed the flag (e.g. because it is busy
         // reading from a network socket).
-        if (thread.isAlive()) {
-            thread.interrupt();
+        if (this.thread.isAlive()) {
+            this.thread.interrupt();
             try {
-                thread.join(1000);
+                this.thread.join(1000);
             } catch (InterruptedException ir) {
                 // interrupted by other thread
             }
         }
 
-        if (thread.isAlive() && "true".equals(nmgr.app.getProperty("requestTimeoutStop"))) {
+        if (this.thread.isAlive() && "true".equals(this.nmgr.app.getProperty("requestTimeoutStop"))) { //$NON-NLS-1$ //$NON-NLS-2$
             // still running - check if we ought to stop() it
             try {
                 Thread.sleep(2000);
-                if (thread.isAlive()) {
+                if (this.thread.isAlive()) {
                     // thread is still running, pull emergency break
-                    nmgr.app.logEvent("Stopping Thread for Transactor " + this);
-                    thread.stop();
+                    this.nmgr.app.logEvent(Messages.getString("Transactor.15") + this); //$NON-NLS-1$
+                    this.thread.stop();
                 }
             } catch (InterruptedException ir) {
                 // interrupted by other thread
@@ -531,20 +580,20 @@ public class Transactor {
      * Closes all open JDBC connections
      */
     public void closeConnections() {
-        if (sqlConnections != null) {
-            for (Iterator i = sqlConnections.values().iterator(); i.hasNext();) {
+        if (this.sqlConnections != null) {
+            for (Iterator i = this.sqlConnections.values().iterator(); i.hasNext();) {
                 try {
                     Connection con = (Connection) i.next();
 
                     con.close();
-                    nmgr.app.logEvent("Closing DB connection: " + con);
+                    this.nmgr.app.logEvent(Messages.getString("Transactor.16") + con); //$NON-NLS-1$
                 } catch (Exception ignore) {
                     // exception closing db connection, ignore
                 }
             }
 
-            sqlConnections.clear();
-            testedConnections.clear();
+            this.sqlConnections.clear();
+            this.testedConnections.clear();
         }
     }
 
@@ -555,9 +604,9 @@ public class Transactor {
      */
     private synchronized void recycle() {
         // clear the node collections to ease garbage collection
-        dirtyNodes.clear();
-        cleanNodes.clear();
-        parentNodes.clear();
+        this.dirtyNodes.clear();
+        this.cleanNodes.clear();
+        this.parentNodes.clear();
     }
 
     /**
@@ -565,7 +614,7 @@ public class Transactor {
      * path for the underlying HTTP request.
      */
     public String getTransactionName() {
-        return tname;
+        return this.tname;
     }
 
     /**
@@ -573,7 +622,8 @@ public class Transactor {
      *
      * @return ...
      */
+    @Override
     public String toString() {
-        return "Transactor[" + tname + "]";
+        return "Transactor[" + this.tname + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

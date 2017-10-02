@@ -32,7 +32,7 @@ final class SkinKey {
      * make a key for a persistent Object, describing its datasource and id.
      */
     public SkinKey(String type, String id) {
-        this.type = type == null ? "" : type;
+        this.type = type == null ? "" : type; //$NON-NLS-1$
         this.id = id;
     }
 
@@ -43,6 +43,7 @@ final class SkinKey {
      *
      * @return true if both keys are identical
      */
+    @Override
     public boolean equals(Object what) {
 
         if (!(what instanceof SkinKey)) {
@@ -51,7 +52,7 @@ final class SkinKey {
 
         SkinKey k = (SkinKey) what;
 
-        return (type.equals(k.type)) && (id.equals(k.id));
+        return (this.type.equals(k.type)) && (this.id.equals(k.id));
     }
 
     /**
@@ -59,13 +60,14 @@ final class SkinKey {
      *
      * @return this key's hash code
      */
+    @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = (17 + (37 * type.hashCode()) +
-                        (+37 * id.hashCode()));
+        if (this.hashcode == 0) {
+            this.hashcode = (17 + (37 * this.type.hashCode()) +
+                        (+37 * this.id.hashCode()));
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
 }

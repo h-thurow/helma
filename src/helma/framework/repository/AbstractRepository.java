@@ -26,18 +26,18 @@ import java.io.IOException;
  * Provides common methods and fields for the default implementations of the
  * repository interface
  */
-public abstract class AbstractRepository implements Repository {
+public abstract class AbstractRepository implements RepositoryInterface {
 
 
     /**
      * Parent repository this repository is contained in.
      */
-    Repository parent;
+    RepositoryInterface parent;
 
     /**
      * Holds direct child repositories
      */
-    Repository[] repositories;
+    RepositoryInterface[] repositories;
 
     /**
      * Holds direct resources
@@ -57,7 +57,7 @@ public abstract class AbstractRepository implements Repository {
     /*
      * empty repository array for convenience
      */
-    final static Repository[] emptyRepositories = new Repository[0]; 
+    final static RepositoryInterface[] emptyRepositories = new RepositoryInterface[0]; 
 
     /**
      * Called to check the repository's content.
@@ -67,13 +67,13 @@ public abstract class AbstractRepository implements Repository {
     /**
      * Called to create a child resource for this repository
      */
-    protected abstract Resource createResource(String name);
+    protected abstract ResourceInterface createResource(String name);
 
     /**
      * Get the full name that identifies this repository globally
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -81,7 +81,7 @@ public abstract class AbstractRepository implements Repository {
      * parent repository
      */
     public String getShortName() {
-        return shortName;
+        return this.shortName;
     }
 
     /**
@@ -89,27 +89,26 @@ public abstract class AbstractRepository implements Repository {
      *
      *@see {isScriptRoot()}
      */
-    public Repository getRootRepository() {
-        if (parent == null || isScriptRoot()) {
+    public RepositoryInterface getRootRepository() {
+        if (this.parent == null || isScriptRoot()) {
             return this;
-        } else {
-            return parent.getRootRepository();
         }
+        return this.parent.getRootRepository();
     }
 
     /**
      * Get a resource contained in this repository identified by the given local name.
      * If the name can't be resolved to a resource, a resource object is returned
-     * for which {@link Resource exists()} returns <code>false<code>.
+     * for which {@link ResourceInterface exists()} returns <code>false<code>.
      */
-    public synchronized Resource getResource(String name) {
+    public synchronized ResourceInterface getResource(String name) {
         update();
 
-        Resource res = (Resource) resources.get(name);
+        ResourceInterface res = (ResourceInterface) this.resources.get(name);
         // if resource does not exist, create it
         if (res == null) {
             res = createResource(name);
-            resources.put(name, res);
+            this.resources.put(name, res);
         }
         return res;
     }
@@ -120,23 +119,23 @@ public abstract class AbstractRepository implements Repository {
     public synchronized Iterator getResources() {
         update();
 
-        return resources.values().iterator();
+        return this.resources.values().iterator();
     }
 
     /**
      * Get an iterator over the sub-repositories contained in this repository.
      */
-    public synchronized Repository[] getRepositories() {
+    public synchronized RepositoryInterface[] getRepositories() {
         update();
 
-        return repositories;
+        return this.repositories;
     }
 
     /**
      * Get this repository's parent repository.
      */
-    public Repository getParentRepository() {
-        return parent;
+    public RepositoryInterface getParentRepository() {
+        return this.parent;
     }
 
     /**
@@ -147,10 +146,10 @@ public abstract class AbstractRepository implements Repository {
         update();
 
         ArrayList allResources = new ArrayList();
-        allResources.addAll(resources.values());
+        allResources.addAll(this.resources.values());
 
-        for (int i = 0; i < repositories.length; i++) {
-            allResources.addAll(repositories[i].getAllResources());
+        for (int i = 0; i < this.repositories.length; i++) {
+            allResources.addAll(this.repositories[i].getAllResources());
         }
 
         return allResources;
@@ -160,6 +159,7 @@ public abstract class AbstractRepository implements Repository {
      * Returns the repositories full name as string representation.
      * @see {getName()}
      */
+    @Override
     public String toString() {
         return getName();
     }

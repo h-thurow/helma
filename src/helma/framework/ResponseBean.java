@@ -50,7 +50,7 @@ public class ResponseBean implements Serializable {
      * @param obj the object to write to the response buffer 
      */
     public void encode(Object obj) {
-        res.encode(obj);
+        this.res.encode(obj);
     }
 
     /**
@@ -60,7 +60,7 @@ public class ResponseBean implements Serializable {
      * @param obj the object to write to the response buffer 
      */
     public void encodeXml(Object obj) {
-        res.encodeXml(obj);
+        this.res.encodeXml(obj);
     }
 
     /**
@@ -70,7 +70,7 @@ public class ResponseBean implements Serializable {
      * @param obj the object to write to the response buffer
      */
     public void encodeForm(Object obj) {
-        res.encodeForm(obj);
+        this.res.encodeForm(obj);
     }
 
     /**
@@ -80,7 +80,7 @@ public class ResponseBean implements Serializable {
      * @param obj the object to write to the response buffer 
      */
     public void format(Object obj) {
-        res.format(obj);
+        this.res.format(obj);
     }
 
     /**
@@ -90,7 +90,7 @@ public class ResponseBean implements Serializable {
      * @throws RedirectException to immediately terminate the request
      */
     public void redirect(String url) throws RedirectException {
-        res.redirect(url);
+        this.res.redirect(url);
     }
 
     /**
@@ -100,7 +100,7 @@ public class ResponseBean implements Serializable {
      * @throws RedirectException to immediately terminate the request
      */
     public void forward(String url) throws RedirectException {
-        res.forward(url);
+        this.res.forward(url);
     }
 
     /**
@@ -109,21 +109,21 @@ public class ResponseBean implements Serializable {
      * @throws RedirectException to immediately terminate the request
      */
     public void stop() throws RedirectException {
-        res.redirect(null);
+        this.res.redirect(null);
     }
 
     /**
      * Reset the response object, clearing all content previously written to it
      */
     public void reset() {
-        res.reset();
+        this.res.reset();
     }
 
     /**
      * Reset the response buffer, clearing all content previously written to it
      */
     public void resetBuffer() {
-        res.resetBuffer();
+        this.res.resetBuffer();
     }
 
     /**
@@ -132,7 +132,7 @@ public class ResponseBean implements Serializable {
      * @return the servlet response
      */
     public HttpServletResponse getServletResponse() {
-        return res.getServletResponse();
+        return this.res.getServletResponse();
     }
 
     /**
@@ -143,7 +143,7 @@ public class ResponseBean implements Serializable {
      * @param value the cookie value
      */
     public void setCookie(String key, String value) {
-        res.setCookie(key, value, -1, null, null);
+        this.res.setCookie(key, value, -1, null, null);
     }
 
     /**
@@ -156,7 +156,7 @@ public class ResponseBean implements Serializable {
      * @param days number of days the cookie should be stored
      */
     public void setCookie(String key, String value, int days) {
-        res.setCookie(key, value, days, null, null);
+        this.res.setCookie(key, value, days, null, null);
     }
 
     /**
@@ -171,7 +171,7 @@ public class ResponseBean implements Serializable {
      * @param path the URL path to apply the cookie to
      */
     public void setCookie(String key, String value, int days, String path) {
-        res.setCookie(key, value, days, path, null);
+        this.res.setCookie(key, value, days, path, null);
     }
 
     /**
@@ -187,7 +187,7 @@ public class ResponseBean implements Serializable {
      * @param domain domain
      */
     public void setCookie(String key, String value, int days, String path, String domain) {
-        res.setCookie(key, value, days, path, domain);
+        this.res.setCookie(key, value, days, path, domain);
     }
     
     /**
@@ -197,7 +197,7 @@ public class ResponseBean implements Serializable {
      * @param key the name of the cookie to be discarded
      */
     public void unsetCookie(String key) {
-        res.setCookie(key, "", 0, null, null);
+        this.res.setCookie(key, "", 0, null, null); //$NON-NLS-1$
     }
 
     /**
@@ -206,7 +206,7 @@ public class ResponseBean implements Serializable {
      * @param str the string to write to the response buffer
      */
     public void write(String str) {
-        res.write(str);
+        this.res.write(str);
     }
 
     /**
@@ -215,14 +215,14 @@ public class ResponseBean implements Serializable {
      * @param str the string to write to the response buffer
      */
     public void writeln(String str) {
-        res.writeln(str);
+        this.res.writeln(str);
     }
 
     /**
      * Write a platform dependent newline sequence to response buffer.
      */
     public void writeln() {
-        res.writeln();
+        this.res.writeln();
     }
 
     /**
@@ -231,7 +231,7 @@ public class ResponseBean implements Serializable {
      * @param bytes the string to write to the response buffer
      */
     public void writeBinary(byte[] bytes) {
-        res.writeBinary(bytes);
+        this.res.writeBinary(bytes);
     }
 
     /**
@@ -240,7 +240,7 @@ public class ResponseBean implements Serializable {
      * @param message the message
      */
     public void debug(String message) {
-        res.debug(message);
+        this.res.debug(message);
     }
 
     /**
@@ -248,8 +248,9 @@ public class ResponseBean implements Serializable {
      *
      * @return string representation
      */
+    @Override
     public String toString() {
-        return "[Response]";
+        return "[Response]"; //$NON-NLS-1$
     }
 
     // property-related methods
@@ -260,7 +261,7 @@ public class ResponseBean implements Serializable {
      * @return true if the response may be cached by the HTTP client, false otherwise
      */
     public boolean getCache() {
-        return res.isCacheable();
+        return this.res.isCacheable();
     }
 
     /**
@@ -269,7 +270,7 @@ public class ResponseBean implements Serializable {
      * @param cache true if the response may be cached by the HTTP client, false otherwise
      */
     public void setCache(boolean cache) {
-        res.setCacheable(cache);
+        this.res.setCacheable(cache);
     }
 
     /**
@@ -278,7 +279,7 @@ public class ResponseBean implements Serializable {
      * @return The charset name
      */
     public String getCharset() {
-        return res.getCharset();
+        return this.res.getCharset();
     }
 
     /**
@@ -287,7 +288,7 @@ public class ResponseBean implements Serializable {
      * @param charset The charset name
      */
     public void setCharset(String charset) {
-        res.setCharset(charset);
+        this.res.setCharset(charset);
     }
 
     /**
@@ -296,7 +297,7 @@ public class ResponseBean implements Serializable {
      * @return the content type
      */
     public String getContentType() {
-        return res.getContentType();
+        return this.res.getContentType();
     }
 
     /**
@@ -305,7 +306,7 @@ public class ResponseBean implements Serializable {
      * @param contentType The charset name
      */
     public void setContentType(String contentType) {
-        res.setContentType(contentType);
+        this.res.setContentType(contentType);
     }
 
     /**
@@ -314,7 +315,7 @@ public class ResponseBean implements Serializable {
      * @param value the header value
      */
     public void addHeader(String name, String value) {
-        res.addHeader(name, value);
+        this.res.addHeader(name, value);
     }
 
     /**
@@ -323,7 +324,7 @@ public class ResponseBean implements Serializable {
      * @param value the header value
      */
     public void addDateHeader(String name, Date value) {
-        res.addDateHeader(name, value);
+        this.res.addDateHeader(name, value);
     }
 
     /**
@@ -332,7 +333,7 @@ public class ResponseBean implements Serializable {
      * @param value the header value
      */
     public void setHeader(String name, String value) {
-        res.setHeader(name, value);
+        this.res.setHeader(name, value);
     }
 
     /**
@@ -341,7 +342,7 @@ public class ResponseBean implements Serializable {
      * @param value the header value
      */
     public void setDateHeader(String name, Date value) {
-        res.setDateHeader(name, value);
+        this.res.setDateHeader(name, value);
     }
 
 
@@ -351,7 +352,7 @@ public class ResponseBean implements Serializable {
      * @return the data object
      */
     public Map getData() {
-        return res.getResponseData();
+        return this.res.getResponseData();
     }
 
     /**
@@ -360,7 +361,7 @@ public class ResponseBean implements Serializable {
      * @return the macro handlers map
      */
     public Map getHandlers() {
-        return res.getMacroHandlers();
+        return this.res.getMacroHandlers();
     }
     
     /**
@@ -369,7 +370,7 @@ public class ResponseBean implements Serializable {
      * @return the meta map
      */
     public Map getMeta() {
-        return res.getMetaData();
+        return this.res.getMetaData();
     }
 
     /**
@@ -378,7 +379,7 @@ public class ResponseBean implements Serializable {
      * @return the error message
      */
     public String getError() {
-        return res.getErrorMessage();
+        return this.res.getErrorMessage();
     }
 
     /**
@@ -386,7 +387,7 @@ public class ResponseBean implements Serializable {
      * @return the uncaught exception
      */
     public Throwable getException() {
-        return res.getError();
+        return this.res.getError();
     }
 
     /**
@@ -394,7 +395,7 @@ public class ResponseBean implements Serializable {
      * @return the script stack trace of any uncaught exception or null.
      */
     public String getScriptStack() {
-        Throwable t = res.getError();
+        Throwable t = this.res.getError();
         if (t instanceof ScriptingException)
             return ((ScriptingException) t).getScriptStackTrace();
         return null;
@@ -405,7 +406,7 @@ public class ResponseBean implements Serializable {
      * @return the java stack trace of an uncaught exception or null.
      */
     public String getJavaStack() {
-        Throwable t = res.getError();
+        Throwable t = this.res.getError();
         if (t == null)
             return null;
         else if (t instanceof ScriptingException)
@@ -421,7 +422,7 @@ public class ResponseBean implements Serializable {
      * @return the message
      */
     public String getMessage() {
-        return res.getMessage();
+        return this.res.getMessage();
     }
 
     /**
@@ -430,7 +431,7 @@ public class ResponseBean implements Serializable {
      * @param message the message property
      */
     public void setMessage(String message) {
-        res.setMessage(message);
+        this.res.setMessage(message);
     }
 
     /**
@@ -439,7 +440,7 @@ public class ResponseBean implements Serializable {
      * @return the HTTP authentication realm
      */
     public String getRealm() {
-        return res.getRealm();
+        return this.res.getRealm();
     }
 
     /**
@@ -448,7 +449,7 @@ public class ResponseBean implements Serializable {
      * @param realm the HTTP authentication realm
      */
     public void setRealm(String realm) {
-        res.setRealm(realm);
+        this.res.setRealm(realm);
     }
 
     /**
@@ -457,7 +458,7 @@ public class ResponseBean implements Serializable {
      * @param arr an array containing files or nodes containing skins
      */
     public void setSkinpath(Object[] arr) {
-        res.setSkinpath(arr);
+        this.res.setSkinpath(arr);
     }
 
     /**
@@ -466,7 +467,7 @@ public class ResponseBean implements Serializable {
      * @return The array of files or nodes used to search for skins
      */
     public Object[] getSkinpath() {
-        return res.getSkinpath();
+        return this.res.getSkinpath();
     }
 
     /**
@@ -475,7 +476,7 @@ public class ResponseBean implements Serializable {
      * @return the HTTP status code
      */
     public int getStatus() {
-        return res.getStatus();
+        return this.res.getStatus();
     }
 
     /**
@@ -484,7 +485,7 @@ public class ResponseBean implements Serializable {
      * @param status the HTTP status code
      */
     public void setStatus(int status) {
-        res.setStatus(status);
+        this.res.setStatus(status);
     }
 
     /**
@@ -493,13 +494,12 @@ public class ResponseBean implements Serializable {
      * @return the last modified date
      */
     public Date getLastModified() {
-        long modified = res.getLastModified();
+        long modified = this.res.getLastModified();
 
         if (modified > -1) {
             return new Date(modified);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -509,9 +509,9 @@ public class ResponseBean implements Serializable {
      */
     public void setLastModified(Date date) {
         if (date == null) {
-            res.setLastModified(-1);
+            this.res.setLastModified(-1);
         } else {
-            res.setLastModified(date.getTime());
+            this.res.setLastModified(date.getTime());
         }
     }
 
@@ -521,7 +521,7 @@ public class ResponseBean implements Serializable {
      * @return the HTTP etag
      */
     public String getETag() {
-        return res.getETag();
+        return this.res.getETag();
     }
 
     /**
@@ -530,7 +530,7 @@ public class ResponseBean implements Serializable {
      * @param etag the HTTP ETag
      */
     public void setETag(String etag) {
-        res.setETag(etag);
+        this.res.setETag(etag);
     }
 
     /**
@@ -540,14 +540,14 @@ public class ResponseBean implements Serializable {
      * @param what a string item this response depends on
      */
     public void dependsOn(String what) {
-        res.dependsOn(what);
+        this.res.dependsOn(what);
     }
 
     /**
      * Digest this response's dependencies to conditionally create a HTTP not-modified response
      */
     public void digest() {
-        res.digestDependencies();
+        this.res.digestDependencies();
     }
 
     /**
@@ -555,7 +555,7 @@ public class ResponseBean implements Serializable {
      * writes will be redirected to this buffer.
      */
     public void push() {
-        res.pushBuffer(null);
+        this.res.pushBuffer(null);
     }
 
     /**
@@ -565,7 +565,7 @@ public class ResponseBean implements Serializable {
      * @return ...
      */
     public String pop() {
-        return res.popString();
+        return this.res.popString();
     }
 
     /**
@@ -574,7 +574,7 @@ public class ResponseBean implements Serializable {
      */
     @Deprecated
     public void pushStringBuffer() {
-        res.pushBuffer(null);
+        this.res.pushBuffer(null);
     }
 
     /**
@@ -584,7 +584,7 @@ public class ResponseBean implements Serializable {
      */
     @Deprecated
     public String popStringBuffer() {
-        return res.popString();
+        return this.res.popString();
     }
 
     /**
@@ -594,7 +594,7 @@ public class ResponseBean implements Serializable {
      * @return the new stringBuffer
      */
     public StringBuffer pushBuffer(StringBuffer buffer) {
-        return res.pushBuffer(buffer);
+        return this.res.pushBuffer(buffer);
     }
 
     /**
@@ -603,7 +603,7 @@ public class ResponseBean implements Serializable {
      * @return the new stringBuffer
      */
     public StringBuffer pushBuffer() {
-        return res.pushBuffer(null);
+        return this.res.pushBuffer(null);
     }
 
    /**
@@ -611,7 +611,7 @@ public class ResponseBean implements Serializable {
     * @return the stringBuffer
     */
    public StringBuffer popBuffer() {
-        return res.popBuffer();
+        return this.res.popBuffer();
     }
 
    /**
@@ -620,7 +620,7 @@ public class ResponseBean implements Serializable {
     * @return the response buffer as string
     */
    public String getBuffer() {
-       return res.getBuffer().toString();
+       return this.res.getBuffer().toString();
    }
 
     /**
@@ -636,6 +636,19 @@ public class ResponseBean implements Serializable {
             tx.commit();
             tx.begin(tname);
         }
+    }
+    
+    /**
+     * Executes any changes made during the course of the current
+     * transaction without actually committing the transaction.
+     * 
+     * @throws Exception
+     */
+    public void execute() throws Exception {
+    	 Transactor tx = Transactor.getInstance();
+         if (tx != null) {
+             tx.execute();
+         }
     }
 
     /**

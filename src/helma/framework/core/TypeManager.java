@@ -17,8 +17,8 @@
 package helma.framework.core;
 
 import helma.objectmodel.db.DbMapping;
-import helma.framework.repository.Resource;
-import helma.framework.repository.Repository;
+import helma.framework.repository.ResourceInterface;
+import helma.framework.repository.RepositoryInterface;
 import helma.util.StringUtils;
 
 import java.io.*;
@@ -31,11 +31,11 @@ import java.util.*;
  * applications and updates the evaluators if anything has changed.
  */
 public final class TypeManager {
-    final static String[] standardTypes = { "User", "Global", "Root", "HopObject" };
-    final static String templateExtension = ".hsp";
-    final static String scriptExtension = ".js";
-    final static String actionExtension = ".hac";
-    final static String skinExtension = ".skin";
+    final static String[] standardTypes = { "User", "Global", "Root", "HopObject" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    final static String templateExtension = ".hsp"; //$NON-NLS-1$
+    final static String scriptExtension = ".js"; //$NON-NLS-1$
+    final static String actionExtension = ".hac"; //$NON-NLS-1$
+    final static String skinExtension = ".skin"; //$NON-NLS-1$
 
     private Application app;
     // map of prototypes
@@ -63,18 +63,18 @@ public final class TypeManager {
      */
     public TypeManager(Application app, String ignore) {
         this.app = app;
-        prototypes = new HashMap();
-        jarfiles = new HashSet();
-        ignoreDirs = new HashSet();
-        lastRepoScan = new HashMap();
+        this.prototypes = new HashMap();
+        this.jarfiles = new HashSet();
+        this.ignoreDirs = new HashSet();
+        this.lastRepoScan = new HashMap();
         // split ignore dirs list and add to hash set
         if (ignore != null) {
-            String[] arr = StringUtils.split(ignore, ",");
+            String[] arr = StringUtils.split(ignore, ","); //$NON-NLS-1$
             for (int i=0; i<arr.length; i++)
-                ignoreDirs.add(arr[i].trim());
+                this.ignoreDirs.add(arr[i].trim());
         }
 
-        URL helmajar = TypeManager.class.getResource("/");
+        URL helmajar = TypeManager.class.getResource("/"); //$NON-NLS-1$
 
         if (helmajar == null) {
             // Helma classes are in jar file, get helma.jar URL
@@ -82,7 +82,7 @@ public final class TypeManager {
 
             for (int i = 0; i < urls.length; i++) {
                 String url = urls[i].toString().toLowerCase();
-                if (url.endsWith("helma.jar")) {
+                if (url.endsWith("helma.jar")) { //$NON-NLS-1$
                     helmajar = urls[i];
                     break;
                 }
@@ -91,9 +91,9 @@ public final class TypeManager {
 
         if (helmajar == null) {
             // throw new RuntimeException("helma.jar not found in embedding classpath");
-            loader = new AppClassLoader(app.getName(), new URL[0]);
+            this.loader = new AppClassLoader(app.getName(), new URL[0]);
         } else {
-            loader = new AppClassLoader(app.getName(), new URL[] { helmajar });
+            this.loader = new AppClassLoader(app.getName(), new URL[] { helmajar });
         }
     }
 
@@ -117,31 +117,31 @@ public final class TypeManager {
      * If so, update prototypes and scripts.
      */
     public synchronized void checkPrototypes() throws IOException {
-        if ((System.currentTimeMillis() - lastCheck) < 1000L) {
+        if ((System.currentTimeMillis() - this.lastCheck) < 1000L) {
             return;
         }
 
         checkRepositories();
 
-        lastCheck = System.currentTimeMillis();
+        this.lastCheck = System.currentTimeMillis();
     }
 
-    protected synchronized void checkRepository(Repository repository, boolean update) throws IOException {
-        Repository[] list = repository.getRepositories();
+    protected synchronized void checkRepository(RepositoryInterface repository, boolean update) throws IOException {
+        RepositoryInterface[] list = repository.getRepositories();
         for (int i = 0; i < list.length; i++) {
  
             // ignore dir name found - compare to shortname (= Prototype name)
-            if (ignoreDirs.contains(list[i].getShortName())) {
+            if (this.ignoreDirs.contains(list[i].getShortName())) {
                 // jump this repository
-                if (app.debug) {
-                    app.logEvent("Repository " + list[i].getName() + " ignored");
+                if (this.app.debug) {
+                    this.app.logEvent(Messages.getString("TypeManager.0") + list[i].getName() + Messages.getString("TypeManager.1")); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 continue;
             }
 
             if (list[i].isScriptRoot()) {
                 // this is an embedded top-level script repository 
-                if (app.addRepository(list[i], list[i].getParentRepository())) {
+                if (this.app.addRepository(list[i], list[i].getParentRepository())) {
                     // repository is new, check it
                     checkRepository(list[i], update);
                 }
@@ -164,13 +164,13 @@ public final class TypeManager {
         Iterator resources = repository.getResources();
         while (resources.hasNext()) {
             // check for jar files to add to class loader
-            Resource resource = (Resource) resources.next();
+            ResourceInterface resource = (ResourceInterface) resources.next();
             String name = resource.getName();
-            if (name.endsWith(".jar")) {
-                if (!jarfiles.contains(name)) {
-                    jarfiles.add(name);
+            if (name.endsWith(".jar")) { //$NON-NLS-1$
+                if (!this.jarfiles.contains(name)) {
+                    this.jarfiles.add(name);
                     try {
-                        loader.addURL(resource.getUrl());
+                        this.loader.addURL(resource.getUrl());
                     } catch (UnsupportedOperationException x) {
                         // not implemented by all kinds of resources
                     }
@@ -184,32 +184,32 @@ public final class TypeManager {
      * there are any prototypes to be created.
      */
     private synchronized void checkRepositories() throws IOException {
-        List list = app.getRepositories();
+        List list = this.app.getRepositories();
 
         // walk through repositories and check if any of them have changed.
         for (int i = 0; i < list.size(); i++) {
-            Repository repository = (Repository) list.get(i);
-            long lastScan = lastRepoScan.containsKey(repository) ?
-                    ((Long) lastRepoScan.get(repository)).longValue() : 0;
+            RepositoryInterface repository = (RepositoryInterface) list.get(i);
+            long lastScan = this.lastRepoScan.containsKey(repository) ?
+                    ((Long) this.lastRepoScan.get(repository)).longValue() : 0;
             if (repository.lastModified() != lastScan) {
-                lastRepoScan.put(repository, new Long(repository.lastModified()));
+                this.lastRepoScan.put(repository, new Long(repository.lastModified()));
                 checkRepository(repository, false);
             }
         }
 
-        boolean debug = "true".equalsIgnoreCase(app.getProperty("helma.debugTypeManager"));
+        boolean debug = "true".equalsIgnoreCase(this.app.getProperty("helma.debugTypeManager")); //$NON-NLS-1$ //$NON-NLS-2$
         if (debug) {
-            System.err.println("Starting CHECK loop in " + Thread.currentThread());
+            System.err.println(Messages.getString("TypeManager.2") + Thread.currentThread()); //$NON-NLS-1$
         }
 
         // loop through prototypes and check if type.properties needs updates
         // it's important that we do this _after_ potentially new prototypes
         // have been created in the previous loop.
-        for (Iterator i = prototypes.values().iterator(); i.hasNext();) {
+        for (Iterator i = this.prototypes.values().iterator(); i.hasNext();) {
             Prototype proto = (Prototype) i.next();
 
             if (debug) {
-                System.err.println("CHECK: " + proto.getName() + " in " + Thread.currentThread());
+                System.err.println(Messages.getString("TypeManager.3") + proto.getName() + Messages.getString("TypeManager.4") + Thread.currentThread()); //$NON-NLS-1$ //$NON-NLS-2$
             }            
 
             // update prototype's type mapping
@@ -226,7 +226,7 @@ public final class TypeManager {
             }
         }
         if (debug) {
-            System.err.println("Finished CHECK in " + Thread.currentThread());
+            System.err.println(Messages.getString("TypeManager.5") + Thread.currentThread()); //$NON-NLS-1$
         }
     }
 
@@ -250,14 +250,14 @@ public final class TypeManager {
      *  This can be used to find out quickly if any file has changed.
      */
     public long getLastCodeUpdate() {
-        return lastCodeUpdate;
+        return this.lastCodeUpdate;
     }
 
     /**
      *  Set the last time any resource in this app was modified.
      */
     public void setLastCodeUpdate(long update) {
-        lastCodeUpdate = update;
+        this.lastCodeUpdate = update;
     }
 
     /**
@@ -266,7 +266,7 @@ public final class TypeManager {
      * @return the ClassLoader
      */
     public ClassLoader getClassLoader() {
-        return loader;
+        return this.loader;
     }
 
     /**
@@ -276,7 +276,7 @@ public final class TypeManager {
      * @return a collection containing the prototypes
      */
     public synchronized Collection getPrototypes() {
-        return Collections.unmodifiableCollection(prototypes.values());
+        return Collections.unmodifiableCollection(this.prototypes.values());
     }
 
     /**
@@ -286,7 +286,7 @@ public final class TypeManager {
         if (typename == null) {
             return null;
         }
-        return (Prototype) prototypes.get(typename.toLowerCase());
+        return (Prototype) this.prototypes.get(typename.toLowerCase());
     }
 
     /**
@@ -297,14 +297,14 @@ public final class TypeManager {
      * @param typeProps custom type mapping properties
      * @return the newly created prototype
      */
-    public synchronized Prototype createPrototype(String typename, Repository repository, Map typeProps) {
-        if ("true".equalsIgnoreCase(app.getProperty("helma.debugTypeManager"))) {
-            System.err.println("CREATE: " + typename + " from " + repository + " in " + Thread.currentThread());
+    public synchronized Prototype createPrototype(String typename, RepositoryInterface repository, Map typeProps) {
+        if ("true".equalsIgnoreCase(this.app.getProperty("helma.debugTypeManager"))) { //$NON-NLS-1$ //$NON-NLS-2$
+            System.err.println(Messages.getString("TypeManager.6") + typename + Messages.getString("TypeManager.7") + repository + Messages.getString("TypeManager.8") + Thread.currentThread()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             // Thread.dumpStack();
         }
-        Prototype proto = new Prototype(typename, repository, app, typeProps);
+        Prototype proto = new Prototype(typename, repository, this.app, typeProps);
         // put the prototype into our map
-        prototypes.put(proto.getLowerCaseName(), proto);
+        this.prototypes.put(proto.getLowerCaseName(), proto);
         return proto;
     }
 

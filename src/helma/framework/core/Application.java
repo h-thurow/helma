@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -17,19 +21,18 @@
 package helma.framework.core;
 
 import helma.extensions.ConfigurationException;
-import helma.extensions.HelmaExtension;
+import helma.extensions.HelmaExtensionInterface;
 import helma.framework.*;
 import helma.framework.repository.*;
 import helma.main.Server;
 import helma.objectmodel.*;
 import helma.objectmodel.db.*;
 import helma.util.*;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.ScriptingException;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.rmi.*;
 import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -129,7 +132,7 @@ public final class Application implements Runnable {
     String accessLogName;
 
     // A transient node that is shared among all evaluators
-    protected INode cachenode;
+    protected NodeInterface cachenode;
 
     // some fields for statistics
     protected volatile long requestCount = 0;
@@ -142,7 +145,7 @@ public final class Application implements Runnable {
     private String hrefRootPrototype;
 
     // the id of the object to use as root object
-    String rootId = "0";
+    String rootId = "0"; //$NON-NLS-1$
 
     // Db mappings for some standard prototypes
     private DbMapping rootMapping;
@@ -176,10 +179,10 @@ public final class Application implements Runnable {
     Hashtable customCronJobs = null;
 
     private ResourceComparator resourceComparator;
-    private Resource currentCodeResource;
+    private ResourceInterface currentCodeResource;
 
     // Field to cache unmapped java classes
-    private final static String CLASS_NOT_MAPPED = "(unmapped)";
+    private final static String CLASS_NOT_MAPPED = Messages.getString("Application.0"); //$NON-NLS-1$
 
     /**
      * Namespace search path for global macros
@@ -197,8 +200,8 @@ public final class Application implements Runnable {
      * Build an application with the given name with the given sources. No
      * Server-wide properties are created or used.
      */
-    public Application(String name, Repository[] repositories, File dbDir)
-                throws RemoteException, IllegalArgumentException {
+    public Application(String name, RepositoryInterface[] repositories, File dbDir)
+                throws IllegalArgumentException {
         this(name, null, repositories, null, dbDir);
     }
 
@@ -207,35 +210,35 @@ public final class Application implements Runnable {
      * app directories will be created if they don't exist already.
      */
     public Application(String name, Server server)
-                throws RemoteException, IllegalArgumentException {
-        this(name, server, new Repository[0], null, null);
+                throws IllegalArgumentException {
+        this(name, server, new RepositoryInterface[0], null, null);
     }
 
     /**
      * Build an application with the given name, server instance, sources and
      * db directory.
      */
-    public Application(String name, Server server, Repository[] repositories,
+    public Application(String name, Server server, RepositoryInterface[] repositories,
                        File customAppDir, File customDbDir)
-                throws RemoteException, IllegalArgumentException {
+                throws IllegalArgumentException {
         if ((name == null) || (name.trim().length() == 0)) {
-            throw new IllegalArgumentException("Invalid application name: " + name);
+            throw new IllegalArgumentException(Messages.getString("Application.1") + name); //$NON-NLS-1$
         }
 
         if (repositories.length == 0) {
-            throw new java.lang.IllegalArgumentException("No sources defined for application: " + name);
+            throw new java.lang.IllegalArgumentException(Messages.getString("Application.2") + name); //$NON-NLS-1$
         }
 
         this.name = name;
 
-        this.caseInsensitive = "true".equalsIgnoreCase(server.getAppsProperties(name).getProperty("caseInsensitive"));
+        this.caseInsensitive = "true".equalsIgnoreCase(server.getAppsProperties(name).getProperty("caseInsensitive")); //$NON-NLS-1$ //$NON-NLS-2$
 
         this.repositories = new ArrayList();
         this.repositories.addAll(Arrays.asList(repositories));
-        resourceComparator = new ResourceComparator(this);
+        this.resourceComparator = new ResourceComparator(this);
 
-        appDir = customAppDir;
-        dbDir = customDbDir;
+        this.appDir = customAppDir;
+        this.dbDir = customDbDir;
 
         // system-wide properties, default to null
         ResourceProperties sysProps;
@@ -244,13 +247,13 @@ public final class Application implements Runnable {
         ResourceProperties sysDbProps;
 
         sysProps = sysDbProps = null;
-        hopHome = null;
+        this.hopHome = null;
 
         if (server != null) {
-            hopHome = server.getHopHome();
+            this.hopHome = server.getHopHome();
 
-            if (dbDir == null) {
-                dbDir = new File(server.getDbHome(), name);
+            if (this.dbDir == null) {
+                this.dbDir = new File(server.getDbHome(), name);
             }
 
             // get system-wide properties
@@ -258,54 +261,54 @@ public final class Application implements Runnable {
             sysDbProps = server.getDbProperties();
         }
 
-        if (!dbDir.exists()) {
-            dbDir.mkdirs();
+        if (!this.dbDir.exists()) {
+            this.dbDir.mkdirs();
         }
 
-        if (appDir == null) {
+        if (this.appDir == null) {
             for (int i=repositories.length-1; i>=0; i--) {
                 if (repositories[i] instanceof FileRepository) {
-                    appDir = new File(repositories[i].getName());
+                    this.appDir = new File(repositories[i].getName());
                     break;
                 }
             }
         }
 
         // give the Helma Thread group a name so the threads can be recognized
-        threadgroup = new ThreadGroup("TX-" + name);
+        this.threadgroup = new ThreadGroup("TX-" + name); //$NON-NLS-1$
 
         // create app-level properties
-        props = new ResourceProperties(this, "app.properties", sysProps);
+        this.props = new ResourceProperties(this, "app.properties", sysProps); //$NON-NLS-1$
 
         // get log names
-        accessLogName = props.getProperty("accessLog",
-                new StringBuffer("helma.").append(name).append(".access").toString());
-        eventLogName = props.getProperty("eventLog",
-                new StringBuffer("helma.").append(name).append(".event").toString());
+        this.accessLogName = this.props.getProperty("accessLog", //$NON-NLS-1$
+                new StringBuffer("helma.").append(name).append(".access").toString());  //$NON-NLS-1$//$NON-NLS-2$
+        this.eventLogName = this.props.getProperty("eventLog", //$NON-NLS-1$
+                new StringBuffer("helma.").append(name).append(".event").toString());  //$NON-NLS-1$//$NON-NLS-2$
 
         // create app-level db sources
-        dbProps = new ResourceProperties(this, "db.properties", sysDbProps, false);
+        this.dbProps = new ResourceProperties(this, "db.properties", sysDbProps, false); //$NON-NLS-1$
 
         // the passwd file, to be used with the authenticate() function
         CryptResource parentpwfile = null;
 
-        if (hopHome != null) {
-            parentpwfile = new CryptResource(new FileResource(new File(hopHome, "passwd")), null);
+        if (this.hopHome != null) {
+            parentpwfile = new CryptResource(new FileResource(new File(this.hopHome, "passwd")), null); //$NON-NLS-1$
         }
 
-        pwfile = new CryptResource(repositories[0].getResource("passwd"), parentpwfile);
+        this.pwfile = new CryptResource(repositories[0].getResource("passwd"), parentpwfile); //$NON-NLS-1$
 
         // the properties that map java class names to prototype names
-        classMapping = new ResourceProperties(this, "class.properties");
-        classMapping.setIgnoreCase(false);
+        this.classMapping = new ResourceProperties(this, "class.properties"); //$NON-NLS-1$
+        this.classMapping.setIgnoreCase(false);
 
         // get class name of root object if defined. Otherwise native Helma objectmodel will be used.
-        rootObjectClass = classMapping.getProperty("root");
+        this.rootObjectClass = this.classMapping.getProperty("root"); //$NON-NLS-1$
 
         updateProperties();
 
-        dbSources = new Hashtable();
-        modules = new SystemMap();
+        this.dbSources = new Hashtable();
+        this.modules = new SystemMap();
     }
 
     /**
@@ -350,108 +353,109 @@ public final class Application implements Runnable {
         String ignoreDirs;
 
         Initializer(String dirs) {
-            super(name + "-init");
-            ignoreDirs = dirs;
+            super(Application.this.name + "-init"); //$NON-NLS-1$
+            this.ignoreDirs = dirs;
         }
 
+        @Override
         public void run() {
             try {
                 synchronized (Application.this) {
                     initInternal();
                 }
             } catch (Exception x) {
-                exception = x;
+                this.exception = x;
             }
         }
 
         private void initInternal()
                 throws DatabaseException, IllegalAccessException,
                        InstantiationException, ClassNotFoundException {
-            running = true;
+            Application.this.running = true;
             // create and init type mananger
-            typemgr = new TypeManager(Application.this, ignoreDirs);
+            Application.this.typemgr = new TypeManager(Application.this, this.ignoreDirs);
             // set the context classloader. Note that this must be done before
             // using the logging framework so that a new LogFactory gets created
             // for this app.
-            Thread.currentThread().setContextClassLoader(typemgr.getClassLoader());
+            Thread.currentThread().setContextClassLoader(Application.this.typemgr.getClassLoader());
             try {
-                typemgr.createPrototypes();
+                Application.this.typemgr.createPrototypes();
             } catch (Exception x) {
-                logError("Error creating prototypes", x);
+                logError(Messages.getString("Application.3"), x); //$NON-NLS-1$
             }
 
             if (Server.getServer() != null) {
                 Vector extensions = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extensions.size(); i++) {
-                    HelmaExtension ext = (HelmaExtension) extensions.get(i);
+                    HelmaExtensionInterface ext = (HelmaExtensionInterface) extensions.get(i);
 
                     try {
                         ext.applicationStarted(Application.this);
                     } catch (ConfigurationException e) {
-                        logEvent("couldn't init extension " + ext.getName() + ": " +
+                        logEvent(Messages.getString("Application.4") + ext.getName() + ": " +  //$NON-NLS-1$//$NON-NLS-2$
                                  e.toString());
                     }
                 }
             }
 
             // create and init evaluator/thread lists
-            freeThreads = new Stack();
-            allThreads = new Vector();
+            Application.this.freeThreads = new Stack();
+            Application.this.allThreads = new Vector();
 
-            activeRequests = new Hashtable();
-            activeCronJobs = new Hashtable();
-            customCronJobs = new Hashtable();
+            Application.this.activeRequests = new Hashtable();
+            Application.this.activeCronJobs = new Hashtable();
+            Application.this.customCronJobs = new Hashtable();
 
             // create the skin manager
-            skinmgr = new SkinManager(Application.this);
+            Application.this.skinmgr = new SkinManager(Application.this);
 
             // read in root id, root prototype, user prototype
-            rootId = props.getProperty("rootid", "0");
-            String rootPrototype = props.getProperty("rootprototype", "root");
-            String userPrototype = props.getProperty("userprototype", "user");
+            Application.this.rootId = Application.this.props.getProperty("rootid", "0"); //$NON-NLS-1$ //$NON-NLS-2$
+            String rootPrototype = Application.this.props.getProperty("rootprototype", "root"); //$NON-NLS-1$ //$NON-NLS-2$
+            String userPrototype = Application.this.props.getProperty("userprototype", "user"); //$NON-NLS-1$ //$NON-NLS-2$
 
-            rootMapping = getDbMapping(rootPrototype);
-            if (rootMapping == null)
-                throw new RuntimeException("rootPrototype does not exist: " + rootPrototype);
-            userMapping = getDbMapping(userPrototype);
-            if (userMapping == null)
-                throw new RuntimeException("userPrototype does not exist: " + userPrototype);
+            Application.this.rootMapping = getDbMapping(rootPrototype);
+            if (Application.this.rootMapping == null)
+                throw new RuntimeException(Messages.getString("Application.5") + rootPrototype); //$NON-NLS-1$
+            Application.this.userMapping = getDbMapping(userPrototype);
+            if (Application.this.userMapping == null)
+                throw new RuntimeException(Messages.getString("Application.6") + userPrototype); //$NON-NLS-1$
 
             // The whole user/userroot handling is basically old
             // ugly obsolete crap. Don't bother.
             ResourceProperties p = new ResourceProperties();
-            String usernameField = (userMapping != null) ? userMapping.getNameField() : null;
+            String usernameField = (Application.this.userMapping != null) ? Application.this.userMapping.getNameField() : null;
 
             if (usernameField == null) {
-                usernameField = "name";
+                usernameField = "name"; //$NON-NLS-1$
             }
 
-            p.put("_children", "collection(" + userPrototype + ")");
-            p.put("_children.accessname", usernameField);
-            userRootMapping = new DbMapping(Application.this, "__userroot__", p);
-            userRootMapping.update();
+            p.put("_children", "collection(" + userPrototype + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            p.put("_children.accessname", usernameField); //$NON-NLS-1$
+            Application.this.userRootMapping = new DbMapping(Application.this, "__userroot__", p); //$NON-NLS-1$
+            Application.this.userRootMapping.update();
 
             // create the node manager
-            nmgr = new NodeManager(Application.this);
-            nmgr.init(dbDir.getAbsoluteFile(), props);
+            Application.this.nmgr = new NodeManager(Application.this);
+            Application.this.nmgr.init(Application.this.dbDir.getAbsoluteFile(), Application.this.props);
 
             // create the app cache node exposed as app.data
-            cachenode = new TransientNode(Application.this, "app");
+            Application.this.cachenode = new TransientNode("app"); //$NON-NLS-1$
 
             // create and init session manager
-            String sessionMgrImpl = props.getProperty("sessionManagerImpl",
-                                                      "helma.framework.core.SessionManager");
-            sessionMgr = (SessionManager) Class.forName(sessionMgrImpl).newInstance();
-            logEvent("Using session manager class " + sessionMgrImpl);
-            sessionMgr.init(Application.this);
+            String sessionMgrImpl = Application.this.props.getProperty("sessionManagerImpl", //$NON-NLS-1$
+                                                      "helma.framework.core.SessionManager"); //$NON-NLS-1$
+            Application.this.sessionMgr = (SessionManager) Class.forName(sessionMgrImpl).newInstance();
+            logEvent(Messages.getString("Application.7") + sessionMgrImpl); //$NON-NLS-1$
+            Application.this.sessionMgr.init(Application.this);
 
             // read the sessions if wanted
-            if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) {
+            if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) {  //$NON-NLS-1$//$NON-NLS-2$
                 RequestEvaluator ev = getEvaluator();
                 try {
                     ev.initScriptingEngine();
-                    sessionMgr.loadSessionData(null, ev.scriptingEngine);
+                    Application.this.sessionMgr.loadSessionData(null, ev.scriptingEngine);
                 } finally {
                     releaseEvaluator(ev);
                 }
@@ -461,13 +465,13 @@ public final class Application implements Runnable {
             int minThreads = 0;
 
             try {
-                minThreads = Integer.parseInt(props.getProperty("minThreads"));
+                minThreads = Integer.parseInt(Application.this.props.getProperty("minThreads")); //$NON-NLS-1$
             } catch (Exception ignore) {
                 // not parsable as number, keep 0
             }
 
             if (minThreads > 0) {
-                logEvent("Starting "+minThreads+" evaluator(s) for " + name);
+                logEvent(Messages.getString("Application.8")+minThreads+Messages.getString("Application.9") + Application.this.name); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             for (int i = 0; i < minThreads; i++) {
@@ -476,8 +480,8 @@ public final class Application implements Runnable {
                 if (i == 0) {
                     ev.initScriptingEngine();
                 }
-                freeThreads.push(ev);
-                allThreads.addElement(ev);
+                Application.this.freeThreads.push(ev);
+                Application.this.allThreads.addElement(ev);
             }
         }
     }
@@ -487,22 +491,22 @@ public final class Application implements Runnable {
      *  Create and start scheduler and cleanup thread
      */
     public synchronized void start() {
-        starttime = System.currentTimeMillis();
+        this.starttime = System.currentTimeMillis();
 
         // as first thing, invoke global onStart() function
         RequestEvaluator eval = null;
         try {
             eval = getEvaluator();
-            eval.invokeInternal(null, "onStart", RequestEvaluator.EMPTY_ARGS);
+            eval.invokeInternal(null, "onStart", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
         } catch (Exception xcept) {
-            logError("Error in " + name + ".onStart()", xcept);
+            logError(Messages.getString("Application.10") + this.name + ".onStart()", xcept);  //$NON-NLS-1$//$NON-NLS-2$
         } finally {
             releaseEvaluator(eval);
         }
 
-        worker = new Thread(this, name + "-worker");
-        worker.setPriority(Thread.NORM_PRIORITY + 1);
-        worker.start();
+        this.worker = new Thread(this, this.name + "-worker"); //$NON-NLS-1$
+        this.worker.setPriority(Thread.NORM_PRIORITY + 1);
+        this.worker.start();
     }
 
     /**
@@ -513,24 +517,24 @@ public final class Application implements Runnable {
         RequestEvaluator eval = null;
         try {
             eval = getEvaluator();
-            eval.invokeInternal(null, "onStop", RequestEvaluator.EMPTY_ARGS);
+            eval.invokeInternal(null, "onStop", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
         } catch (Exception x) {
-            logError("Error in " + name + ".onStop()", x);
+            logError(Messages.getString("Application.11") + this.name + ".onStop()", x);  //$NON-NLS-1$//$NON-NLS-2$
         }
 
         // mark app as stopped
-        running = false;
+        this.running = false;
 
         // stop all threads, this app is going down
-        if (worker != null) {
-            worker.interrupt();
+        if (this.worker != null) {
+            this.worker.interrupt();
         }
 
-        worker = null;
+        this.worker = null;
 
         // stop evaluators
-        if (allThreads != null) {
-            for (Enumeration e = allThreads.elements(); e.hasMoreElements();) {
+        if (this.allThreads != null) {
+            for (Enumeration e = this.allThreads.elements(); e.hasMoreElements();) {
                 RequestEvaluator ev = (RequestEvaluator) e.nextElement();
                 ev.stopTransactor();
                 ev.shutdown();
@@ -538,14 +542,14 @@ public final class Application implements Runnable {
         }
 
         // remove evaluators
-        allThreads.removeAllElements();
-        freeThreads.clear();
+        this.allThreads.removeAllElements();
+        this.freeThreads.clear();
 
         // shut down node manager and embedded db
         try {
-            nmgr.shutdown();
+            this.nmgr.shutdown();
         } catch (DatabaseException dbx) {
-            System.err.println("Error shutting down embedded db: " + dbx);
+            System.err.println(Messages.getString("Application.12") + dbx); //$NON-NLS-1$
         }
 
         // tell the extensions that we're stopped.
@@ -553,18 +557,18 @@ public final class Application implements Runnable {
             Vector extensions = Server.getServer().getExtensions();
 
             for (int i = 0; i < extensions.size(); i++) {
-                HelmaExtension ext = (HelmaExtension) extensions.get(i);
+                HelmaExtensionInterface ext = (HelmaExtensionInterface) extensions.get(i);
 
                 ext.applicationStopped(this);
             }
         }
 
         // store the sessions if wanted
-        if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) {
+        if ("true".equalsIgnoreCase(getProperty("persistentSessions"))) { //$NON-NLS-1$ //$NON-NLS-2$
             // sessionMgr.storeSessionData(null);
-            sessionMgr.storeSessionData(null, eval.scriptingEngine);
+            this.sessionMgr.storeSessionData(null, eval.scriptingEngine);
         }
-        sessionMgr.shutdown();
+        this.sessionMgr.shutdown();
     }
 
     /**
@@ -573,7 +577,7 @@ public final class Application implements Runnable {
      * @return true if the app is running
      */
     public boolean isRunning() {
-        return running;
+        return this.running;
     }
 
     /**
@@ -582,7 +586,7 @@ public final class Application implements Runnable {
      * @return the application directory, or first file based repository
      */
     public File getAppDir() {
-        return appDir;
+        return this.appDir;
     }
 
     /**
@@ -592,41 +596,41 @@ public final class Application implements Runnable {
      * @return a comparator that sorts resources according to their repositories
      */
     public ResourceComparator getResourceComparator() {
-        return resourceComparator;
+        return this.resourceComparator;
     }
 
     /**
      * Returns a free evaluator to handle a request.
      */
     public RequestEvaluator getEvaluator() {
-        if (!running) {
+        if (!this.running) {
             throw new ApplicationStoppedException();
         }
 
         // first try
         try {
-            return (RequestEvaluator) freeThreads.pop();
+            return (RequestEvaluator) this.freeThreads.pop();
         } catch (EmptyStackException nothreads) {
             int maxThreads = 50;
 
-            String maxThreadsProp = props.getProperty("maxThreads");
+            String maxThreadsProp = this.props.getProperty("maxThreads"); //$NON-NLS-1$
             if (maxThreadsProp != null) {
                 try {
                     maxThreads = Integer.parseInt(maxThreadsProp);
                 } catch (Exception ignore) {
-                    logEvent("Couldn't parse maxThreads property: " + maxThreadsProp);
+                    logEvent(Messages.getString("Application.13") + maxThreadsProp); //$NON-NLS-1$
                 }
             }
 
             synchronized (this) {
                 // allocate a new evaluator
-                if (allThreads.size() < maxThreads) {
-                    logEvent("Starting engine " + (allThreads.size() + 1) +
-                             " for " + name);
+                if (this.allThreads.size() < maxThreads) {
+                    logEvent(Messages.getString("Application.14") + (this.allThreads.size() + 1) + //$NON-NLS-1$
+                             Messages.getString("Application.15") + this.name); //$NON-NLS-1$
 
                     RequestEvaluator ev = new RequestEvaluator(this);
 
-                    allThreads.addElement(ev);
+                    this.allThreads.addElement(ev);
 
                     return (ev);
                 }
@@ -639,16 +643,16 @@ public final class Application implements Runnable {
             try {
                 Thread.sleep(3000);
 
-                return (RequestEvaluator) freeThreads.pop();
+                return (RequestEvaluator) this.freeThreads.pop();
             } catch (EmptyStackException nothreads) {
                 // do nothing
             } catch (InterruptedException inter) {
-                throw new RuntimeException("Thread interrupted.");
+                throw new RuntimeException(Messages.getString("Application.16")); //$NON-NLS-1$
             }
         }
 
         // no luck, give up.
-        throw new RuntimeException("Maximum Thread count reached.");
+        throw new RuntimeException(Messages.getString("Application.17")); //$NON-NLS-1$
     }
 
     /**
@@ -657,7 +661,7 @@ public final class Application implements Runnable {
     public void releaseEvaluator(RequestEvaluator ev) {
         if (ev != null) {
             ev.recycle();
-            freeThreads.push(ev);
+            this.freeThreads.push(ev);
         }
     }
 
@@ -670,25 +674,25 @@ public final class Application implements Runnable {
             return false;
         }
 
-        int current = allThreads.size();
+        int current = this.allThreads.size();
 
-        synchronized (allThreads) {
+        synchronized (this.allThreads) {
             if (n > current) {
                 int toBeCreated = n - current;
 
                 for (int i = 0; i < toBeCreated; i++) {
                     RequestEvaluator ev = new RequestEvaluator(this);
 
-                    freeThreads.push(ev);
-                    allThreads.addElement(ev);
+                    this.freeThreads.push(ev);
+                    this.allThreads.addElement(ev);
                 }
             } else if (n < current) {
                 int toBeDestroyed = current - n;
 
                 for (int i = 0; i < toBeDestroyed; i++) {
                     try {
-                        RequestEvaluator re = (RequestEvaluator) freeThreads.pop();
-                        allThreads.removeElement(re);
+                        RequestEvaluator re = (RequestEvaluator) this.freeThreads.pop();
+                        this.allThreads.removeElement(re);
                         re.stopTransactor();
                     } catch (EmptyStackException empty) {
                         return false;
@@ -711,7 +715,7 @@ public final class Application implements Runnable {
      *  Execute a request coming in from a web client.
      */
     public ResponseTrans execute(RequestTrans req) {
-        requestCount += 1;
+        this.requestCount += 1;
 
         // get user for this request's session
         Session session = createSession(req.getSession());
@@ -727,7 +731,7 @@ public final class Application implements Runnable {
             // first look if a request with same user/path/data is already being executed.
             // if so, attach the request to its output instead of starting a new evaluation
             // this helps to cleanly solve "doubleclick" kind of users
-            ev = (RequestEvaluator) activeRequests.get(req);
+            ev = (RequestEvaluator) this.activeRequests.get(req);
 
             if (ev != null) {
                 res = ev.attachHttpRequest(req);
@@ -757,19 +761,19 @@ public final class Application implements Runnable {
             // let the servlet know that this application has gone to heaven
             throw stopped;
         } catch (Exception x) {
-            errorCount += 1;
+            this.errorCount += 1;
             res = new ResponseTrans(this, req);
             res.reportError(x);
         } finally {
             if (primaryRequest) {
-                activeRequests.remove(req);
+                this.activeRequests.remove(req);
                 releaseEvaluator(ev);
 
                 // response needs to be closed/encoded before sending it back
                 try {
-                    res.close(charset);
+                    res.close(this.charset);
                 } catch (UnsupportedEncodingException uee) {
-                    logError("Unsupported response encoding", uee);
+                    logError(Messages.getString("Application.18"), uee); //$NON-NLS-1$
                 }
             }
         }
@@ -783,7 +787,7 @@ public final class Application implements Runnable {
      */
     public Object executeXmlRpc(String method, Vector args)
                          throws Exception {
-        xmlrpcCount += 1;
+        this.xmlrpcCount += 1;
 
         Object retval = null;
         RequestEvaluator ev = null;
@@ -824,14 +828,14 @@ public final class Application implements Runnable {
      * the database.
      */
     public void clearCache() {
-        nmgr.clearCache();
+        this.nmgr.clearCache();
     }
 
     /**
      * Returns the number of elements in the NodeManager's cache
      */
     public int getCacheUsage() {
-        return nmgr.countCacheEntries();
+        return this.nmgr.countCacheEntries();
     }
 
     /**
@@ -860,33 +864,33 @@ public final class Application implements Runnable {
     /**
      * This method returns the root object of this application's object tree.
      */
-    protected Object getDataRoot(ScriptingEngine engine) throws Exception {
-        if (rootObject != null) {
-            return rootObject;
+    protected Object getDataRoot(ScriptingEngineInterface engine) throws Exception {
+        if (this.rootObject != null) {
+            return this.rootObject;
         }
         // check if we have a custom root object class
-        if (rootObjectClass != null) {
+        if (this.rootObjectClass != null) {
             // create custom root element.
             try {
-                if (classMapping.containsKey("root.factory.class") &&
-                        classMapping.containsKey("root.factory.method")) {
-                    String rootFactory = classMapping.getProperty("root.factory.class");
-                    Class c = typemgr.getClassLoader().loadClass(rootFactory);
+                if (this.classMapping.containsKey("root.factory.class") && //$NON-NLS-1$
+                        this.classMapping.containsKey("root.factory.method")) { //$NON-NLS-1$
+                    String rootFactory = this.classMapping.getProperty("root.factory.class"); //$NON-NLS-1$
+                    Class c = this.typemgr.getClassLoader().loadClass(rootFactory);
                     Method m = c.getMethod(
-                            classMapping.getProperty("root.factory.method"),
+                            this.classMapping.getProperty("root.factory.method"), //$NON-NLS-1$
                             (Class[]) null);
-                    rootObject = m.invoke(c, (Object[]) null);
+                    this.rootObject = m.invoke(c, (Object[]) null);
                 } else {
-                    String rootClass = classMapping.getProperty("root");
-                    Class c = typemgr.getClassLoader().loadClass(rootClass);
-                    rootObject = c.newInstance();
+                    String rootClass = this.classMapping.getProperty("root"); //$NON-NLS-1$
+                    Class c = this.typemgr.getClassLoader().loadClass(rootClass);
+                    this.rootObject = c.newInstance();
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Error creating root object: " +
+                throw new RuntimeException(Messages.getString("Application.19") + //$NON-NLS-1$
                         e.toString());
             }
-            return rootObject;
-        } else if (rootObjectPropertyName != null || rootObjectFunctionName != null) {
+            return this.rootObject;
+        } else if (this.rootObjectPropertyName != null || this.rootObjectFunctionName != null) {
             // get root object from a global scripting engine property or function
             if (engine == null) {
                 RequestEvaluator reval = getEvaluator();
@@ -895,45 +899,44 @@ public final class Application implements Runnable {
                 } finally {
                     releaseEvaluator(reval);
                 }
-            } else {
-                return getDataRootFromEngine(engine);
             }
+            return getDataRootFromEngine(engine);
         } else {
             // no custom root object is defined - use standard helma objectmodel
-            return nmgr.getRootNode();
+            return this.nmgr.getRootNode();
         }
     }
 
-    private Object getDataRootFromEngine(ScriptingEngine engine)
+    private Object getDataRootFromEngine(ScriptingEngineInterface engine)
             throws ScriptingException {
-        return rootObjectPropertyName != null ?
-                engine.getGlobalProperty(rootObjectPropertyName) :
-                engine.invoke(null, rootObjectFunctionName,
+        return this.rootObjectPropertyName != null ?
+                engine.getGlobalProperty(this.rootObjectPropertyName) :
+                engine.invoke(null, this.rootObjectFunctionName,
                         RequestEvaluator.EMPTY_ARGS,
-                        ScriptingEngine.ARGS_WRAP_DEFAULT, true);
+                        ScriptingEngineInterface.ARGS_WRAP_DEFAULT, true);
     }
 
     /**
      *  Return the prototype of the object to be used as this application's root object
      */
     public DbMapping getRootMapping() {
-        return rootMapping;
+        return this.rootMapping;
     }
 
     /**
      *  Return the id of the object to be used as this application's root object
      */
     public String getRootId() {
-        return rootId;
+        return this.rootId;
     }
 
     /**
      * Returns the Object which contains registered users of this application.
      */
-    public INode getUserRoot() {
-        INode users = nmgr.safe.getNode("1", userRootMapping);
+    public NodeInterface getUserRoot() {
+        NodeInterface users = this.nmgr.safe.getNode("1", this.userRootMapping); //$NON-NLS-1$
 
-        users.setDbMapping(userRootMapping);
+        users.setDbMapping(this.userRootMapping);
 
         return users;
     }
@@ -944,7 +947,7 @@ public final class Application implements Runnable {
      * of objects to relational database tables or the embedded database.
      */
     public NodeManager getNodeManager() {
-        return nmgr;
+        return this.nmgr;
     }
 
     /**
@@ -953,7 +956,7 @@ public final class Application implements Runnable {
      * relational database tables or the embedded database.
      */
     public WrappedNodeManager getWrappedNodeManager() {
-        return nmgr.safe;
+        return this.nmgr.safe;
     }
 
     /**
@@ -961,24 +964,24 @@ public final class Application implements Runnable {
      * @return the SessionManager instance used by this app
      */
     public SessionManager getSessionManager() {
-        return sessionMgr;
+        return this.sessionMgr;
     }
 
     /**
      *  Return a transient node that is shared by all evaluators of this application ("app node")
      */
-    public INode getCacheNode() {
-        return cachenode;
+    public NodeInterface getCacheNode() {
+        return this.cachenode;
     }
 
     /**
      * Returns a Node representing a registered user of this application by his or her user name.
      */
-    public INode getUserNode(String uid) {
+    public NodeInterface getUserNode(String uid) {
         try {
-            INode users = getUserRoot();
+            NodeInterface users = getUserRoot();
 
-            return (INode) users.getChildElement(uid);
+            return (NodeInterface) users.getChildElement(uid);
         } catch (Exception x) {
             return null;
         }
@@ -992,13 +995,13 @@ public final class Application implements Runnable {
         String protoname = getPrototypeName(obj);
 
         if (protoname == null) {
-            return typemgr.getPrototype("hopobject");
+            return this.typemgr.getPrototype("hopobject"); //$NON-NLS-1$
         }
 
-        Prototype p = typemgr.getPrototype(protoname);
+        Prototype p = this.typemgr.getPrototype(protoname);
 
         if (p == null) {
-            p = typemgr.getPrototype("hopobject");
+            p = this.typemgr.getPrototype("hopobject"); //$NON-NLS-1$
         }
 
         return p;
@@ -1008,14 +1011,14 @@ public final class Application implements Runnable {
      * Return the prototype with the given name, if it exists
      */
     public Prototype getPrototypeByName(String name) {
-        return typemgr.getPrototype(name);
+        return this.typemgr.getPrototype(name);
     }
 
     /**
      * Return a collection containing all prototypes defined for this application
      */
     public Collection getPrototypes() {
-        return typemgr.getPrototypes();
+        return this.typemgr.getPrototypes();
     }
 
     /**
@@ -1026,9 +1029,9 @@ public final class Application implements Runnable {
      * @return the new prototype
      */
     public Prototype definePrototype(String name, Map typeProps) {
-        Prototype proto = typemgr.getPrototype(name);
+        Prototype proto = this.typemgr.getPrototype(name);
         if (proto == null) {
-            proto = typemgr.createPrototype(name, null, typeProps);
+            proto = this.typemgr.createPrototype(name, null, typeProps);
         } else {
             proto.setTypeProperties(typeProps);
         }
@@ -1046,7 +1049,7 @@ public final class Application implements Runnable {
             return null;
         }
 
-        return skinmgr.getSkin(proto, skinname, skinpath);
+        return this.skinmgr.getSkin(proto, skinname, skinpath);
     }
 
     /**
@@ -1054,7 +1057,7 @@ public final class Application implements Runnable {
      * Create a new session if necessary.
      */
     public Session createSession(String sessionId) {
-        return sessionMgr.createSession(sessionId);
+        return this.sessionMgr.createSession(sessionId);
     }
 
     /**
@@ -1062,7 +1065,7 @@ public final class Application implements Runnable {
      *  not the session object) representing currently logged in users.
      */
     public List getActiveUsers() {
-        return sessionMgr.getActiveUsers();
+        return this.sessionMgr.getActiveUsers();
     }
 
     /**
@@ -1071,7 +1074,7 @@ public final class Application implements Runnable {
      */
     public List getRegisteredUsers() {
         ArrayList list = new ArrayList();
-        INode users = getUserRoot();
+        NodeInterface users = getUserRoot();
 
         // add all child nodes to the list
         for (Enumeration e = users.getSubnodes(); e.hasMoreElements();) {
@@ -1093,76 +1096,76 @@ public final class Application implements Runnable {
      * with a given Helma user.
      */
     public List getSessionsForUsername(String username) {
-        return sessionMgr.getSessionsForUsername(username);
+        return this.sessionMgr.getSessionsForUsername(username);
     }
 
     /**
      * Return the session currently associated with a given Hop session ID.
      */
     public Session getSession(String sessionId) {
-        return sessionMgr.getSession(sessionId);
+        return this.sessionMgr.getSession(sessionId);
     }
 
     /**
      *  Return the whole session map.
      */
     public Map getSessions() {
-        return sessionMgr.getSessions();
+        return this.sessionMgr.getSessions();
     }
 
     /**
      * Returns the number of currenty active sessions.
      */
     public int countSessions() {
-        return sessionMgr.countSessions();
+        return this.sessionMgr.countSessions();
     }
 
     /**
      * Register a user with the given user name and password.
      */
-    public INode registerUser(String uname, String password) {
+    public NodeInterface registerUser(String uname, String password) {
         if (uname == null) {
             return null;
         }
 
         uname = uname.toLowerCase().trim();
 
-        if ("".equals(uname)) {
+        if ("".equals(uname)) { //$NON-NLS-1$
             return null;
         }
 
-        INode unode;
+        NodeInterface unode;
 
         try {
-            INode users = getUserRoot();
+            NodeInterface users = getUserRoot();
 
             // check if a user with this name is already registered
-            unode = (INode) users.getChildElement(uname);
+            unode = (NodeInterface) users.getChildElement(uname);
             if (unode != null) {
                 return null;
             }
 
-            unode = new Node(uname, "user", nmgr.safe);
+            unode = new Node(uname, "user", this.nmgr.safe); //$NON-NLS-1$
 
-            String usernameField = (userMapping != null) ? userMapping.getNameField() : null;
+            String usernameField = (this.userMapping != null) ? this.userMapping.getNameField() : null;
             String usernameProp = null;
 
             if (usernameField != null) {
-                usernameProp = userMapping.columnNameToProperty(usernameField);
+                usernameProp = this.userMapping.columnNameToProperty(usernameField);
             }
 
             if (usernameProp == null) {
-                usernameProp = "name";
+                usernameProp = "name"; //$NON-NLS-1$
             }
 
             unode.setName(uname);
             unode.setString(usernameProp, uname);
-            unode.setString("password", password);
+            unode.setString("password", password); //$NON-NLS-1$
 
             return users.addNode(unode);
 
         } catch (Exception x) {
-            logEvent("Error registering User: " + x);
+            logEvent(Messages.getString("Application.20") + x); //$NON-NLS-1$
 
             return null;
         }
@@ -1179,17 +1182,17 @@ public final class Application implements Runnable {
 
         uname = uname.toLowerCase().trim();
 
-        if ("".equals(uname)) {
+        if ("".equals(uname)) { //$NON-NLS-1$
             return false;
         }
 
         try {
-            INode users = getUserRoot();
+            NodeInterface users = getUserRoot();
             Node unode = (Node) users.getChildElement(uname);
             if (unode == null)
                 return false;
 
-            String pw = unode.getString("password");
+            String pw = unode.getString("password"); //$NON-NLS-1$
 
             if ((pw != null) && pw.equals(password)) {
                 // let the old user-object forget about this session
@@ -1222,7 +1225,7 @@ public final class Application implements Runnable {
             return false;
         }
 
-        return pwfile.authenticate(uname, password);
+        return this.pwfile.authenticate(uname, password);
     }
 
     /**
@@ -1246,12 +1249,12 @@ public final class Application implements Runnable {
      */
     public String getNodeHref(Object elem, String actionName, Map queryParams)
             throws UnsupportedEncodingException {
-        StringBuffer buffer = new StringBuffer(baseURI);
+        StringBuffer buffer = new StringBuffer(this.baseURI);
 
         composeHref(elem, buffer, 0);
 
         if (actionName != null) {
-            buffer.append(UrlEncoded.encode(actionName, charset));
+            buffer.append(UrlEncoded.encode(actionName, this.charset));
         }
         if (queryParams != null) {
             appendQueryParams(buffer, queryParams, null, 0);
@@ -1269,7 +1272,7 @@ public final class Application implements Runnable {
             if (value == null) {
                 continue;
             }
-            String key = UrlEncoded.encode(entry.getKey().toString(), charset);
+            String key = UrlEncoded.encode(entry.getKey().toString(), this.charset);
             if (prefix != null) key = prefix + '[' + key + ']';
             if (value instanceof Map) {
                 count = appendQueryParams(buffer, (Map) value, key, count);
@@ -1277,7 +1280,7 @@ public final class Application implements Runnable {
                 buffer.append(count++ == 0 ? '?' : '&');
                 buffer.append(key);
                 buffer.append('=');
-                buffer.append(UrlEncoded.encode(value.toString(), charset));
+                buffer.append(UrlEncoded.encode(value.toString(), this.charset));
             }
         }
         return count;
@@ -1289,8 +1292,8 @@ public final class Application implements Runnable {
             return;
         }
 
-        if ((hrefRootPrototype != null) &&
-             hrefRootPrototype.equals(getPrototypeName(elem))) {
+        if ((this.hrefRootPrototype != null) &&
+             this.hrefRootPrototype.equals(getPrototypeName(elem))) {
             return;
         }
 
@@ -1306,8 +1309,8 @@ public final class Application implements Runnable {
         // append ourselves
         String ename = getElementName(elem);
         if (ename != null) {
-            b.append(UrlEncoded.encode(ename, charset));
-            b.append("/");
+            b.append(UrlEncoded.encode(ename, this.charset));
+            b.append("/"); //$NON-NLS-1$
         }
     }
 
@@ -1315,7 +1318,7 @@ public final class Application implements Runnable {
      *  Returns the baseURI for Hrefs in this application.
      */
     public String getBaseURI() {
-        return baseURI;
+        return this.baseURI;
     }
 
 
@@ -1325,9 +1328,9 @@ public final class Application implements Runnable {
      */
     public void setBaseURI(String uri) {
         if (uri == null) {
-            this.baseURI = "/";
-        } else if (!uri.endsWith("/")) {
-            this.baseURI = uri + "/";
+            this.baseURI = "/"; //$NON-NLS-1$
+        } else if (!uri.endsWith("/")) { //$NON-NLS-1$
+            this.baseURI = uri + "/"; //$NON-NLS-1$
         } else {
             this.baseURI = uri;
         }
@@ -1338,7 +1341,7 @@ public final class Application implements Runnable {
      *  properties, false otherwise.
      */
     public boolean hasExplicitBaseURI() {
-        return props.containsKey("baseuri");
+        return this.props.containsKey("baseuri"); //$NON-NLS-1$
     }
 
     /**
@@ -1346,7 +1349,7 @@ public final class Application implements Runnable {
      * start with.
      */
     public String getHrefRootPrototype() {
-        return hrefRootPrototype;
+        return this.hrefRootPrototype;
     }
 
     /**
@@ -1354,7 +1357,7 @@ public final class Application implements Runnable {
      * this application.
      */
     public boolean debug() {
-        return debug;
+        return this.debug;
     }
 
     /**
@@ -1364,7 +1367,7 @@ public final class Application implements Runnable {
      * @return the RequestEvaluator belonging to the current thread
      */
     public RequestEvaluator getCurrentRequestEvaluator() {
-        return (RequestEvaluator) currentEvaluator.get();
+        return (RequestEvaluator) this.currentEvaluator.get();
     }
 
     /**
@@ -1372,7 +1375,7 @@ public final class Application implements Runnable {
      * @param eval the RequestEvaluator belonging to the current thread
      */
     protected void setCurrentRequestEvaluator(RequestEvaluator eval) {
-        currentEvaluator.set(eval);
+        this.currentEvaluator.set(eval);
     }
 
     /**
@@ -1388,9 +1391,9 @@ public final class Application implements Runnable {
             try {
                 return reval.invokeDirectFunction(obj, func, args);
             } catch (Exception x) {
-                if (debug) {
-                    System.err.println("Error in Application.invokeFunction (" +
-                                        func + "): " + x);
+                if (this.debug) {
+                    System.err.println(Messages.getString("Application.21") + //$NON-NLS-1$
+                                        func + Messages.getString("Application.22") + x); //$NON-NLS-1$
                 }
             }
         }
@@ -1414,12 +1417,12 @@ public final class Application implements Runnable {
      *  Return the application's classloader
      */
     public ClassLoader getClassLoader() {
-        return typemgr.getClassLoader();
+        return this.typemgr.getClassLoader();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///   The following methods mimic the IPathElement interface. This allows us
-    ///   to script any Java object: If the object implements IPathElement (as does
+    ///   The following methods mimic the PathElementInterface interface. This allows us
+    ///   to script any Java object: If the object implements PathElementInterface (as does
     ///   the Node class in Helma's internal objectmodel) then the corresponding
     ///   method is called in the object itself. Otherwise, a corresponding script function
     ///   is called on the object.
@@ -1429,11 +1432,11 @@ public final class Application implements Runnable {
      * Return the name to be used to get this element from its parent
      */
     public String getElementName(Object obj) {
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getElementName();
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getElementName();
         }
 
-        Object retval = invokeFunction(obj, "getElementName", RequestEvaluator.EMPTY_ARGS);
+        Object retval = invokeFunction(obj, "getElementName", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
 
         if (retval != null) {
             return retval.toString();
@@ -1446,23 +1449,23 @@ public final class Application implements Runnable {
      * Retrieve a child element of this object by name.
      */
     public Object getChildElement(Object obj, String name) {
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getChildElement(name);
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getChildElement(name);
         }
 
         Object[] arg = new Object[] { name };
-        return invokeFunction(obj, "getChildElement", arg);
+        return invokeFunction(obj, "getChildElement", arg); //$NON-NLS-1$
     }
 
     /**
      * Return the parent element of this object.
      */
     public Object getParentElement(Object obj) {
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getParentElement();
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getParentElement();
         }
 
-        return invokeFunction(obj, "getParentElement", RequestEvaluator.EMPTY_ARGS);
+        return invokeFunction(obj, "getParentElement", RequestEvaluator.EMPTY_ARGS); //$NON-NLS-1$
     }
 
     /**
@@ -1472,10 +1475,10 @@ public final class Application implements Runnable {
      */
     public String getPrototypeName(Object obj) {
         if (obj == null) {
-            return "global";
-        } else if (obj instanceof IPathElement) {
-            // check if e implements the IPathElement interface
-            return ((IPathElement) obj).getPrototype();
+            return "global"; //$NON-NLS-1$
+        } else if (obj instanceof PathElementInterface) {
+            // check if e implements the PathElementInterface interface
+            return ((PathElementInterface) obj).getPrototype();
         }
 
         // How class name to prototype name lookup works:
@@ -1489,7 +1492,7 @@ public final class Application implements Runnable {
 
         Class clazz = obj.getClass();
         String className = clazz.getName();
-        String protoName = classMapping.getProperty(className);
+        String protoName = this.classMapping.getProperty(className);
         // fast path: direct hit, either positive or negative
         if (protoName != null) {
             return protoName == CLASS_NOT_MAPPED ? null : protoName;
@@ -1502,23 +1505,23 @@ public final class Application implements Runnable {
             // check interfaces
             Class[] classes = clazz.getInterfaces();
             for (int i = 0; i < classes.length; i++) {
-                protoName = classMapping.getProperty(classes[i].getName());
+                protoName = this.classMapping.getProperty(classes[i].getName());
                 if (protoName != null) {
                     // cache the class name for the object so we run faster next time
-                    classMapping.setProperty(className, protoName);
+                    this.classMapping.setProperty(className, protoName);
                     return protoName;
                 }
             }
             clazz = clazz.getSuperclass();
-            protoName = classMapping.getProperty(clazz.getName());
+            protoName = this.classMapping.getProperty(clazz.getName());
             if (protoName != null) {
                 // cache the class name for the object so we run faster next time
-                classMapping.setProperty(className, protoName);
+                this.classMapping.setProperty(className, protoName);
                 return protoName == CLASS_NOT_MAPPED ? null : protoName;
             }
         }
         // not mapped - cache negative result
-        classMapping.setProperty(className, CLASS_NOT_MAPPED);
+        this.classMapping.setProperty(className, CLASS_NOT_MAPPED);
         return null;
     }
 
@@ -1528,20 +1531,20 @@ public final class Application implements Runnable {
      * Log an application error
      */
     public void logError(String msg, Throwable error) {
-        if (eventLog == null) {
-            eventLog = getLogger(eventLogName);
+        if (this.eventLog == null) {
+            this.eventLog = getLogger(this.eventLogName);
         }
-        eventLog.error(msg, error);
+        this.eventLog.error(msg, error);
     }
 
     /**
      * Log an application error
      */
     public void logError(String msg) {
-        if (eventLog == null) {
-            eventLog = getLogger(eventLogName);
+        if (this.eventLog == null) {
+            this.eventLog = getLogger(this.eventLogName);
         }
-        eventLog.error(msg);
+        this.eventLog.error(msg);
     }
 
     /**
@@ -1569,43 +1572,42 @@ public final class Application implements Runnable {
      * get the app's event log.
      */
     public Log getEventLog() {
-        if (eventLog == null) {
-            eventLog = getLogger(eventLogName);
+        if (this.eventLog == null) {
+            this.eventLog = getLogger(this.eventLogName);
             setEventLogLevel();
         }
-        return eventLog;
+        return this.eventLog;
     }
 
     /**
      * get the app's access log.
      */
     public Log getAccessLog() {
-        if (accessLog == null) {
-            accessLog = getLogger(accessLogName);
+        if (this.accessLog == null) {
+            this.accessLog = getLogger(this.accessLogName);
         }
-        return accessLog;
+        return this.accessLog;
     }
 
     /**
      *  Get a logger object to log events for this application.
      */
     public Log getLogger(String logname) {
-        if ("console".equals(logDir) || "console".equals(logname)) {
+        if ("console".equals(this.logDir) || "console".equals(logname)) {  //$NON-NLS-1$//$NON-NLS-2$
             return Logging.getConsoleLog();
-        } else {
-            return LogFactory.getLog(logname);
         }
+        return LogFactory.getLog(logname);
     }
 
     private void setEventLogLevel() {
         // set log level for event log in case it is a helma.util.Logger
-        if (eventLog instanceof Logger) {
-            if (debug) {
-                if (!eventLog.isDebugEnabled()) {
-                    ((Logger) eventLog).setLogLevel(Logger.DEBUG);
+        if (this.eventLog instanceof Logger) {
+            if (this.debug) {
+                if (!this.eventLog.isDebugEnabled()) {
+                    ((Logger) this.eventLog).setLogLevel(Logger.DEBUG);
                 }
-            } else if (eventLog.isDebugEnabled()) {
-                ((Logger) eventLog).setLogLevel(Logger.INFO);
+            } else if (this.eventLog.isDebugEnabled()) {
+                ((Logger) this.eventLog).setLogLevel(Logger.INFO);
             }
         }
     }
@@ -1619,14 +1621,14 @@ public final class Application implements Runnable {
         // interval between session cleanups
         long lastSessionCleanup = System.currentTimeMillis();
 
-        while (Thread.currentThread() == worker) {
+        while (Thread.currentThread() == this.worker) {
 
             try {
                 // interval between scheduler runs
                 long sleepInterval = 60000;
 
                 try {
-                    String sleepProp = props.getProperty("schedulerInterval");
+                    String sleepProp = this.props.getProperty("schedulerInterval"); //$NON-NLS-1$
                     if (sleepProp != null) {
                         sleepInterval = Math.max(1000, Integer.parseInt(sleepProp) * 1000);
                     } else {
@@ -1640,42 +1642,42 @@ public final class Application implements Runnable {
                 try {
                     Thread.sleep(sleepInterval);
                 } catch (InterruptedException x) {
-                    worker = null;
+                    this.worker = null;
                     break;
                 }
 
                 // purge sessions
                 try {
-                    lastSessionCleanup = sessionMgr.cleanupSessions(lastSessionCleanup);
+                    lastSessionCleanup = this.sessionMgr.cleanupSessions(lastSessionCleanup);
                 } catch (Exception x) {
-                    logError("Error in session cleanup: " + x, x);
+                    logError(Messages.getString("Application.23") + x, x); //$NON-NLS-1$
                 } catch (LinkageError x) {
-                    logError("Error in session cleanup: " + x, x);
+                    logError(Messages.getString("Application.24") + x, x); //$NON-NLS-1$
                 }
 
                 // execute cron jobs
                 try {
                     executeCronJobs();
                 } catch (Exception x) {
-                    logError("Error in cron job execution: " + x, x);
+                    logError(Messages.getString("Application.25") + x, x); //$NON-NLS-1$
                 } catch (LinkageError x) {
-                    logError("Error in cron job execution: " + x, x);
+                    logError(Messages.getString("Application.26") + x, x); //$NON-NLS-1$
                 }
 
             } catch (VirtualMachineError error) {
-                logError("Error in scheduler loop: " + error, error);
+                logError(Messages.getString("Application.27") + error, error); //$NON-NLS-1$
             }
         }
 
         // when interrupted, shutdown running cron jobs
-        synchronized (activeCronJobs) {
-            for (Iterator i = activeCronJobs.values().iterator(); i.hasNext();) {
+        synchronized (this.activeCronJobs) {
+            for (Iterator i = this.activeCronJobs.values().iterator(); i.hasNext();) {
                 ((CronRunner) i.next()).interrupt();
                 i.remove();
             }
         }
 
-        logEvent("Scheduler for " + name + " exiting");
+        logEvent(Messages.getString("Application.28") + this.name + Messages.getString("Application.29")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -1685,17 +1687,17 @@ public final class Application implements Runnable {
      */
     private void executeCronJobs() {
         // loop-local cron job data
-        List jobs = CronJob.parse(props.getSubProperties("cron."));
+        List jobs = CronJob.parse(this.props.getSubProperties("cron.")); //$NON-NLS-1$
         Date date = new Date();
 
-        jobs.addAll(customCronJobs.values());
+        jobs.addAll(this.customCronJobs.values());
         CronJob.sort(jobs);
 
-        if (debug) {
-            logEvent("Running cron jobs: " + jobs);
+        if (this.debug) {
+            logEvent(Messages.getString("Application.30") + jobs); //$NON-NLS-1$
         }
-        if (!activeCronJobs.isEmpty()) {
-            logEvent("Cron jobs still running from last minute: " + activeCronJobs);
+        if (!this.activeCronJobs.isEmpty()) {
+            logEvent(Messages.getString("Application.31") + this.activeCronJobs); //$NON-NLS-1$
         }
 
         for (Iterator i = jobs.iterator(); i.hasNext();) {
@@ -1703,8 +1705,8 @@ public final class Application implements Runnable {
 
             if (job.appliesToDate(date)) {
                 // check if the job is already active ...
-                if (activeCronJobs.containsKey(job.getName())) {
-                    logEvent(job + " is still active, skipped in this minute");
+                if (this.activeCronJobs.containsKey(job.getName())) {
+                    logEvent(job + Messages.getString("Application.32")); //$NON-NLS-1$
 
                     continue;
                 }
@@ -1714,14 +1716,13 @@ public final class Application implements Runnable {
                 try {
                     evaluator = getEvaluator();
                 } catch (RuntimeException rt) {
-                    if (running) {
-                        logEvent("couldn't execute " + job +
-                                ", maximum thread count reached");
+                    if (this.running) {
+                        logEvent(Messages.getString("Application.33") + job + //$NON-NLS-1$
+                                Messages.getString("Application.34")); //$NON-NLS-1$
 
                         continue;
-                    } else {
-                        break;
                     }
+                    break;
                 }
 
                 // if the job has a long timeout or we're already late during this minute
@@ -1730,14 +1731,14 @@ public final class Application implements Runnable {
                         (CronJob.millisToNextFullMinute() < 30000)) {
                     CronRunner runner = new CronRunner(evaluator, job);
 
-                    activeCronJobs.put(job.getName(), runner);
+                    this.activeCronJobs.put(job.getName(), runner);
                     runner.start();
                 } else {
                     try {
                         evaluator.invokeInternal(null, job.getFunction(),
                                 RequestEvaluator.EMPTY_ARGS, job.getTimeout());
                     } catch (Exception ex) {
-                        logEvent("error running " + job + ": " + ex);
+                        logEvent(Messages.getString("Application.35") + job + ": " + ex);  //$NON-NLS-1$//$NON-NLS-2$
                     } finally {
                         releaseEvaluator(evaluator);
                     }
@@ -1751,7 +1752,7 @@ public final class Application implements Runnable {
      * for it in the class.properties file.
      */
     public boolean isJavaPrototype(String typename) {
-        return classMapping.contains(typename);
+        return this.classMapping.contains(typename);
     }
 
     /**
@@ -1759,7 +1760,7 @@ public final class Application implements Runnable {
      */
     public String getJavaClassForPrototype(String typename) {
 
-        for (Iterator it = classMapping.entrySet().iterator(); it.hasNext();) {
+        for (Iterator it = this.classMapping.entrySet().iterator(); it.hasNext();) {
             Map.Entry entry = (Map.Entry) it.next();
 
             if (typename.equals(entry.getValue())) {
@@ -1777,17 +1778,17 @@ public final class Application implements Runnable {
      */
     public DbSource getDbSource(String name) {
         String dbSrcName = name.toLowerCase();
-        DbSource dbs = (DbSource) dbSources.get(dbSrcName);
+        DbSource dbs = (DbSource) this.dbSources.get(dbSrcName);
 
         if (dbs != null) {
             return dbs;
         }
 
         try {
-            dbs = new DbSource(name, dbProps, getClassLoader());
-            dbSources.put(dbSrcName, dbs);
+            dbs = new DbSource(name, this.dbProps, this.getClassLoader());
+            this.dbSources.put(dbSrcName, dbs);
         } catch (Exception problem) {
-            logEvent("Error creating DbSource " + name +": ");
+            logEvent(Messages.getString("Application.36") + name +": "); //$NON-NLS-1$ //$NON-NLS-2$
             logEvent(problem.toString());
         }
 
@@ -1798,7 +1799,7 @@ public final class Application implements Runnable {
      * Return the name of this application
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -1809,21 +1810,21 @@ public final class Application implements Runnable {
      * @param current the current/parent repository
      * @return if the repository was not yet contained
      */
-    public boolean addRepository(Repository rep, Repository current) {
-        if (rep != null && !repositories.contains(rep)) {
+    public boolean addRepository(RepositoryInterface rep, RepositoryInterface current) {
+        if (rep != null && !this.repositories.contains(rep)) {
             // Add the new repository before its parent/current repository.
             // This establishes the order of compilation between FileRepositories
             // and embedded ZipRepositories, or repositories added
             // via app.addRepository()
             if (current != null) {
-                int pos = repositories.indexOf(current);
+                int pos = this.repositories.indexOf(current);
                 if (pos > -1) {
-                    repositories.add(pos, rep);
+                    this.repositories.add(pos, rep);
                     return true;
                 }
             }
             // no parent or parent not in app's repositories, add at end of list.
-            repositories.add(rep);
+            this.repositories.add(rep);
             return true;
         }
         return false;
@@ -1837,8 +1838,8 @@ public final class Application implements Runnable {
      * @return  the index of the first occurrence of the argument in this
      *          list; returns <tt>-1</tt> if the object is not found.
      */
-    public int getRepositoryIndex(Repository rep) {
-        return repositories.indexOf(rep);
+    public int getRepositoryIndex(RepositoryInterface rep) {
+        return this.repositories.indexOf(rep);
     }
 
     /**
@@ -1846,7 +1847,7 @@ public final class Application implements Runnable {
      * @return iterator through application repositories
      */
     public List getRepositories() {
-        return Collections.unmodifiableList(repositories);
+        return Collections.unmodifiableList(this.repositories);
     }
 
     /**
@@ -1856,8 +1857,8 @@ public final class Application implements Runnable {
      *
      * @param resource the resource being currently evaluated/compiled
      */
-    public void setCurrentCodeResource(Resource resource) {
-        currentCodeResource = resource;
+    public void setCurrentCodeResource(ResourceInterface resource) {
+        this.currentCodeResource = resource;
     }
 
     /**
@@ -1867,22 +1868,22 @@ public final class Application implements Runnable {
 
      * @return the resource being currently evaluated/compiled
      */
-    public Resource getCurrentCodeResource() {
-        return currentCodeResource;
+    public ResourceInterface getCurrentCodeResource() {
+        return this.currentCodeResource;
     }
 
     /**
      * Return the directory of the Helma server
      */
     public File getServerDir() {
-        return hopHome;
+        return this.hopHome;
     }
 
     /**
      * Get the DbMapping associated with a prototype name in this application
      */
     public DbMapping getDbMapping(String typename) {
-        Prototype proto = typemgr.getPrototype(typename);
+        Prototype proto = this.typemgr.getPrototype(typename);
 
         if (proto == null) {
             return null;
@@ -1897,7 +1898,7 @@ public final class Application implements Runnable {
      * @return the current upload status.
      */
     public UploadStatus getUploadStatus(RequestTrans req) {
-        String uploadId = (String) req.get("upload_id");
+        String uploadId = (String) req.get("upload_id"); //$NON-NLS-1$
         if (uploadId == null)
             return null;
 
@@ -1912,48 +1913,48 @@ public final class Application implements Runnable {
 
     private synchronized void updateProperties() {
         // if so property file has been updated, re-read props.
-        if (props.lastModified() > lastPropertyRead) {
+        if (this.props.lastModified() > this.lastPropertyRead) {
             // force property update
-            props.update();
+            this.props.update();
 
             // character encoding to be used for responses
-            charset = props.getProperty("charset", "UTF-8");
+            this.charset = this.props.getProperty("charset", "UTF-8");  //$NON-NLS-1$//$NON-NLS-2$
 
             // debug flag
-            debug = "true".equalsIgnoreCase(props.getProperty("debug"));
+            this.debug = "true".equalsIgnoreCase(this.props.getProperty("debug"));  //$NON-NLS-1$//$NON-NLS-2$
 
             // if rhino debugger is enabled use higher (10 min) default request timeout
             String defaultReqTimeout =
-                    "true".equalsIgnoreCase(props.getProperty("rhino.debug")) ?
-                        "600" : "60";
-            String reqTimeout = props.getProperty("requesttimeout", defaultReqTimeout);
+                    "true".equalsIgnoreCase(this.props.getProperty("rhino.debug")) ? //$NON-NLS-1$ //$NON-NLS-2$
+                        "600" : "60";  //$NON-NLS-1$//$NON-NLS-2$
+            String reqTimeout = this.props.getProperty("requesttimeout", defaultReqTimeout); //$NON-NLS-1$
             try {
-                requestTimeout = Long.parseLong(reqTimeout) * 1000L;
+                this.requestTimeout = Long.parseLong(reqTimeout) * 1000L;
             } catch (Exception ignore) {
                 // go with default value
-                requestTimeout = 60000L;
+                this.requestTimeout = 60000L;
             }
 
             // set base URI
-            String base = props.getProperty("baseuri");
+            String base = this.props.getProperty("baseuri"); //$NON-NLS-1$
 
             if (base != null) {
                 setBaseURI(base);
-            } else if (baseURI == null) {
-                baseURI = "/";
+            } else if (this.baseURI == null) {
+                this.baseURI = "/"; //$NON-NLS-1$
             }
 
-            hrefRootPrototype = props.getProperty("hrefrootprototype");
-            rootObjectPropertyName = props.getProperty("rootobjectpropertyname");
-            rootObjectFunctionName = props.getProperty("rootobjectfunctionname");
+            this.hrefRootPrototype = this.props.getProperty("hrefrootprototype"); //$NON-NLS-1$
+            this.rootObjectPropertyName = this.props.getProperty("rootobjectpropertyname"); //$NON-NLS-1$
+            this.rootObjectFunctionName = this.props.getProperty("rootobjectfunctionname"); //$NON-NLS-1$
 
             // update the XML-RPC access list, containting prototype.method
             // entries of functions that may be called via XML-RPC
-            String xmlrpcAccessProp = props.getProperty("xmlrpcaccess");
+            String xmlrpcAccessProp = this.props.getProperty("xmlrpcaccess"); //$NON-NLS-1$
             HashSet xra = new HashSet();
 
             if (xmlrpcAccessProp != null) {
-                StringTokenizer st = new StringTokenizer(xmlrpcAccessProp, ",; ");
+                StringTokenizer st = new StringTokenizer(xmlrpcAccessProp, ",; "); //$NON-NLS-1$
 
                 while (st.hasMoreTokens()) {
                     String token = st.nextToken().trim();
@@ -1962,11 +1963,11 @@ public final class Application implements Runnable {
                 }
             }
 
-            xmlrpcAccess = xra;
+            this.xmlrpcAccess = xra;
 
             // if node manager exists, update it
-            if (nmgr != null) {
-                nmgr.updateProperties(props);
+            if (this.nmgr != null) {
+                this.nmgr.updateProperties(this.props);
             }
 
             // update extensions
@@ -1974,34 +1975,34 @@ public final class Application implements Runnable {
                 Vector extensions = Server.getServer().getExtensions();
 
                 for (int i = 0; i < extensions.size(); i++) {
-                    HelmaExtension ext = (HelmaExtension) extensions.get(i);
+                    HelmaExtensionInterface ext = (HelmaExtensionInterface) extensions.get(i);
 
                     try {
                         ext.applicationUpdated(this);
                     } catch (ConfigurationException e) {
-                        logEvent("Error updating extension "+ext+": "+e);
+                        logEvent(Messages.getString("Application.38")+ext+": "+e); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
             }
 
-            String loggerFactory = props.getProperty("loggerFactory", "helma.util.Logging");
-            if ("helma.util.Logging".equals(loggerFactory)) {
-                logDir = props.getProperty("logdir", "log");
-                if (System.getProperty("helma.logdir") == null) {
+            String loggerFactory = this.props.getProperty("loggerFactory", "helma.util.Logging");  //$NON-NLS-1$//$NON-NLS-2$
+            if ("helma.util.Logging".equals(loggerFactory)) { //$NON-NLS-1$
+                this.logDir = this.props.getProperty("logdir", "log"); //$NON-NLS-1$ //$NON-NLS-2$
+                if (System.getProperty("helma.logdir") == null) { //$NON-NLS-1$
                     // set up helma.logdir system property in case we're using it
                     // FIXME: this sets a global System property, should be per-app
-                    File dir = new File(logDir);
-                    System.setProperty("helma.logdir", dir.getAbsolutePath());
+                    File dir = new File(this.logDir);
+                    System.setProperty("helma.logdir", dir.getAbsolutePath()); //$NON-NLS-1$
                 }
             } else {
-                logDir = null;
+                this.logDir = null;
             }
 
             // set log level for event log in case debug flag has changed
             setEventLogLevel();
 
             // set prop read timestamp
-            lastPropertyRead = props.lastModified();
+            this.lastPropertyRead = this.props.lastModified();
         }
     }
 
@@ -2011,23 +2012,23 @@ public final class Application implements Runnable {
      *  change, too.
      */
     public long getChecksum() {
-        return starttime +
-               typemgr.getLastCodeUpdate() +
-               props.getChecksum();
+        return this.starttime +
+               this.typemgr.getLastCodeUpdate() +
+               this.props.getChecksum();
     }
 
     /**
      * Proxy method to get a property from the applications properties.
      */
     public String getProperty(String propname) {
-        return props.getProperty(propname);
+        return this.props.getProperty(propname);
     }
 
     /**
      * Proxy method to get a property from the applications properties.
      */
     public String getProperty(String propname, String defvalue) {
-        return props.getProperty(propname, defvalue);
+        return this.props.getProperty(propname, defvalue);
     }
 
     /**
@@ -2036,7 +2037,7 @@ public final class Application implements Runnable {
      * @return the properties reflecting the app.properties
      */
     public ResourceProperties getProperties() {
-        return props;
+        return this.props;
     }
 
     /**
@@ -2045,7 +2046,7 @@ public final class Application implements Runnable {
      * @return the properties reflecting the db.properties
      */
     public ResourceProperties getDbProperties() {
-        return dbProps;
+        return this.dbProps;
     }
 
 
@@ -2055,46 +2056,47 @@ public final class Application implements Runnable {
      * during runtime, so the app gets unregistered correctly.
      */
     public String getXmlRpcHandlerName() {
-        if (xmlrpcHandlerName == null) {
-            xmlrpcHandlerName = props.getProperty("xmlrpcHandlerName", this.name);
+        if (this.xmlrpcHandlerName == null) {
+            this.xmlrpcHandlerName = this.props.getProperty("xmlrpcHandlerName", this.name); //$NON-NLS-1$
         }
 
-        return xmlrpcHandlerName;
+        return this.xmlrpcHandlerName;
     }
 
     /**
      * Return a string representation for this app.
      */
+    @Override
     public String toString() {
-        return "[Application "+name+"]";
+        return "[Application "+this.name+"]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
      *
      */
     public int countThreads() {
-        return threadgroup.activeCount();
+        return this.threadgroup.activeCount();
     }
 
     /**
      *
      */
     public int countEvaluators() {
-        return allThreads.size();
+        return this.allThreads.size();
     }
 
     /**
      *
      */
     public int countFreeEvaluators() {
-        return freeThreads.size();
+        return this.freeThreads.size();
     }
 
     /**
      *
      */
     public int countActiveEvaluators() {
-        return allThreads.size() - freeThreads.size();
+        return this.allThreads.size() - this.freeThreads.size();
     }
 
     /**
@@ -2110,21 +2112,21 @@ public final class Application implements Runnable {
      *
      */
     public long getRequestCount() {
-        return requestCount;
+        return this.requestCount;
     }
 
     /**
      *
      */
     public long getXmlrpcCount() {
-        return xmlrpcCount;
+        return this.xmlrpcCount;
     }
 
     /**
      *
      */
     public long getErrorCount() {
-        return errorCount;
+        return this.errorCount;
     }
 
     /**
@@ -2133,7 +2135,7 @@ public final class Application implements Runnable {
      * @return ...
      */
     public long getStarttime() {
-        return starttime;
+        return this.starttime;
     }
 
     /**
@@ -2142,22 +2144,22 @@ public final class Application implements Runnable {
      * @return the character encoding
      */
     public String getCharset() {
-        return charset;
+        return this.charset;
     }
 
     /**
      * Periodically called to log thread stats for this application
      */
     public void printThreadStats() {
-        logEvent("Thread Stats for " + name + ": " + threadgroup.activeCount() +
-                 " active");
+        logEvent(Messages.getString("Application.40") + this.name + ": " + this.threadgroup.activeCount() +  //$NON-NLS-1$//$NON-NLS-2$
+                 Messages.getString("Application.41")); //$NON-NLS-1$
 
         Runtime rt = Runtime.getRuntime();
         long free = rt.freeMemory();
         long total = rt.totalMemory();
 
-        logEvent("Free memory: " + (free / 1024) + " kB");
-        logEvent("Total memory: " + (total / 1024) + " kB");
+        logEvent(Messages.getString("Application.42") + (free / 1024) + Messages.getString("Application.43")); //$NON-NLS-1$ //$NON-NLS-2$
+        logEvent(Messages.getString("Application.44") + (total / 1024) + Messages.getString("Application.45")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
@@ -2165,11 +2167,11 @@ public final class Application implements Runnable {
      */
     protected void checkXmlRpcAccess(String proto, String method)
                               throws Exception {
-        String key = proto + "." + method;
+        String key = proto + "." + method; //$NON-NLS-1$
 
         // XML-RPC access items are case insensitive and stored in lower case
-        if (!xmlrpcAccess.contains(key.toLowerCase())) {
-            throw new Exception("Method " + key + " is not callable via XML-RPC");
+        if (!this.xmlrpcAccess.contains(key.toLowerCase())) {
+            throw new Exception(Messages.getString("Application.46") + key + Messages.getString("Application.47")); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 
@@ -2182,21 +2184,23 @@ public final class Application implements Runnable {
             this.job = job;
         }
 
+        @Override
         public void run() {
             try {
-                thisEvaluator.invokeInternal(null, job.getFunction(),
-                                             RequestEvaluator.EMPTY_ARGS, job.getTimeout());
+                this.thisEvaluator.invokeInternal(null, this.job.getFunction(),
+                                             RequestEvaluator.EMPTY_ARGS, this.job.getTimeout());
             } catch (Exception ex) {
-                logEvent("error running " + job + ": " + ex);
+                logEvent(Messages.getString("Application.48") + this.job + ": " + ex);  //$NON-NLS-1$//$NON-NLS-2$
             } finally {
-                releaseEvaluator(thisEvaluator);
-                thisEvaluator = null;
-                activeCronJobs.remove(job.getName());
+                releaseEvaluator(this.thisEvaluator);
+                this.thisEvaluator = null;
+                Application.this.activeCronJobs.remove(this.job.getName());
             }
         }
 
+        @Override
         public String toString() {
-            return "CronRunner[" + job + "]";
+            return "CronRunner[" + this.job + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

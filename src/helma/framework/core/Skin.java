@@ -17,13 +17,12 @@
 package helma.framework.core;
 
 import helma.framework.*;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import helma.objectmodel.ConcurrencyException;
 import helma.util.*;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 
 import java.util.*;
-import java.io.UnsupportedEncodingException;
 import java.io.Reader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -76,7 +75,7 @@ public final class Skin {
         this.sandbox = null;
         this.source = content.toCharArray();
         this.offset = 0;
-        this.length = source.length;
+        this.length = this.source.length;
         parse();
     }
 
@@ -88,7 +87,7 @@ public final class Skin {
         this.sandbox = sandbox;
         this.source = content.toCharArray();
         this.offset = 0;
-        length = source.length;
+        this.length = this.source.length;
         parse();
     }
 
@@ -118,8 +117,8 @@ public final class Skin {
         parse();
     }
 
-    public static Skin getSkin(Resource res, Application app) throws IOException {
-        String encoding = app.getProperty("skinCharset");
+    public static Skin getSkin(ResourceInterface res, Application app) throws IOException {
+        String encoding = app.getProperty("skinCharset"); //$NON-NLS-1$
         Reader reader;
         if (encoding == null) {
             reader = new InputStreamReader(res.getInputStream());
@@ -150,38 +149,37 @@ public final class Skin {
         ArrayList partBuffer = new ArrayList();
 
         boolean escape = false;
-        for (int i = offset; i < (length - 1); i++) {
-            if (source[i] == '<' && source[i + 1] == '%' && !escape) {
+        for (int i = this.offset; i < (this.length - 1); i++) {
+            if (this.source[i] == '<' && this.source[i + 1] == '%' && !escape) {
                 // found macro start tag
                 Macro macro = new Macro(i, 2);
                 if (macro.isSubskinMacro) {
-                    new Skin(parentSkin, macro);
-                    length = i;
+                    new Skin(this.parentSkin, macro);
+                    this.length = i;
                     break;
-                } else {
-                    if (!macro.isCommentMacro) {
-                        hasContent = true;
-                    }
-                    partBuffer.add(macro);
                 }
+                if (!macro.isCommentMacro) {
+                    this.hasContent = true;
+                }
+                partBuffer.add(macro);
                 i = macro.end - 1;
             } else {
-                if (!hasContent && !Character.isWhitespace(source[i])){
-                    hasContent = true;
+                if (!this.hasContent && !Character.isWhitespace(this.source[i])){
+                    this.hasContent = true;
                 }
-                escape = source[i] == '\\' && !escape;
+                escape = this.source[i] == '\\' && !escape;
             }
         }
 
-        macros = new Macro[partBuffer.size()];
-        partBuffer.toArray(macros);
+        this.macros = new Macro[partBuffer.size()];
+        partBuffer.toArray(this.macros);
     }
 
     private void addSubskin(String name, Skin subskin) {
-        if (subskins == null) {
-            subskins = new HashMap();
+        if (this.subskins == null) {
+            this.subskins = new HashMap();
         }
-        subskins.put(name, subskin);
+        this.subskins.put(name, subskin);
     }
     
     /**
@@ -189,7 +187,7 @@ public final class Skin {
      * @return the list of macros
      */
     public Macro[] getMacros() {
-    	return macros;
+    	return this.macros;
     }
 
     /**
@@ -197,7 +195,7 @@ public final class Skin {
      * @return true if this skin contains a main skin
      */
     public boolean hasMainskin() {
-        return hasContent;
+        return this.hasContent;
     }
 
     /**
@@ -206,7 +204,7 @@ public final class Skin {
      * @return true if the given subskin exists
      */
     public boolean hasSubskin(String name) {
-        return subskins != null && subskins.containsKey(name);
+        return this.subskins != null && this.subskins.containsKey(name);
     }
 
     /**
@@ -215,7 +213,7 @@ public final class Skin {
      * @return the subskin
      */
     public Skin getSubskin(String name) {
-        return subskins == null ? null : (Skin) subskins.get(name);
+        return this.subskins == null ? null : (Skin) this.subskins.get(name);
     }
 
     /**
@@ -223,28 +221,28 @@ public final class Skin {
      * @return a string array containing this skin's substrings
      */
     public String[] getSubskinNames() {
-        return subskins == null ?
+        return this.subskins == null ?
                 new String[0] :
-                (String[]) subskins.keySet().toArray(new String[0]);
+                (String[]) this.subskins.keySet().toArray(new String[0]);
     }
 
     public String getExtends() {
-        return extendz;
+        return this.extendz;
     }
 
     /**
      * Get the raw source text this skin was parsed from
      */
     public String getSource() {
-        return new String(source, offset, length - offset);
+        return new String(this.source, this.offset, this.length - this.offset);
     }
 
     /**
      * Render this skin and return it as string
      */
     public String renderAsString(RequestEvaluator reval, Object thisObject, Object paramObject)
-                throws RedirectException, UnsupportedEncodingException {
-        String result = "";
+                throws RedirectException {
+        String result = ""; //$NON-NLS-1$
         ResponseTrans res = reval.getResponse();
         res.pushBuffer(null);
         try {
@@ -260,53 +258,53 @@ public final class Skin {
      * Render this skin
      */
     public void render(RequestEvaluator reval, Object thisObject, Object paramObject)
-                throws RedirectException, UnsupportedEncodingException {
+                throws RedirectException {
         // check for endless skin recursion
         if (++reval.skinDepth > 50) {
-            throw new RuntimeException("Recursive skin invocation suspected");
+            throw new RuntimeException(Messages.getString("Skin.0")); //$NON-NLS-1$
         }
 
         ResponseTrans res = reval.getResponse();
 
-        if (macros == null) {
-            res.write(source, offset, length - offset);
+        if (this.macros == null) {
+            res.write(this.source, this.offset, this.length - this.offset);
             reval.skinDepth--;
             return;
         }
 
         // register param object, remember previous one to reset afterwards
         Map handlers = res.getMacroHandlers();
-        Object previousParam = handlers.put("param", paramObject);
-        Skin previousSkin = res.switchActiveSkin(parentSkin);
+        Object previousParam = handlers.put("param", paramObject); //$NON-NLS-1$
+        Skin previousSkin = res.switchActiveSkin(this.parentSkin);
 
         try {
-            int written = offset;
+            int written = this.offset;
             Map handlerCache = null;
 
-            if (macros.length > 3) {
+            if (this.macros.length > 3) {
                 handlerCache = new HashMap();
             }
             RenderContext cx = new RenderContext(reval, thisObject, handlerCache);
 
-            for (int i = 0; i < macros.length; i++) {
-                if (macros[i].start > written) {
-                    res.write(source, written, macros[i].start - written);
+            for (int i = 0; i < this.macros.length; i++) {
+                if (this.macros[i].start > written) {
+                    res.write(this.source, written, this.macros[i].start - written);
                 }
 
-                macros[i].render(cx);
-                written = macros[i].end;
+                this.macros[i].render(cx);
+                written = this.macros[i].end;
             }
 
-            if (written < length) {
-                res.write(source, written, length - written);
+            if (written < this.length) {
+                res.write(this.source, written, this.length - written);
             }
         } finally {
             reval.skinDepth--;
             res.switchActiveSkin(previousSkin);
             if (previousParam == null) {
-                handlers.remove("param");
+                handlers.remove("param"); //$NON-NLS-1$
             } else {
-                handlers.put("param", previousParam);
+                handlers.put("param", previousParam); //$NON-NLS-1$
             }
         }
     }
@@ -315,9 +313,9 @@ public final class Skin {
      * Check if a certain macro is present in this skin. The macro name is in handler.name notation
      */
     public boolean containsMacro(String macroname) {
-        for (int i = 0; i < macros.length; i++) {
-            if (macros[i] instanceof Macro) {
-                Macro m = macros[i];
+        for (int i = 0; i < this.macros.length; i++) {
+            if (this.macros[i] != null) {
+                Macro m = this.macros[i];
 
                 if (macroname.equals(m.name)) {
                     return true;
@@ -332,20 +330,19 @@ public final class Skin {
      *  Adds a macro to the list of allowed macros. The macro is in handler.name notation.
      */
     public void allowMacro(String macroname) {
-        if (sandbox == null) {
-            sandbox = new HashSet();
+        if (this.sandbox == null) {
+            this.sandbox = new HashSet();
         }
 
-        sandbox.add(macroname);
+        this.sandbox.add(macroname);
     }
 
     private Object processParameter(Object value, RenderContext cx)
             throws Exception {
         if (value instanceof Macro) {
             return ((Macro) value).invokeAsParameter(cx);
-        } else {
-            return value;
         }
+        return value;
     }
 
     public class Macro {
@@ -379,45 +376,45 @@ public final class Skin {
 
             int i = parse(macroOffset, false);
 
-            if (isSubskinMacro) {
-                if (i + 1 < length && source[i] == '\r' && source[i + 1] == '\n')
-                    end = Math.min(length, i + 2);
-                else if (i < length && (source[i] == '\r' || source[i] == '\n'))
-                    end = Math.min(length, i + 1);
+            if (this.isSubskinMacro) {
+                if (i + 1 < Skin.this.length && Skin.this.source[i] == '\r' && Skin.this.source[i + 1] == '\n')
+                    this.end = Math.min(Skin.this.length, i + 2);
+                else if (i < Skin.this.length && (Skin.this.source[i] == '\r' || Skin.this.source[i] == '\n'))
+                    this.end = Math.min(Skin.this.length, i + 1);
                 else
-                    end = Math.min(length, i);
+                    this.end = Math.min(Skin.this.length, i);
             } else {
-                end = Math.min(length, i);
+                this.end = Math.min(Skin.this.length, i);
             }
 
-            path = StringUtils.split(name, ".");
-            if (path.length <= 1) {
-                handlerType = HANDLER_GLOBAL;
+            this.path = StringUtils.split(this.name, "."); //$NON-NLS-1$
+            if (this.path.length <= 1) {
+                this.handlerType = HANDLER_GLOBAL;
             } else {
-                String handlerName = path[0];
-                if ("this".equalsIgnoreCase(handlerName)) {
-                    handlerType = HANDLER_THIS;
-                } else if ("response".equalsIgnoreCase(handlerName)) {
-                    handlerType = HANDLER_RESPONSE;
-                } else if ("request".equalsIgnoreCase(handlerName)) {
-                    handlerType = HANDLER_REQUEST;
-                } else if ("session".equalsIgnoreCase(handlerName)) {
-                    handlerType = HANDLER_SESSION;
-                } else if ("param".equalsIgnoreCase(handlerName)) {
-                    handlerType = HANDLER_PARAM;
+                String handlerName = this.path[0];
+                if ("this".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
+                    this.handlerType = HANDLER_THIS;
+                } else if ("response".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
+                    this.handlerType = HANDLER_RESPONSE;
+                } else if ("request".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
+                    this.handlerType = HANDLER_REQUEST;
+                } else if ("session".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
+                    this.handlerType = HANDLER_SESSION;
+                } else if ("param".equalsIgnoreCase(handlerName)) { //$NON-NLS-1$
+                    this.handlerType = HANDLER_PARAM;
                 }
             }
 
-            if (".extends".equals(name)) {
-                if (parentSkin != Skin.this) {
-                    throw new RuntimeException("Found .extends in subskin");
+            if (".extends".equals(this.name)) { //$NON-NLS-1$
+                if (Skin.this.parentSkin != Skin.this) {
+                    throw new RuntimeException(Messages.getString("Skin.1")); //$NON-NLS-1$
                 }
-                if (positionalParams == null || positionalParams.size() < 1
-                        || !(positionalParams.get(0) instanceof String)) {
-                    throw new RuntimeException(".extends requires an unnamed string parameter");
+                if (this.positionalParams == null || this.positionalParams.size() < 1
+                        || !(this.positionalParams.get(0) instanceof String)) {
+                    throw new RuntimeException(Messages.getString("Skin.2")); //$NON-NLS-1$
                 }
-                extendz = (String) positionalParams.get(0);
-                isCommentMacro = true; // don't render
+                Skin.this.extendz = (String) this.positionalParams.get(0);
+                this.isCommentMacro = true; // don't render
             }
         }
 
@@ -430,21 +427,21 @@ public final class Skin {
             int i;
 
             loop:
-            for (i = start + macroOffset; i < length - 1; i++) {
+            for (i = this.start + macroOffset; i < Skin.this.length - 1; i++) {
 
-                switch (source[i]) {
+                switch (Skin.this.source[i]) {
 
                     case '<':
 
                         if (state == PARSE_PARAM && quotechar == '\u0000'
-                                && b.length() == 0 && source[i + 1] == '%') {
+                                && b.length() == 0 && Skin.this.source[i + 1] == '%') {
                             Macro macro = new Macro(i, 2);
                             addParameter(lastParamName, macro);
                             lastParamName = null;
                             b.setLength(0);
                             i = macro.end - 1;
                         } else {
-                            b.append(source[i]);
+                            b.append(Skin.this.source[i]);
                             escape = false;
                         }
                         break;
@@ -452,21 +449,21 @@ public final class Skin {
                     case '%':
 
                         if ((state != PARSE_PARAM || quotechar == '\u0000' || lenient)
-                                && source[i + 1] == '>') {
+                                && Skin.this.source[i + 1] == '>') {
                             state = PARSE_DONE;
                             break loop;
                         }
-                        b.append(source[i]);
+                        b.append(Skin.this.source[i]);
                         escape = false;
                         break;
 
                     case '/':
 
-                        b.append(source[i]);
+                        b.append(Skin.this.source[i]);
                         escape = false;
 
-                        if (state == PARSE_MACRONAME && "//".equals(b.toString())) {
-                            isCommentMacro = true;
+                        if (state == PARSE_MACRONAME && "//".equals(b.toString())) { //$NON-NLS-1$
+                            this.isCommentMacro = true;
                             // just continue parsing the macro as this is the only way
                             // to correctly catch embedded macros - see bug 588
                         }
@@ -476,31 +473,31 @@ public final class Skin {
 
                         if (state == PARSE_MACRONAME && b.length() == 0) {
                             // this is a subskin/skinlet
-                            isSubskinMacro = true;
+                            this.isSubskinMacro = true;
                             break;
                         }
-                        b.append(source[i]);
+                        b.append(Skin.this.source[i]);
                         escape = false;
                         break;
 
                     case '|':
 
                         if (!escape && quotechar == '\u0000') {
-                            filterChain = new Macro(i, 1);
-                            i = filterChain.end - 2;
+                            this.filterChain = new Macro(i, 1);
+                            i = this.filterChain.end - 2;
                             lastParamName = null;
                             b.setLength(0);
                             state = PARSE_DONE;
                             break loop;
                         }
-                        b.append(source[i]);
+                        b.append(Skin.this.source[i]);
                         escape = false;
                         break;
 
                     case '\\':
 
                         if (escape) {
-                            b.append(source[i]);
+                            b.append(Skin.this.source[i]);
                         }
 
                         escape = !escape;
@@ -511,8 +508,8 @@ public final class Skin {
                     case '\'':
 
                         if (!escape && state == PARSE_PARAM) {
-                            if (quotechar == source[i]) {
-                                if (source[i + 1] != '%' && !Character.isWhitespace(source[i + 1]) && !lenient) {
+                            if (quotechar == Skin.this.source[i]) {
+                                if (Skin.this.source[i + 1] != '%' && !Character.isWhitespace(Skin.this.source[i + 1]) && !lenient) {
                                     // closing quotes and next character is not space or end tag -
                                     // switch to lenient mode
                                     reset();
@@ -524,13 +521,13 @@ public final class Skin {
                                 b.setLength(0);
                                 quotechar = '\u0000';
                             } else if (quotechar == '\u0000') {
-                                quotechar = source[i];
+                                quotechar = Skin.this.source[i];
                                 b.setLength(0);
                             } else {
-                                b.append(source[i]);
+                                b.append(Skin.this.source[i]);
                             }
                         } else {
-                            b.append(source[i]);
+                            b.append(Skin.this.source[i]);
                         }
 
                         escape = false;
@@ -544,7 +541,7 @@ public final class Skin {
                     case '\f':
 
                         if (state == PARSE_MACRONAME && b.length() > 0) {
-                            name = b.toString().trim();
+                            this.name = b.toString().trim();
                             b.setLength(0);
                             state = PARSE_PARAM;
                         } else if (state == PARSE_PARAM) {
@@ -556,7 +553,7 @@ public final class Skin {
                                     b.setLength(0);
                                 }
                             } else {
-                                b.append(source[i]);
+                                b.append(Skin.this.source[i]);
                                 escape = false;
                             }
                         }
@@ -569,18 +566,18 @@ public final class Skin {
                             lastParamName = b.toString().trim();
                             b.setLength(0);
                         } else {
-                            b.append(source[i]);
+                            b.append(Skin.this.source[i]);
                             escape = false;
                         }
 
                         break;
 
                     default:
-                        b.append(source[i]);
+                        b.append(Skin.this.source[i]);
                         escape = false;
                 }
 
-                if (i == length - 2 && !lenient &&
+                if (i == Skin.this.length - 2 && !lenient &&
                         (state != PARSE_DONE ||quotechar != '\u0000')) {
                     // macro tag is not properly terminated, switch to lenient mode                    
                     reset();
@@ -589,99 +586,99 @@ public final class Skin {
             }
 
             if (b.length() > 0) {
-                if (name == null) {
-                    name = b.toString().trim();
+                if (this.name == null) {
+                    this.name = b.toString().trim();
                 } else {
                     addParameter(lastParamName, b.toString());
                 }
             }
 
             if (state != PARSE_DONE) {
-                app.logError("Unterminated Macro Tag: " +this);
+                Skin.this.app.logError(Messages.getString("Skin.3") +this); //$NON-NLS-1$
             }
 
             return i + 2;
         }
 
         private void reset() {
-            filterChain = null;
-            name = null;
-            standardParams = new StandardParams();
-            namedParams = null;
-            positionalParams = null;
+            this.filterChain = null;
+            this.name = null;
+            this.standardParams = new StandardParams();
+            this.namedParams = null;
+            this.positionalParams = null;
         }
 
         private void addParameter(String name, Object value) {
             if (!(value instanceof String)) {
-                hasNestedMacros = true;                
+                this.hasNestedMacros = true;                
             }
             if (name == null) {
                 // take shortcut for positional parameters
-                if (positionalParams == null) {
-                    positionalParams = new ArrayList();
+                if (this.positionalParams == null) {
+                    this.positionalParams = new ArrayList();
                 }
-                positionalParams.add(value);
+                this.positionalParams.add(value);
                 return;
             }
             // check if this is parameter is relevant to us
-            if ("prefix".equals(name)) {
-                standardParams.prefix = value;
-            } else if ("suffix".equals(name)) {
-                standardParams.suffix = value;
-            } else if ("encoding".equals(name)) {
-                if ("html".equals(value)) {
-                    encoding = ENCODE_HTML;
-                } else if ("xml".equals(value)) {
-                    encoding = ENCODE_XML;
-                } else if ("form".equals(value)) {
-                    encoding = ENCODE_FORM;
-                } else if ("url".equals(value)) {
-                    encoding = ENCODE_URL;
-                } else if ("all".equals(value)) {
-                    encoding = ENCODE_ALL;
+            if ("prefix".equals(name)) { //$NON-NLS-1$
+                this.standardParams.prefix = value;
+            } else if ("suffix".equals(name)) { //$NON-NLS-1$
+                this.standardParams.suffix = value;
+            } else if ("encoding".equals(name)) { //$NON-NLS-1$
+                if ("html".equals(value)) { //$NON-NLS-1$
+                    this.encoding = ENCODE_HTML;
+                } else if ("xml".equals(value)) { //$NON-NLS-1$
+                    this.encoding = ENCODE_XML;
+                } else if ("form".equals(value)) { //$NON-NLS-1$
+                    this.encoding = ENCODE_FORM;
+                } else if ("url".equals(value)) { //$NON-NLS-1$
+                    this.encoding = ENCODE_URL;
+                } else if ("all".equals(value)) { //$NON-NLS-1$
+                    this.encoding = ENCODE_ALL;
                 } else {
-                    app.logEvent("Unrecognized encoding in skin macro: " + value);
+                    Skin.this.app.logEvent(Messages.getString("Skin.4") + value); //$NON-NLS-1$
                 }
-            } else if ("default".equals(name)) {
-                standardParams.defaultValue = value;
-            } else if ("failmode".equals(name)) {
-                standardParams.setFailMode(value);
+            } else if ("default".equals(name)) { //$NON-NLS-1$
+                this.standardParams.defaultValue = value;
+            } else if ("failmode".equals(name)) { //$NON-NLS-1$
+                this.standardParams.setFailMode(value);
             }
 
             // Add parameter to parameter map
-            if (namedParams == null) {
-                namedParams = new HashMap();
+            if (this.namedParams == null) {
+                this.namedParams = new HashMap();
             }
-            namedParams.put(name, value);
+            this.namedParams.put(name, value);
         }
 
         private Object invokeAsMacro(RenderContext cx, StandardParams stdParams, boolean asObject)
                 throws Exception {
 
             // immediately return for comment macros
-            if (isCommentMacro || name == null) {
+            if (this.isCommentMacro || this.name == null) {
                 return null;
             }
 
-            if ((sandbox != null) && !sandbox.contains(name)) {
-                throw new MacroException("Macro not allowed in sandbox: " + name);
+            if ((Skin.this.sandbox != null) && !Skin.this.sandbox.contains(this.name)) {
+                throw new MacroException(Messages.getString("Skin.5") + this.name); //$NON-NLS-1$
             }
 
             Object handler = null;
             Object value = null;
-            ScriptingEngine engine = cx.reval.scriptingEngine;
+            ScriptingEngineInterface engine = cx.reval.scriptingEngine;
 
-            if (handlerType != HANDLER_GLOBAL) {
-                handler = cx.resolveHandler(path[0], handlerType);
+            if (this.handlerType != HANDLER_GLOBAL) {
+                handler = cx.resolveHandler(this.path[0], this.handlerType);
                 handler = resolvePath(handler, cx.reval);
             }
 
-            if (handlerType == HANDLER_GLOBAL || handler != null) {
+            if (this.handlerType == HANDLER_GLOBAL || handler != null) {
                 // check if a function called name_macro is defined.
                 // if so, the macro evaluates to the function. Otherwise,
                 // a property/field with the name is used, if defined.
-                String propName = path[path.length - 1];
-                String funcName = resolveFunctionName(handler, propName + "_macro", engine);
+                String propName = this.path[this.path.length - 1];
+                String funcName = resolveFunctionName(handler, propName + "_macro", engine); //$NON-NLS-1$
 
                 // remember length of response buffer before calling macro
                 StringBuffer buffer = cx.reval.getResponse().getBuffer();
@@ -707,38 +704,37 @@ public final class Skin {
                     }
 
                     return filter(value, cx);
-                } else {
-                    if (handlerType == HANDLER_RESPONSE) {
-                        // some special handling for response handler
-                        if ("message".equals(propName))
-                            value = cx.reval.getResponse().getMessage();
-                        else if ("error".equals(propName))
-                            value = cx.reval.getResponse().getErrorMessage();
-                        if (value != null)
-                            return filter(value, cx);
-                    }
-                    // display error message unless onUnhandledMacro is defined or silent failmode is on
-                    if (!engine.hasProperty(handler, propName)) {
-                        if (engine.hasFunction(handler, "onUnhandledMacro", false)) {
-                            Object[] arguments = prepareArguments(1, cx);
-                            arguments[0] = propName;
-                            value = cx.reval.invokeDirectFunction(handler,  "onUnhandledMacro", arguments);
-                            // if macro has a filter chain and didn't return anything, use output
-                            // as filter argument.
-                            if (asObject && value == null && buffer.length() > bufLength) {
-                                value = buffer.substring(bufLength);
-                                buffer.setLength(bufLength);
-                            }
-                        } else if (standardParams.verboseFailmode(handler, engine)) {
-                            throw new MacroException("Unhandled macro: " + name);
-                        }
-                    } else {
-                        value = engine.getProperty(handler, propName);
-                    }
-                    return filter(value, cx);
                 }
-            } else if (standardParams.verboseFailmode(handler, engine)) {
-                throw new MacroException("Unhandled macro: " + name);
+                if (this.handlerType == HANDLER_RESPONSE) {
+                    // some special handling for response handler
+                    if ("message".equals(propName)) //$NON-NLS-1$
+                        value = cx.reval.getResponse().getMessage();
+                    else if ("error".equals(propName)) //$NON-NLS-1$
+                        value = cx.reval.getResponse().getErrorMessage();
+                    if (value != null)
+                        return filter(value, cx);
+                }
+                // display error message unless onUnhandledMacro is defined or silent failmode is on
+                if (!engine.hasProperty(handler, propName)) {
+                    if (engine.hasFunction(handler, "onUnhandledMacro", false)) { //$NON-NLS-1$
+                        Object[] arguments = prepareArguments(1, cx);
+                        arguments[0] = propName;
+                        value = cx.reval.invokeDirectFunction(handler,  "onUnhandledMacro", arguments); //$NON-NLS-1$
+                        // if macro has a filter chain and didn't return anything, use output
+                        // as filter argument.
+                        if (asObject && value == null && buffer.length() > bufLength) {
+                            value = buffer.substring(bufLength);
+                            buffer.setLength(bufLength);
+                        }
+                    } else if (this.standardParams.verboseFailmode(handler, engine)) {
+                        throw new MacroException(Messages.getString("Skin.6") + this.name); //$NON-NLS-1$
+                    }
+                } else {
+                    value = engine.getProperty(handler, propName);
+                }
+                return filter(value, cx);
+            } else if (this.standardParams.verboseFailmode(handler, engine)) {
+                throw new MacroException(Messages.getString("Skin.7") + this.name); //$NON-NLS-1$
             }
             return filter(null, cx);
         }
@@ -748,7 +744,7 @@ public final class Skin {
          * if necessary.
          */
         Object invokeAsParameter(RenderContext cx) throws Exception {
-            StandardParams stdParams = standardParams.render(cx);            
+            StandardParams stdParams = this.standardParams.render(cx);            
             Object value = invokeAsMacro(cx, stdParams, true);
             if (stdParams.prefix != null || stdParams.suffix != null) {
                 ResponseTrans res = cx.reval.getResponse();
@@ -756,7 +752,7 @@ public final class Skin {
                 writeResponse(value, cx.reval, stdParams, true);
                 return res.popString();
             } else if (stdParams.defaultValue != null &&
-                    (value == null || "".equals(value))) {
+                    (value == null || "".equals(value))) { //$NON-NLS-1$
                 return stdParams.defaultValue;
             } else {
                 return value;
@@ -767,13 +763,13 @@ public final class Skin {
          *  Render the macro given a handler object.
          */
         void render(RenderContext cx)
-                throws RedirectException, UnsupportedEncodingException {
+                throws RedirectException {
             StringBuffer buffer = cx.reval.getResponse().getBuffer();
             // remember length of response buffer before calling macro
             int bufLength = buffer.length();
             try {
-                StandardParams stdParams = standardParams.render(cx);
-                boolean asObject = filterChain != null;
+                StandardParams stdParams = this.standardParams.render(cx);
+                boolean asObject = this.filterChain != null;
                 Object value = invokeAsMacro(cx, stdParams, asObject);
 
                 // check if macro wrote out to response buffer
@@ -783,7 +779,7 @@ public final class Skin {
                     writeResponse(value, cx.reval, stdParams, true);
                 } else {
                     // if an encoding is specified, re-encode the macro's output
-                    if (encoding != ENCODE_NONE) {
+                    if (this.encoding != ENCODE_NONE) {
                         String output = buffer.substring(bufLength);
 
                         buffer.setLength(bufLength);
@@ -813,46 +809,45 @@ public final class Skin {
                 throw timeout;
             } catch (MacroException mx) {
                 String msg = mx.getMessage();
-                cx.reval.getResponse().write(" [" + msg + "] ");
-                app.logError(msg);
+                cx.reval.getResponse().write(" [" + msg + "] "); //$NON-NLS-1$ //$NON-NLS-2$
+                Skin.this.app.logError(msg);
             } catch (Exception x) {
                 String msg = x.getMessage();
                 if ((msg == null) || (msg.length() < 10)) {
                     msg = x.toString();
                 }
-                msg = new StringBuffer("Macro error in ").append(name)
-                        .append(": ").append(msg).toString();
-                cx.reval.getResponse().write(" [" + msg + "] ");
-                app.logError(msg, x);
+                msg = new StringBuffer(Messages.getString("Skin.8")).append(this.name) //$NON-NLS-1$
+                        .append(": ").append(msg).toString(); //$NON-NLS-1$
+                cx.reval.getResponse().write(" [" + msg + "] ");  //$NON-NLS-1$//$NON-NLS-2$
+                Skin.this.app.logError(msg, x);
             }
         }
 
         private Object filter(Object returnValue, RenderContext cx)
                 throws Exception {
             // invoke filter chain if defined
-            if (filterChain != null) {
-                return filterChain.invokeAsFilter(returnValue, cx);
-            } else {
-                return returnValue;
+            if (this.filterChain != null) {
+                return this.filterChain.invokeAsFilter(returnValue, cx);
             }
+            return returnValue;
         }
 
         private Object invokeAsFilter(Object returnValue, RenderContext cx)
                 throws Exception {
 
-            if (name == null) {
-                throw new MacroException("Empty macro filter");
-            } else if (sandbox != null && !sandbox.contains(name)) {
-                throw new MacroException("Macro not allowed in sandbox: " + name);
+            if (this.name == null) {
+                throw new MacroException(Messages.getString("Skin.9")); //$NON-NLS-1$
+            } else if (Skin.this.sandbox != null && !Skin.this.sandbox.contains(this.name)) {
+                throw new MacroException(Messages.getString("Skin.10") + this.name); //$NON-NLS-1$
             }
             Object handlerObject = null;
 
-            if (handlerType != HANDLER_GLOBAL) {
-                handlerObject = cx.resolveHandler(path[0], handlerType);
+            if (this.handlerType != HANDLER_GLOBAL) {
+                handlerObject = cx.resolveHandler(this.path[0], this.handlerType);
                 handlerObject = resolvePath(handlerObject, cx.reval);
             }
 
-            String propName = path[path.length - 1] + "_filter";
+            String propName = this.path[this.path.length - 1] + "_filter"; //$NON-NLS-1$
             String funcName = resolveFunctionName(handlerObject, propName,
                     cx.reval.scriptingEngine);
 
@@ -864,21 +859,20 @@ public final class Skin {
                                                            arguments);
 
                 return filter(retval, cx);
-            } else {
-                throw new MacroException("Undefined macro filter: " + name);
             }
+            throw new MacroException(Messages.getString("Skin.11") + this.name); //$NON-NLS-1$
         }
 
         private Object[] prepareArguments(int offset, RenderContext cx)
                 throws Exception {
-            int nPosArgs = (positionalParams == null) ? 0 : positionalParams.size();
+            int nPosArgs = (this.positionalParams == null) ? 0 : this.positionalParams.size();
             Object[] arguments = new Object[offset + 1 + nPosArgs];
 
-            if (namedParams == null) {
+            if (this.namedParams == null) {
                 arguments[offset] = new SystemMap(4);
-            } else if (hasNestedMacros) {
-                SystemMap map = new SystemMap((int) (namedParams.size() * 1.5));
-                for (Iterator it = namedParams.entrySet().iterator(); it.hasNext(); ) {
+            } else if (this.hasNestedMacros) {
+                SystemMap map = new SystemMap((int) (this.namedParams.size() * 1.5));
+                for (Iterator it = this.namedParams.entrySet().iterator(); it.hasNext(); ) {
                     Map.Entry entry = (Map.Entry) it.next();
                     Object value = entry.getValue();
                     if (!(value instanceof String))
@@ -888,11 +882,11 @@ public final class Skin {
                 arguments[offset] = map;
             } else {
                 // pass a clone/copy of the parameter map so if the script changes it,
-                arguments[offset] = new CopyOnWriteMap(namedParams);
+                arguments[offset] = new CopyOnWriteMap(this.namedParams);
             }
-            if (positionalParams != null) {
+            if (this.positionalParams != null) {
                 for (int i = 0; i < nPosArgs; i++) {
-                    Object value = positionalParams.get(i);
+                    Object value = this.positionalParams.get(i);
                     if (!(value instanceof String))
                         value = processParameter(value, cx);
                     arguments[offset + 1 + i] = value;
@@ -902,13 +896,13 @@ public final class Skin {
         }
 
         private Object resolvePath(Object handler, RequestEvaluator reval) throws Exception {
-            for (int i = 1; i < path.length - 1; i++) {
-                Object[] arguments = {path[i]};
-                Object next = reval.invokeDirectFunction(handler, "getMacroHandler", arguments);
+            for (int i = 1; i < this.path.length - 1; i++) {
+                Object[] arguments = {this.path[i]};
+                Object next = reval.invokeDirectFunction(handler, "getMacroHandler", arguments); //$NON-NLS-1$
                 if (next != null) {
                     handler = next;
                 } else if (!reval.scriptingEngine.isTypedObject(handler)) {
-                    handler = reval.scriptingEngine.getProperty(handler, path[i]);
+                    handler = reval.scriptingEngine.getProperty(handler, this.path[i]);
                     if (handler == null) {
                         return null;
                     }
@@ -920,9 +914,9 @@ public final class Skin {
         }
 
         private String resolveFunctionName(Object handler, String functionName,
-                                           ScriptingEngine engine) {
-            if (handlerType == HANDLER_GLOBAL) {
-                String[] macroPath = app.globalMacroPath;
+                                           ScriptingEngineInterface engine) {
+            if (this.handlerType == HANDLER_GLOBAL) {
+                String[] macroPath = Skin.this.app.globalMacroPath;
                 if (macroPath == null || macroPath.length == 0) {
                     if (engine.hasFunction(null, functionName, false))
                         return functionName;
@@ -930,7 +924,7 @@ public final class Skin {
                     for (int i = 0; i < macroPath.length; i++) {
                         String path = macroPath[i];
                         String funcName = path == null || path.length() == 0 ?
-                                functionName : path + "." + functionName;
+                                functionName : path + "." + functionName; //$NON-NLS-1$
                         if (engine.hasFunction(null, funcName, true))
                             return funcName;
                     }
@@ -951,7 +945,7 @@ public final class Skin {
             String text;
             StringBuffer buffer = reval.getResponse().getBuffer();
 
-            if (value == null || "".equals(value)) {
+            if (value == null || "".equals(value)) { //$NON-NLS-1$
                 if (useDefault) {
                     text = (String) stdParams.defaultValue;
                 } else {
@@ -968,7 +962,7 @@ public final class Skin {
                     buffer.append(stdParams.prefix);
                 }
 
-                switch (encoding) {
+                switch (this.encoding) {
                     case ENCODE_NONE:
                         buffer.append(text);
 
@@ -990,7 +984,7 @@ public final class Skin {
                         break;
 
                     case ENCODE_URL:
-                        buffer.append(UrlEncoded.encode(text, app.charset));
+                        buffer.append(UrlEncoded.encode(text, Skin.this.app.charset));
 
                         break;
 
@@ -1006,8 +1000,9 @@ public final class Skin {
             }
         }
 
+        @Override
         public String toString() {
-            return "[Macro: " + name + "]";
+            return "[Macro: " + this.name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         /**
@@ -1015,7 +1010,7 @@ public final class Skin {
          * @return the macro name
          */
         public String getName() {
-            return name;
+            return this.name;
         }
 
         /**
@@ -1023,7 +1018,7 @@ public final class Skin {
          * @return the handler type
          */
         public int getHandlerType() {
-        	return handlerType;
+        	return this.handlerType;
         }
 
         /**
@@ -1031,7 +1026,7 @@ public final class Skin {
          * @return the list of named parameters
          */
         public Map getNamedParams() {
-        	return namedParams;
+        	return this.namedParams;
         }
         
         /**
@@ -1039,11 +1034,11 @@ public final class Skin {
          * @return the list of positional parameters
          */
         public List getPositionalParams() {
-        	return positionalParams;
+        	return this.positionalParams;
         }
         
         public boolean hasNestedMacros() {
-        	return hasNestedMacros;
+        	return this.hasNestedMacros;
         }
 
     }
@@ -1061,29 +1056,29 @@ public final class Skin {
         }
 
         void readFrom(Map map) {
-            prefix = map.get("prefix");
-            suffix = map.get("suffix");
-            defaultValue = map.get("default");
+            this.prefix = map.get("prefix"); //$NON-NLS-1$
+            this.suffix = map.get("suffix"); //$NON-NLS-1$
+            this.defaultValue = map.get("default"); //$NON-NLS-1$
         }
 
         boolean containsMacros() {
-            return !(prefix instanceof String)
-                || !(suffix instanceof String)
-                || !(defaultValue instanceof String);
+            return !(this.prefix instanceof String)
+                || !(this.suffix instanceof String)
+                || !(this.defaultValue instanceof String);
         }
 
         void setFailMode(Object value) {
-            if ("silent".equals(value))
-                failmode = FAIL_SILENT;
-            else if ("verbose".equals(value))
-                failmode = FAIL_VERBOSE;
+            if ("silent".equals(value)) //$NON-NLS-1$
+                this.failmode = FAIL_SILENT;
+            else if ("verbose".equals(value)) //$NON-NLS-1$
+                this.failmode = FAIL_VERBOSE;
             else if (value != null)
-                app.logEvent("unrecognized failmode value: " + value);
+                Skin.this.app.logEvent(Messages.getString("Skin.12") + value); //$NON-NLS-1$
         }
 
-        boolean verboseFailmode(Object handler, ScriptingEngine engine) {
-            return (failmode == FAIL_VERBOSE) ||
-                   (failmode == FAIL_DEFAULT &&
+        boolean verboseFailmode(Object handler, ScriptingEngineInterface engine) {
+            return (this.failmode == FAIL_VERBOSE) ||
+                   (this.failmode == FAIL_DEFAULT &&
                        (handler == null ||
                         engine.isTypedObject(handler)));
         }
@@ -1093,9 +1088,9 @@ public final class Skin {
             if (!containsMacros())
                 return this;
             StandardParams stdParams = new StandardParams();
-            stdParams.prefix = renderToString(prefix, cx);
-            stdParams.suffix = renderToString(suffix, cx);
-            stdParams.defaultValue = renderToString(defaultValue, cx);
+            stdParams.prefix = renderToString(this.prefix, cx);
+            stdParams.suffix = renderToString(this.suffix, cx);
+            stdParams.defaultValue = renderToString(this.defaultValue, cx);
             return stdParams;
         }
 
@@ -1125,52 +1120,52 @@ public final class Skin {
         private Object resolveHandler(String handlerName, int handlerType) {
             switch (handlerType) {
                 case HANDLER_THIS:
-                    return thisObject;
+                    return this.thisObject;
                 case HANDLER_RESPONSE:
-                    return reval.getResponse().getResponseData();
+                    return this.reval.getResponse().getResponseData();
                 case HANDLER_REQUEST:
-                    return reval.getRequest().getRequestData();
+                    return this.reval.getRequest().getRequestData();
                 case HANDLER_SESSION:
-                    return reval.getSession().getCacheNode();
+                    return this.reval.getSession().getCacheNode();
             }
 
             // try to get handler from handlerCache first
-            if (handlerCache != null && handlerCache.containsKey(handlerName)) {
-                return handlerCache.get(handlerName);
+            if (this.handlerCache != null && this.handlerCache.containsKey(handlerName)) {
+                return this.handlerCache.get(handlerName);
             }
 
             // if handler object wasn't found in cache first check this-object
-            if (thisObject != null) {
+            if (this.thisObject != null) {
                 // not a global macro - need to find handler object
                 // was called with this object - check this-object for matching prototype
-                Prototype proto = app.getPrototype(thisObject);
+                Prototype proto = Skin.this.app.getPrototype(this.thisObject);
 
                 if (proto != null && proto.isInstanceOf(handlerName)) {
-                    return cacheHandler(handlerName, thisObject);
+                    return cacheHandler(handlerName, this.thisObject);
                 }
             }
 
             // next look in res.handlers
-            Map macroHandlers = reval.getResponse().getMacroHandlers();
+            Map macroHandlers = this.reval.getResponse().getMacroHandlers();
             Object obj = macroHandlers.get(handlerName);
             if (obj != null) {
                 return cacheHandler(handlerName, obj);
             }
 
             // finally walk down the this-object's parent chain
-            if (thisObject != null) {
-                obj = app.getParentElement(thisObject);
+            if (this.thisObject != null) {
+                obj = Skin.this.app.getParentElement(this.thisObject);
                 // walk down parent chain to find handler object,
                 // limiting to 50 passes to avoid infinite loops
                 int maxloop = 50;
                 while (obj != null && maxloop-- > 0) {
-                    Prototype proto = app.getPrototype(obj);
+                    Prototype proto = Skin.this.app.getPrototype(obj);
 
                     if (proto != null && proto.isInstanceOf(handlerName)) {
                         return cacheHandler(handlerName, obj);
                     }
 
-                    obj = app.getParentElement(obj);
+                    obj = Skin.this.app.getParentElement(obj);
                 }
             }
 
@@ -1178,8 +1173,8 @@ public final class Skin {
         }
 
         private Object cacheHandler(String name, Object handler) {
-            if (handlerCache != null) {
-                handlerCache.put(name, handler);
+            if (this.handlerCache != null) {
+                this.handlerCache.put(name, handler);
             }
             return handler;
         }

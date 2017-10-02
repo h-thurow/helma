@@ -32,7 +32,7 @@ public class NodeEvent implements Serializable {
     public static final int SUBNODE_REMOVED = 5;
     public int type;
     public String id;
-    public transient INode node;
+    public transient NodeInterface node;
     public transient Object arg;
 
     /**
@@ -41,7 +41,7 @@ public class NodeEvent implements Serializable {
      * @param node ...
      * @param type ...
      */
-    public NodeEvent(INode node, int type) {
+    public NodeEvent(NodeInterface node, int type) {
         super();
         this.node = node;
         this.id = node.getID();
@@ -55,7 +55,7 @@ public class NodeEvent implements Serializable {
      * @param type ...
      * @param arg ...
      */
-    public NodeEvent(INode node, int type, Object arg) {
+    public NodeEvent(NodeInterface node, int type, Object arg) {
         super();
         this.node = node;
         this.id = node.getID();
@@ -68,27 +68,28 @@ public class NodeEvent implements Serializable {
      *
      * @return ...
      */
+    @Override
     public String toString() {
-        switch (type) {
+        switch (this.type) {
             case CONTENT_CHANGED:
-                return "NodeEvent: content changed";
+                return Messages.getString("NodeEvent.0"); //$NON-NLS-1$
 
             case PROPERTIES_CHANGED:
-                return "NodeEvent: properties changed";
+                return Messages.getString("NodeEvent.1"); //$NON-NLS-1$
 
             case NODE_REMOVED:
-                return "NodeEvent: node removed";
+                return Messages.getString("NodeEvent.2"); //$NON-NLS-1$
 
             case NODE_RENAMED:
-                return "NodeEvent: node moved";
+                return Messages.getString("NodeEvent.3"); //$NON-NLS-1$
 
             case SUBNODE_ADDED:
-                return "NodeEvent: subnode added";
+                return Messages.getString("NodeEvent.4"); //$NON-NLS-1$
 
             case SUBNODE_REMOVED:
-                return "NodeEvent: subnode removed";
+                return Messages.getString("NodeEvent.5"); //$NON-NLS-1$
         }
 
-        return "NodeEvent: invalid type";
+        return Messages.getString("NodeEvent.6"); //$NON-NLS-1$
     }
 }

@@ -91,9 +91,8 @@ public final class UrlEncoded {
             throws UnsupportedEncodingException {
         if ((str.indexOf('+') == -1) && (str.indexOf('%') == -1)) {
             return str;
-        } else {
-            return URLDecoder.decode(str, encoding);
         }
+        return URLDecoder.decode(str, encoding);
     }
 
 }

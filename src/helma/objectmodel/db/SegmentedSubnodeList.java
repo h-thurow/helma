@@ -36,59 +36,63 @@ public class SegmentedSubnodeList extends SubnodeList {
      *
      * @param handle element to be inserted.
      */
+    @Override
     public synchronized boolean add(NodeHandle handle) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.add(handle);
         }
-        if (subnodeCount == -1) {
+        if (this.subnodeCount == -1) {
             update();
         }
-        subnodeCount++;
-        segments[segments.length - 1].length += 1;
-        return list.add(handle);
+        this.subnodeCount++;
+        this.segments[this.segments.length - 1].length += 1;
+        return this.list.add(handle);
     }
     /**
      * Adds the specified object to the list at the given position
      * @param index the index to insert the element at
      * @param handle the object to add
      */
+    @Override
     public synchronized void add(int index, NodeHandle handle) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             super.add(index, handle);
             return;
         }
-        if (subnodeCount == -1) {
+        if (this.subnodeCount == -1) {
             update();
         }
-        subnodeCount++;
-        list.add(index, handle);
+        this.subnodeCount++;
+        this.list.add(index, handle);
         // shift segment indices by one
         int s = getSegment(index);
-        segments[s].length += 1;
-        for (int i = s + 1; i < segments.length; i++) {
-            segments[i].startIndex += 1;
+        this.segments[s].length += 1;
+        for (int i = s + 1; i < this.segments.length; i++) {
+            this.segments[i].startIndex += 1;
         }
     }
 
+    @Override
     public NodeHandle get(int index) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.get(index);
         }
-        if (index < 0 || index >= subnodeCount) {
+        if (index < 0 || index >= this.subnodeCount) {
             return null;
         }
         loadSegment(getSegment(index), false);
-        return (NodeHandle) list.get(index);
+        return (NodeHandle) this.list.get(index);
     }
 
+    @Override
     public synchronized boolean contains(Object object) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.contains(object);
         }
-        if (list.contains(object)) {
+        if (this.list.contains(object)) {
             return true;
         }
-        for (int i = 0; i < segments.length; i++) {
+        for (int i = 0; i < this.segments.length; i++) {
             if (loadSegment(i, false).contains(object)) {
                 return true;
             }
@@ -96,17 +100,18 @@ public class SegmentedSubnodeList extends SubnodeList {
         return false;
     }
 
+    @Override
     public synchronized int indexOf(Object object) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.indexOf(object);
         }
         int index;
-        if ((index = list.indexOf(object)) > -1) {
+        if ((index = this.list.indexOf(object)) > -1) {
             return index;
         }
-        for (int i = 0; i < segments.length; i++) {
+        for (int i = 0; i < this.segments.length; i++) {
             if ((index = loadSegment(i, false).indexOf(object)) > -1) {
-                return segments[i].startIndex + index;
+                return this.segments[i].startIndex + index;
             }
         }
         return -1;
@@ -116,20 +121,21 @@ public class SegmentedSubnodeList extends SubnodeList {
      * remove the object specified by the given index-position
      * @param index the index-position of the NodeHandle to remove
      */
+    @Override
     public synchronized Object remove(int index) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.remove(index);
         }
-        if (subnodeCount == -1) {
+        if (this.subnodeCount == -1) {
             update();
         }
-        Object removed = list.remove(index);
+        Object removed = this.list.remove(index);
         int s = getSegment(index);
-        segments[s].length -= 1;
-        for (int i = s + 1; i < segments.length; i++) {
-            segments[i].startIndex -= 1;
+        this.segments[s].length -= 1;
+        for (int i = s + 1; i < this.segments.length; i++) {
+            this.segments[i].startIndex -= 1;
         }
-        subnodeCount--;
+        this.subnodeCount--;
         return removed;
     }
 
@@ -137,66 +143,68 @@ public class SegmentedSubnodeList extends SubnodeList {
      * remove the given Object from this List
      * @param object the NodeHandle to remove
      */
+    @Override
     public synchronized boolean remove(Object object) {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.remove(object);
         }
-        if (subnodeCount == -1) {
+        if (this.subnodeCount == -1) {
             update();
         }
         int index = indexOf(object);
         if (index > -1) {
-            list.remove(object);
+            this.list.remove(object);
             int s = getSegment(index);
-            segments[s].length -= 1;
-            for (int i = s + 1; i < segments.length; i++) {
-                segments[i].startIndex -= 1;
+            this.segments[s].length -= 1;
+            for (int i = s + 1; i < this.segments.length; i++) {
+                this.segments[i].startIndex -= 1;
             }
-            subnodeCount--;
+            this.subnodeCount--;
             return true;
         }
         return false;
     }
 
+    @Override
     public synchronized Object[] toArray() {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.toArray();
         }
-        node.nmgr.logEvent("Warning: toArray() called on large segmented collection: " + node);
-        for (int i = 0; i < segments.length; i++) {
+        this.node.nmgr.logEvent(Messages.getString("SegmentedSubnodeList.0") + this.node); //$NON-NLS-1$
+        for (int i = 0; i < this.segments.length; i++) {
             loadSegment(i, false);
         }
-        return list.toArray();
+        return this.list.toArray();
     }
 
     private int getSegment(int index) {
-        for (int i = 1; i < segments.length; i++) {
-            if (index < segments[i].startIndex) {
+        for (int i = 1; i < this.segments.length; i++) {
+            if (index < this.segments[i].startIndex) {
                 return i - 1;
             }
         }
-        return segments.length - 1;
+        return this.segments.length - 1;
     }
 
     private List loadSegment(int seg, boolean deep) {
-        Segment segment = segments[seg];
+        Segment segment = this.segments[seg];
         if (segment != null && !segment.loaded) {
             Relation rel = getSubnodeRelation().getClone();
             rel.offset = segment.startIndex;
             int expectedSize = rel.maxSize = segment.length;
             List seglist =  deep ?
-                    node.nmgr.getNodes(node, rel) :
-                    node.nmgr.getNodeIDs(node, rel);
+                    this.node.nmgr.getNodes(this.node, rel) :
+                    this.node.nmgr.getNodeIDs(this.node, rel);
             int actualSize = seglist.size();
             if (actualSize != expectedSize) {
-                node.nmgr.logEvent("Inconsistent segment size in " + node + ": " + segment);
+                this.node.nmgr.logEvent(Messages.getString("SegmentedSubnodeList.1") + this.node + Messages.getString("SegmentedSubnodeList.2") + segment); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            int listSize = list.size();
+            int listSize = this.list.size();
             for (int i = 0; i < actualSize; i++) {
                 if (segment.startIndex + i < listSize) {
-                    list.set(segment.startIndex + i, seglist.get(i));
+                    this.list.set(segment.startIndex + i, seglist.get(i));
                 } else {
-                    list.add(seglist.get(i));
+                    this.list.add(seglist.get(i));
                 }
                 // FIXME how to handle inconsistencies?
             }
@@ -206,44 +214,46 @@ public class SegmentedSubnodeList extends SubnodeList {
         return Collections.EMPTY_LIST;
     }
 
+    @Override
     protected synchronized void update() {
         if (!hasRelationalNodes()) {
-            segments = null;
+            this.segments = null;
             super.update();
             return;
         }
         // also reload if the type mapping has changed.
         long lastChange = getLastSubnodeChange();
-        if (lastChange != lastSubnodeFetch) {
+        if (lastChange != this.lastSubnodeFetch) {
             // count nodes in db without fetching anything
-            subnodeCount = node.nmgr.countNodes(node, getSubnodeRelation());
-            if (subnodeCount > SEGLENGTH) {
-                float size = subnodeCount;
+            this.subnodeCount = this.node.nmgr.countNodes(this.node, getSubnodeRelation());
+            if (this.subnodeCount > SEGLENGTH) {
+                float size = this.subnodeCount;
                 int nsegments = (int) Math.ceil(size / SEGLENGTH);
                 int remainder = (int) size % SEGLENGTH;
-                segments = new Segment[nsegments];
+                this.segments = new Segment[nsegments];
                 for (int s = 0; s < nsegments; s++) {
                     int length = (s == nsegments - 1 && remainder > 0) ?
                         remainder : SEGLENGTH;
-                    segments[s] = new Segment(s * SEGLENGTH, length);
+                    this.segments[s] = new Segment(s * SEGLENGTH, length);
                 }
-                list = new ArrayList((int) size + 5);
+                this.list = new ArrayList((int) size + 5);
                 for (int i = 0; i < size; i++) {
-                    list.add(null);
+                    this.list.add(null);
                 }
             } else {
-                segments = null;
+                this.segments = null;
                 super.update();
             }
-            lastSubnodeFetch = lastChange;
+            this.lastSubnodeFetch = lastChange;
         }
     }
 
+    @Override
     public int size() {
-        if (!hasRelationalNodes() || segments == null) {
+        if (!hasRelationalNodes() || this.segments == null) {
             return super.size();
         }
-        return subnodeCount;
+        return this.subnodeCount;
     }
 
     class Segment {
@@ -258,11 +268,12 @@ public class SegmentedSubnodeList extends SubnodeList {
         }
 
         int endIndex() {
-            return startIndex + length;
+            return this.startIndex + this.length;
         }
 
+        @Override
         public String toString() {
-            return "Segment{startIndex: " + startIndex + ", length: " + length + "}";
+            return "Segment{startIndex: " + this.startIndex + ", length: " + this.length + "}";  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 

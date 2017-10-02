@@ -16,7 +16,6 @@
 
 package helma.servlet;
 
-import helma.framework.*;
 import helma.framework.core.Application;
 import helma.main.*;
 import javax.servlet.*;
@@ -45,12 +44,13 @@ public final class EmbeddedServletClient extends AbstractServletClient {
      *
      * @throws ServletException ...
      */
+    @Override
     public void init(ServletConfig init) throws ServletException {
         super.init(init);
-        appName = init.getInitParameter("application");
+        this.appName = init.getInitParameter("application"); //$NON-NLS-1$
 
-        if (appName == null) {
-            throw new ServletException("Application name not set in init parameters");
+        if (this.appName == null) {
+            throw new ServletException(Messages.getString("EmbeddedServletClient.0")); //$NON-NLS-1$
         }
     }
 
@@ -60,11 +60,12 @@ public final class EmbeddedServletClient extends AbstractServletClient {
      *
      * @return this servlet's application instance
      */
+    @Override
     public Application getApplication() {
-        if (app == null) {
-            app = Server.getServer().getApplication(appName);
+        if (this.app == null) {
+            this.app = Server.getServer().getApplication(this.appName);
         }
 
-        return app;
+        return this.app;
     }
 }

@@ -57,14 +57,15 @@ public class ParanoidServerSocket extends ServerSocket {
      *
      * @throws IOException ...
      */
+    @Override
     public Socket accept() throws IOException {
         Socket s = null;
 
         while (s == null) {
             s = super.accept();
 
-            if ((filter != null) && !filter.matches(s.getInetAddress())) {
-                System.err.println("Refusing connection from " + s.getInetAddress());
+            if ((this.filter != null) && !this.filter.matches(s.getInetAddress())) {
+                System.err.println(Messages.getString("ParanoidServerSocket.0") + s.getInetAddress()); //$NON-NLS-1$
 
                 try {
                     s.close();

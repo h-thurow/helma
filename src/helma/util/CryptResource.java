@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -23,8 +27,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-import helma.framework.repository.Resource;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 
 /**
  *  This file authenticates against a passwd source
@@ -33,7 +36,7 @@ public class CryptResource {
 
     private Properties users;
     private CryptResource parentResource;
-    private Resource resource;
+    private ResourceInterface resource;
     private long lastRead = 0;
 
     /**
@@ -42,10 +45,10 @@ public class CryptResource {
      * @param resource ...
      * @param parentResource ...
      */
-    public CryptResource(Resource resource, CryptResource parentResource) {
+    public CryptResource(ResourceInterface resource, CryptResource parentResource) {
         this.resource = resource;
         this.parentResource = parentResource;
-        users = new Properties();
+        this.users = new Properties();
     }
 
     /**
@@ -57,13 +60,13 @@ public class CryptResource {
      * @return ...
      */
     public boolean authenticate(String username, String pw) {
-        if (resource.exists() && (resource.lastModified() > lastRead)) {
+        if (this.resource.exists() && (this.resource.lastModified() > this.lastRead)) {
             readFile();
-        } else if (!resource.exists() && (users.size() > 0)) {
-            users.clear();
+        } else if (!this.resource.exists() && (this.users.size() > 0)) {
+            this.users.clear();
         }
 
-        String realpw = users.getProperty(username);
+        String realpw = this.users.getProperty(username);
 
         if (realpw != null) {
             try {
@@ -83,8 +86,8 @@ public class CryptResource {
                 return false;
             }
         } else {
-            if (parentResource != null) {
-                return parentResource.authenticate(username, pw);
+            if (this.parentResource != null) {
+                return this.parentResource.authenticate(username, pw);
             }
         }
 
@@ -94,18 +97,18 @@ public class CryptResource {
     private synchronized void readFile() {
         BufferedReader reader = null;
 
-        users = new Properties();
+        this.users = new Properties();
 
         try {
-            reader = new BufferedReader(new StringReader(resource.getContent()));
+            reader = new BufferedReader(new StringReader(this.resource.getContent()));
 
             String line = reader.readLine();
 
             while (line != null) {
-                StringTokenizer st = new StringTokenizer(line, ":");
+                StringTokenizer st = new StringTokenizer(line, ":"); //$NON-NLS-1$
 
                 if (st.countTokens() > 1) {
-                    users.put(st.nextToken(), st.nextToken());
+                    this.users.put(st.nextToken(), st.nextToken());
                 }
 
                 line = reader.readLine();
@@ -119,9 +122,8 @@ public class CryptResource {
                 }
             }
 
-            lastRead = System.currentTimeMillis();
+            this.lastRead = System.currentTimeMillis();
         }
     }
 
 }
-

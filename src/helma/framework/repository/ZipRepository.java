@@ -58,7 +58,7 @@ public final class ZipRepository extends AbstractRepository {
      * @param file a zip file
      * @param parent the parent repository, or null
      */
-    public ZipRepository(File file, Repository parent) {
+    public ZipRepository(File file, RepositoryInterface parent) {
         this(file, parent, null);
     }
 
@@ -69,7 +69,7 @@ public final class ZipRepository extends AbstractRepository {
      * @param zipentry zip entryName
      * @param parent repository
      */
-    private ZipRepository(File file, Repository parent, ZipEntry zipentry) {
+    private ZipRepository(File file, RepositoryInterface parent, ZipEntry zipentry) {
         // make sure our file has an absolute path,
         // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4117557
         if (file.isAbsolute()) {
@@ -80,16 +80,16 @@ public final class ZipRepository extends AbstractRepository {
         this.parent = parent;
 
         if (zipentry == null) {
-            name = shortName = file.getName();
-            depth = 0;
-            entryPath = "";
+            this.name = this.shortName = file.getName();
+            this.depth = 0;
+            this.entryPath = ""; //$NON-NLS-1$
         } else {
-            String[] pathArray = StringUtils.split(zipentry.getName(), "/");
-            depth = pathArray.length;
-            shortName = pathArray[depth - 1];
-            entryPath = zipentry.getName();
-            name = new StringBuffer(parent.getName())
-                                   .append('/').append(shortName).toString();
+            String[] pathArray = StringUtils.split(zipentry.getName(), "/"); //$NON-NLS-1$
+            this.depth = pathArray.length;
+            this.shortName = pathArray[this.depth - 1];
+            this.entryPath = zipentry.getName();
+            this.name = new StringBuffer(parent.getName())
+                                   .append('/').append(this.shortName).toString();
         }
     }
 
@@ -100,14 +100,15 @@ public final class ZipRepository extends AbstractRepository {
      * @throws IOException
      */
     protected ZipFile getZipFile() throws IOException {
-        return new ZipFile(file);
+        return new ZipFile(this.file);
     }
 
+    @Override
     public synchronized void update() {
-        if (file.lastModified() != lastModified ||
-                repositories == null ||
-                resources == null) {
-            lastModified = file.lastModified();
+        if (this.file.lastModified() != this.lastModified ||
+                this.repositories == null ||
+                this.resources == null) {
+            this.lastModified = this.file.lastModified();
             ZipFile zipfile = null;
 
             try {
@@ -120,43 +121,43 @@ public final class ZipRepository extends AbstractRepository {
                     ZipEntry entry = (ZipEntry) en.nextElement();
                     String eName = entry.getName();
 
-                    if (!eName.regionMatches(0, entryPath, 0, entryPath.length())) {
+                    if (!eName.regionMatches(0, this.entryPath, 0, this.entryPath.length())) {
                         // names don't match - not a child of ours
                         continue;
                     }
-                    String[] entrypath = StringUtils.split(eName, "/");
-                    if (depth > 0 && !shortName.equals(entrypath[depth-1])) {
+                    String[] entrypath = StringUtils.split(eName, "/"); //$NON-NLS-1$
+                    if (this.depth > 0 && !this.shortName.equals(entrypath[this.depth-1])) {
                         // catch case where our name is Foo and other's is FooBar
                         continue;
                     }
 
                     // create new repositories and resources for all entries with a
                     // path depth of this.depth + 1
-                    if (entrypath.length == depth + 1 && !entry.isDirectory()) {
+                    if (entrypath.length == this.depth + 1 && !entry.isDirectory()) {
                         // create a new child resource
                         ZipResource resource = new ZipResource(entry.getName(), this);
                         newResources.put(resource.getShortName(), resource);
-                    } else if (entrypath.length > depth) {
+                    } else if (entrypath.length > this.depth) {
                         // create a new child repository
-                        if (!newRepositories.containsKey(entrypath[depth])) {
-                            ZipEntry child = composeChildEntry(entrypath[depth]);
-                            ZipRepository rep = new ZipRepository(file, this, child);
-                            newRepositories.put(entrypath[depth], rep);
+                        if (!newRepositories.containsKey(entrypath[this.depth])) {
+                            ZipEntry child = composeChildEntry(entrypath[this.depth]);
+                            ZipRepository rep = new ZipRepository(this.file, this, child);
+                            newRepositories.put(entrypath[this.depth], rep);
                         }
                     }
                 }
 
-                repositories = (Repository[]) newRepositories.values()
-                        .toArray(new Repository[newRepositories.size()]);
-                resources = newResources;
+                this.repositories = (RepositoryInterface[]) newRepositories.values()
+                        .toArray(new RepositoryInterface[newRepositories.size()]);
+                this.resources = newResources;
 
             } catch (Exception ex) {
                 ex.printStackTrace();
-                repositories = emptyRepositories;
-                if (resources == null) {
-                    resources = new HashMap();
+                this.repositories = emptyRepositories;
+                if (this.resources == null) {
+                    this.resources = new HashMap();
                 } else {
-                    resources.clear();
+                    this.resources.clear();
                 }
 
             } finally {
@@ -169,24 +170,25 @@ public final class ZipRepository extends AbstractRepository {
     }
 
     private ZipEntry composeChildEntry(String name) {
-        if (entryPath == null || entryPath.length() == 0) {
+        if (this.entryPath == null || this.entryPath.length() == 0) {
             return new ZipEntry(name);
-        } else if (entryPath.endsWith("/")) {
-            return new ZipEntry(entryPath + name);
+        } else if (this.entryPath.endsWith("/")) { //$NON-NLS-1$
+            return new ZipEntry(this.entryPath + name);
         } else {
-            return new ZipEntry(entryPath + "/" + name);
+            return new ZipEntry(this.entryPath + "/" + name); //$NON-NLS-1$
         }
     }
 
     /**
      * Called to create a child resource for this repository
      */
-    protected Resource createResource(String name) {
-        return new ZipResource(entryPath + "/" + name, this);
+    @Override
+    protected ResourceInterface createResource(String name) {
+        return new ZipResource(this.entryPath + "/" + name, this); //$NON-NLS-1$
     }
 
     public long getChecksum() {
-        return file.lastModified();
+        return this.file.lastModified();
     }
 
     public boolean exists() {
@@ -212,7 +214,7 @@ public final class ZipRepository extends AbstractRepository {
 
     public void create() {
         // we do not create zip files as it makes no sense
-        throw new UnsupportedOperationException("create() not implemented for ZipRepository");
+        throw new UnsupportedOperationException(Messages.getString("ZipRepository.0")); //$NON-NLS-1$
     }
 
     /**
@@ -224,28 +226,31 @@ public final class ZipRepository extends AbstractRepository {
      * @return true if the repository is to be considered a top-level script repository
      */
     public boolean isScriptRoot() {
-        return depth == 0;
+        return this.depth == 0;
     }
 
     public long lastModified() {
-        return file.lastModified();
+        return this.file.lastModified();
     }
 
+    @Override
     public int hashCode() {
-        return 17 + (37 * file.hashCode()) + (37 * name.hashCode());
+        return 17 + (37 * this.file.hashCode()) + (37 * this.name.hashCode());
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof ZipRepository)) {
             return false;
         }
 
         ZipRepository rep = (ZipRepository) obj;
-        return (file.equals(rep.file) && name.equals(rep.name));
+        return (this.file.equals(rep.file) && this.name.equals(rep.name));
     }
 
+    @Override
     public String toString() {
-        return new StringBuffer("ZipRepository[").append(name).append("]").toString();
+        return new StringBuffer("ZipRepository[").append(this.name).append("]").toString(); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -38,10 +42,10 @@ public final class ResponseTrans extends Writer implements Serializable {
     static final long serialVersionUID = -8627370766119740844L;
     static final int INITIAL_BUFFER_SIZE = 2048;
 
-    static final String newLine = System.getProperty("line.separator");
+    static final String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
 
     //  MIME content type of the response.
-    private String contentType = "text/html";
+    private String contentType = "text/html"; //$NON-NLS-1$
 
     // Charset (encoding) to use for the response.
     private String charset;
@@ -129,7 +133,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public ResponseTrans(Application app, RequestTrans req) {
         this.app = app;
-        reqtrans = req;
+        this.reqtrans = req;
     }
 
     /**
@@ -137,7 +141,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public Object get(String name) {
         try {
-            return values.get(name);
+            return this.values.get(name);
         } catch (Exception x) {
             return null;
         }
@@ -147,21 +151,21 @@ public final class ResponseTrans extends Writer implements Serializable {
      *  Get the data map for this response transmitter.
      */
     public Map getResponseData() {
-        return values;
+        return this.values;
     }
 
     /**
      *  Get the macro handlers map for this response transmitter.
      */
     public Map getMacroHandlers() {
-        return handlers;
+        return this.handlers;
     }
 
     /**
      *  Get the meta info map for this response transmitter.
      */
     public Map getMetaData() {
-        return meta;
+        return this.meta;
     }
 
     /**
@@ -169,15 +173,15 @@ public final class ResponseTrans extends Writer implements Serializable {
      * Returns null for internal and XML-RPC requests.
      */
     public HttpServletResponse getServletResponse() {
-        return reqtrans.getServletResponse();
+        return this.reqtrans.getServletResponse();
     }
 
     /**
      * Reset the current response buffer.
      */
     public synchronized void resetBuffer() {
-        if (buffer != null) {
-            buffer.setLength(0);
+        if (this.buffer != null) {
+            this.buffer.setLength(0);
         }
     }
 
@@ -185,28 +189,28 @@ public final class ResponseTrans extends Writer implements Serializable {
      * Reset the response object to its initial empty state.
      */
     public synchronized void reset() {
-        if (buffer != null) {
-            buffer.setLength(0);
+        if (this.buffer != null) {
+            this.buffer.setLength(0);
         }
 
-        buffers = null;
-        response = null;
-        cacheable = true;
-        redir = forward = message = null;
-        error = null;
-        etag = realm = charset = null;
-        contentType =  "text/html";
-        values.clear();
-        handlers.clear();
-        meta.clear();
-        lastModified = -1;
-        notModified = false;
-        skinpath = null;
-        skincache = null;
-        cookies = null;
+        this.buffers = null;
+        this.response = null;
+        this.cacheable = true;
+        this.redir = this.forward = this.message = null;
+        this.error = null;
+        this.etag = this.realm = this.charset = null;
+        this.contentType =  "text/html"; //$NON-NLS-1$
+        this.values.clear();
+        this.handlers.clear();
+        this.meta.clear();
+        this.lastModified = -1;
+        this.notModified = false;
+        this.skinpath = null;
+        this.skincache = null;
+        this.cookies = null;
 
-        if (digest != null) {
-            digest.reset();
+        if (this.digest != null) {
+            this.digest.reset();
         }
     }
 
@@ -218,23 +222,23 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the new StringBuffer instance
      */
     public synchronized StringBuffer pushBuffer(StringBuffer buf) {
-        if (buffers == null) {
-            buffers = new Stack();
+        if (this.buffers == null) {
+            this.buffers = new Stack();
         }
 
-        if (buffer != null) {
-            buffers.push(buffer);
+        if (this.buffer != null) {
+            this.buffers.push(this.buffer);
         }
 
         if (buf != null) {
-            buffer = buf;
-        } else if (cachedBuffer != null) {
-            buffer = cachedBuffer;
-            cachedBuffer = null;
+            this.buffer = buf;
+        } else if (this.cachedBuffer != null) {
+            this.buffer = this.cachedBuffer;
+            this.cachedBuffer = null;
         } else {
-            buffer = new StringBuffer(64);
+            this.buffer = new StringBuffer(64);
         }
-        return buffer;
+        return this.buffer;
     }
 
     /**
@@ -245,20 +249,20 @@ public final class ResponseTrans extends Writer implements Serializable {
         String str = buf.toString();
         // store stringbuffer for later reuse
         buf.setLength(0);
-        cachedBuffer = buf;
+        this.cachedBuffer = buf;
         return str;
     }
 
     public synchronized StringBuffer popBuffer() {
-        if (buffer == null) {
-            throw new RuntimeException("Can't pop string buffer: buffer is null");
-        } else if (buffers == null) {
-            throw new RuntimeException("Can't pop string buffer: buffer stack is empty");
+        if (this.buffer == null) {
+            throw new RuntimeException(Messages.getString("ResponseTrans.0")); //$NON-NLS-1$
+        } else if (this.buffers == null) {
+            throw new RuntimeException(Messages.getString("ResponseTrans.1")); //$NON-NLS-1$
         }
         // get local reference
-        StringBuffer buf = buffer;
+        StringBuffer buf = this.buffer;
         // restore the previous buffer, which may be null
-        buffer = buffers.empty() ? null : (StringBuffer) buffers.pop();
+        this.buffer = this.buffers.empty() ? null : (StringBuffer) this.buffers.pop();
         return buf;
     }
 
@@ -266,22 +270,23 @@ public final class ResponseTrans extends Writer implements Serializable {
      *  Get the response buffer, creating it if it doesn't exist
      */
     public synchronized StringBuffer getBuffer() {
-        if (buffer == null) {
-            buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
+        if (this.buffer == null) {
+            this.buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
         }
 
-        return buffer;
+        return this.buffer;
     }
 
     /**
      * Append a string to the response unchanged.
      */
+    @Override
     public synchronized void write(String str) {
         if (str != null) {
-            if (buffer == null) {
-                buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
+            if (this.buffer == null) {
+                this.buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
             }
-            buffer.append(str);
+            this.buffer.append(str);
         }
     }
 
@@ -302,11 +307,12 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param offset
      * @param length
      */
+    @Override
     public synchronized void write(char[] chars, int offset, int length) {
-        if (buffer == null) {
-            buffer = new StringBuffer(Math.max(length + 100, INITIAL_BUFFER_SIZE));
+        if (this.buffer == null) {
+            this.buffer = new StringBuffer(Math.max(length + 100, INITIAL_BUFFER_SIZE));
         }
-        buffer.append(chars, offset, length);
+        this.buffer.append(chars, offset, length);
     }
 
     /**
@@ -314,6 +320,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      *
      * @param chars
      */
+    @Override
     public void write(char chars[]) {
         write(chars, 0, chars.length);
     }
@@ -323,11 +330,12 @@ public final class ResponseTrans extends Writer implements Serializable {
      * Appends a signle character to the response buffer.
      * @param c
      */
+    @Override
     public synchronized void write(int c) {
-        if (buffer == null) {
-            buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
+        if (this.buffer == null) {
+            this.buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
         }
-        buffer.append((char) c);
+        this.buffer.append((char) c);
     }
 
     /**
@@ -336,6 +344,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param offset
      * @param length
      */
+    @Override
     public void write(String str, int offset, int length) {
         char cbuf[]  = new char[length];
         str.getChars(offset, (offset + length), cbuf, 0);
@@ -348,11 +357,11 @@ public final class ResponseTrans extends Writer implements Serializable {
     public synchronized void writeln(Object what) {
         if (what != null) {
             write(what.toString());
-        } else if (buffer == null) {
+        } else if (this.buffer == null) {
             // if what is null, buffer may still be uninitialized
-            buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
+            this.buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
         }
-        buffer.append(newLine);
+        this.buffer.append(newLine);
     }
 
     /**
@@ -360,10 +369,10 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public synchronized void writeln() {
         // buffer may still be uninitialized
-        if (buffer == null) {
-            buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
+        if (this.buffer == null) {
+            this.buffer = new StringBuffer(INITIAL_BUFFER_SIZE);
         }
-        buffer.append(newLine);
+        this.buffer.append(newLine);
     }
 
     /**
@@ -372,16 +381,16 @@ public final class ResponseTrans extends Writer implements Serializable {
      *  case nothing happens.
      */
     public void debug(Object message) {
-        if (debugBuffer == null) {
-            debugBuffer = new StringBuffer();
+        if (this.debugBuffer == null) {
+            this.debugBuffer = new StringBuffer();
         }
 
-        String str = (message == null) ? "null" : message.toString();
+        String str = (message == null) ? "null" : message.toString(); //$NON-NLS-1$
 
-        debugBuffer.append("<div class=\"helma-debug-line\" style=\"background: yellow; ");
-        debugBuffer.append("color: black; border-top: 1px solid black;\">");
-        debugBuffer.append(str);
-        debugBuffer.append("</div>");
+        this.debugBuffer.append("<div class=\"helma-debug-line\" style=\"background: yellow; "); //$NON-NLS-1$
+        this.debugBuffer.append("color: black; border-top: 1px solid black;\">"); //$NON-NLS-1$
+        this.debugBuffer.append(str);
+        this.debugBuffer.append("</div>"); //$NON-NLS-1$
     }
 
     /**
@@ -392,11 +401,11 @@ public final class ResponseTrans extends Writer implements Serializable {
         if (what != null) {
             String str = what.toString();
 
-            if (buffer == null) {
-                buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
+            if (this.buffer == null) {
+                this.buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
             }
 
-            HtmlEncoder.encodeAll(str, buffer);
+            HtmlEncoder.encodeAll(str, this.buffer);
         }
     }
 
@@ -407,11 +416,11 @@ public final class ResponseTrans extends Writer implements Serializable {
         if (what != null) {
             String str = what.toString();
 
-            if (buffer == null) {
-                buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
+            if (this.buffer == null) {
+                this.buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
             }
 
-            HtmlEncoder.encode(str, buffer);
+            HtmlEncoder.encode(str, this.buffer);
         }
     }
 
@@ -423,11 +432,11 @@ public final class ResponseTrans extends Writer implements Serializable {
         if (what != null) {
             String str = what.toString();
 
-            if (buffer == null) {
-                buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
+            if (this.buffer == null) {
+                this.buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
             }
 
-            HtmlEncoder.encodeXml(str, buffer);
+            HtmlEncoder.encodeXml(str, this.buffer);
         }
     }
 
@@ -438,11 +447,11 @@ public final class ResponseTrans extends Writer implements Serializable {
         if (what != null) {
             String str = what.toString();
 
-            if (buffer == null) {
-                buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
+            if (this.buffer == null) {
+                this.buffer = new StringBuffer(Math.max(str.length() + 100, INITIAL_BUFFER_SIZE));
             }
 
-            HtmlEncoder.encodeAll(str, buffer, false);
+            HtmlEncoder.encodeAll(str, this.buffer, false);
         }
     }
 
@@ -455,9 +464,9 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public void redirect(String url) throws RedirectException {
         // remove newline chars to prevent response splitting attack
-        redir = url == null ?
-                null : url.replaceAll("[\r\n]", "");
-        throw new RedirectException(redir);
+        this.redir = url == null ?
+                null : url.replaceAll("[\r\n]", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        throw new RedirectException(this.redir);
     }
 
     /**
@@ -466,7 +475,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return ...
      */
     public String getRedirect() {
-        return redir;
+        return this.redir;
     }
 
     /**
@@ -478,9 +487,9 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public void forward(String url) throws RedirectException {
         // remove newline chars to prevent response splitting attack
-        forward = url == null ?
-                null : url.replaceAll("[\r\n]", "");
-        throw new RedirectException(forward);
+        this.forward = url == null ?
+                null : url.replaceAll("[\r\n]", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        throw new RedirectException(this.forward);
     }
 
     /**
@@ -489,7 +498,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return ...
      */
     public String getForward() {
-        return forward;
+        return this.forward;
     }
 
     /**
@@ -498,7 +507,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param bytes an arbitrary byte array
      */
     public void writeBinary(byte[] bytes) {
-        response = bytes;
+        this.response = bytes;
     }
 
     /**
@@ -554,33 +563,33 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void reportError(Throwable throwable) {
         if (throwable == null) {
             // just to be safe
-            reportError("Unspecified error");
+            reportError(Messages.getString("ResponseTrans.2")); //$NON-NLS-1$
             return;
         }
-        if (reqtrans.isXmlRpc()) {
+        if (this.reqtrans.isXmlRpc()) {
             writeXmlRpcError(new RuntimeException(throwable));
         } else {
-            status = 500;
-            if (!"true".equalsIgnoreCase(app.getProperty("suppressErrorPage"))) {
-                write("<html><body>");
-                write("<h2>Error in application " + app.getName() + "</h2><p>");
+            this.status = 500;
+            if (!"true".equalsIgnoreCase(this.app.getProperty("suppressErrorPage"))) { //$NON-NLS-1$ //$NON-NLS-2$
+                write("<html><body>"); //$NON-NLS-1$
+                write(Messages.getString("ResponseTrans.3") + this.app.getName() + "</h2><p>");  //$NON-NLS-1$//$NON-NLS-2$
                 encode(getErrorMessage(throwable));
-                writeln("</p>");
-                if (app.debug()) {
+                writeln("</p>"); //$NON-NLS-1$
+                if (this.app.debug()) {
                     if (throwable instanceof ScriptingException) {
                         ScriptingException scriptx = (ScriptingException) throwable;
-                        writeln("<h4>Script Stack</h4>");
-                        writeln("<pre>" + scriptx.getScriptStackTrace() + "</pre>");
-                        writeln("<h4>Java Stack</h4>");
-                        writeln("<pre>" + scriptx.getJavaStackTrace() + "</pre>");
+                        writeln(Messages.getString("ResponseTrans.4")); //$NON-NLS-1$
+                        writeln("<pre>" + scriptx.getScriptStackTrace() + "</pre>"); //$NON-NLS-1$ //$NON-NLS-2$
+                        writeln(Messages.getString("ResponseTrans.5")); //$NON-NLS-1$
+                        writeln("<pre>" + scriptx.getJavaStackTrace() + "</pre>"); //$NON-NLS-1$ //$NON-NLS-2$
                     } else {
-                        writeln("<h4>Java Stack</h4>");
-                        writeln("<pre>");
+                        writeln(Messages.getString("ResponseTrans.6")); //$NON-NLS-1$
+                        writeln("<pre>"); //$NON-NLS-1$
                         throwable.printStackTrace(new PrintWriter(this));
-                        writeln("</pre>");
+                        writeln("</pre>"); //$NON-NLS-1$
                     }
                 }
-                writeln("</body></html>");
+                writeln("</body></html>"); //$NON-NLS-1$
             }
         }
     }
@@ -591,17 +600,17 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param errorMessage the error message
      */
     public void reportError(String errorMessage) {
-        if (reqtrans.isXmlRpc()) {
+        if (this.reqtrans.isXmlRpc()) {
             writeXmlRpcError(new RuntimeException(errorMessage));
         } else {
-            status = 500;
-            if (!"true".equalsIgnoreCase(app.getProperty("suppressErrorPage"))) {
-                write("<html><body><h2>");
-                write("Error in application ");
-                write(app.getName());
-                write("</h2><p>");
+            this.status = 500;
+            if (!"true".equalsIgnoreCase(this.app.getProperty("suppressErrorPage"))) { //$NON-NLS-1$ //$NON-NLS-2$
+                write("<html><body><h2>"); //$NON-NLS-1$
+                write(Messages.getString("ResponseTrans.7")); //$NON-NLS-1$
+                write(this.app.getName());
+                write("</h2><p>"); //$NON-NLS-1$
                 encode(errorMessage);
-                writeln("</p></body></html>");
+                writeln("</p></body></html>"); //$NON-NLS-1$
             }
         }
     }
@@ -609,26 +618,27 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void writeXmlRpcResponse(Object result) {
         try {
             reset();
-            contentType = "text/xml";
-            if (charset == null) {
-                charset = "UTF-8";
+            this.contentType = "text/xml"; //$NON-NLS-1$
+            if (this.charset == null) {
+                this.charset = "UTF-8"; //$NON-NLS-1$
             }
             XmlRpcResponseProcessor xresproc = new XmlRpcResponseProcessor();
-            writeBinary(xresproc.encodeResponse(result, charset));
+            writeBinary(xresproc.encodeResponse(result, this.charset));
         } catch (Exception x) {
             writeXmlRpcError(x);
         }
     }
 
     public void writeXmlRpcError(Exception x) {
-        contentType = "text/xml";
-        if (charset == null) {
-            charset = "UTF-8";
+        this.contentType = "text/xml"; //$NON-NLS-1$
+        if (this.charset == null) {
+            this.charset = "UTF-8"; //$NON-NLS-1$
         }
         XmlRpcResponseProcessor xresproc = new XmlRpcResponseProcessor();
-        writeBinary(xresproc.encodeException(x, charset));
+        writeBinary(xresproc.encodeException(x, this.charset));
     }
 
+    @Override
     public void flush() {
         // does nothing!
     }
@@ -637,6 +647,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * This has to be called after writing to this response has finished and before it is shipped back to the
      * web server. Transforms the string buffer into a byte array for transmission.
      */
+    @Override
     public void close() throws UnsupportedEncodingException {
         close(null);
     }
@@ -650,12 +661,12 @@ public final class ResponseTrans extends Writer implements Serializable {
     public synchronized void close(String defaultCharset) throws UnsupportedEncodingException {
         // if the response was already written and committed by the application
         // there's no point in closing the response buffer
-        HttpServletResponse res = reqtrans.getServletResponse();
+        HttpServletResponse res = this.reqtrans.getServletResponse();
         if (res != null && res.isCommitted()) {
             // response was committed using HttpServletResponse directly. We need
             // set response to null and notify waiters in order to let attached
             // requests know they can't reuse this response.
-            response = null;
+            this.response = null;
             notifyAll();
             return;
         }
@@ -664,66 +675,66 @@ public final class ResponseTrans extends Writer implements Serializable {
 
         // only close if the response hasn't been closed yet, and if no
         // response was generated using writeBinary().
-        if (response == null) {
+        if (this.response == null) {
             // only use default charset if not explicitly set for this response.
-            if (charset == null) {
-                charset = defaultCharset;
+            if (this.charset == null) {
+                this.charset = defaultCharset;
             }
             // if charset is not set, use western encoding
-            if (charset == null) {
-                charset = "UTF-8";
+            if (this.charset == null) {
+                this.charset = "UTF-8"; //$NON-NLS-1$
             }
 
             // if debug buffer exists, append it to main buffer
-            if (contentType != null &&
-                    contentType.startsWith("text/html") &&
-                    debugBuffer != null) {
-                debugBuffer.append("</div>");
-                if (buffer == null) {
-                    buffer = debugBuffer;
+            if (this.contentType != null &&
+                    this.contentType.startsWith("text/html") && //$NON-NLS-1$
+                    this.debugBuffer != null) {
+                this.debugBuffer.append("</div>"); //$NON-NLS-1$
+                if (this.buffer == null) {
+                    this.buffer = this.debugBuffer;
                 } else {
-                    buffer.append(debugBuffer);
+                    this.buffer.append(this.debugBuffer);
                 }
             }
 
             // get the buffer's bytes in the specified encoding
-            if (buffer != null) {
+            if (this.buffer != null) {
                 try {
-                    response = buffer.toString().getBytes(charset);
+                    this.response = this.buffer.toString().getBytes(this.charset);
                 } catch (UnsupportedEncodingException uee) {
                     encodingError = true;
-                    response = buffer.toString().getBytes();
+                    this.response = this.buffer.toString().getBytes();
                 }
 
                 // make sure this is done only once, even with more requsts attached
-                buffer = null;
+                this.buffer = null;
             } else {
-                response = new byte[0];
+                this.response = new byte[0];
             }
         }
 
-        boolean autoETags = "true".equals(app.getProperty("autoETags", "true"));
+        boolean autoETags = "true".equals(this.app.getProperty("autoETags", "true")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         // if etag is not set, calc MD5 digest and check it, but only if
         // not a redirect or error
         if (autoETags &&
-                etag == null &&
-                lastModified == -1 &&
-                status == 200 &&
-                redir == null) {
+                this.etag == null &&
+                this.lastModified == -1 &&
+                this.status == 200 &&
+                this.redir == null) {
             try {
-                digest = MessageDigest.getInstance("MD5");
+                this.digest = MessageDigest.getInstance("MD5"); //$NON-NLS-1$
                 // if (contentType != null)
                 //     digest.update (contentType.getBytes());
                 byte[] b = this.digest.digest(this.response);
-                this.etag = "\"" + new String(Base64.encodeBase64(b)) + "\"";
+                this.etag = "\"" + new String(Base64.encodeBase64(b)) + "\""; //$NON-NLS-1$ //$NON-NLS-2$
                 // only set response to 304 not modified if no cookies were set
-                if (reqtrans.hasETag(etag) && countCookies() == 0) {
-                    response = new byte[0];
-                    notModified = true;
+                if (this.reqtrans.hasETag(this.etag) && countCookies() == 0) {
+                    this.response = new byte[0];
+                    this.notModified = true;
                 }
             } catch (Exception e) {
                 // Etag creation failed for some reason.
-                app.logError("Error creating ETag: " + e);
+                this.app.logError(Messages.getString("ResponseTrans.8") + e); //$NON-NLS-1$
             }
         }
 
@@ -731,7 +742,7 @@ public final class ResponseTrans extends Writer implements Serializable {
 
         // if there was a problem with the encoding, let the app know
         if (encodingError) {
-            throw new UnsupportedEncodingException(charset);
+            throw new UnsupportedEncodingException(this.charset);
         }
     }
 
@@ -741,7 +752,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public synchronized void waitForClose() {
         try {
-            if (response == null) {
+            if (this.response == null) {
                 wait(10000L);
             }
         } catch (InterruptedException ix) {
@@ -756,7 +767,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the response body
      */
     public byte[] getContent() {
-        return response;
+        return this.response;
     }
 
     /**
@@ -765,8 +776,8 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the length of the response body
      */
     public int getContentLength() {
-        if (response != null) {
-            return response.length;
+        if (this.response != null) {
+            return this.response.length;
         }
 
         return 0;
@@ -778,11 +789,11 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the MIME type for this response
      */
     public String getContentType() {
-        if (charset != null) {
-            return contentType + "; charset=" + charset;
+        if (this.charset != null) {
+            return this.contentType + "; charset=" + this.charset; //$NON-NLS-1$
         }
 
-        return contentType;
+        return this.contentType;
     }
 
 
@@ -802,9 +813,9 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public void setLastModified(long modified) {
         // date headers don't do milliseconds, round to seconds
-        lastModified = (modified / 1000) * 1000;
-        if (reqtrans.getIfModifiedSince() == lastModified) {
-            notModified = true;
+        this.lastModified = (modified / 1000) * 1000;
+        if (this.reqtrans.getIfModifiedSince() == this.lastModified) {
+            this.notModified = true;
             throw new RedirectException(null);
         }
     }
@@ -815,7 +826,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the Last-Modified header in milliseconds
      */
     public long getLastModified() {
-        return lastModified;
+        return this.lastModified;
     }
 
     /**
@@ -824,9 +835,9 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param value the ETag header value
      */
     public void setETag(String value) {
-        etag = (value == null) ? null : ("\"" + value + "\"");
-        if (etag != null && reqtrans.hasETag(etag)) {
-            notModified = true;
+        this.etag = (value == null) ? null : ("\"" + value + "\""); //$NON-NLS-1$ //$NON-NLS-2$
+        if (this.etag != null && this.reqtrans.hasETag(this.etag)) {
+            this.notModified = true;
             throw new RedirectException(null);
         }
     }
@@ -837,7 +848,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the ETag header value
      */
     public String getETag() {
-        return etag;
+        return this.etag;
     }
 
     /**
@@ -846,7 +857,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return true if the the response wasn't modified since the client last saw it.
      */
     public boolean getNotModified() {
-        return notModified;
+        return this.notModified;
     }
 
     /**
@@ -855,27 +866,27 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param what an item this response's output depends on.
      */
     public void dependsOn(Object what) {
-        if (digest == null) {
+        if (this.digest == null) {
             try {
-                digest = MessageDigest.getInstance("MD5");
+                this.digest = MessageDigest.getInstance("MD5"); //$NON-NLS-1$
             } catch (NoSuchAlgorithmException nsa) {
                 // MD5 should always be available
             }
         }
 
         if (what == null) {
-            digest.update(new byte[0]);
+            this.digest.update(new byte[0]);
         } else if (what instanceof Date) {
-            digest.update(Long.toBinaryString(((Date) what).getTime()).getBytes());
+            this.digest.update(Long.toBinaryString(((Date) what).getTime()).getBytes());
         } else if (what instanceof byte[]) {
-            digest.update((byte[]) what);
+            this.digest.update((byte[]) what);
         } else {
             String str = what.toString();
 
             if (str != null) {
-                digest.update(str.getBytes());
+                this.digest.update(str.getBytes());
             } else {
-                digest.update(new byte[0]);
+                this.digest.update(new byte[0]);
             }
         }
     }
@@ -884,13 +895,13 @@ public final class ResponseTrans extends Writer implements Serializable {
      * Digest all dependencies to a checksum to see if the response has changed.
      */
     public void digestDependencies() {
-        if (digest == null) {
+        if (this.digest == null) {
             return;
         }
 
         // add the application checksum as dependency to make ETag
         // generation sensitive to changes in the app
-        byte[] b = digest.digest(Long.toBinaryString((this.app.getChecksum())).getBytes());
+        byte[] b = this.digest.digest(Long.toBinaryString((this.app.getChecksum())).getBytes());
 
         setETag(new String(Base64.encodeBase64(b)));
     }
@@ -903,7 +914,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      */
     public void setSkinpath(Object[] arr) {
         this.skinpath = arr;
-        skincache = null;
+        this.skincache = null;
     }
 
     /**
@@ -913,11 +924,11 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the skin path
      */
     public Object[] getSkinpath() {
-        if (skinpath == null) {
-            skinpath = new Object[0];
+        if (this.skinpath == null) {
+            this.skinpath = new Object[0];
         }
 
-        return skinpath;
+        return this.skinpath;
     }
 
     /**
@@ -927,11 +938,11 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the skin, or null if no skin is cached for the given key
      */
     public Skin getCachedSkin(Object id) {
-        if (skincache == null) {
+        if (this.skincache == null) {
             return null;
         }
 
-        return (Skin) skincache.get(id);
+        return (Skin) this.skincache.get(id);
     }
 
     /**
@@ -941,11 +952,11 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @param skin the skin to cache
      */
     public void cacheSkin(Object id, Skin skin) {
-        if (skincache == null) {
-            skincache = new HashMap();
+        if (this.skincache == null) {
+            this.skincache = new HashMap();
         }
 
-        skincache.put(id, skin);
+        this.skincache.put(id, skin);
     }
 
     /**
@@ -954,8 +965,8 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the previously active skin
      */
     public Skin switchActiveSkin(Skin skin) {
-        Skin previousSkin = activeSkin;
-        activeSkin = skin;
+        Skin previousSkin = this.activeSkin;
+        this.activeSkin = skin;
         return previousSkin;
     }
 
@@ -964,7 +975,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the currently active skin
      */
     public Skin getActiveSkin() {
-        return activeSkin;
+        return this.activeSkin;
     }
 
     /**
@@ -979,20 +990,20 @@ public final class ResponseTrans extends Writer implements Serializable {
     public void setCookie(String key, String value, int days, String path, String domain) {
         CookieTrans c = null;
 
-        if (cookies == null) {
-            cookies = new HashMap();
+        if (this.cookies == null) {
+            this.cookies = new HashMap();
         } else {
-            c = (CookieTrans) cookies.get(key);
+            c = (CookieTrans) this.cookies.get(key);
         }
 
         // remove newline chars to prevent response splitting attack
         if (value != null) {
-            value = value.replaceAll("[\r\n]", "");
+            value = value.replaceAll("[\r\n]", ""); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         if (c == null) {
             c = new CookieTrans(key, value);
-            cookies.put(key, c);
+            this.cookies.put(key, c);
         } else {
             c.setValue(value);
         }
@@ -1006,8 +1017,8 @@ public final class ResponseTrans extends Writer implements Serializable {
      * Reset all previously set cookies.
      */
     public void resetCookies() {
-        if (cookies != null) {
-            cookies.clear();
+        if (this.cookies != null) {
+            this.cookies.clear();
         }
     }
 
@@ -1017,8 +1028,8 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the number of cookies
      */
     public int countCookies() {
-        if (cookies != null) {
-            return cookies.size();
+        if (this.cookies != null) {
+            return this.cookies.size();
         }
 
         return 0;
@@ -1030,12 +1041,12 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the cookies
      */
     public CookieTrans[] getCookies() {
-        if (cookies == null) {
+        if (this.cookies == null) {
             return new CookieTrans[0];
         }
 
-        CookieTrans[] c = new CookieTrans[cookies.size()];
-        cookies.values().toArray(c);
+        CookieTrans[] c = new CookieTrans[this.cookies.size()];
+        this.cookies.values().toArray(c);
         return c;
     }
 
@@ -1044,7 +1055,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the message
      */
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     /**
@@ -1060,7 +1071,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the error message
      */
     public Throwable getError() {
-        return error;
+        return this.error;
     }
 
     /**
@@ -1072,9 +1083,9 @@ public final class ResponseTrans extends Writer implements Serializable {
     }
 
     public String getErrorMessage() {
-        if (error == null)
+        if (this.error == null)
             return null;
-        return getErrorMessage(error);
+        return getErrorMessage(this.error);
     }
 
     private static String getErrorMessage(Throwable t) {
@@ -1082,7 +1093,7 @@ public final class ResponseTrans extends Writer implements Serializable {
         if (msg == null || msg.length() == 0)
             msg = t.toString();
         if (msg == null || msg.length() == 0)
-            return "Unspecified Error: " + t.getClass().getName();
+            return Messages.getString("ResponseTrans.9") + t.getClass().getName(); //$NON-NLS-1$
         return msg;
     }
 
@@ -1091,7 +1102,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the response's debug buffer
      */
     public StringBuffer getDebugBuffer() {
-        return debugBuffer;
+        return this.debugBuffer;
     }
 
     /**
@@ -1107,7 +1118,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the charset name
      */
     public String getCharset() {
-        return charset;
+        return this.charset;
     }
 
     /**
@@ -1123,7 +1134,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return true if the response may be cached
      */
     public boolean isCacheable() {
-        return cacheable;
+        return this.cacheable;
     }
 
     /**
@@ -1139,7 +1150,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the HTTP response code
      */
     public int getStatus() {
-        return status;
+        return this.status;
     }
 
     /**
@@ -1155,7 +1166,7 @@ public final class ResponseTrans extends Writer implements Serializable {
      * @return the name of the authentication realm
      */
     public String getRealm() {
-        return realm;
+        return this.realm;
     }
 
     /**

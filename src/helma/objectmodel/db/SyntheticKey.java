@@ -24,10 +24,10 @@ import java.io.Serializable;
  * symbolic name from another object, like objects mounted via a property name column,
  * virtual nodes and groupby nodes.
  */
-public final class SyntheticKey implements Key, Serializable {
+public final class SyntheticKey implements KeyInterface, Serializable {
 
     // the parent key
-    private final Key parentKey;
+    private final KeyInterface parentKey;
 
     // the name relative to the parent key
     private final String name;
@@ -42,7 +42,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @param key the parent key
      * @param name the property or collection name
      */
-    public SyntheticKey(Key key, String name) {
+    public SyntheticKey(KeyInterface key, String name) {
         this.parentKey = key;
         this.name = name;
     }
@@ -52,6 +52,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @param obj another object
      * @return true if obj represents the same key as this
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -63,29 +64,30 @@ public final class SyntheticKey implements Key, Serializable {
 
         SyntheticKey k = (SyntheticKey) obj;
 
-        return parentKey.equals(k.parentKey) &&
-               ((name == k.name) || name.equals(k.name));
+        return this.parentKey.equals(k.parentKey) &&
+               ((this.name == k.name) || this.name.equals(k.name));
     }
 
     /**
      * Get the hash-code for this key
      * @return the hash-code
      */
+    @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = 17 + (37 * name.hashCode()) +
-                            (37 * parentKey.hashCode());
+        if (this.hashcode == 0) {
+            this.hashcode = 17 + (37 * this.name.hashCode()) +
+                            (37 * this.parentKey.hashCode());
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
      * Get the parent key part of this key
      * @return the parent key
      */
-    public Key getParentKey() {
-        return parentKey;
+    public KeyInterface getParentKey() {
+        return this.parentKey;
     }
 
     /**
@@ -93,7 +95,7 @@ public final class SyntheticKey implements Key, Serializable {
      * @return the id part
      */
     public String getID() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -108,7 +110,8 @@ public final class SyntheticKey implements Key, Serializable {
      * Return a string representation for this key
      * @return a string representation for this key
      */
+    @Override
     public String toString() {
-        return parentKey + "/" + name;
+        return this.parentKey + "/" + this.name; //$NON-NLS-1$
     }
 }

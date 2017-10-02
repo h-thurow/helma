@@ -39,7 +39,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * Creates a new MapWrapper object.
      */
     public MapWrapper() {
-        map = null;
+        this.map = null;
     }
 
     /**
@@ -62,17 +62,18 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * @param start ...
      * @param value ...
      */
+    @Override
     public void put(String name, Scriptable start, Object value) {
-        if (map == null) {
-            map = new HashMap();
+        if (this.map == null) {
+            this.map = new HashMap();
         }
 
         if (value == null || value == Undefined.instance) {
-            map.remove(name);
+            this.map.remove(name);
         } else if (value instanceof Wrapper) {
-            map.put(name, ((Wrapper) value).unwrap());
+            this.map.put(name, ((Wrapper) value).unwrap());
         } else {
-            map.put(name, value);
+            this.map.put(name, value);
         }
     }
 
@@ -84,12 +85,13 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public Object get(String name, Scriptable start) {
-        if (map == null) {
+        if (this.map == null) {
             return null;
         }
 
-        Object obj = map.get(name);
+        Object obj = this.map.get(name);
 
         if (obj != null && !(obj instanceof Scriptable)) {
             // do NOT wrap primitives - otherwise they'll be wrapped as Objects,
@@ -100,7 +102,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
                 return obj;
             }
 
-            return Context.toObject(obj, core.global);
+            return Context.toObject(obj, this.core.global);
         }
 
         return obj;
@@ -114,8 +116,9 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public boolean has(String name, Scriptable start) {
-        return (map != null) && map.containsKey(name);
+        return (this.map != null) && this.map.containsKey(name);
     }
 
     /**
@@ -123,9 +126,10 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @param name ...
      */
+    @Override
     public void delete(String name) {
-        if (map != null) {
-            map.remove(name);
+        if (this.map != null) {
+            this.map.remove(name);
         }
     }
 
@@ -136,17 +140,18 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * @param start ...
      * @param value ...
      */
+    @Override
     public void put(int idx, Scriptable start, Object value) {
-        if (map == null) {
-            map = new HashMap();
+        if (this.map == null) {
+            this.map = new HashMap();
         }
 
         if (value == null || value == Undefined.instance) {
-            map.remove(Integer.toString(idx));
+            this.map.remove(Integer.toString(idx));
         } else if (value instanceof Wrapper) {
-            map.put(Integer.toString(idx), ((Wrapper) value).unwrap());
+            this.map.put(Integer.toString(idx), ((Wrapper) value).unwrap());
         } else {
-            map.put(Integer.toString(idx), value);
+            this.map.put(Integer.toString(idx), value);
         }
     }
 
@@ -158,12 +163,13 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public Object get(int idx, Scriptable start) {
-        if (map == null) {
+        if (this.map == null) {
             return null;
         }
 
-        Object obj = map.get(Integer.toString(idx));
+        Object obj = this.map.get(Integer.toString(idx));
 
         if (obj != null && !(obj instanceof Scriptable)) {
             // do NOT wrap primitives - otherwise they'll be wrapped as Objects,
@@ -174,7 +180,7 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
                 return obj;
             }
 
-            return Context.toObject(obj, core.global);
+            return Context.toObject(obj, this.core.global);
         }
 
         return obj;
@@ -188,8 +194,9 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @return ...
      */
+    @Override
     public boolean has(int idx, Scriptable start) {
-        return (map != null) && map.containsKey(Integer.toString(idx));
+        return (this.map != null) && this.map.containsKey(Integer.toString(idx));
     }
 
     /**
@@ -197,9 +204,10 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      *
      * @param idx ...
      */
+    @Override
     public void delete(int idx) {
-        if (map != null) {
-            map.remove(Integer.toString(idx));
+        if (this.map != null) {
+            this.map.remove(Integer.toString(idx));
         }
     }
 
@@ -207,17 +215,19 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
     /**
      * Return an array containing the property key values of this map.
      */
+    @Override
     public Object[] getIds() {
-        if (map == null) {
+        if (this.map == null) {
             return new Object[0];
         }
 
-        return map.keySet().toArray();
+        return this.map.keySet().toArray();
     }
 
+    @Override
     public Object getDefaultValue(Class hint) {
         if (hint == null || hint == String.class) {
-            return map == null ? "{}" : map.toString();
+            return this.map == null ? "{}" : this.map.toString(); //$NON-NLS-1$
         }
         return super.getDefaultValue(hint);
     }
@@ -226,28 +236,29 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
      * Return the wrapped Map object.
      */
     public Object unwrap() {
-        if (map == null) {
-            map = new HashMap();
+        if (this.map == null) {
+            this.map = new HashMap();
         }
-        return map;
+        return this.map;
     }
 
     /**
      * Return the class name for wrapped maps.
      */
+    @Override
     public String getClassName() {
-        return "[MapWrapper]";
+        return "[MapWrapper]"; //$NON-NLS-1$
     }
 
     /**
      * Return a string representation for this wrapped map. This calls
      * Map.toString(), so usually the contents of the map will be listed.
      */
+    @Override
     public String toString() {
-        if (map == null) {
-            return "[MapWrapper{}]";
-        } else {
-            return "[MapWrapper"+map.toString()+"]";
+        if (this.map == null) {
+            return "[MapWrapper{}]"; //$NON-NLS-1$
         }
+        return "[MapWrapper"+this.map.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
     }
 }

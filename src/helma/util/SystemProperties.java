@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -37,7 +41,7 @@ public final class SystemProperties extends Properties {
     // map of additional properties
     private HashMap additionalProps = null;
 
-    // are keys case sensitive? 
+    // are keys case sensitive?
     private boolean ignoreCase = true;
 
     /**
@@ -68,19 +72,19 @@ public final class SystemProperties extends Properties {
         // System.err.println ("building sysprops with file "+filename+" and node "+node);
         super(defaultProps);
         this.defaultProps = defaultProps;
-        file = (filename == null) ? null : new File(filename);
-        lastcheck = lastread = lastadd = 0;
+        this.file = (filename == null) ? null : new File(filename);
+        this.lastcheck = this.lastread = this.lastadd = 0;
     }
 
     /**
      *  Return the modify-time of the underlying properties file.
      */
     public long lastModified() {
-        if ((file == null) || !file.exists()) {
-            return lastadd;
+        if ((this.file == null) || !this.file.exists()) {
+            return this.lastadd;
         }
 
-        return Math.max(file.lastModified(), lastadd);
+        return Math.max(this.file.lastModified(), this.lastadd);
     }
 
     /**
@@ -94,22 +98,22 @@ public final class SystemProperties extends Properties {
      *  Return a checksum that changes when something in the properties changes.
      */
     public long getChecksum() {
-        if (defaultProps == null) {
+        if (this.defaultProps == null) {
             return lastModified();
         }
 
-        return lastModified() + defaultProps.lastModified();
+        return lastModified() + this.defaultProps.lastModified();
     }
 
     /**
      *  Private method to read file if it has been changed since the last time we did
      */
     private void checkFile() {
-        if ((file != null) && (file.lastModified() > lastread)) {
+        if ((this.file != null) && (this.file.lastModified() > this.lastread)) {
             reload();
         }
 
-        lastcheck = System.currentTimeMillis();
+        this.lastcheck = System.currentTimeMillis();
     }
 
     /**
@@ -118,7 +122,7 @@ public final class SystemProperties extends Properties {
      * @return the properties file
      */
     public File getFile() {
-        return file;
+        return this.file;
     }
 
     /**
@@ -132,30 +136,31 @@ public final class SystemProperties extends Properties {
         clear();
 
         // read from the primary file
-        if (file != null && file.exists()) {
-            FileInputStream bpin = null;
+        if (this.file != null && this.file.exists()) {
+			FileReader reader = null;
 
-            try {
-                bpin = new FileInputStream(file);
-                load(bpin);
-            } catch (Exception x) {
-                System.err.println("Error reading properties from file " + file + ": " + x);
-            } finally {
-                try {
-                    bpin.close();
-                } catch (Exception ignore) {
-                    // ignored
-                }
-            }
+			try {
+				reader = new FileReader(this.file);
+				load(reader);
+			} catch (Exception x) {
+				System.err.println(Messages.getString("SystemProperties.0") + this.file //$NON-NLS-1$
+						+ ": " + x); //$NON-NLS-1$
+			} finally {
+				try {
+					reader.close();
+				} catch (Exception ignore) {
+					// ignored
+				}
+			}
         }
 
         // read additional properties from zip files, if available
-        if (additionalProps != null) {
-            for (Iterator i = additionalProps.values().iterator(); i.hasNext();)
+        if (this.additionalProps != null) {
+            for (Iterator i = this.additionalProps.values().iterator(); i.hasNext();)
                 putAll((Properties) i.next());
         }
 
-        lastread = System.currentTimeMillis();
+        this.lastread = System.currentTimeMillis();
     }
 
     /**
@@ -168,29 +173,29 @@ public final class SystemProperties extends Properties {
         newProps.load(in);
         in.close();
 
-        if (additionalProps == null) {
-            additionalProps = new HashMap();
+        if (this.additionalProps == null) {
+            this.additionalProps = new HashMap();
         }
-        additionalProps.put(key, newProps);
+        this.additionalProps.put(key, newProps);
 
         // fully reload properties and mark as updated
         reload();
-        lastadd = System.currentTimeMillis();
+        this.lastadd = System.currentTimeMillis();
     }
 
     /**
      *  Remove an additional properties dictionary.
      */
     public synchronized void removeProps(String key) {
-        if (additionalProps != null) {
+        if (this.additionalProps != null) {
             // remove added properties for this key. If we had
             // properties associated with the key, mark props as updated.
-            Object p = additionalProps.remove(key);
+            Object p = this.additionalProps.remove(key);
 
             if (p != null) {
                 // fully reload properties and mark as updated
                 reload();
-                lastadd = System.currentTimeMillis();
+                this.lastadd = System.currentTimeMillis();
             }
         }
     }
@@ -199,38 +204,42 @@ public final class SystemProperties extends Properties {
      * This should not be used directly if properties are read from file,
      *  otherwise changes will be lost whe the file is next modified.
      */
+    @Override
     public synchronized Object put(Object key, Object value) {
         // cut off trailing whitespace
         if (value != null) {
             value = value.toString().trim();
         }
 
-        return super.put(ignoreCase ? key.toString().toLowerCase() : key, value);
+        return super.put(this.ignoreCase ? key.toString().toLowerCase() : key, value);
     }
 
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized Object get(Object key) {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
-        return super.get(ignoreCase ? key.toString().toLowerCase() : key);
+        return super.get(this.ignoreCase ? key.toString().toLowerCase() : key);
     }
 
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized Object remove(Object key) {
-        return super.remove(ignoreCase ? key.toString().toLowerCase() : key);
+        return super.remove(this.ignoreCase ? key.toString().toLowerCase() : key);
     }
 
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized boolean contains(Object obj) {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
@@ -240,19 +249,21 @@ public final class SystemProperties extends Properties {
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized boolean containsKey(Object key) {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
-        return super.containsKey(ignoreCase ? key.toString().toLowerCase() : key);
+        return super.containsKey(this.ignoreCase ? key.toString().toLowerCase() : key);
     }
 
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized boolean isEmpty() {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
@@ -262,31 +273,34 @@ public final class SystemProperties extends Properties {
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public String getProperty(String name) {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
-        return super.getProperty(ignoreCase ? name.toLowerCase() : name);
+        return super.getProperty(this.ignoreCase ? name.toLowerCase() : name);
     }
 
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public String getProperty(String name, String defaultValue) {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
-        return super.getProperty(ignoreCase ?
+        return super.getProperty(this.ignoreCase ?
                 name.toLowerCase() : name.toLowerCase(), defaultValue);
     }
 
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized Enumeration keys() {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
@@ -296,8 +310,9 @@ public final class SystemProperties extends Properties {
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public Set keySet() {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
@@ -307,8 +322,9 @@ public final class SystemProperties extends Properties {
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized Enumeration elements() {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
@@ -318,8 +334,9 @@ public final class SystemProperties extends Properties {
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized int size() {
-        if ((System.currentTimeMillis() - lastcheck) > cacheTime) {
+        if ((System.currentTimeMillis() - this.lastcheck) > cacheTime) {
             checkFile();
         }
 
@@ -329,6 +346,7 @@ public final class SystemProperties extends Properties {
     /**
      *  Overrides method to act on the wrapped properties object.
      */
+    @Override
     public synchronized String toString() {
         return super.toString();
     }
@@ -338,16 +356,16 @@ public final class SystemProperties extends Properties {
      */
     public void setIgnoreCase(boolean ignore) {
         if (!super.isEmpty()) {
-            throw new RuntimeException("setIgnoreCase() can only be called on empty Properties");
+            throw new RuntimeException(Messages.getString("SystemProperties.1")); //$NON-NLS-1$
         }
-        ignoreCase = ignore;
+        this.ignoreCase = ignore;
     }
 
     /**
      *  Returns true if this property map ignores key case
      */
     public boolean isIgnoreCase() {
-        return ignoreCase;
+        return this.ignoreCase;
     }
 
 }

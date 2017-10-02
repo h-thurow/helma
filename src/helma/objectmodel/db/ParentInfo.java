@@ -24,7 +24,7 @@ import helma.util.StringUtils;
  */
 public class ParentInfo {
     public final String propname;
-    public final String virtualname;
+    public final String[] virtualnames;
     public final String collectionname;
     public final boolean isroot;
 
@@ -36,27 +36,47 @@ public class ParentInfo {
     public ParentInfo(String desc) {
 
         // [named] isn't used anymore, we just want to keep the parsing compatible.
-        int n = desc.indexOf("[named]");
+        int n = desc.indexOf("[named]"); //$NON-NLS-1$
         desc = n > -1 ? desc.substring(0, n) : desc;
 
-        String[] parts = StringUtils.split(desc, ".");
+        String[] parts = StringUtils.split(desc, "."); //$NON-NLS-1$
 
-        propname = parts.length > 0 ? parts[0].trim() : null;
-        virtualname = parts.length > 1 ? parts[1].trim() : null;
-        collectionname = parts.length > 2 ? parts[2].trim() : null;
+        switch (parts.length) {
+        	case 0:
+        		this.propname = this.collectionname = null;
+        		this.virtualnames = new String[0];
+        		break;
+        	case 1:
+        		this.propname = parts[0].trim();
+        		this.virtualnames = new String[0];
+        		this.collectionname = null;
+        		break;
+        	default:
+        		this.propname = parts[0].trim();
+        		this.virtualnames = new String[parts.length - 2];
+        		this.collectionname = parts[parts.length - 1];
+        		
+        		for (int i = 1; i < parts.length - 1; i++) {
+            		this.virtualnames[i - 1] = parts[i];
+            	}
+        }
 
-        isroot = "root".equalsIgnoreCase(propname);
+        this.isroot = "root".equalsIgnoreCase(this.propname); //$NON-NLS-1$
     }
 
     /**
      * @return a string representation of the parent info
      */
+    @Override
     public String toString() {
-        StringBuffer b = new StringBuffer("ParentInfo[").append(propname);
-        if (virtualname != null)
-            b.append(".").append(virtualname);
-        if (collectionname != null)
-            b.append(".").append(collectionname);
-        return b.append("]").toString();
+        StringBuffer b = new StringBuffer("ParentInfo[").append(this.propname); //$NON-NLS-1$
+        if (this.virtualnames.length > 0) {
+        	for (int i = 0; i < this.virtualnames.length; i++) {
+        		b.append(".").append(this.virtualnames[i]);	 //$NON-NLS-1$
+        	}
+        }
+        if (this.collectionname != null)
+            b.append(".").append(this.collectionname); //$NON-NLS-1$
+        return b.append("]").toString(); //$NON-NLS-1$
     }
 }

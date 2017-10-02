@@ -38,7 +38,7 @@ public class Logger implements Log {
     String canonicalName;
 
     // fields for date rendering and caching
-    static DateFormat dformat = new SimpleDateFormat("[yyyy/MM/dd HH:mm:ss] ");
+    static DateFormat dformat = new SimpleDateFormat("[yyyy/MM/dd HH:mm:ss] "); //$NON-NLS-1$
     static long dateLastRendered;
     static String dateCache;
 
@@ -71,27 +71,27 @@ public class Logger implements Log {
      */
     protected Logger(PrintStream out) {
         init();
-        writer = new PrintWriter(out);
-        canonicalName = out.toString();
+        this.writer = new PrintWriter(out);
+        this.canonicalName = out.toString();
     }
 
     /**
      * Get loglevel from System properties
      */
      private void init() {
-        String level = System.getProperty("helma.loglevel");
-        if ("trace".equalsIgnoreCase(level))
-            logLevel = TRACE;
-        else if ("debug".equalsIgnoreCase(level))
-            logLevel = DEBUG;
-        else if ("info".equalsIgnoreCase(level))
-            logLevel = INFO;
-        else if ("warn".equalsIgnoreCase(level))
-            logLevel = WARN;
-        else if ("error".equalsIgnoreCase(level))
-            logLevel = ERROR;
-        else if ("fatal".equalsIgnoreCase(level))
-            logLevel = FATAL;
+        String level = System.getProperty("helma.loglevel"); //$NON-NLS-1$
+        if ("trace".equalsIgnoreCase(level)) //$NON-NLS-1$
+            this.logLevel = TRACE;
+        else if ("debug".equalsIgnoreCase(level)) //$NON-NLS-1$
+            this.logLevel = DEBUG;
+        else if ("info".equalsIgnoreCase(level)) //$NON-NLS-1$
+            this.logLevel = INFO;
+        else if ("warn".equalsIgnoreCase(level)) //$NON-NLS-1$
+            this.logLevel = WARN;
+        else if ("error".equalsIgnoreCase(level)) //$NON-NLS-1$
+            this.logLevel = ERROR;
+        else if ("fatal".equalsIgnoreCase(level)) //$NON-NLS-1$
+            this.logLevel = FATAL;
     }
 
     /**
@@ -99,7 +99,7 @@ public class Logger implements Log {
      * @return the current log level
      */
     public int getLogLevel() {
-        return logLevel;
+        return this.logLevel;
     }
 
     /**
@@ -113,10 +113,11 @@ public class Logger implements Log {
     /**
      * Return a string representation of this Logger
      */
+    @Override
     public String toString() {
-        return new StringBuffer(getClass().getName()).append("[")
-                .append(canonicalName).append(",").append(logLevel)
-                .append("]").toString();
+        return new StringBuffer(getClass().getName()).append("[") //$NON-NLS-1$
+                .append(this.canonicalName).append(",").append(this.logLevel) //$NON-NLS-1$
+                .append("]").toString(); //$NON-NLS-1$
     }
 
     /**
@@ -124,7 +125,7 @@ public class Logger implements Log {
      * @return the canonical name of this logger
      */
     public String getCanonicalName() {
-        return canonicalName;
+        return this.canonicalName;
     }
 
     /**
@@ -134,18 +135,18 @@ public class Logger implements Log {
      * @param exception an exception, or null
      */
     protected void log(String level, Object msg, Throwable exception) {
-        lastMessage = System.currentTimeMillis();
+        this.lastMessage = System.currentTimeMillis();
         // it's enough to render the date every second
-        if ((lastMessage - 1000) > dateLastRendered) {
+        if ((this.lastMessage - 1000) > dateLastRendered) {
             renderDate();
         }
         // add a safety net so we don't grow indefinitely even if writer thread
         // has gone. the 2000 entries threshold is somewhat arbitrary. 
-        if (entries.size() < 2000) {
-            String message = msg == null ? "null" : msg.toString();
+        if (this.entries.size() < 2000) {
+            String message = msg == null ? "null" : msg.toString(); //$NON-NLS-1$
             Thread thread = Thread.currentThread();
-            String threadId = "[" + thread.getName() + "] ";
-            entries.add(new Entry(dateCache, level, message, threadId, exception));
+            String threadId = "[" + thread.getName() + "] ";  //$NON-NLS-1$//$NON-NLS-2$
+            this.entries.add(new Entry(dateCache, level, message, threadId, exception));
         }
     }
 
@@ -153,7 +154,7 @@ public class Logger implements Log {
      * This is called by the runner thread to perform actual output.
      */
     protected synchronized void write() {
-        if (entries.isEmpty()) {
+        if (this.entries.isEmpty()) {
             return;
         }
 
@@ -161,28 +162,28 @@ public class Logger implements Log {
             // make sure we have a valid writer
             ensureOpen();
 
-            int l = entries.size();
+            int l = this.entries.size();
             for (int i = 0; i < l; i++) {
-                Entry entry = (Entry) entries.remove(0);
-                writer.print(entry.date);
-                writer.print(entry.level);
-                writer.print(entry.threadId);
-                writer.println(entry.message);
+                Entry entry = (Entry) this.entries.remove(0);
+                this.writer.print(entry.date);
+                this.writer.print(entry.level);
+                this.writer.print(entry.threadId);
+                this.writer.println(entry.message);
                 if (entry.exception != null)
-                    entry.exception.printStackTrace(writer);
+                    entry.exception.printStackTrace(this.writer);
             }
-            writer.flush();
+            this.writer.flush();
 
         } catch (Exception x) {
-            int size = entries.size();
+            int size = this.entries.size();
 
             if (size > 1000) {
                 // more than 1000 entries queued plus exception - something
                 // is definitely wrong with this logger. Write a message to std err and
                 // discard queued log entries.
-                System.err.println("Error writing log file " + this + ": " + x);
-                System.err.println("Discarding " + size + " log entries.");
-                entries.clear();
+                System.err.println(Messages.getString("Logger.0") + this + Messages.getString("Logger.1") + x); //$NON-NLS-1$ //$NON-NLS-2$
+                System.err.println(Messages.getString("Logger.2") + size + Messages.getString("Logger.3")); //$NON-NLS-1$ //$NON-NLS-2$
+                this.entries.clear();
             }
         }
     }
@@ -204,87 +205,87 @@ public class Logger implements Log {
     // methods to implement org.apache.commons.logging.Log interface
 
     public boolean isTraceEnabled() {
-        return logLevel <= TRACE;
+        return this.logLevel <= TRACE;
     }
 
     public boolean isDebugEnabled() {
-        return logLevel <= DEBUG;
+        return this.logLevel <= DEBUG;
     }
 
     public boolean isInfoEnabled() {
-        return logLevel <= INFO;
+        return this.logLevel <= INFO;
     }
 
     public boolean isWarnEnabled() {
-        return logLevel <= WARN;
+        return this.logLevel <= WARN;
     }
 
     public boolean isErrorEnabled() {
-        return logLevel <= ERROR;
+        return this.logLevel <= ERROR;
     }
 
     public boolean isFatalEnabled() {
-        return logLevel <= FATAL;
+        return this.logLevel <= FATAL;
     }
 
     public void trace(Object parm1) {
-        if (logLevel <= TRACE)
-            log("[TRACE] ", parm1, null);
+        if (this.logLevel <= TRACE)
+            log(Messages.getString("Logger.4"), parm1, null); //$NON-NLS-1$
     }
 
     public void trace(Object parm1, Throwable parm2) {
-        if (logLevel <= TRACE)
-            log("[TRACE] ", parm1, parm2);
+        if (this.logLevel <= TRACE)
+            log(Messages.getString("Logger.5"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void debug(Object parm1) {
-        if (logLevel <= DEBUG)
-            log("[DEBUG] ", parm1, null);
+        if (this.logLevel <= DEBUG)
+            log(Messages.getString("Logger.6"), parm1, null); //$NON-NLS-1$
     }
 
     public void debug(Object parm1, Throwable parm2) {
-        if (logLevel <= DEBUG)
-            log("[DEBUG] ", parm1, parm2);
+        if (this.logLevel <= DEBUG)
+            log(Messages.getString("Logger.7"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void info(Object parm1) {
-        if (logLevel <= INFO)
-            log("[INFO] ", parm1, null);
+        if (this.logLevel <= INFO)
+            log(Messages.getString("Logger.8"), parm1, null); //$NON-NLS-1$
     }
 
     public void info(Object parm1, Throwable parm2) {
-        if (logLevel <= INFO)
-            log("[INFO] ", parm1, parm2);
+        if (this.logLevel <= INFO)
+            log(Messages.getString("Logger.9"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void warn(Object parm1) {
-        if (logLevel <= WARN)
-            log("[WARN] ", parm1, null);
+        if (this.logLevel <= WARN)
+            log(Messages.getString("Logger.10"), parm1, null); //$NON-NLS-1$
     }
 
     public void warn(Object parm1, Throwable parm2) {
-        if (logLevel <= WARN)
-            log("[WARN] ", parm1, parm2);
+        if (this.logLevel <= WARN)
+            log(Messages.getString("Logger.11"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void error(Object parm1) {
-        if (logLevel <= ERROR)
-            log("[ERROR] ", parm1, null);
+        if (this.logLevel <= ERROR)
+            log(Messages.getString("Logger.12"), parm1, null); //$NON-NLS-1$
     }
 
     public void error(Object parm1, Throwable parm2) {
-        if (logLevel <= ERROR)
-            log("[ERROR] ", parm1, parm2);
+        if (this.logLevel <= ERROR)
+            log(Messages.getString("Logger.13"), parm1, parm2); //$NON-NLS-1$
     }
 
     public void fatal(Object parm1) {
-        if (logLevel <= FATAL)
-            log("[FATAL] ", parm1, null);
+        if (this.logLevel <= FATAL)
+            log(Messages.getString("Logger.14"), parm1, null); //$NON-NLS-1$
     }
 
     public void fatal(Object parm1, Throwable parm2) {
-        if (logLevel <= FATAL)
-            log("[FATAL] ", parm1, parm2);
+        if (this.logLevel <= FATAL)
+            log(Messages.getString("Logger.15"), parm1, parm2); //$NON-NLS-1$
     }
 
     // utility method to get the stack trace from a Throwable as string
@@ -314,7 +315,7 @@ public class Logger implements Log {
      * @return a possibly less verbose version of this log.
      */
     protected Log getSedatedLog() {
-        return sedatedLog;
+        return this.sedatedLog;
     }
 
     /*

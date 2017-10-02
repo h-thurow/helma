@@ -273,91 +273,91 @@ public class ColorQuantizer {
 
        void pruneLevel() {
            // Traverse any children.
-           if (numChildren > 0)
+           if (this.numChildren > 0)
                for (int id = 0; id < MAX_CHILDREN; id++)
-                   if (children[id] != null)
-                       children[id].pruneLevel();
-           if (level == cube.depth)
+                   if (this.children[id] != null)
+                       this.children[id].pruneLevel();
+           if (this.level == this.cube.depth)
                prune();
        }
 
        void pruneToCubeDepth() {
            // Traverse any children.
-           if (numChildren > 0)
+           if (this.numChildren > 0)
                for (int id = 0; id < MAX_CHILDREN; id++)
-                   if (children[id] != null)
-                       children[id].pruneToCubeDepth();
-           if (level > cube.depth)
+                   if (this.children[id] != null)
+                       this.children[id].pruneToCubeDepth();
+           if (this.level > this.cube.depth)
                prune();
        }
 
        void prune() {
            // Traverse any children.
-           if (numChildren > 0)
+           if (this.numChildren > 0)
                for (int id = 0; id < MAX_CHILDREN; id++)
-                   if (children[id] != null)
-                       children[id].prune();
+                   if (this.children[id] != null)
+                       this.children[id].prune();
            // Merge color statistics into parent.
-           parent.uniqueCount += uniqueCount;
-           parent.totalRed += totalRed;
-           parent.totalGreen += totalGreen;
-           parent.totalBlue += totalBlue;
-           parent.totalAlpha += totalAlpha;
-           parent.children[id] = null;
-           parent.numChildren--;
-           cube.numNodes--;
+           this.parent.uniqueCount += this.uniqueCount;
+           this.parent.totalRed += this.totalRed;
+           this.parent.totalGreen += this.totalGreen;
+           this.parent.totalBlue += this.totalBlue;
+           this.parent.totalAlpha += this.totalAlpha;
+           this.parent.children[this.id] = null;
+           this.parent.numChildren--;
+           this.cube.numNodes--;
        }
 
        void reduce(long pruningThreshold) {
            // Traverse any children.
-           if (numChildren > 0)
+           if (this.numChildren > 0)
                for (int id = 0; id < MAX_CHILDREN; id++)
-                   if (children[id] != null)
-                       children[id].reduce(pruningThreshold);
-           if (quantizeError <= pruningThreshold)
+                   if (this.children[id] != null)
+                       this.children[id].reduce(pruningThreshold);
+           if (this.quantizeError <= pruningThreshold)
                prune();
            else {
                // Find minimum pruning threshold.
-               if (uniqueCount > 0)
-                   cube.numColors++;
-               if (quantizeError < cube.nextThreshold)
-                   cube.nextThreshold = quantizeError;
+               if (this.uniqueCount > 0)
+                   this.cube.numColors++;
+               if (this.quantizeError < this.cube.nextThreshold)
+                   this.cube.nextThreshold = this.quantizeError;
            }
        }
 
        void findClosestColor(int red, int green, int blue, int alpha, ClosestColor closest) {
            // Traverse any children.
-           if (numChildren > 0)
+           if (this.numChildren > 0)
                for (int id = 0; id < MAX_CHILDREN; id++)
-                   if (children[id] != null)
-                       children[id].findClosestColor(red, green, blue, alpha, closest);
-           if (uniqueCount != 0) {
+                   if (this.children[id] != null)
+                       this.children[id].findClosestColor(red, green, blue, alpha, closest);
+           if (this.uniqueCount != 0) {
                // Determine if this color is "closest".
-               int dr = (cube.colorMap[0][colorIndex] & 0xff) - red;
-               int dg = (cube.colorMap[1][colorIndex] & 0xff) - green;
-               int db = (cube.colorMap[2][colorIndex] & 0xff) - blue;
-               int da = (cube.colorMap[3][colorIndex] & 0xff) - alpha;
+               int dr = (this.cube.colorMap[0][this.colorIndex] & 0xff) - red;
+               int dg = (this.cube.colorMap[1][this.colorIndex] & 0xff) - green;
+               int db = (this.cube.colorMap[2][this.colorIndex] & 0xff) - blue;
+               int da = (this.cube.colorMap[3][this.colorIndex] & 0xff) - alpha;
                int distance = da * da + dr * dr + dg * dg + db * db;
                if (distance < closest.distance) {
                    closest.distance = distance;
-                   closest.colorIndex = colorIndex;
+                   closest.colorIndex = this.colorIndex;
                }
             }
        }
 
        int fillColorMap(byte colorMap[][], int index) {
            // Traverse any children.
-           if (numChildren > 0)
+           if (this.numChildren > 0)
                for (int id = 0; id < MAX_CHILDREN; id++)
-                   if (children[id] != null)
-                       index = children[id].fillColorMap(colorMap, index);
-           if (uniqueCount != 0) {
+                   if (this.children[id] != null)
+                       index = this.children[id].fillColorMap(colorMap, index);
+           if (this.uniqueCount != 0) {
                // Colormap entry is defined by the mean color in this cube.
-               colorMap[0][index] = (byte) (totalRed / uniqueCount + 0.5);
-               colorMap[1][index] = (byte) (totalGreen / uniqueCount + 0.5);
-               colorMap[2][index] = (byte) (totalBlue / uniqueCount + 0.5);
-               colorMap[3][index] = (byte) (totalAlpha / uniqueCount + 0.5);
-               colorIndex = index++;
+               colorMap[0][index] = (byte) (this.totalRed / this.uniqueCount + 0.5);
+               colorMap[1][index] = (byte) (this.totalGreen / this.uniqueCount + 0.5);
+               colorMap[2][index] = (byte) (this.totalBlue / this.uniqueCount + 0.5);
+               colorMap[3][index] = (byte) (this.totalAlpha / this.uniqueCount + 0.5);
+               this.colorIndex = index++;
            }
            return index;
        }
@@ -380,7 +380,7 @@ public class ColorQuantizer {
        Cube(int maxColors) {
            this.depth = getDepth(maxColors);
            this.numColors = 0;
-           root = new Node(this);
+           this.root = new Node(this);
        }
        
        int getDepth(int numColors) {
@@ -396,8 +396,8 @@ public class ColorQuantizer {
        }
 
        void classifyImageColors(BufferedImage image, boolean alphaToBitmask) {
-           addTransparency = false;
-           firstColor = 0;
+           this.addTransparency = false;
+           this.firstColor = 0;
            
            Node node, child;
            int x, px, y, index, level, id, count;
@@ -423,10 +423,10 @@ public class ColorQuantizer {
            for (y = 0; y < height; y++) {
                g2d.drawImage(image, null, 0, -y);
                // now pixels contains the rgb values of the row y!
-               if (numNodes > MAX_NODES) {
+               if (this.numNodes > MAX_NODES) {
                    // Prune one level if the color tree is too large.
-                   root.pruneLevel();
-                   depth--;
+                   this.root.pruneLevel();
+                   this.depth--;
                }
                for (x = 0; x < width;) {
                    pixel = pixels[x];
@@ -452,7 +452,7 @@ public class ColorQuantizer {
                        midGreen = bisect;
                        midBlue = bisect;
                        midAlpha = bisect;
-                       node = root;
+                       node = this.root;
                        for (level = 1; level <= levelThreshold; level++) {
                            id = (((red >> index) & 0x01) << 3 |
                                  ((green >> index) & 0x01) << 2 |
@@ -468,12 +468,12 @@ public class ColorQuantizer {
                                // Set colors of new node to contain pixel.
                                child = new Node(this, id, level, node);
                                if (level == levelThreshold) {
-                                   numColors++;
-                                   if (numColors == 256) {
+                                   this.numColors++;
+                                   if (this.numColors == 256) {
                                        // More than 256 colors; classify to the
                                        // cube_info.depth tree depth.
-                                       levelThreshold = depth;
-                                       root.pruneToCubeDepth();
+                                       levelThreshold = this.depth;
+                                       this.root.pruneToCubeDepth();
                                    }
                                }
                            }
@@ -485,7 +485,7 @@ public class ColorQuantizer {
                            int b = blue - midBlue;
                            int a = alpha - midAlpha;
                            node.quantizeError += count * (r * r + g * g + b * b + a * a);
-                           root.quantizeError += node.quantizeError;
+                           this.root.quantizeError += node.quantizeError;
                            index--;
                        }
                        // Sum RGB for this leaf for later derivation of the mean
@@ -495,29 +495,29 @@ public class ColorQuantizer {
                        node.totalGreen += count * green;
                        node.totalBlue += count * blue;
                        node.totalAlpha += count * alpha;
-                   } else if (!addTransparency) {
-                       addTransparency = true;
-                       numColors++;
-                       firstColor = 1; // start at 1 as 0 will be the transparent color
+                   } else if (!this.addTransparency) {
+                       this.addTransparency = true;
+                       this.numColors++;
+                       this.firstColor = 1; // start at 1 as 0 will be the transparent color
                    }
                }
            }
        }
 
        void reduceImageColors(int maxColors) {
-           nextThreshold = 0;
-           while (numColors > maxColors) {
-               long pruningThreshold = nextThreshold;
-               nextThreshold = root.quantizeError - 1;
-               numColors = firstColor;
-               root.reduce(pruningThreshold);
+           this.nextThreshold = 0;
+           while (this.numColors > maxColors) {
+               long pruningThreshold = this.nextThreshold;
+               this.nextThreshold = this.root.quantizeError - 1;
+               this.numColors = this.firstColor;
+               this.root.reduce(pruningThreshold);
            }
        }
 
        BufferedImage assignImageColors(BufferedImage image, boolean dither, boolean alphaToBitmask) {
            // Allocate image colormap.
-           colorMap = new byte[4][numColors];
-           root.fillColorMap(colorMap, firstColor);
+           this.colorMap = new byte[4][this.numColors];
+           this.root.fillColorMap(this.colorMap, this.firstColor);
            // create the right color model, depending on transparency settings:
            IndexColorModel icm;
            
@@ -525,13 +525,13 @@ public class ColorQuantizer {
            int height = image.getHeight();
            
            if (alphaToBitmask) {
-               if (addTransparency) {
-                   icm = new IndexColorModel(depth, numColors, colorMap[0], colorMap[1], colorMap[2], 0);
+               if (this.addTransparency) {
+                   icm = new IndexColorModel(this.depth, this.numColors, this.colorMap[0], this.colorMap[1], this.colorMap[2], 0);
                } else {
-                   icm = new IndexColorModel(depth, numColors, colorMap[0], colorMap[1], colorMap[2]);
+                   icm = new IndexColorModel(this.depth, this.numColors, this.colorMap[0], this.colorMap[1], this.colorMap[2]);
                }
            } else {
-               icm = new IndexColorModel(depth, numColors, colorMap[0], colorMap[1], colorMap[2], colorMap[3]);
+               icm = new IndexColorModel(this.depth, this.numColors, this.colorMap[0], this.colorMap[1], this.colorMap[2], this.colorMap[3]);
            }
 
            // create the indexed BufferedImage:
@@ -574,12 +574,12 @@ public class ColorQuantizer {
                            alpha = alpha < 128 ? 0 : 0xff;
 
                        byte col;
-                       if (alpha == 0 && addTransparency) {
+                       if (alpha == 0 && this.addTransparency) {
                            col = 0; // transparency color is at position 0 of color map
                        } else {
                            // walk the tree to find the cube containing that
                            // color
-                           node = root;
+                           node = this.root;
                            for (i = MAX_TREE_DEPTH - 1; i > 0; i--) {
                                id = (((red >> i) & 0x01) << 3 |
                                      ((green >> i) & 0x01) << 2 |

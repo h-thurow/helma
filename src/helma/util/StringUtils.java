@@ -33,7 +33,7 @@ public class StringUtils {
      *  as delimiters.
      */
     public static String[] split(String str) {
-        return split(str, ", \t\n\r\f");
+        return split(str, ", \t\n\r\f"); //$NON-NLS-1$
     }
 
     /**
@@ -57,7 +57,7 @@ public class StringUtils {
      *  @return an array of lines
      */
     public static String[] splitLines(String str) {
-        return str.split("\\r\\n|\\r|\\n");
+        return str.split("\\r\\n|\\r|\\n"); //$NON-NLS-1$
     }
 
     /**

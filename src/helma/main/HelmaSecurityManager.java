@@ -37,8 +37,8 @@ public class HelmaSecurityManager extends SecurityManager {
     private final static HashSet forbidden = new HashSet();
 
     static {
-        forbidden.add("exitVM");
-        forbidden.add("setSecurityManager");
+        forbidden.add("exitVM"); //$NON-NLS-1$
+        forbidden.add("setSecurityManager"); //$NON-NLS-1$
     }
 
     /**
@@ -46,6 +46,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param p ...
      */
+    @Override
     public void checkPermission(Permission p) {
         if (p instanceof RuntimePermission) {
             if (forbidden.contains(p.getName())) {
@@ -54,7 +55,7 @@ public class HelmaSecurityManager extends SecurityManager {
                 for (int i = 0; i < classes.length; i++) {
                     if (classes[i].getClassLoader() instanceof AppClassLoader) {
                         throw new SecurityException(p.getName() +
-                                                    " not allowed for application code");
+                                                    Messages.getString("HelmaSecurityManager.0")); //$NON-NLS-1$
                     }
                 }
             }
@@ -67,12 +68,14 @@ public class HelmaSecurityManager extends SecurityManager {
      * @param p ...
      * @param context ...
      */
+    @Override
     public void checkPermission(Permission p, Object context) {
     }
 
     /**
      *
      */
+    @Override
     public void checkCreateClassLoader() {
     }
 
@@ -81,6 +84,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param thread ...
      */
+    @Override
     public void checkAccess(Thread thread) {
     }
 
@@ -89,6 +93,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param group ...
      */
+    @Override
     public void checkAccess(ThreadGroup group) {
     }
 
@@ -97,12 +102,13 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param status ...
      */
+    @Override
     public void checkExit(int status) {
         Class[] classes = getClassContext();
 
         for (int i = 0; i < classes.length; i++) {
             if (classes[i].getClassLoader() instanceof AppClassLoader) {
-                throw new SecurityException("operation not allowed for application code");
+                throw new SecurityException(Messages.getString("HelmaSecurityManager.1")); //$NON-NLS-1$
             }
         }
     }
@@ -112,6 +118,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param cmd ...
      */
+    @Override
     public void checkExec(String cmd) {
     }
 
@@ -120,6 +127,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param lib ...
      */
+    @Override
     public void checkLink(String lib) {
     }
 
@@ -128,6 +136,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param fdesc ...
      */
+    @Override
     public void checkRead(FileDescriptor fdesc) {
     }
 
@@ -136,6 +145,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param file ...
      */
+    @Override
     public void checkRead(String file) {
     }
 
@@ -145,6 +155,7 @@ public class HelmaSecurityManager extends SecurityManager {
      * @param file ...
      * @param context ...
      */
+    @Override
     public void checkRead(String file, Object context) {
     }
 
@@ -153,6 +164,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param fdesc ...
      */
+    @Override
     public void checkWrite(FileDescriptor fdesc) {
     }
 
@@ -161,6 +173,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param file ...
      */
+    @Override
     public void checkWrite(String file) {
     }
 
@@ -169,6 +182,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param file ...
      */
+    @Override
     public void checkDelete(String file) {
     }
 
@@ -178,6 +192,7 @@ public class HelmaSecurityManager extends SecurityManager {
      * @param host ...
      * @param port ...
      */
+    @Override
     public void checkConnect(String host, int port) {
     }
 
@@ -188,6 +203,7 @@ public class HelmaSecurityManager extends SecurityManager {
      * @param port ...
      * @param context ...
      */
+    @Override
     public void checkConnect(String host, int port, Object context) {
     }
 
@@ -196,6 +212,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param port ...
      */
+    @Override
     public void checkListen(int port) {
     }
 
@@ -205,6 +222,7 @@ public class HelmaSecurityManager extends SecurityManager {
      * @param host ...
      * @param port ...
      */
+    @Override
     public void checkAccept(String host, int port) {
     }
 
@@ -213,12 +231,14 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param addr ...
      */
+    @Override
     public void checkMulticast(InetAddress addr) {
     }
 
     /**
      *
      */
+    @Override
     public void checkPropertiesAccess() {
     }
 
@@ -227,6 +247,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param key ...
      */
+    @Override
     public void checkPropertyAccess(String key) {
     }
 
@@ -237,6 +258,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @return ...
      */
+    @Override
     public boolean checkTopLevelWindow(Object window) {
         return true;
     }
@@ -244,18 +266,21 @@ public class HelmaSecurityManager extends SecurityManager {
     /**
      *
      */
+    @Override
     public void checkPrintJobAccess() {
     }
 
     /**
      *
      */
+    @Override
     public void checkSystemClipboardAccess() {
     }
 
     /**
      *
      */
+    @Override
     public void checkAwtEventQueueAccess() {
     }
 
@@ -264,6 +289,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param pkg ...
      */
+    @Override
     public void checkPackageAccess(String pkg) {
     }
 
@@ -272,12 +298,14 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param pkg ...
      */
+    @Override
     public void checkPackageDefinition(String pkg) {
     }
 
     /**
      *
      */
+    @Override
     public void checkSetFactory() {
     }
 
@@ -287,6 +315,7 @@ public class HelmaSecurityManager extends SecurityManager {
      * @param clazz ...
      * @param which ...
      */
+    @Override
     public void checkMemberAccess(Class clazz, int which) {
     }
 
@@ -295,6 +324,7 @@ public class HelmaSecurityManager extends SecurityManager {
      *
      * @param target ...
      */
+    @Override
     public void checkSecurityAccess(String target) {
     }
 

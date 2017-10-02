@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved.
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -17,8 +21,8 @@
 package helma.objectmodel.db;
 
 import helma.framework.core.Application;
-import helma.objectmodel.INode;
-import helma.objectmodel.IProperty;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.PropertyInterface;
 import helma.util.StringUtils;
 
 import java.sql.SQLException;
@@ -52,14 +56,14 @@ public final class Relation {
     public final static int COMPLEX_REFERENCE = 3;
 
     // constraints linked together by OR or AND if applicable?
-    public final static String AND = " AND ";
-    public final static String OR = " OR ";
-    public final static String XOR = " XOR ";
+    public final static String AND = " AND "; //$NON-NLS-1$
+    public final static String OR = " OR "; //$NON-NLS-1$
+    public final static String XOR = " XOR "; //$NON-NLS-1$
     private String logicalOperator = AND;
 
     // prefix to use for symbolic names of joined tables. The name is composed
     // from this prefix and the name of the property we're doing the join for
-    final static String JOIN_PREFIX = "JOIN_";
+    final static String JOIN_PREFIX = "JOIN_"; //$NON-NLS-1$
 
     // direct mapping is a very powerful feature:
     // objects of some types can be directly accessed
@@ -142,7 +146,7 @@ public final class Relation {
     public Relation(String propName, DbMapping ownType) {
         this.ownType = ownType;
         this.propName = propName;
-        otherType = null;
+        this.otherType = null;
     }
 
     /**
@@ -154,99 +158,99 @@ public final class Relation {
      * @param props The subproperties for this relation.
      */
     public void update(Object desc, Properties props) {
-        Application app = ownType.getApplication();
+        Application app = this.ownType.getApplication();
 
         if (desc instanceof Properties || parseDescriptor(desc, props)) {
             // converted to internal foo.collection = Bar representation
             String proto;
-            if (props.containsKey("collection")) {
-                proto = props.getProperty("collection");
-                virtual = !"_children".equalsIgnoreCase(propName);
-                reftype = COLLECTION;
-            } else if (props.containsKey("mountpoint")) {
-                proto = props.getProperty("mountpoint");
-                reftype = COLLECTION;
-                virtual = true;
+            if (props.containsKey("collection")) { //$NON-NLS-1$
+                proto = props.getProperty("collection"); //$NON-NLS-1$
+                this.virtual = !"_children".equalsIgnoreCase(this.propName); //$NON-NLS-1$
+                this.reftype = COLLECTION;
+            } else if (props.containsKey("mountpoint")) { //$NON-NLS-1$
+                proto = props.getProperty("mountpoint"); //$NON-NLS-1$
+                this.reftype = COLLECTION;
+                this.virtual = true;
                 this.prototype = proto;
-            } else if (props.containsKey("object")) {
-                proto = props.getProperty("object");
-                if (reftype != COMPLEX_REFERENCE) {
-                    reftype = REFERENCE;
+            } else if (props.containsKey("object")) { //$NON-NLS-1$
+                proto = props.getProperty("object"); //$NON-NLS-1$
+                if (this.reftype != COMPLEX_REFERENCE) {
+                    this.reftype = REFERENCE;
                 }
-                virtual = false;
+                this.virtual = false;
             } else {
-                throw new RuntimeException("Invalid property Mapping: " + desc);
+                throw new RuntimeException(Messages.getString("Relation.0") + desc); //$NON-NLS-1$
             }
 
-            otherType = app.getDbMapping(proto);
+            this.otherType = app.getDbMapping(proto);
 
-            if (otherType == null) {
-                throw new RuntimeException("DbMapping for " + proto +
-                                           " not found from " + ownType.getTypeName());
+            if (this.otherType == null) {
+                throw new RuntimeException(Messages.getString("Relation.1") + proto + //$NON-NLS-1$
+                                           Messages.getString("Relation.2") + this.ownType.getTypeName()); //$NON-NLS-1$
             }
 
             // make sure the type we're referring to is up to date!
-            if (otherType.needsUpdate()) {
-                otherType.update();
+            if (this.otherType.needsUpdate()) {
+                this.otherType.update();
             }
 
         }
 
-        readonly = "true".equalsIgnoreCase(props.getProperty("readonly"));
-        isPrivate = "true".equalsIgnoreCase(props.getProperty("private"));
+        this.readonly = "true".equalsIgnoreCase(props.getProperty("readonly")); //$NON-NLS-1$ //$NON-NLS-2$
+        this.isPrivate = "true".equalsIgnoreCase(props.getProperty("private")); //$NON-NLS-1$ //$NON-NLS-2$
 
         // the following options only apply to object and collection relations
-        if ((reftype != PRIMITIVE) && (reftype != INVALID)) {
+        if ((this.reftype != PRIMITIVE) && (this.reftype != INVALID)) {
             Vector newConstraints = new Vector();
 
             parseOptions(newConstraints, props);
 
-            constraints = new Constraint[newConstraints.size()];
-            newConstraints.copyInto(constraints);
+            this.constraints = new Constraint[newConstraints.size()];
+            newConstraints.copyInto(this.constraints);
 
 
-            if (reftype == REFERENCE || reftype == COMPLEX_REFERENCE) {
-                if (constraints.length == 0) {
-                    referencesPrimaryKey = true;
+            if (this.reftype == REFERENCE || this.reftype == COMPLEX_REFERENCE) {
+                if (this.constraints.length == 0) {
+                    this.referencesPrimaryKey = true;
                 } else {
                     boolean rprim = false;
-                    for (int i=0; i<constraints.length; i++) {
-                        if (constraints[i].foreignKeyIsPrimary()) {
+                    for (int i=0; i<this.constraints.length; i++) {
+                        if (this.constraints[i].foreignKeyIsPrimary()) {
                             rprim = true;
                             break;
                         }
                     }
-                    referencesPrimaryKey = rprim;
+                    this.referencesPrimaryKey = rprim;
                 }
 
                 // check if this is a non-trivial reference
-                if (constraints.length > 1 || !usesPrimaryKey()) {
-                    reftype = COMPLEX_REFERENCE;
+                if (this.constraints.length > 1 || !usesPrimaryKey()) {
+                    this.reftype = COMPLEX_REFERENCE;
                 } else {
-                    reftype = REFERENCE;
+                    this.reftype = REFERENCE;
                 }
             }
 
-            if (reftype == COLLECTION) {
-                referencesPrimaryKey = (accessName == null) ||
-                        accessName.equalsIgnoreCase(otherType.getIDField());
+            if (this.reftype == COLLECTION) {
+                this.referencesPrimaryKey = (this.accessName == null) ||
+                        this.accessName.equalsIgnoreCase(this.otherType.getIDField());
             }
 
             // if DbMapping for virtual nodes has already been created,
             // update its subnode relation.
             // FIXME: needs to be synchronized?
-            if (virtualMapping != null) {
-                virtualMapping.lastTypeChange = ownType.lastTypeChange;
-                virtualMapping.subRelation = getVirtualSubnodeRelation();
-                virtualMapping.propRelation = getVirtualPropertyRelation();
+            if (this.virtualMapping != null) {
+                this.virtualMapping.lastTypeChange = this.ownType.lastTypeChange;
+                this.virtualMapping.subRelation = getVirtualSubnodeRelation();
+                this.virtualMapping.propRelation = getVirtualPropertyRelation();
             }
         } else {
-            referencesPrimaryKey = false;
+            this.referencesPrimaryKey = false;
         }
     }
 
     /**
-     * Converts old style foo = collection(Bar) mapping to new style 
+     * Converts old style foo = collection(Bar) mapping to new style
      * foo.collection = Bar mappinng and returns true if a non-primitive mapping
      * was encountered.
      * @param value the value of the top level property mapping
@@ -256,166 +260,164 @@ public final class Relation {
     protected boolean parseDescriptor(Object value, Map config) {
         String desc = value instanceof String ? (String) value : null;
 
-        if (desc == null || "".equals(desc.trim())) {
-            if (propName != null) {
-                reftype = PRIMITIVE;
-                columnName = propName;
+        if (desc == null || "".equals(desc.trim())) { //$NON-NLS-1$
+            if (this.propName != null) {
+                this.reftype = PRIMITIVE;
+                this.columnName = this.propName;
             } else {
-                reftype = INVALID;
-                columnName = propName;
+                this.reftype = INVALID;
+                this.columnName = this.propName;
             }
             return false;
-        } else {
-            desc = desc.trim();
-
-            int open = desc.indexOf("(");
-            int close = desc.indexOf(")", open);
-
-            if (open > -1 && close > open) {
-                String ref = desc.substring(0, open).trim();
-                String proto = desc.substring(open + 1, close).trim();
-
-                if ("collection".equalsIgnoreCase(ref)) {
-                    config.put("collection", proto);
-                } else if ("mountpoint".equalsIgnoreCase(ref)) {
-                    config.put("mountpoint", proto);
-                } else if ("object".equalsIgnoreCase(ref)) {
-                    config.put("object", proto);
-                } else {
-                    throw new RuntimeException("Invalid property Mapping: " + desc);
-                }
-
-                return true;
-
-            } else {
-                virtual = false;
-                columnName = desc;
-                reftype = PRIMITIVE;
-                return false;
-            }
         }
+        desc = desc.trim();
+
+        int open = desc.indexOf("("); //$NON-NLS-1$
+        int close = desc.indexOf(")", open); //$NON-NLS-1$
+
+        if (open > -1 && close > open) {
+            String ref = desc.substring(0, open).trim();
+            String proto = desc.substring(open + 1, close).trim();
+
+            if ("collection".equalsIgnoreCase(ref)) { //$NON-NLS-1$
+                config.put("collection", proto); //$NON-NLS-1$
+            } else if ("mountpoint".equalsIgnoreCase(ref)) { //$NON-NLS-1$
+                config.put("mountpoint", proto); //$NON-NLS-1$
+            } else if ("object".equalsIgnoreCase(ref)) { //$NON-NLS-1$
+                config.put("object", proto); //$NON-NLS-1$
+            } else {
+                throw new RuntimeException(Messages.getString("Relation.3") + desc); //$NON-NLS-1$
+            }
+
+            return true;
+
+        }
+        this.virtual = false;
+        this.columnName = desc;
+        this.reftype = PRIMITIVE;
+        return false;
 
     }
 
     protected void parseOptions(Vector cnst, Properties props) {
-        String loading = props.getProperty("loadmode");
+        String loading = props.getProperty("loadmode"); //$NON-NLS-1$
 
         if (loading != null) {
             loading = loading.trim();
-            if ("aggressive".equalsIgnoreCase(loading)) {
-                aggressiveLoading = true;
-                lazyLoading = false;
-            } else if ("lazy".equalsIgnoreCase(loading)) {
-                lazyLoading = true;
-                aggressiveLoading = false;
+            if ("aggressive".equalsIgnoreCase(loading)) { //$NON-NLS-1$
+                this.aggressiveLoading = true;
+                this.lazyLoading = false;
+            } else if ("lazy".equalsIgnoreCase(loading)) { //$NON-NLS-1$
+                this.lazyLoading = true;
+                this.aggressiveLoading = false;
             } else {
-                System.err.println("Unsupported loadmode property in " + ownType + ": " + loading);
-                aggressiveLoading = lazyLoading = false;
+                System.err.println(Messages.getString("Relation.4") + this.ownType + Messages.getString("Relation.5") + loading); //$NON-NLS-1$ //$NON-NLS-2$
+                this.aggressiveLoading = this.lazyLoading = false;
             }
         } else {
-            aggressiveLoading = lazyLoading = false;
+            this.aggressiveLoading = this.lazyLoading = false;
         }
 
-        String caching = props.getProperty("cachemode");
+        String caching = props.getProperty("cachemode"); //$NON-NLS-1$
 
-        aggressiveCaching = (caching != null) &&
-                            "aggressive".equalsIgnoreCase(caching.trim());
+        this.aggressiveCaching = (caching != null) &&
+                            "aggressive".equalsIgnoreCase(caching.trim()); //$NON-NLS-1$
 
         // get order property
-        order = props.getProperty("order");
+        this.order = props.getProperty("order"); //$NON-NLS-1$
 
-        if ((order != null) && (order.trim().length() == 0)) {
-            order = null;
+        if ((this.order != null) && (this.order.trim().length() == 0)) {
+            this.order = null;
         }
 
         // get the criteria(s) for updating this collection
-        updateCriteria = props.getProperty("updatecriteria");
+        this.updateCriteria = props.getProperty("updatecriteria"); //$NON-NLS-1$
 
         // get the autosorting flag
-        autoSorted = "auto".equalsIgnoreCase(props.getProperty("sortmode"));
+        this.autoSorted = "auto".equalsIgnoreCase(props.getProperty("sortmode")); //$NON-NLS-1$ //$NON-NLS-2$
 
         // get additional filter property
-        filter = props.getProperty("filter");
+        this.filter = props.getProperty("filter"); //$NON-NLS-1$
 
-        if (filter != null) {
-            if (filter.trim().length() == 0) {
-                filter = null;
-                filterFragments = filterPropertyRefs = null;
+        if (this.filter != null) {
+            if (this.filter.trim().length() == 0) {
+                this.filter = null;
+                this.filterFragments = this.filterPropertyRefs = null;
             } else {
                 // parenthesise filter
                 Vector fragments = new Vector();
                 Vector propertyRefs = new Vector();
-                parsePropertyString(filter, fragments, propertyRefs);
+                parsePropertyString(this.filter, fragments, propertyRefs);
                 // if no references where found, just use the filter string
                 // otherwise use the filter fragments and proeprty refs instead
                 if (propertyRefs.size() > 0) {
-                    filterFragments = fragments;
-                    filterPropertyRefs = propertyRefs;
+                    this.filterFragments = fragments;
+                    this.filterPropertyRefs = propertyRefs;
                 } else {
-                    filterFragments = filterPropertyRefs = null;
+                    this.filterFragments = this.filterPropertyRefs = null;
                 }
             }
         }
 
         // get additional tables
-        additionalTables = props.getProperty("filter.additionalTables");
+        this.additionalTables = props.getProperty("filter.additionalTables"); //$NON-NLS-1$
 
-        if (additionalTables != null) {
-            if (additionalTables.trim().length() == 0) {
-                additionalTables = null;
+        if (this.additionalTables != null) {
+            if (this.additionalTables.trim().length() == 0) {
+                this.additionalTables = null;
             } else {
-                String ucTables = additionalTables.toUpperCase();
+                String ucTables = this.additionalTables.toUpperCase();
                 // create dependencies implied by additional tables
-                DbSource dbsource = otherType.getDbSource();
+                DbSource dbsource = this.otherType.getDbSource();
                 if (dbsource != null) {
-                    String[] tables = StringUtils.split(ucTables, ", ");
+                    String[] tables = StringUtils.split(ucTables, ", "); //$NON-NLS-1$
                     for (int i=0; i<tables.length; i++) {
                         // Skip some join-related keyworks we might encounter here
-                        if ("AS".equals(tables[i]) || "ON".equals(tables[i])) {
+                        if ("AS".equals(tables[i]) || "ON".equals(tables[i])) { //$NON-NLS-1$ //$NON-NLS-2$
                             continue;
                         }
                         DbMapping dbmap = dbsource.getDbMapping(tables[i]);
                         if (dbmap != null) {
-                            dbmap.addDependency(otherType);
+                            dbmap.addDependency(this.otherType);
                         }
                     }
                 }
                 // see wether the JOIN syntax is used. look for " join " with whitespaces on both sides
                 // and for "join " at the beginning:
-                additionalTablesJoined = (ucTables.indexOf(" JOIN ") != -1 ||
-                        ucTables.startsWith("STRAIGHT_JOIN ") || ucTables.startsWith("JOIN "));
+                this.additionalTablesJoined = (ucTables.indexOf(" JOIN ") != -1 || //$NON-NLS-1$
+                        ucTables.startsWith("STRAIGHT_JOIN ") || ucTables.startsWith("JOIN "));  //$NON-NLS-1$//$NON-NLS-2$
             }
         }
 
         // get query hints
-        queryHints = props.getProperty("hints");
+        this.queryHints = props.getProperty("hints"); //$NON-NLS-1$
 
         // get max size of collection
-        maxSize = getIntegerProperty("maxSize", props, 0);
-        if (maxSize == 0) {
+        this.maxSize = getIntegerProperty("maxSize", props, 0); //$NON-NLS-1$
+        if (this.maxSize == 0) {
             // use limit as alias for maxSize
-            maxSize = getIntegerProperty("limit", props, 0);
+            this.maxSize = getIntegerProperty("limit", props, 0); //$NON-NLS-1$
         }
-        offset = getIntegerProperty("offset", props, 0);
+        this.offset = getIntegerProperty("offset", props, 0); //$NON-NLS-1$
 
         // get group by property
-        groupby = props.getProperty("group");
+        this.groupby = props.getProperty("group"); //$NON-NLS-1$
 
-        if (groupby != null && groupby.trim().length() == 0) {
-            groupby = null;
+        if (this.groupby != null && this.groupby.trim().length() == 0) {
+            this.groupby = null;
         }
 
-        if (groupby != null) {
-            groupbyOrder = props.getProperty("group.order");
+        if (this.groupby != null) {
+            this.groupbyOrder = props.getProperty("group.order"); //$NON-NLS-1$
 
-            if (groupbyOrder != null && groupbyOrder.trim().length() == 0) {
-                groupbyOrder = null;
+            if (this.groupbyOrder != null && this.groupbyOrder.trim().length() == 0) {
+                this.groupbyOrder = null;
             }
 
-            groupbyPrototype = props.getProperty("group.prototype");
+            this.groupbyPrototype = props.getProperty("group.prototype"); //$NON-NLS-1$
 
-            if (groupbyPrototype != null && groupbyPrototype.trim().length() == 0) {
-                groupbyPrototype = null;
+            if (this.groupbyPrototype != null && this.groupbyPrototype.trim().length() == 0) {
+                this.groupbyPrototype = null;
             }
 
             // aggressive loading and caching is not supported for groupby-nodes
@@ -423,21 +425,21 @@ public final class Relation {
         }
 
         // check if subnode condition should be applied for property relations
-        accessName = props.getProperty("accessname");
+        this.accessName = props.getProperty("accessname"); //$NON-NLS-1$
 
         // parse contstraints
-        String local = props.getProperty("local");
-        String foreign = props.getProperty("foreign");
+        String local = props.getProperty("local"); //$NON-NLS-1$
+        String foreign = props.getProperty("foreign"); //$NON-NLS-1$
 
         if (local != null && foreign != null) {
             cnst.addElement(new Constraint(local, foreign, false));
-            columnName = local;
+            this.columnName = local;
         }
 
         // parse additional contstraints from *.1 to *.9
         for (int i = 1; i < 10; i++) {
-            local = props.getProperty("local."+i);
-            foreign = props.getProperty("foreign."+i);
+            local = props.getProperty("local."+i); //$NON-NLS-1$
+            foreign = props.getProperty("foreign."+i); //$NON-NLS-1$
 
             if (local != null && foreign != null) {
                 cnst.addElement(new Constraint(local, foreign, false));
@@ -446,18 +448,18 @@ public final class Relation {
 
         // parse constraints logic
         if (cnst.size() > 1) {
-            String logic = props.getProperty("logicalOperator");
-            if ("and".equalsIgnoreCase(logic)) {
-                logicalOperator = AND;
-            } else if ("or".equalsIgnoreCase(logic)) {
-                logicalOperator = OR;
-            } else if ("xor".equalsIgnoreCase(logic)) {
-                logicalOperator = XOR;
+            String logic = props.getProperty("logicalOperator"); //$NON-NLS-1$
+            if ("and".equalsIgnoreCase(logic)) { //$NON-NLS-1$
+                this.logicalOperator = AND;
+            } else if ("or".equalsIgnoreCase(logic)) { //$NON-NLS-1$
+                this.logicalOperator = OR;
+            } else if ("xor".equalsIgnoreCase(logic)) { //$NON-NLS-1$
+                this.logicalOperator = XOR;
             } else {
-                logicalOperator = AND;
+                this.logicalOperator = AND;
             }
         } else {
-            logicalOperator = AND;
+            this.logicalOperator = AND;
         }
 
     }
@@ -470,8 +472,8 @@ public final class Relation {
             try {
                 return Integer.parseInt((String) value);
             } catch (NumberFormatException nfx) {
-                ownType.getApplication().logError("Can't parse integer for property "
-                        + name + " from value " + value, nfx);
+                this.ownType.getApplication().logError(Messages.getString("Relation.6") //$NON-NLS-1$
+                        + name + Messages.getString("Relation.7") + value, nfx); //$NON-NLS-1$
             }
         }
         return defaultValue;
@@ -483,42 +485,42 @@ public final class Relation {
      * Get the configuration properties for this relation.
      */
     public Map getConfig() {
-        return ownType.getSubProperties(propName + '.');
+        return this.ownType.getSubProperties(this.propName + '.');
     }
 
     /**
      * Does this relation describe a virtual (collection) node?
      */
     public boolean isVirtual() {
-        return virtual;
+        return this.virtual;
     }
 
     /**
      * Return the target type of this relation, or null if this is a primitive mapping.
      */
     public DbMapping getTargetType() {
-        return otherType;
+        return this.otherType;
     }
 
     /**
      * Get the reference type of this relation.
      */
     public int getRefType() {
-        return reftype;
+        return this.reftype;
     }
 
     /**
      * Tell if this relation represents a primitive (scalar) value mapping.
      */
     public boolean isPrimitive() {
-        return reftype == PRIMITIVE;
+        return this.reftype == PRIMITIVE;
     }
 
     /**
      *  Returns true if this Relation describes an object reference property
      */
     public boolean isReference() {
-        return reftype == REFERENCE;
+        return this.reftype == REFERENCE;
     }
 
     /**
@@ -526,7 +528,7 @@ public final class Relation {
      *  or an object reference.
      */
     public boolean isPrimitiveOrReference() {
-        return reftype == PRIMITIVE || reftype == REFERENCE;
+        return this.reftype == PRIMITIVE || this.reftype == REFERENCE;
     }
 
     /**
@@ -537,14 +539,14 @@ public final class Relation {
      *  <i>collection properties</i>!
      */
     public boolean isCollection() {
-        return reftype == COLLECTION;
+        return this.reftype == COLLECTION;
     }
 
     /**
      *  Returns true if this Relation describes a complex object reference property
      */
     public boolean isComplexReference() {
-        return reftype == COMPLEX_REFERENCE;
+        return this.reftype == COMPLEX_REFERENCE;
     }
 
     /**
@@ -552,23 +554,23 @@ public final class Relation {
      *  a change on it should not result in any changed object/collection relations.
      */
     public boolean isPrivate() {
-        return isPrivate;
+        return this.isPrivate;
     }
 
     /**
      *  Check whether aggressive loading is set for this relation
      */
     public boolean loadAggressively() {
-        return aggressiveLoading;
+        return this.aggressiveLoading;
     }
 
     /**
      *  Returns the number of constraints for this relation.
      */
     public int countConstraints() {
-        if (constraints == null)
+        if (this.constraints == null)
             return 0;
-        return constraints.length;
+        return this.constraints.length;
     }
 
     /**
@@ -581,13 +583,13 @@ public final class Relation {
      *  - complex reference nodes
      */
     public boolean createOnDemand() {
-        if (otherType == null) {
+        if (this.otherType == null) {
             return false;
         }
 
-        return virtual ||
-            (otherType.isRelational() && accessName != null) ||
-            (groupby != null) || isComplexReference();
+        return this.virtual ||
+            (this.otherType.isRelational() && this.accessName != null) ||
+            (this.groupby != null) || isComplexReference();
     }
 
     /**
@@ -599,7 +601,7 @@ public final class Relation {
      *  its content after restarts.
      */
     public boolean needsPersistence() {
-        if (!virtual) {
+        if (!this.virtual) {
             // ordinary object references always need to be persisted
             return true;
         }
@@ -608,30 +610,29 @@ public final class Relation {
         // child object type is non-relational. Depending on
         // whether prototype is null or not, we need to look at
         // otherType itself or otherType's subnode mapping.
-        if (prototype == null) {
+        if (this.prototype == null) {
             // an ordinary, unprototyped virtual node -
             // otherType is the content type
-            return !otherType.isRelational();
-        } else {
-            // a prototyped virtual node or mountpoint -
-            // otherType is the virtual node type itself
-            DbMapping sub = otherType.getSubnodeMapping();
-            return sub != null && !sub.isRelational();
+            return !this.otherType.isRelational();
         }
+        // a prototyped virtual node or mountpoint -
+        // otherType is the virtual node type itself
+        DbMapping sub = this.otherType.getSubnodeMapping();
+        return sub != null && !sub.isRelational();
     }
 
     /**
      * Return the prototype to be used for object reached by this relation
      */
     public String getPrototype() {
-        return prototype;
+        return this.prototype;
     }
 
     /**
      * Return the name of the local property this relation is defined for
      */
     public String getPropName() {
-        return propName;
+        return this.propName;
     }
 
     /**
@@ -640,7 +641,7 @@ public final class Relation {
      * @param ct ...
      */
     public void setColumnType(int ct) {
-        columnType = ct;
+        this.columnType = ct;
     }
 
     /**
@@ -649,7 +650,7 @@ public final class Relation {
      * @return ...
      */
     public int getColumnType() {
-        return columnType;
+        return this.columnType;
     }
 
     /**
@@ -658,22 +659,22 @@ public final class Relation {
      * @return the name of the column used to group child objects, if any.
      */
     public String getGroup() {
-        return groupby;
+        return this.groupby;
     }
 
     /**
      * Add a constraint to the current list of constraints
      */
     protected void addConstraint(Constraint c) {
-        if (constraints == null) {
-            constraints = new Constraint[1];
-            constraints[0] = c;
+        if (this.constraints == null) {
+            this.constraints = new Constraint[1];
+            this.constraints[0] = c;
         } else {
-            Constraint[] nc = new Constraint[constraints.length + 1];
+            Constraint[] nc = new Constraint[this.constraints.length + 1];
 
-            System.arraycopy(constraints, 0, nc, 0, constraints.length);
+            System.arraycopy(this.constraints, 0, nc, 0, this.constraints.length);
             nc[nc.length - 1] = c;
-            constraints = nc;
+            this.constraints = nc;
         }
     }
 
@@ -684,7 +685,7 @@ public final class Relation {
      * other object's primary key.
      */
     public boolean usesPrimaryKey() {
-        return referencesPrimaryKey;
+        return this.referencesPrimaryKey;
     }
 
     /**
@@ -693,7 +694,7 @@ public final class Relation {
      * @return ...
      */
     public boolean hasAccessName() {
-        return accessName != null;
+        return this.accessName != null;
     }
 
     /**
@@ -702,7 +703,7 @@ public final class Relation {
      * @return ...
      */
     public String getAccessName() {
-        return accessName;
+        return this.accessName;
     }
 
     /**
@@ -719,7 +720,7 @@ public final class Relation {
      * Return the local field name for updates.
      */
     public String getDbField() {
-        return columnName;
+        return this.columnName;
     }
 
     /**
@@ -742,7 +743,7 @@ public final class Relation {
         int prev = 0;
         int pos;
         //search for the next instance of $ from the 'prev' position
-        while ((pos = value.indexOf("$", prev)) >= 0) {
+        while ((pos = value.indexOf("$", prev)) >= 0) { //$NON-NLS-1$
 
             //if there was any text before this, add it as a fragment
             //TODO, this check could be modified to go if pos>prev;
@@ -754,7 +755,7 @@ public final class Relation {
             //if we are at the end of the string, we tack on a $
             //then move past it
             if (pos == (value.length() - 1)) {
-                fragments.addElement("$");
+                fragments.addElement("$"); //$NON-NLS-1$
                 prev = pos + 1;
             } else if (value.charAt(pos + 1) != '{') {
                 //peek ahead to see if the next char is a property or not
@@ -765,7 +766,7 @@ public final class Relation {
                 */
                 if (value.charAt(pos + 1) == '$') {
                     //backwards compatibility two $ map to one mode
-                    fragments.addElement("$");
+                    fragments.addElement("$"); //$NON-NLS-1$
                     prev = pos + 2;
                 } else {
                     //new behaviour: $X maps to $X for all values of X!='$'
@@ -777,7 +778,7 @@ public final class Relation {
                 //property found, extract its name or bail on a typo
                 int endName = value.indexOf('}', pos);
                 if (endName < 0) {
-                    throw new RuntimeException("Syntax error in property: "
+                    throw new RuntimeException(Messages.getString("Relation.8") //$NON-NLS-1$
                                                  + value);
                 }
                 String propertyName = value.substring(pos + 2, endName);
@@ -798,25 +799,25 @@ public final class Relation {
      */
     public DbMapping getVirtualMapping() {
         // return null unless this relation describes a virtual/collection node.
-        if (!virtual) {
+        if (!this.virtual) {
             return null;
         }
 
         // create a synthetic DbMapping that describes how to fetch the
         // collection's child objects.
-        if (virtualMapping == null) {
+        if (this.virtualMapping == null) {
             // if the collection node is prototyped (a mountpoint), create
             // a virtual sub-mapping from the app's DbMapping for that prototype
-            if (prototype != null) {
-                virtualMapping = new DbMapping(ownType.app, prototype);
+            if (this.prototype != null) {
+                this.virtualMapping = new DbMapping(this.ownType.app, this.prototype);
             } else {
-                virtualMapping = new DbMapping(ownType.app, null);
-                virtualMapping.subRelation = getVirtualSubnodeRelation();
-                virtualMapping.propRelation = getVirtualPropertyRelation();
+                this.virtualMapping = new DbMapping(this.ownType.app, null);
+                this.virtualMapping.subRelation = getVirtualSubnodeRelation();
+                this.virtualMapping.propRelation = getVirtualPropertyRelation();
             }
         }
-        virtualMapping.lastTypeChange = ownType.lastTypeChange;
-        return virtualMapping;
+        this.virtualMapping.lastTypeChange = this.ownType.lastTypeChange;
+        return this.virtualMapping;
     }
 
     /**
@@ -825,8 +826,8 @@ public final class Relation {
      */
     public DbMapping getPropertyMapping() {
         // if this is an untyped virtual node, it doesn't have a dbmapping
-        if (!virtual || prototype != null) {
-            return otherType;
+        if (!this.virtual || this.prototype != null) {
+            return this.otherType;
         }
         return null;
     }
@@ -835,15 +836,15 @@ public final class Relation {
      * Return a Relation that defines the subnodes of a virtual node.
      */
     Relation getVirtualSubnodeRelation() {
-        if (!virtual) {
-            throw new RuntimeException("getVirtualSubnodeRelation called on non-virtual relation");
+        if (!this.virtual) {
+            throw new RuntimeException(Messages.getString("Relation.9")); //$NON-NLS-1$
         }
 
         Relation vr = new Relation(this);
 
-        vr.groupby = groupby;
-        vr.groupbyOrder = groupbyOrder;
-        vr.groupbyPrototype = groupbyPrototype;
+        vr.groupby = this.groupby;
+        vr.groupbyOrder = this.groupbyOrder;
+        vr.groupbyPrototype = this.groupbyPrototype;
 
         return vr;
     }
@@ -852,15 +853,15 @@ public final class Relation {
      * Return a Relation that defines the properties of a virtual node.
      */
     Relation getVirtualPropertyRelation() {
-        if (!virtual) {
-            throw new RuntimeException("getVirtualPropertyRelation called on non-virtual relation");
+        if (!this.virtual) {
+            throw new RuntimeException(Messages.getString("Relation.10")); //$NON-NLS-1$
         }
 
         Relation vr = new Relation(this);
 
-        vr.groupby = groupby;
-        vr.groupbyOrder = groupbyOrder;
-        vr.groupbyPrototype = groupbyPrototype;
+        vr.groupby = this.groupby;
+        vr.groupbyOrder = this.groupbyOrder;
+        vr.groupbyPrototype = this.groupbyPrototype;
 
         return vr;
     }
@@ -869,14 +870,14 @@ public final class Relation {
      * Return a Relation that defines the subnodes of a group-by node.
      */
     Relation getGroupbySubnodeRelation() {
-        if (groupby == null) {
-            throw new RuntimeException("getGroupbySubnodeRelation called on non-group-by relation");
+        if (this.groupby == null) {
+            throw new RuntimeException(Messages.getString("Relation.11")); //$NON-NLS-1$
         }
 
         Relation vr = new Relation(this);
 
-        vr.prototype = groupbyPrototype;
-        vr.addConstraint(new Constraint(null, groupby, true));
+        vr.prototype = this.groupbyPrototype;
+        vr.addConstraint(new Constraint(null, this.groupby, true));
 
         return vr;
     }
@@ -885,56 +886,56 @@ public final class Relation {
      * Return a Relation that defines the properties of a group-by node.
      */
     Relation getGroupbyPropertyRelation() {
-        if (groupby == null) {
-            throw new RuntimeException("getGroupbyPropertyRelation called on non-group-by relation");
+        if (this.groupby == null) {
+            throw new RuntimeException(Messages.getString("Relation.12")); //$NON-NLS-1$
         }
 
         Relation vr = new Relation(this);
 
-        vr.prototype = groupbyPrototype;
-        vr.addConstraint(new Constraint(null, groupby, true));
+        vr.prototype = this.groupbyPrototype;
+        vr.addConstraint(new Constraint(null, this.groupby, true));
 
         return vr;
     }
 
     public StringBuffer getIdSelect() {
-        StringBuffer buf = new StringBuffer("SELECT ");
+        StringBuffer buf = new StringBuffer("SELECT "); //$NON-NLS-1$
 
-        if (queryHints != null) {
-                buf.append(queryHints).append(" ");
+        if (this.queryHints != null) {
+                buf.append(this.queryHints).append(" "); //$NON-NLS-1$
             }
 
-        String table = otherType.getTableName();
+        String table = this.otherType.getTableName();
         String idfield;
-        if (groupby == null) {
-            idfield = otherType.getIDField();
+        if (this.groupby == null) {
+            idfield = this.otherType.getIDField();
         } else {
-            idfield = groupby;
-            buf.append("DISTINCT ");
+            idfield = this.groupby;
+            buf.append("DISTINCT "); //$NON-NLS-1$
         }
 
         if (idfield.indexOf('(') == -1 && idfield.indexOf('.') == -1) {
             buf.append(table).append('.');
         }
-        buf.append(idfield).append(" FROM ").append(table);
+        buf.append(idfield).append(" FROM ").append(table); //$NON-NLS-1$
         appendAdditionalTables(buf);
 
         return buf;
     }
 
     public StringBuffer getCountSelect() {
-        StringBuffer buf = new StringBuffer("SELECT ");
-        if (otherType.isOracle() && maxSize > 0) {
-            buf.append("* FROM ");
+        StringBuffer buf = new StringBuffer("SELECT "); //$NON-NLS-1$
+        if (this.otherType.isOracle() && this.maxSize > 0) {
+            buf.append("* FROM "); //$NON-NLS-1$
         } else {
-            if (groupby == null) {
-                buf.append("count(*) FROM ");
+            if (this.groupby == null) {
+                buf.append("count(*) FROM "); //$NON-NLS-1$
             } else {
-                buf.append("count(DISTINCT ").append(groupby).append(") FROM ");
+                buf.append("count(DISTINCT ").append(this.groupby).append(") FROM "); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
 
-        buf.append(otherType.getTableName());
+        buf.append(this.otherType.getTableName());
         appendAdditionalTables(buf);
 
         return buf;
@@ -943,10 +944,10 @@ public final class Relation {
     public StringBuffer getNamesSelect() {
         // if we do a groupby query (creating an intermediate layer of groupby nodes),
         // retrieve the value of that field instead of the primary key
-        String namefield = (groupby == null) ? accessName : groupby;
-        String table = otherType.getTableName();
-        StringBuffer buf = new StringBuffer("SELECT ");
-        buf.append(namefield).append(" FROM ").append(table);
+        String namefield = (this.groupby == null) ? this.accessName : this.groupby;
+        String table = this.otherType.getTableName();
+        StringBuffer buf = new StringBuffer("SELECT "); //$NON-NLS-1$
+        buf.append(namefield).append(" FROM ").append(table); //$NON-NLS-1$
         appendAdditionalTables(buf);
 
         return buf;
@@ -955,69 +956,69 @@ public final class Relation {
     /**
      *  Build the second half of an SQL select statement according to this relation
      *  and a local object.
-     *  
-     * @throws SQLException 
+     *
+     * @throws SQLException
      * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void buildQuery(StringBuffer q, Node home, boolean useOrder, boolean isCount)
             throws SQLException, NoDriverException {
-        buildQuery(q, home, otherType, null, useOrder, isCount);
+        buildQuery(q, home, this.otherType, null, useOrder, isCount);
     }
 
     /**
      *  Build the second half of an SQL select statement according to this relation
      *  and a local object.
-     *  
+     *
      * @throws SQLException
-     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void buildQuery(StringBuffer q, Node home, DbMapping otherDbm, String kstr,
                            boolean useOrder, boolean isCount)
             throws SQLException, NoDriverException {
-        String prefix = " WHERE ";
+        String prefix = " WHERE "; //$NON-NLS-1$
         Node nonvirtual = home.getNonVirtualParent();
 
         if (kstr != null && !isComplexReference()) {
             q.append(prefix);
 
-            String accessColumn = (accessName == null) ?
-                    otherDbm.getIDField() : accessName;
+            String accessColumn = (this.accessName == null) ?
+                    otherDbm.getIDField() : this.accessName;
             otherDbm.appendCondition(q, accessColumn, kstr);
 
-            prefix = " AND ";
+            prefix = " AND "; //$NON-NLS-1$
         }
 
         // render the constraints and filter
         renderConstraints(q, home, nonvirtual, otherDbm, prefix);
 
         // add joined fetch constraints
-        ownType.addJoinConstraints(q, prefix);
+        this.ownType.addJoinConstraints(q, prefix);
 
         // add group and order clauses
-        if (groupby != null) {
-            if (useOrder && (groupbyOrder != null)) {
-                q.append(" ORDER BY ").append(groupbyOrder);
+        if (this.groupby != null) {
+            if (useOrder && (this.groupbyOrder != null)) {
+                q.append(" ORDER BY ").append(this.groupbyOrder); //$NON-NLS-1$
             }
-        } else if (useOrder && (order != null)) {
-            q.append(" ORDER BY ").append(order);
+        } else if (useOrder && (this.order != null)) {
+            q.append(" ORDER BY ").append(this.order); //$NON-NLS-1$
         }
 
         // apply limit and offset, but not if the query is for a single object
-        if (maxSize > 0 && kstr == null) {
-            if (otherType.isOracle()) {
+        if (this.maxSize > 0 && kstr == null) {
+            if (this.otherType.isOracle()) {
                 // see http://www.oracle.com/technology/oramag/oracle/06-sep/o56asktom.html
-                String selectItem = isCount ? "count(*)" : "*";
-                if (offset > 0) {
-                    q.insert(0, "SELECT " + selectItem + " FROM ( SELECT /*+ FIRST_ROWS(n) */ a.*, ROWNUM rnum FROM (");
-                    q.append(") a WHERE ROWNUM <= ").append(offset + maxSize).append(") WHERE rnum > ").append(offset);
+                String selectItem = isCount ? "count(*)" : "*"; //$NON-NLS-1$ //$NON-NLS-2$
+                if (this.offset > 0) {
+                    q.insert(0, "SELECT " + selectItem + " FROM ( SELECT /*+ FIRST_ROWS(n) */ a.*, ROWNUM rnum FROM (");  //$NON-NLS-1$//$NON-NLS-2$
+                    q.append(") a WHERE ROWNUM <= ").append(this.offset + this.maxSize).append(") WHERE rnum > ").append(this.offset); //$NON-NLS-1$ //$NON-NLS-2$
                 } else {
-                    q.insert(0, "SELECT /*+ FIRST_ROWS(n) */ " + selectItem + " FROM (");
-                    q.append(") WHERE ROWNUM <= ").append(maxSize);
+                    q.insert(0, "SELECT /*+ FIRST_ROWS(n) */ " + selectItem + " FROM ("); //$NON-NLS-1$ //$NON-NLS-2$
+                    q.append(") WHERE ROWNUM <= ").append(this.maxSize); //$NON-NLS-1$
                 }
             } else {
-                q.append(" LIMIT ").append(maxSize);
-                if (offset > 0) {
-                    q.append(" OFFSET ").append(offset);
+                q.append(" LIMIT ").append(this.maxSize); //$NON-NLS-1$
+                if (this.offset > 0) {
+                    q.append(" OFFSET ").append(this.offset); //$NON-NLS-1$
                 }
             }
         }
@@ -1025,23 +1026,23 @@ public final class Relation {
     }
 
     protected void appendAdditionalTables(StringBuffer q) {
-        if (additionalTables != null) {
-            q.append(additionalTablesJoined ? ' ' : ',');
-            q.append(additionalTables);
+        if (this.additionalTables != null) {
+            q.append(this.additionalTablesJoined ? ' ' : ',');
+            q.append(this.additionalTables);
         }
     }
 
     /**
      *  Build the filter.
      */
-    protected void appendFilter(StringBuffer q, INode nonvirtual, String prefix) {
+    protected void appendFilter(StringBuffer q, NodeInterface nonvirtual, String prefix) {
         q.append(prefix);
         q.append('(');
-        if (filterFragments == null) {
-            q.append(filter);
+        if (this.filterFragments == null) {
+            q.append(this.filter);
         } else {
-            Enumeration i = filterFragments.elements();
-            Enumeration j = filterPropertyRefs.elements();
+            Enumeration i = this.filterFragments.elements();
+            Enumeration j = this.filterPropertyRefs.elements();
             while (i.hasMoreElements()) {
                 String fragment = (String) i.nextElement();
                 if (fragment == null) {
@@ -1053,7 +1054,7 @@ public final class Relation {
                         String propertyName = dbmap.columnNameToProperty(columnName);
                         if (propertyName == null)
                             propertyName = columnName;
-                        IProperty property = nonvirtual.get(propertyName);
+                        PropertyInterface property = nonvirtual.get(propertyName);
                         if (property != null) {
                             value = property.getStringValue();
                         }
@@ -1071,7 +1072,7 @@ public final class Relation {
                     if (value != null) {
                         q.append(DbMapping.escapeString(value.toString()));
                     } else {
-                        q.append("NULL");
+                        q.append("NULL"); //$NON-NLS-1$
                     }
                 } else {
                     q.append(fragment);
@@ -1089,11 +1090,11 @@ public final class Relation {
      * @param prefix the prefix to use to append to the existing query (e.g. " AND ")
      *
      * @throws SQLException sql related exception
-     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable 
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
     public void renderConstraints(StringBuffer q, Node home, String prefix)
                              throws SQLException, NoDriverException {
-        renderConstraints(q, home, home.getNonVirtualParent(), otherType, prefix);
+        renderConstraints(q, home, home.getNonVirtualParent(), this.otherType, prefix);
     }
 
     /**
@@ -1104,7 +1105,7 @@ public final class Relation {
      * @param nonvirtual our non-virtual home nod
      * @param otherDbm the DbMapping of the remote Node
      * @param prefix the prefix to use to append to the existing query (e.g. " AND ")
-     * 
+     *
      * @throws SQLException sql related exception
      * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
@@ -1112,26 +1113,26 @@ public final class Relation {
                                   DbMapping otherDbm, String prefix)
                              throws SQLException, NoDriverException {
 
-        if (constraints.length > 1 && logicalOperator != AND) {
+        if (this.constraints.length > 1 && this.logicalOperator != AND) {
             q.append(prefix);
-            q.append("(");
-            prefix = "";
+            q.append("("); //$NON-NLS-1$
+            prefix = ""; //$NON-NLS-1$
         }
 
-        for (int i = 0; i < constraints.length; i++) {
-            if (constraints[i].foreignKeyIsPrototype()) {
+        for (int i = 0; i < this.constraints.length; i++) {
+            if (this.constraints[i].foreignKeyIsPrototype()) {
                 // if foreign key is $prototype we already have this constraint
                 // covered by doing the select on the proper table
                 continue;
             }
             q.append(prefix);
-            constraints[i].addToQuery(q, home, nonvirtual, otherDbm);
-            prefix = logicalOperator;
+            this.constraints[i].addToQuery(q, home, nonvirtual, otherDbm);
+            prefix = this.logicalOperator;
         }
 
-        if (constraints.length > 1 && logicalOperator != AND) {
-            q.append(")");
-            prefix = " AND ";
+        if (this.constraints.length > 1 && this.logicalOperator != AND) {
+            q.append(")"); //$NON-NLS-1$
+            prefix = " AND "; //$NON-NLS-1$
         }
 
         // also take the prototype into consideration if someone
@@ -1147,11 +1148,11 @@ public final class Relation {
             if (extensions != null && protoField != null) {
                 q.append(prefix);
                 otherDbm.appendCondition(q, protoField, extensions);
-                prefix = " AND ";
+                prefix = " AND "; //$NON-NLS-1$
             }
         }
 
-        if (filter != null) {
+        if (this.filter != null) {
             appendFilter(q, nonvirtual, prefix);
         }
     }
@@ -1164,24 +1165,24 @@ public final class Relation {
      * @param isOracle create Oracle pre-9 style left outer join
      */
     public void renderJoinConstraints(StringBuffer select, boolean isOracle) {
-        for (int i = 0; i < constraints.length; i++) {
-            select.append(ownType.getTableName());
-            select.append(".");
-            select.append(constraints[i].localKey);
-            select.append(" = ");
+        for (int i = 0; i < this.constraints.length; i++) {
+            select.append(this.ownType.getTableName());
+            select.append("."); //$NON-NLS-1$
+            select.append(this.constraints[i].localKey);
+            select.append(" = "); //$NON-NLS-1$
             select.append(JOIN_PREFIX);
-            select.append(propName);
-            select.append(".");
-            select.append(constraints[i].foreignKey);
+            select.append(this.propName);
+            select.append("."); //$NON-NLS-1$
+            select.append(this.constraints[i].foreignKey);
             if (isOracle) {
                 // create old oracle style join - see
                 // http://www.praetoriate.com/oracle_tips_outer_joins.htm
-                select.append("(+)");
+                select.append("(+)"); //$NON-NLS-1$
             }
-            if (i == constraints.length-1) {
-                select.append(" ");
+            if (i == this.constraints.length-1) {
+                select.append(" "); //$NON-NLS-1$
             } else {
-                select.append(" AND ");
+                select.append(" AND "); //$NON-NLS-1$
             }
         }
 
@@ -1191,11 +1192,10 @@ public final class Relation {
      * Get the order section to use for this relation
      */
     public String getOrder() {
-        if (groupby != null) {
-            return groupbyOrder;
-        } else {
-            return order;
+        if (this.groupby != null) {
+            return this.groupbyOrder;
         }
+        return this.order;
     }
 
     /**
@@ -1203,7 +1203,7 @@ public final class Relation {
      *  as readonly/write protected.
      */
     public boolean isReadonly() {
-        return readonly;
+        return this.readonly;
     }
 
     /**
@@ -1212,10 +1212,10 @@ public final class Relation {
      */
     public Relation getClone() {
         Relation rel = new Relation(this);
-        rel.prototype        = prototype;
-        rel.groupby          = groupby;
-        rel.groupbyPrototype = groupbyPrototype;
-        rel.groupbyOrder     = groupbyOrder;
+        rel.prototype        = this.prototype;
+        rel.groupby          = this.groupby;
+        rel.groupbyPrototype = this.groupbyPrototype;
+        rel.groupbyOrder     = this.groupbyOrder;
         return rel;
     }
 
@@ -1236,7 +1236,7 @@ public final class Relation {
         // is defined, we return false as soon as the modified-time is greater
         // than the create-time of the child, i.e. if the child node has been
         // modified since it was first fetched from the db.
-        if (filter != null && child.lastModified() > child.created()) {
+        if (this.filter != null && child.lastModified() > child.created()) {
             return false;
         }
 
@@ -1244,18 +1244,18 @@ public final class Relation {
         int count = 0;
         int satisfied = 0;
 
-        INode nonvirtual = parent.getNonVirtualParent();
+        NodeInterface nonvirtual = parent.getNonVirtualParent();
         DbMapping otherDbm = child.getDbMapping();
         if (otherDbm == null) {
-            otherDbm = otherType;
+            otherDbm = this.otherType;
         }
 
-        for (int i = 0; i < constraints.length; i++) {
-            Constraint cnst = constraints[i];
+        for (int i = 0; i < this.constraints.length; i++) {
+            Constraint cnst = this.constraints[i];
             String propname = cnst.foreignProperty(otherDbm);
 
             if (propname != null) {
-                INode home = cnst.isGroupby ? parent
+                NodeInterface home = cnst.isGroupby ? parent
                                             : nonvirtual;
                 String value = null;
 
@@ -1263,7 +1263,7 @@ public final class Relation {
                     value = home.getID();
                 } else if (cnst.localKeyIsPrototype()) {
                     value = home.getDbMapping().getStorageTypeName();
-                } else if (ownType.isRelational()) {
+                } else if (this.ownType.isRelational()) {
                     value = home.getString(cnst.localProperty());
                 } else {
                     value = home.getString(cnst.localKey);
@@ -1278,9 +1278,9 @@ public final class Relation {
         }
 
         // check if enough constraints are met depending on logical operator
-        if (logicalOperator == OR) {
+        if (this.logicalOperator == OR) {
             return satisfied > 0;
-        } else if (logicalOperator == XOR) {
+        } else if (this.logicalOperator == XOR) {
             return satisfied == 1;
         } else {
             return satisfied == count;
@@ -1295,14 +1295,14 @@ public final class Relation {
 
         // if logical operator is OR or XOR we just return because we
         // wouldn't know what to do anyway
-        if (logicalOperator != AND) {
+        if (this.logicalOperator != AND) {
             return;
         }
 
         Node home = parent.getNonVirtualParent();
 
-        for (int i = 0; i < constraints.length; i++) {
-            Constraint cnst = constraints[i];
+        for (int i = 0; i < this.constraints.length; i++) {
+            Constraint cnst = this.constraints[i];
             // don't set groupby constraints since we don't know if the
             // parent node is the base node or a group node
             if (cnst.isGroupby) {
@@ -1315,12 +1315,12 @@ public final class Relation {
             if (foreignIsPrimary || cnst.foreignKeyIsPrototype()) {
                 String localProp = cnst.localProperty();
                 if (localProp == null) {
-                    throw new RuntimeException("Error: column " + cnst.localKey +
-                       " must be mapped in order to be used as constraint in " +
+                    throw new RuntimeException(Messages.getString("Relation.13") + cnst.localKey + //$NON-NLS-1$
+                       Messages.getString("Relation.14") + //$NON-NLS-1$
                        Relation.this);
-                } else if (foreignIsPrimary && child.getState() == Node.TRANSIENT) {
-                    throw new RuntimeException(propName + " set to transient object, " +
-                       "can't derive persistent ID for " + localProp);
+                } else if (foreignIsPrimary && child.getState() == NodeInterface.TRANSIENT) {
+                    throw new RuntimeException(this.propName + Messages.getString("Relation.15") + //$NON-NLS-1$
+                       Messages.getString("Relation.16") + localProp); //$NON-NLS-1$
                 } else {
                     String value = foreignIsPrimary ?
                             child.getID() : child.getDbMapping().getStorageTypeName();
@@ -1331,7 +1331,7 @@ public final class Relation {
 
             DbMapping otherDbm = child.getDbMapping();
             if (otherDbm == null) {
-                otherDbm = otherType;
+                otherDbm = this.otherType;
             }
 
             Relation crel = otherDbm.columnNameToRelation(cnst.foreignKey);
@@ -1341,7 +1341,7 @@ public final class Relation {
                 if (cnst.localKeyIsPrimary(home.getDbMapping())) {
                     // only set node if property in child object is defined as reference.
                     if (crel.reftype == REFERENCE) {
-                        INode currentValue = child.getNode(crel.propName);
+                        NodeInterface currentValue = child.getNode(crel.propName);
 
                         // we set the backwards reference iff the reference is currently unset, if
                         // is set to a transient object, or if the new target is not transient. This
@@ -1349,16 +1349,16 @@ public final class Relation {
                         // which would most probably not be what we want.
                         if ((currentValue == null) ||
                                 ((currentValue != home) &&
-                                ((currentValue.getState() == Node.TRANSIENT) ||
-                                (home.getState() != Node.TRANSIENT)))) try {
+                                ((currentValue.getState() == NodeInterface.TRANSIENT) ||
+                                (home.getState() != NodeInterface.TRANSIENT)))) try {
                             child.setNode(crel.propName, home);
                         } catch (Exception ignore) {
                             // in some cases, getNonVirtualParent() doesn't work
                             // correctly for transient nodes, so this may fail.
                         }
                     } else if (crel.reftype == PRIMITIVE) {
-                        if (home.getState() == Node.TRANSIENT) {
-                            throw new RuntimeException("Object is transient, can't derive persistent ID for " + crel);
+                        if (home.getState() == NodeInterface.TRANSIENT) {
+                            throw new RuntimeException(Messages.getString("Relation.17") + crel); //$NON-NLS-1$
                         }
                         child.setString(crel.propName, home.getID());
                     }
@@ -1384,11 +1384,11 @@ public final class Relation {
     /**
      * Unset the constraints that link two objects together.
      */
-    public void unsetConstraints(Node parent, INode child) {
+    public void unsetConstraints(Node parent, NodeInterface child) {
         Node home = parent.getNonVirtualParent();
 
-        for (int i = 0; i < constraints.length; i++) {
-            Constraint cnst = constraints[i];
+        for (int i = 0; i < this.constraints.length; i++) {
+            Constraint cnst = this.constraints[i];
             // don't set groupby constraints since we don't know if the
             // parent node is the base node or a group node
             if (cnst.isGroupby) {
@@ -1408,7 +1408,7 @@ public final class Relation {
 
             DbMapping otherDbm = child.getDbMapping();
             if (otherDbm == null) {
-                otherDbm = otherType;
+                otherDbm = this.otherType;
             }
 
             Relation crel = otherDbm.columnNameToRelation(cnst.foreignKey);
@@ -1417,7 +1417,7 @@ public final class Relation {
                 if (cnst.localKeyIsPrimary(home.getDbMapping())) {
                     // only set node if property in child object is defined as reference.
                     if (crel.reftype == REFERENCE) {
-                        INode currentValue = child.getNode(crel.propName);
+                        NodeInterface currentValue = child.getNode(crel.propName);
 
                         if ((currentValue == home)) {
                             child.setString(crel.propName, null);
@@ -1435,11 +1435,11 @@ public final class Relation {
     /**
      *  Returns a map containing the key/value pairs for a specific Node
      */
-    public Map getKeyParts(INode home) {
+    public Map getKeyParts(NodeInterface home) {
         Map map = new HashMap();
-        for (int i=0; i<constraints.length; i++) {
-            Constraint cnst = constraints[i];
-            if (cnst.localKeyIsPrimary(ownType)) {
+        for (int i=0; i<this.constraints.length; i++) {
+            Constraint cnst = this.constraints[i];
+            if (cnst.localKeyIsPrimary(this.ownType)) {
                 map.put(cnst.foreignKey, home.getID());
             } else if (cnst.localKeyIsPrototype()) {
                 map.put(cnst.foreignKey, home.getDbMapping().getStorageTypeName());
@@ -1448,8 +1448,8 @@ public final class Relation {
             }
         }
         // add filter as pseudo-constraint
-        if (filter != null) {
-            map.put("__filter__", filter);
+        if (this.filter != null) {
+            map.put("__filter__", this.filter); //$NON-NLS-1$
         }
         return map;
     }
@@ -1459,22 +1459,23 @@ public final class Relation {
      *
      * @return ...
      */
+    @Override
     public String toString() {
-        String c = "";
-        String spacer = "";
+        String c = ""; //$NON-NLS-1$
+        String spacer = ""; //$NON-NLS-1$
 
-        if (constraints != null) {
-            c = " constraints: ";
-            for (int i = 0; i < constraints.length; i++) {
+        if (this.constraints != null) {
+            c = " constraints: "; //$NON-NLS-1$
+            for (int i = 0; i < this.constraints.length; i++) {
                 c += spacer;
-                c += constraints[i].toString();
-                spacer = ", ";
+                c += this.constraints[i].toString();
+                spacer = ", "; //$NON-NLS-1$
             }
         }
 
-        String target = otherType == null ? columnName : otherType.toString();
+        String target = this.otherType == null ? this.columnName : this.otherType.toString();
 
-        return "Relation " + ownType+"."+propName + " -> " + target + c;
+        return "Relation " + this.ownType+"."+this.propName + " -> " + target + c; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
@@ -1487,29 +1488,29 @@ public final class Relation {
         boolean isGroupby;
 
         Constraint(String local, String foreign, boolean groupby) {
-            localKey = local;
-            foreignKey = foreign;
-            isGroupby = groupby;
+            this.localKey = local;
+            this.foreignKey = foreign;
+            this.isGroupby = groupby;
         }
 
         /**
          * @throws SQLException
          * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
          */
-        public void addToQuery(StringBuffer q, INode home, INode nonvirtual, DbMapping otherDbm)
+        public void addToQuery(StringBuffer q, NodeInterface home, NodeInterface nonvirtual, DbMapping otherDbm)
                         throws SQLException, NoDriverException {
             String local;
-            INode ref = isGroupby ? home : nonvirtual;
+            NodeInterface ref = this.isGroupby ? home : nonvirtual;
 
             if (localKeyIsPrimary(ref.getDbMapping())) {
                 local = ref.getID();
             } else if (localKeyIsPrototype()) {
                 local = ref.getDbMapping().getStorageTypeName();
             } else {
-                String homeprop = ownType.columnNameToProperty(localKey);
+                String homeprop = Relation.this.ownType.columnNameToProperty(this.localKey);
                 if (homeprop == null) {
-                    throw new SQLException("Invalid local name '" + localKey +
-                            "' on " + ownType);
+                    throw new SQLException(Messages.getString("Relation.18") + this.localKey + //$NON-NLS-1$
+                            Messages.getString("Relation.19") + Relation.this.ownType); //$NON-NLS-1$
                 }
                 local = ref.getString(homeprop);
             }
@@ -1518,45 +1519,46 @@ public final class Relation {
             if (foreignKeyIsPrimary()) {
                 columnName = otherDbm.getIDField();
             } else {
-                columnName = foreignKey;
+                columnName = this.foreignKey;
             }
             otherDbm.appendCondition(q, columnName, local);
         }
 
         public boolean foreignKeyIsPrimary() {
-            return (foreignKey == null) ||
-                    "$id".equalsIgnoreCase(foreignKey) ||
-                   foreignKey.equalsIgnoreCase(otherType.getIDField());
+            return (this.foreignKey == null) ||
+                    "$id".equalsIgnoreCase(this.foreignKey) || //$NON-NLS-1$
+                   this.foreignKey.equalsIgnoreCase(Relation.this.otherType.getIDField());
         }
 
         public boolean foreignKeyIsPrototype() {
-            return "$prototype".equalsIgnoreCase(foreignKey);
+            return "$prototype".equalsIgnoreCase(this.foreignKey); //$NON-NLS-1$
         }
 
         public boolean localKeyIsPrimary(DbMapping homeMapping) {
-            return (homeMapping == null) || (localKey == null) ||
-                   "$id".equalsIgnoreCase(localKey) ||
-                   localKey.equalsIgnoreCase(homeMapping.getIDField());
+            return (homeMapping == null) || (this.localKey == null) ||
+                   "$id".equalsIgnoreCase(this.localKey) || //$NON-NLS-1$
+                   this.localKey.equalsIgnoreCase(homeMapping.getIDField());
         }
 
         public boolean localKeyIsPrototype() {
-            return "$prototype".equalsIgnoreCase(localKey);
+            return "$prototype".equalsIgnoreCase(this.localKey); //$NON-NLS-1$
         }
 
         public String foreignProperty(DbMapping otherDbm) {
             if (otherDbm.isRelational())
-                return otherDbm.columnNameToProperty(foreignKey);
-            return foreignKey;
+                return otherDbm.columnNameToProperty(this.foreignKey);
+            return this.foreignKey;
         }
 
         public String localProperty() {
-            if (ownType.isRelational())
-                return ownType.columnNameToProperty(localKey);
-            return localKey;
+            if (Relation.this.ownType.isRelational())
+                return Relation.this.ownType.columnNameToProperty(this.localKey);
+            return this.localKey;
         }
 
+        @Override
         public String toString() {
-            return localKey + "=" + otherType.getTypeName() + "." + foreignKey;
+            return this.localKey + "=" + Relation.this.otherType.getTypeName() + "." + this.foreignKey; //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 }

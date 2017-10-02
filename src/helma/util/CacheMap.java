@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import helma.framework.core.Application;
-import helma.objectmodel.ObjectCache;
+import helma.objectmodel.ObjectCacheInterface;
 
 
 /// A Hashtable that expires least-recently-used objects.
@@ -48,7 +48,7 @@ import helma.objectmodel.ObjectCache;
 // <P>
 // @see java.util.Hashtable
 
-public class CacheMap implements ObjectCache {
+public class CacheMap implements ObjectCacheInterface {
 
     // Load factor.
     private float loadFactor;
@@ -95,16 +95,16 @@ public class CacheMap implements ObjectCache {
         this.loadFactor = loadFactor;
         // table rotation threshold: we allow each table to gain
         // initialCapacity/2 entries.
-        threshold = initialCapacity / 2;
+        this.threshold = initialCapacity / 2;
         // We deliberately choose the initial capacity of tables large
         // enough that it can hold threshold entries without being rehashed,
         // in other words, make sure our threshold for table rotation is lower
         // than that of the underlying HashMap for table rehashing.
-        eachCapacity = (int) (threshold / loadFactor) + 2;
+        this.eachCapacity = (int) (this.threshold / loadFactor) + 2;
         // create tables - we'll never insert into the initial oldTable,
         // it's a dummy that will be lost on the first cache rotation.
-        oldTable = new HashMap();
-        newTable = createTable(eachCapacity, loadFactor);
+        this.oldTable = new HashMap();
+        this.newTable = createTable(this.eachCapacity, loadFactor);
     }
 
     /// Constructs a new, empty hashtable with the specified initial
@@ -118,7 +118,7 @@ public class CacheMap implements ObjectCache {
 
     /// Returns the number of elements contained in the hashtable.
     public int size() {
-        return newTable.size() + oldTable.size();
+        return this.newTable.size() + this.oldTable.size();
     }
 
     /// Returns true if the hashtable contains no elements.
@@ -132,20 +132,20 @@ public class CacheMap implements ObjectCache {
         // table rotation threshold: we allow each table to gain
         // initialCapacity/2 entries.
         int newThreshold = capacity / 2;
-        if (newThreshold != threshold) {
-            if (app != null)
-                app.logEvent("Setting cache capacity to " + capacity);
+        if (newThreshold != this.threshold) {
+            if (this.app != null)
+                this.app.logEvent(Messages.getString("CacheMap.0") + capacity); //$NON-NLS-1$
             updateThreshold(newThreshold);
         }
     }
 
     private synchronized void updateThreshold(int newThreshold) {
-        threshold = newThreshold;
-        eachCapacity = (int) (threshold / loadFactor) + 2;
+        this.threshold = newThreshold;
+        this.eachCapacity = (int) (this.threshold / this.loadFactor) + 2;
         // if newtable is larger than threshold, rotate.
-        if (newTable.size() > threshold) {
-            oldTable = newTable;
-            newTable = createTable(eachCapacity, loadFactor);
+        if (this.newTable.size() > this.threshold) {
+            this.oldTable = this.newTable;
+            this.newTable = createTable(this.eachCapacity, this.loadFactor);
         }
     }
 
@@ -156,9 +156,9 @@ public class CacheMap implements ObjectCache {
     // for is equal to null.
     // @see LruHashtable#containsKey
     public synchronized boolean containsValue(Object value) {
-        if (newTable.containsValue(value))
+        if (this.newTable.containsValue(value))
             return true;
-        if (oldTable.containsValue(value)) {
+        if (this.oldTable.containsValue(value)) {
             // We would like to move the object from the old table to the
             // new table.  However, we need keys to re-add the objects, and
             // there's no good way to find all the keys for the given object.
@@ -174,13 +174,13 @@ public class CacheMap implements ObjectCache {
     // @param key the key that we are looking for
     // @see LruHashtable#contains
     public synchronized boolean containsKey(Object key) {
-        if (newTable.containsKey(key))
+        if (this.newTable.containsKey(key))
             return true;
-        if (oldTable.containsKey(key)) {
+        if (this.oldTable.containsKey(key)) {
             // Move object from old table to new table.
-            Object value = oldTable.get(key);
-            newTable.put(key, value);
-            oldTable.remove(key);
+            Object value = this.oldTable.get(key);
+            this.newTable.put(key, value);
+            this.oldTable.remove(key);
             return true;
         }
         return false;
@@ -194,13 +194,13 @@ public class CacheMap implements ObjectCache {
     public synchronized int containsKeys(Object[] keys) {
         int notfound = 0;
         for (int i = 0; i < keys.length; i++) {
-            if (newTable.containsKey(keys[i]))
+            if (this.newTable.containsKey(keys[i]))
                 keys[i] = null;
-            else if (oldTable.containsKey(keys[i])) {
+            else if (this.oldTable.containsKey(keys[i])) {
                 // Move object from old table to new table.
-                Object value = oldTable.get(keys[i]);
-                newTable.put(keys[i], value);
-                oldTable.remove(keys[i]);
+                Object value = this.oldTable.get(keys[i]);
+                this.newTable.put(keys[i], value);
+                this.oldTable.remove(keys[i]);
                 keys[i] = null;
             } else
                 notfound++;
@@ -216,14 +216,14 @@ public class CacheMap implements ObjectCache {
     // @see LruHashtable#put
     public synchronized Object get(Object key) {
         Object value;
-        value = newTable.get(key);
+        value = this.newTable.get(key);
         if (value != null)
             return value;
-        value = oldTable.get(key);
+        value = this.oldTable.get(key);
         if (value != null) {
             // Move object from old table to new table.
-            newTable.put(key, value);
-            oldTable.remove(key);
+            this.newTable.put(key, value);
+            this.oldTable.remove(key);
             return value;
         }
         return null;
@@ -240,21 +240,21 @@ public class CacheMap implements ObjectCache {
     // @return the old value of the key, or null if it did not have one.
     public synchronized Object put(Object key, Object value) {
 
-        Object oldValue = newTable.put(key, value);
+        Object oldValue = this.newTable.put(key, value);
         if (oldValue != null)
             return oldValue;
-        oldValue = oldTable.get(key);
+        oldValue = this.oldTable.get(key);
         if (oldValue != null)
-            oldTable.remove(key);
+            this.oldTable.remove(key);
         // we put a key into newtable that wasn't there before. check if it
         // grew beyond the threshold
-        if (newTable.size() >= threshold) {
+        if (this.newTable.size() >= this.threshold) {
             // Rotate the tables.
-            if (app != null)
-                app.logEvent("Rotating Cache tables at " + newTable.size() +
-                        "/" + oldTable.size() + " (new/old)");
-            oldTable = newTable;
-            newTable = createTable(eachCapacity, loadFactor);
+            if (this.app != null)
+                this.app.logEvent(Messages.getString("CacheMap.1") + this.newTable.size() + //$NON-NLS-1$
+                        "/" + this.oldTable.size() + Messages.getString("CacheMap.2")); //$NON-NLS-1$ //$NON-NLS-2$
+            this.oldTable = this.newTable;
+            this.newTable = createTable(this.eachCapacity, this.loadFactor);
         }
         return oldValue;
     }
@@ -264,16 +264,16 @@ public class CacheMap implements ObjectCache {
     // @param key the key that needs to be removed
     // @return the value of key, or null if the key was not found.
     public synchronized Object remove(Object key) {
-        Object oldValue = newTable.remove(key);
+        Object oldValue = this.newTable.remove(key);
         if (oldValue == null)
-            oldValue = oldTable.remove(key);
+            oldValue = this.oldTable.remove(key);
         return oldValue;
     }
 
     /// Clears the hash table so that it has no more elements in it.
     public synchronized boolean clear() {
-        newTable.clear();
-        oldTable.clear();
+        this.newTable.clear();
+        this.oldTable.clear();
         return true;
     }
 
@@ -294,12 +294,12 @@ public class CacheMap implements ObjectCache {
     /// The app properties have been modified, reload settings
     public void updateProperties(Properties props) {
         try {
-            int cacheSize = Integer.parseInt(props.getProperty("cachesize", "1000"));
+            int cacheSize = Integer.parseInt(props.getProperty("cachesize", "1000"));  //$NON-NLS-1$//$NON-NLS-2$
             setCapacity(cacheSize);
         } catch (Exception x) {
-            String message = "Invalid cachesize setting: " + props.getProperty("cachesize");
-            if (app != null) {
-                app.logError(message);
+            String message = Messages.getString("CacheMap.3") + props.getProperty("cachesize");  //$NON-NLS-1$//$NON-NLS-2$
+            if (this.app != null) {
+                this.app.logError(message);
             } else {
                 System.err.println(message);
             }
@@ -307,16 +307,17 @@ public class CacheMap implements ObjectCache {
     }
 
     public synchronized Object[] getCachedObjects() {
-        Object[] k1 = newTable.keySet().toArray();
-        Object[] k2 = oldTable.keySet().toArray();
+        Object[] k1 = this.newTable.keySet().toArray();
+        Object[] k2 = this.oldTable.keySet().toArray();
         Object[] k = new Object[k1.length + k2.length];
         System.arraycopy(k1, 0, k, 0, k1.length);
         System.arraycopy(k2, 0, k, k1.length, k2.length);
         return k;
     }
 
+    @Override
     public String toString() {
-        return newTable.toString() + oldTable.toString() + hashCode();
+        return this.newTable.toString() + this.oldTable.toString() + hashCode();
     }
 
     /**
@@ -333,8 +334,8 @@ public class CacheMap implements ObjectCache {
 
     public Map<String,Object> getStatistics() {
         Map<String,Object> stats = new HashMap<String,Object>();
-        stats.put("size", size());
-        stats.put("threshold", threshold);
+        stats.put("size", new Integer(size())); //$NON-NLS-1$
+        stats.put("threshold", new Integer(threshold)); //$NON-NLS-1$
         return stats;
     }
 }

@@ -73,7 +73,7 @@ import java.util.*;
 public class CronJob {
 
    private static HashSet all = new HashSet (2);
-   private static String ALL_VALUE = "*";
+   private static String ALL_VALUE = "*"; //$NON-NLS-1$
    static {
       all.add (ALL_VALUE);
    }
@@ -188,12 +188,12 @@ public class CronJob {
       while (e.hasMoreElements ()) {
          String key = (String) e.nextElement ();
          try {
-            StringTokenizer st = new StringTokenizer (key.trim(), ".");
+            StringTokenizer st = new StringTokenizer (key.trim(), "."); //$NON-NLS-1$
             String jobName = st.nextToken ();
-             if (jobName == null || jobName.equals(""))
+             if (jobName == null || jobName.equals("")) //$NON-NLS-1$
                 continue;
             String jobSpec = st.nextToken ();
-            if (jobSpec==null || jobSpec.equals("")) // might happen with cron.testname. = XXX
+            if (jobSpec==null || jobSpec.equals("")) // might happen with cron.testname. = XXX //$NON-NLS-1$
                continue;
             CronJob job = (CronJob) jobs.get (jobName);
             if (job==null) {
@@ -201,21 +201,21 @@ public class CronJob {
                jobs.put (jobName, job);
             }
             String value = props.getProperty (key);
-            if (jobSpec.equalsIgnoreCase("function")) {
+            if (jobSpec.equalsIgnoreCase("function")) { //$NON-NLS-1$
                job.setFunction(value);
-            } else if (jobSpec.equalsIgnoreCase("year")) {
+            } else if (jobSpec.equalsIgnoreCase("year")) { //$NON-NLS-1$
                job.parseYear (value);
-            } else if (jobSpec.equalsIgnoreCase("month")) {
+            } else if (jobSpec.equalsIgnoreCase("month")) { //$NON-NLS-1$
                job.parseMonth (value);
-            } else if (jobSpec.equalsIgnoreCase("day")) {
+            } else if (jobSpec.equalsIgnoreCase("day")) { //$NON-NLS-1$
                job.parseDay (value);
-            } else if (jobSpec.equalsIgnoreCase("weekday")) {
+            } else if (jobSpec.equalsIgnoreCase("weekday")) { //$NON-NLS-1$
                job.parseWeekDay (value);
-            } else if (jobSpec.equalsIgnoreCase("hour")) {
+            } else if (jobSpec.equalsIgnoreCase("hour")) { //$NON-NLS-1$
                job.parseHour (value);
-            } else if (jobSpec.equalsIgnoreCase("minute")) {
+            } else if (jobSpec.equalsIgnoreCase("minute")) { //$NON-NLS-1$
                job.parseMinute (value);
-            } else if (jobSpec.equalsIgnoreCase("timeout")) {
+            } else if (jobSpec.equalsIgnoreCase("timeout")) { //$NON-NLS-1$
                job.parseTimeout (value);
             }
          } catch (NoSuchElementException nsee) {
@@ -244,12 +244,12 @@ public class CronJob {
             else
                 return 0;
         }
+        @SuppressWarnings("unused")
         public boolean equals (Object o1, Object o2) {
             if (o1!=null) {
                 return o1.equals (o2);
-            } else {
-                return false;
             }
+            return false;
         }
 
         });
@@ -258,15 +258,15 @@ public class CronJob {
 
 
    public void parseYear (String value) {
-      if (value.equals("*")) {
+      if (value.equals("*")) { //$NON-NLS-1$
          setAllYears(true);
       } else {
-         StringTokenizer st = new StringTokenizer(value.trim(), ", \t\r\n");
+         StringTokenizer st = new StringTokenizer(value.trim(), ", \t\r\n"); //$NON-NLS-1$
          while (st.hasMoreTokens()) {
             String s = st.nextToken();
-            if (s.indexOf("-") != -1) {
-               int start = Integer.parseInt(s.substring(0, s.indexOf("-")));
-               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1));
+            if (s.indexOf("-") != -1) { //$NON-NLS-1$
+               int start = Integer.parseInt(s.substring(0, s.indexOf("-"))); //$NON-NLS-1$
+               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1)); //$NON-NLS-1$
                for (int i=start; i<=finish; i++) {
                   addYear(i);
                }
@@ -279,50 +279,50 @@ public class CronJob {
    }
 
    public void parseMonth (String value) {
-      if (value.equals("*")) {
+      if (value.equals("*")) { //$NON-NLS-1$
          setAllMonths(true);
       } else {
-         StringTokenizer st = new StringTokenizer(value.trim(), ", \t\r\n");
+         StringTokenizer st = new StringTokenizer(value.trim(), ", \t\r\n"); //$NON-NLS-1$
          while (st.hasMoreTokens()) {
             String m = st.nextToken();
-            if (m.equalsIgnoreCase("january"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.0"))) //$NON-NLS-1$
                addMonth(Calendar.JANUARY);
-            if (m.equalsIgnoreCase("february"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.1"))) //$NON-NLS-1$
                addMonth(Calendar.FEBRUARY);
-            if (m.equalsIgnoreCase("march"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.2"))) //$NON-NLS-1$
                addMonth(Calendar.MARCH);
-            if (m.equalsIgnoreCase("april"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.3"))) //$NON-NLS-1$
                addMonth(Calendar.APRIL);
-            if (m.equalsIgnoreCase("may"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.4"))) //$NON-NLS-1$
                addMonth(Calendar.MAY);
-            if (m.equalsIgnoreCase("june"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.5"))) //$NON-NLS-1$
                addMonth(Calendar.JUNE);
-            if (m.equalsIgnoreCase("july"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.6"))) //$NON-NLS-1$
                addMonth(Calendar.JULY);
-            if (m.equalsIgnoreCase("august"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.7"))) //$NON-NLS-1$
                addMonth(Calendar.AUGUST);
-            if (m.equalsIgnoreCase("september"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.8"))) //$NON-NLS-1$
                addMonth(Calendar.SEPTEMBER);
-            if (m.equalsIgnoreCase("october"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.9"))) //$NON-NLS-1$
                addMonth(Calendar.OCTOBER);
-            if (m.equalsIgnoreCase("november"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.10"))) //$NON-NLS-1$
                addMonth(Calendar.NOVEMBER);
-            if (m.equalsIgnoreCase("december"))
+            if (m.equalsIgnoreCase(Messages.getString("CronJob.11"))) //$NON-NLS-1$
                addMonth(Calendar.DECEMBER);
          }
       }
    }
 
    public void parseDay (String day) {
-      if (day.equals("*")) {
+      if (day.equals("*")) { //$NON-NLS-1$
          setAllDays(true);
       } else {
-         StringTokenizer st = new StringTokenizer(day.trim(), ", \t\r\n");
+         StringTokenizer st = new StringTokenizer(day.trim(), ", \t\r\n"); //$NON-NLS-1$
          while (st.hasMoreTokens()) {
             String s = st.nextToken();
-            if (s.indexOf("-") != -1) {
-               int start = Integer.parseInt(s.substring(0, s.indexOf("-")));
-               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1));
+            if (s.indexOf("-") != -1) { //$NON-NLS-1$
+               int start = Integer.parseInt(s.substring(0, s.indexOf("-"))); //$NON-NLS-1$
+               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1)); //$NON-NLS-1$
                for (int i=start; i<=finish; i++) {
                   addDay(i);
                }
@@ -336,25 +336,25 @@ public class CronJob {
 
 
    public void parseWeekDay (String weekday) {
-      if (weekday.equals("*")) {
+      if (weekday.equals("*")) { //$NON-NLS-1$
          setAllWeekdays(true);
       } else {
-         StringTokenizer st = new StringTokenizer(weekday.trim(), ", \t\r\n");
+         StringTokenizer st = new StringTokenizer(weekday.trim(), ", \t\r\n"); //$NON-NLS-1$
          while (st.hasMoreTokens()) {
             String d = st.nextToken();
-            if (d.equalsIgnoreCase("monday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.12"))) //$NON-NLS-1$
                addWeekday(Calendar.MONDAY);
-            if (d.equalsIgnoreCase("tuesday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.13"))) //$NON-NLS-1$
                addWeekday(Calendar.TUESDAY);
-            if (d.equalsIgnoreCase("wednesday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.14"))) //$NON-NLS-1$
                addWeekday(Calendar.WEDNESDAY);
-            if (d.equalsIgnoreCase("thursday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.15"))) //$NON-NLS-1$
                addWeekday(Calendar.THURSDAY);
-            if (d.equalsIgnoreCase("friday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.16"))) //$NON-NLS-1$
                addWeekday(Calendar.FRIDAY);
-            if (d.equalsIgnoreCase("saturday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.17"))) //$NON-NLS-1$
                addWeekday(Calendar.SATURDAY);
-            if (d.equalsIgnoreCase("sunday"))
+            if (d.equalsIgnoreCase(Messages.getString("CronJob.18"))) //$NON-NLS-1$
                addWeekday(Calendar.SUNDAY);
          }
       }
@@ -362,15 +362,15 @@ public class CronJob {
 
 
    public void parseHour (String hour) {
-      if (hour.equals("*")) {
+      if (hour.equals("*")) { //$NON-NLS-1$
          setAllHours(true);
       } else {
-         StringTokenizer st = new StringTokenizer(hour.trim (), ", \t\r\n\"");
+         StringTokenizer st = new StringTokenizer(hour.trim (), ", \t\r\n\""); //$NON-NLS-1$
          while (st.hasMoreTokens()) {
             String s = st.nextToken();
-            if (s.indexOf("-") != -1) {
-               int start = Integer.parseInt(s.substring(0, s.indexOf("-")));
-               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1));
+            if (s.indexOf("-") != -1) { //$NON-NLS-1$
+               int start = Integer.parseInt(s.substring(0, s.indexOf("-"))); //$NON-NLS-1$
+               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1)); //$NON-NLS-1$
                for (int i=start; i<=finish; i++) {
                   addHour(i);
                }
@@ -384,15 +384,15 @@ public class CronJob {
 
 
    public void parseMinute (String minute) {
-      if (minute.equals("*")) {
+      if (minute.equals("*")) { //$NON-NLS-1$
          setAllMinutes(true);
       } else {
-         StringTokenizer st = new StringTokenizer(minute.trim (), ", \t\r\n");
+         StringTokenizer st = new StringTokenizer(minute.trim (), ", \t\r\n"); //$NON-NLS-1$
          while (st.hasMoreTokens()) {
             String s = st.nextToken();
-            if (s.indexOf("-") != -1) {
-               int start = Integer.parseInt(s.substring(0, s.indexOf("-")));
-               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1));
+            if (s.indexOf("-") != -1) { //$NON-NLS-1$
+               int start = Integer.parseInt(s.substring(0, s.indexOf("-"))); //$NON-NLS-1$
+               int finish = Integer.parseInt(s.substring(s.indexOf("-") +1)); //$NON-NLS-1$
                for (int i=start; i<=finish; i++) {
                   addMinute(i);
                }
@@ -432,12 +432,12 @@ public class CronJob {
    */
    public CronJob (String name) {
       this.name = name;
-      year = new HashSet (all);
-      month = new HashSet (all);
-      day = new HashSet (all);
-      weekday = new HashSet (all);
-      hour = new HashSet (all);
-      minute = new HashSet (all);
+      this.year = new HashSet (all);
+      this.month = new HashSet (all);
+      this.day = new HashSet (all);
+      this.weekday = new HashSet (all);
+      this.hour = new HashSet (all);
+      this.minute = new HashSet (all);
    }
 
   /**
@@ -451,27 +451,27 @@ public class CronJob {
 
     // try and short-circuit as fast as possible.
     Integer theYear = new Integer(cal.get(Calendar.YEAR));
-    if (!year.contains(ALL_VALUE) && !year.contains(theYear))
+    if (!this.year.contains(ALL_VALUE) && !this.year.contains(theYear))
       return false;
 
     Integer theMonth = new Integer(cal.get(Calendar.MONTH));
-    if (!month.contains(ALL_VALUE) && !month.contains(theMonth))
+    if (!this.month.contains(ALL_VALUE) && !this.month.contains(theMonth))
       return false;
 
     Integer theDay = new Integer(cal.get(Calendar.DAY_OF_MONTH));
-    if (!day.contains(ALL_VALUE) && !day.contains(theDay))
+    if (!this.day.contains(ALL_VALUE) && !this.day.contains(theDay))
       return false;
 
     Integer theWeekDay = new Integer(cal.get(Calendar.DAY_OF_WEEK));
-    if (!weekday.contains(ALL_VALUE) && !weekday.contains(theWeekDay))
+    if (!this.weekday.contains(ALL_VALUE) && !this.weekday.contains(theWeekDay))
       return false;
 
     Integer theHour = new Integer(cal.get(Calendar.HOUR_OF_DAY));
-    if (!hour.contains(ALL_VALUE) && !hour.contains(theHour))
+    if (!this.hour.contains(ALL_VALUE) && !this.hour.contains(theHour))
       return false;
 
     Integer theMinute = new Integer(cal.get(Calendar.MINUTE));
-    if (!minute.contains(ALL_VALUE) && !minute.contains(theMinute))
+    if (!this.minute.contains(ALL_VALUE) && !this.minute.contains(theMinute))
       return false;
 
     return true;
@@ -739,9 +739,10 @@ public class CronJob {
     return this.timeout;
   }
 
-  public String toString ()
+  @Override
+public String toString ()
   {
-    return "[CronJob " + name + "]";
+    return "[CronJob " + this.name + "]"; //$NON-NLS-1$ //$NON-NLS-2$
   }
 
 }

@@ -34,240 +34,240 @@ public final class HtmlEncoder {
     // ftp://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP1252.TXT
     //
     static final String[] transform =  {
-        "&euro;",   // 128
-        "",           // empty string means character is undefined in unicode
-        "&#8218;",
-        "&#402;",
-        "&#8222;",
-        "&#8230;",
-        "&#8224;",
-        "&#8225;",
-        "&#710;",
-        "&#8240;",
-        "&#352;",
-        "&#8249;",
-        "&#338;",
-        "",
-        "&#381;",
-        "",
-        "",
-        "&#8216;",
-        "&#8217;",
-        "&#8220;",
-        "&#8221;",
-        "&#8226;",
-        "&#8211;",
-        "&#8212;",
-        "&#732;",
-        "&#8482;",
-        "&#353;",
-        "&#8250;",
-        "&#339;",
-        "",
-        "&#382;",
-        "&#376;",  // 159
-        "&nbsp;",    // 160
-        "&iexcl;",
-        "&cent;",
-        "&pound;",
-        "&curren;",
-        "&yen;",
-        "&brvbar;",
-        "&sect;",
-        "&uml;",
-        "&copy;",
-        "&ordf;",
-        "&laquo;",
-        "&not;",
-        "&shy;",
-        "&reg;",
-        "&macr;",
-        "&deg;",
-        "&plusmn;",
-        "&sup2;",
-        "&sup3;",
-        "&acute;",
-        "&micro;",
-        "&para;",
-        "&middot;",
-        "&cedil;",
-        "&sup1;",
-        "&ordm;",
-        "&raquo;",
-        "&frac14;",
-        "&frac12;",
-        "&frac34;",
-        "&iquest;",
-        "&Agrave;",
-        "&Aacute;",
-        "&Acirc;",
-        "&Atilde;",
-        "&Auml;",
-        "&Aring;",
-        "&AElig;",
-        "&Ccedil;",
-        "&Egrave;",
-        "&Eacute;",
-        "&Ecirc;",
-        "&Euml;",
-        "&Igrave;",
-        "&Iacute;",
-        "&Icirc;",
-        "&Iuml;",
-        "&ETH;",
-        "&Ntilde;",
-        "&Ograve;",
-        "&Oacute;",
-        "&Ocirc;",
-        "&Otilde;",
-        "&Ouml;",
-        "&times;",
-        "&Oslash;",
-        "&Ugrave;",
-        "&Uacute;",
-        "&Ucirc;",
-        "&Uuml;",
-        "&Yacute;",
-        "&THORN;",
-        "&szlig;",
-        "&agrave;",
-        "&aacute;",
-        "&acirc;",
-        "&atilde;",
-        "&auml;",
-        "&aring;",
-        "&aelig;",
-        "&ccedil;",
-        "&egrave;",
-        "&eacute;",
-        "&ecirc;",
-        "&euml;",
-        "&igrave;",
-        "&iacute;",
-        "&icirc;",
-        "&iuml;",
-        "&eth;",
-        "&ntilde;",
-        "&ograve;",
-        "&oacute;",
-        "&ocirc;",
-        "&otilde;",
-        "&ouml;",
-        "&divide;",
-        "&oslash;",
-        "&ugrave;",
-        "&uacute;",
-        "&ucirc;",
-        "&uuml;",
-        "&yacute;",
-        "&thorn;",
-        "&yuml;"    // 255
+        "&euro;",   // 128 //$NON-NLS-1$
+        "",           // empty string means character is undefined in unicode //$NON-NLS-1$
+        "&#8218;", //$NON-NLS-1$
+        "&#402;", //$NON-NLS-1$
+        "&#8222;", //$NON-NLS-1$
+        "&#8230;", //$NON-NLS-1$
+        "&#8224;", //$NON-NLS-1$
+        "&#8225;", //$NON-NLS-1$
+        "&#710;", //$NON-NLS-1$
+        "&#8240;", //$NON-NLS-1$
+        "&#352;", //$NON-NLS-1$
+        "&#8249;", //$NON-NLS-1$
+        "&#338;", //$NON-NLS-1$
+        "", //$NON-NLS-1$
+        "&#381;", //$NON-NLS-1$
+        "", //$NON-NLS-1$
+        "", //$NON-NLS-1$
+        "&#8216;", //$NON-NLS-1$
+        "&#8217;", //$NON-NLS-1$
+        "&#8220;", //$NON-NLS-1$
+        "&#8221;", //$NON-NLS-1$
+        "&#8226;", //$NON-NLS-1$
+        "&#8211;", //$NON-NLS-1$
+        "&#8212;", //$NON-NLS-1$
+        "&#732;", //$NON-NLS-1$
+        "&#8482;", //$NON-NLS-1$
+        "&#353;", //$NON-NLS-1$
+        "&#8250;", //$NON-NLS-1$
+        "&#339;", //$NON-NLS-1$
+        "", //$NON-NLS-1$
+        "&#382;", //$NON-NLS-1$
+        "&#376;",  // 159 //$NON-NLS-1$
+        "&nbsp;",    // 160 //$NON-NLS-1$
+        "&iexcl;", //$NON-NLS-1$
+        "&cent;", //$NON-NLS-1$
+        "&pound;", //$NON-NLS-1$
+        "&curren;", //$NON-NLS-1$
+        "&yen;", //$NON-NLS-1$
+        "&brvbar;", //$NON-NLS-1$
+        "&sect;", //$NON-NLS-1$
+        "&uml;", //$NON-NLS-1$
+        "&copy;", //$NON-NLS-1$
+        "&ordf;", //$NON-NLS-1$
+        "&laquo;", //$NON-NLS-1$
+        "&not;", //$NON-NLS-1$
+        "&shy;", //$NON-NLS-1$
+        "&reg;", //$NON-NLS-1$
+        "&macr;", //$NON-NLS-1$
+        "&deg;", //$NON-NLS-1$
+        "&plusmn;", //$NON-NLS-1$
+        "&sup2;", //$NON-NLS-1$
+        "&sup3;", //$NON-NLS-1$
+        "&acute;", //$NON-NLS-1$
+        "&micro;", //$NON-NLS-1$
+        "&para;", //$NON-NLS-1$
+        "&middot;", //$NON-NLS-1$
+        "&cedil;", //$NON-NLS-1$
+        "&sup1;", //$NON-NLS-1$
+        "&ordm;", //$NON-NLS-1$
+        "&raquo;", //$NON-NLS-1$
+        "&frac14;", //$NON-NLS-1$
+        "&frac12;", //$NON-NLS-1$
+        "&frac34;", //$NON-NLS-1$
+        "&iquest;", //$NON-NLS-1$
+        "&Agrave;", //$NON-NLS-1$
+        "&Aacute;", //$NON-NLS-1$
+        "&Acirc;", //$NON-NLS-1$
+        "&Atilde;", //$NON-NLS-1$
+        "&Auml;", //$NON-NLS-1$
+        "&Aring;", //$NON-NLS-1$
+        "&AElig;", //$NON-NLS-1$
+        "&Ccedil;", //$NON-NLS-1$
+        "&Egrave;", //$NON-NLS-1$
+        "&Eacute;", //$NON-NLS-1$
+        "&Ecirc;", //$NON-NLS-1$
+        "&Euml;", //$NON-NLS-1$
+        "&Igrave;", //$NON-NLS-1$
+        "&Iacute;", //$NON-NLS-1$
+        "&Icirc;", //$NON-NLS-1$
+        "&Iuml;", //$NON-NLS-1$
+        "&ETH;", //$NON-NLS-1$
+        "&Ntilde;", //$NON-NLS-1$
+        "&Ograve;", //$NON-NLS-1$
+        "&Oacute;", //$NON-NLS-1$
+        "&Ocirc;", //$NON-NLS-1$
+        "&Otilde;", //$NON-NLS-1$
+        "&Ouml;", //$NON-NLS-1$
+        "&times;", //$NON-NLS-1$
+        "&Oslash;", //$NON-NLS-1$
+        "&Ugrave;", //$NON-NLS-1$
+        "&Uacute;", //$NON-NLS-1$
+        "&Ucirc;", //$NON-NLS-1$
+        "&Uuml;", //$NON-NLS-1$
+        "&Yacute;", //$NON-NLS-1$
+        "&THORN;", //$NON-NLS-1$
+        "&szlig;", //$NON-NLS-1$
+        "&agrave;", //$NON-NLS-1$
+        "&aacute;", //$NON-NLS-1$
+        "&acirc;", //$NON-NLS-1$
+        "&atilde;", //$NON-NLS-1$
+        "&auml;", //$NON-NLS-1$
+        "&aring;", //$NON-NLS-1$
+        "&aelig;", //$NON-NLS-1$
+        "&ccedil;", //$NON-NLS-1$
+        "&egrave;", //$NON-NLS-1$
+        "&eacute;", //$NON-NLS-1$
+        "&ecirc;", //$NON-NLS-1$
+        "&euml;", //$NON-NLS-1$
+        "&igrave;", //$NON-NLS-1$
+        "&iacute;", //$NON-NLS-1$
+        "&icirc;", //$NON-NLS-1$
+        "&iuml;", //$NON-NLS-1$
+        "&eth;", //$NON-NLS-1$
+        "&ntilde;", //$NON-NLS-1$
+        "&ograve;", //$NON-NLS-1$
+        "&oacute;", //$NON-NLS-1$
+        "&ocirc;", //$NON-NLS-1$
+        "&otilde;", //$NON-NLS-1$
+        "&ouml;", //$NON-NLS-1$
+        "&divide;", //$NON-NLS-1$
+        "&oslash;", //$NON-NLS-1$
+        "&ugrave;", //$NON-NLS-1$
+        "&uacute;", //$NON-NLS-1$
+        "&ucirc;", //$NON-NLS-1$
+        "&uuml;", //$NON-NLS-1$
+        "&yacute;", //$NON-NLS-1$
+        "&thorn;", //$NON-NLS-1$
+        "&yuml;"    // 255 //$NON-NLS-1$
     };
 
     static final HashSet allTags = new HashSet();
 
     static {
-        allTags.add("a");
-        allTags.add("abbr");
-        allTags.add("acronym");
-        allTags.add("address");
-        allTags.add("applet");
-        allTags.add("area");
-        allTags.add("b");
-        allTags.add("base");
-        allTags.add("basefont");
-        allTags.add("bdo");
-        allTags.add("bgsound");
-        allTags.add("big");
-        allTags.add("blink");
-        allTags.add("blockquote");
-        allTags.add("bq");
-        allTags.add("body");
-        allTags.add("br");
-        allTags.add("button");
-        allTags.add("caption");
-        allTags.add("center");
-        allTags.add("cite");
-        allTags.add("code");
-        allTags.add("col");
-        allTags.add("colgroup");
-        allTags.add("del");
-        allTags.add("dfn");
-        allTags.add("dir");
-        allTags.add("div");
-        allTags.add("dl");
-        allTags.add("dt");
-        allTags.add("dd");
-        allTags.add("em");
-        allTags.add("embed");
-        allTags.add("fieldset");
-        allTags.add("font");
-        allTags.add("form");
-        allTags.add("frame");
-        allTags.add("frameset");
-        allTags.add("h1");
-        allTags.add("h2");
-        allTags.add("h3");
-        allTags.add("h4");
-        allTags.add("h5");
-        allTags.add("h6");
-        allTags.add("head");
-        allTags.add("html");
-        allTags.add("hr");
-        allTags.add("i");
-        allTags.add("iframe");
-        allTags.add("img");
-        allTags.add("input");
-        allTags.add("ins");
-        allTags.add("isindex");
-        allTags.add("kbd");
-        allTags.add("label");
-        allTags.add("legend");
-        allTags.add("li");
-        allTags.add("link");
-        allTags.add("listing");
-        allTags.add("map");
-        allTags.add("marquee");
-        allTags.add("menu");
-        allTags.add("meta");
-        allTags.add("nobr");
-        allTags.add("noframes");
-        allTags.add("noscript");
-        allTags.add("object");
-        allTags.add("ol");
-        allTags.add("option");
-        allTags.add("optgroup");
-        allTags.add("p");
-        allTags.add("param");
-        allTags.add("plaintext");
-        allTags.add("pre");
-        allTags.add("q");
-        allTags.add("s");
-        allTags.add("samp");
-        allTags.add("script");
-        allTags.add("select");
-        allTags.add("small");
-        allTags.add("span");
-        allTags.add("strike");
-        allTags.add("strong");
-        allTags.add("style");
-        allTags.add("sub");
-        allTags.add("sup");
-        allTags.add("table");
-        allTags.add("tbody");
-        allTags.add("td");
-        allTags.add("textarea");
-        allTags.add("tfoot");
-        allTags.add("th");
-        allTags.add("thead");
-        allTags.add("title");
-        allTags.add("tr");
-        allTags.add("tt");
-        allTags.add("u");
-        allTags.add("ul");
-        allTags.add("var");
-        allTags.add("wbr");
-        allTags.add("xmp");
+        allTags.add("a"); //$NON-NLS-1$
+        allTags.add("abbr"); //$NON-NLS-1$
+        allTags.add("acronym"); //$NON-NLS-1$
+        allTags.add("address"); //$NON-NLS-1$
+        allTags.add("applet"); //$NON-NLS-1$
+        allTags.add("area"); //$NON-NLS-1$
+        allTags.add("b"); //$NON-NLS-1$
+        allTags.add("base"); //$NON-NLS-1$
+        allTags.add("basefont"); //$NON-NLS-1$
+        allTags.add("bdo"); //$NON-NLS-1$
+        allTags.add("bgsound"); //$NON-NLS-1$
+        allTags.add("big"); //$NON-NLS-1$
+        allTags.add("blink"); //$NON-NLS-1$
+        allTags.add("blockquote"); //$NON-NLS-1$
+        allTags.add("bq"); //$NON-NLS-1$
+        allTags.add("body"); //$NON-NLS-1$
+        allTags.add("br"); //$NON-NLS-1$
+        allTags.add("button"); //$NON-NLS-1$
+        allTags.add("caption"); //$NON-NLS-1$
+        allTags.add("center"); //$NON-NLS-1$
+        allTags.add("cite"); //$NON-NLS-1$
+        allTags.add("code"); //$NON-NLS-1$
+        allTags.add("col"); //$NON-NLS-1$
+        allTags.add("colgroup"); //$NON-NLS-1$
+        allTags.add("del"); //$NON-NLS-1$
+        allTags.add("dfn"); //$NON-NLS-1$
+        allTags.add("dir"); //$NON-NLS-1$
+        allTags.add("div"); //$NON-NLS-1$
+        allTags.add("dl"); //$NON-NLS-1$
+        allTags.add("dt"); //$NON-NLS-1$
+        allTags.add("dd"); //$NON-NLS-1$
+        allTags.add("em"); //$NON-NLS-1$
+        allTags.add("embed"); //$NON-NLS-1$
+        allTags.add("fieldset"); //$NON-NLS-1$
+        allTags.add("font"); //$NON-NLS-1$
+        allTags.add("form"); //$NON-NLS-1$
+        allTags.add("frame"); //$NON-NLS-1$
+        allTags.add("frameset"); //$NON-NLS-1$
+        allTags.add("h1"); //$NON-NLS-1$
+        allTags.add("h2"); //$NON-NLS-1$
+        allTags.add("h3"); //$NON-NLS-1$
+        allTags.add("h4"); //$NON-NLS-1$
+        allTags.add("h5"); //$NON-NLS-1$
+        allTags.add("h6"); //$NON-NLS-1$
+        allTags.add("head"); //$NON-NLS-1$
+        allTags.add("html"); //$NON-NLS-1$
+        allTags.add("hr"); //$NON-NLS-1$
+        allTags.add("i"); //$NON-NLS-1$
+        allTags.add("iframe"); //$NON-NLS-1$
+        allTags.add("img"); //$NON-NLS-1$
+        allTags.add("input"); //$NON-NLS-1$
+        allTags.add("ins"); //$NON-NLS-1$
+        allTags.add("isindex"); //$NON-NLS-1$
+        allTags.add("kbd"); //$NON-NLS-1$
+        allTags.add("label"); //$NON-NLS-1$
+        allTags.add("legend"); //$NON-NLS-1$
+        allTags.add("li"); //$NON-NLS-1$
+        allTags.add("link"); //$NON-NLS-1$
+        allTags.add("listing"); //$NON-NLS-1$
+        allTags.add("map"); //$NON-NLS-1$
+        allTags.add("marquee"); //$NON-NLS-1$
+        allTags.add("menu"); //$NON-NLS-1$
+        allTags.add("meta"); //$NON-NLS-1$
+        allTags.add("nobr"); //$NON-NLS-1$
+        allTags.add("noframes"); //$NON-NLS-1$
+        allTags.add("noscript"); //$NON-NLS-1$
+        allTags.add("object"); //$NON-NLS-1$
+        allTags.add("ol"); //$NON-NLS-1$
+        allTags.add("option"); //$NON-NLS-1$
+        allTags.add("optgroup"); //$NON-NLS-1$
+        allTags.add("p"); //$NON-NLS-1$
+        allTags.add("param"); //$NON-NLS-1$
+        allTags.add("plaintext"); //$NON-NLS-1$
+        allTags.add("pre"); //$NON-NLS-1$
+        allTags.add("q"); //$NON-NLS-1$
+        allTags.add("s"); //$NON-NLS-1$
+        allTags.add("samp"); //$NON-NLS-1$
+        allTags.add("script"); //$NON-NLS-1$
+        allTags.add("select"); //$NON-NLS-1$
+        allTags.add("small"); //$NON-NLS-1$
+        allTags.add("span"); //$NON-NLS-1$
+        allTags.add("strike"); //$NON-NLS-1$
+        allTags.add("strong"); //$NON-NLS-1$
+        allTags.add("style"); //$NON-NLS-1$
+        allTags.add("sub"); //$NON-NLS-1$
+        allTags.add("sup"); //$NON-NLS-1$
+        allTags.add("table"); //$NON-NLS-1$
+        allTags.add("tbody"); //$NON-NLS-1$
+        allTags.add("td"); //$NON-NLS-1$
+        allTags.add("textarea"); //$NON-NLS-1$
+        allTags.add("tfoot"); //$NON-NLS-1$
+        allTags.add("th"); //$NON-NLS-1$
+        allTags.add("thead"); //$NON-NLS-1$
+        allTags.add("title"); //$NON-NLS-1$
+        allTags.add("tr"); //$NON-NLS-1$
+        allTags.add("tt"); //$NON-NLS-1$
+        allTags.add("u"); //$NON-NLS-1$
+        allTags.add("ul"); //$NON-NLS-1$
+        allTags.add("var"); //$NON-NLS-1$
+        allTags.add("wbr"); //$NON-NLS-1$
+        allTags.add("xmp"); //$NON-NLS-1$
     }
 
     // HTML block tags need to suppress automatic newline to <br>
@@ -280,66 +280,66 @@ public final class HtmlEncoder {
 
     static {
         // actual block level elements
-        semiBlockTags.add("address");
-        semiBlockTags.add("dir");
-        semiBlockTags.add("div");
-        semiBlockTags.add("table");
+        semiBlockTags.add("address"); //$NON-NLS-1$
+        semiBlockTags.add("dir"); //$NON-NLS-1$
+        semiBlockTags.add("div"); //$NON-NLS-1$
+        semiBlockTags.add("table"); //$NON-NLS-1$
 
-        blockTags.add("blockquote");
-        blockTags.add("center");
-        blockTags.add("dl");
-        blockTags.add("fieldset");
-        blockTags.add("form");
-        blockTags.add("h1");
-        blockTags.add("h2");
-        blockTags.add("h3");
-        blockTags.add("h4");
-        blockTags.add("h5");
-        blockTags.add("h6");
-        blockTags.add("hr");
-        blockTags.add("isindex");
-        blockTags.add("ol");
-        blockTags.add("p");
-        blockTags.add("pre");
-        blockTags.add("ul");
+        blockTags.add("blockquote"); //$NON-NLS-1$
+        blockTags.add("center"); //$NON-NLS-1$
+        blockTags.add("dl"); //$NON-NLS-1$
+        blockTags.add("fieldset"); //$NON-NLS-1$
+        blockTags.add("form"); //$NON-NLS-1$
+        blockTags.add("h1"); //$NON-NLS-1$
+        blockTags.add("h2"); //$NON-NLS-1$
+        blockTags.add("h3"); //$NON-NLS-1$
+        blockTags.add("h4"); //$NON-NLS-1$
+        blockTags.add("h5"); //$NON-NLS-1$
+        blockTags.add("h6"); //$NON-NLS-1$
+        blockTags.add("hr"); //$NON-NLS-1$
+        blockTags.add("isindex"); //$NON-NLS-1$
+        blockTags.add("ol"); //$NON-NLS-1$
+        blockTags.add("p"); //$NON-NLS-1$
+        blockTags.add("pre"); //$NON-NLS-1$
+        blockTags.add("ul"); //$NON-NLS-1$
 
-        internalTags.add("menu");
-        internalTags.add("noframes");
-        internalTags.add("noscript");
+        internalTags.add("menu"); //$NON-NLS-1$
+        internalTags.add("noframes"); //$NON-NLS-1$
+        internalTags.add("noscript"); //$NON-NLS-1$
 
         /// to be treated as block level elements
-        semiBlockTags.add("th");
+        semiBlockTags.add("th"); //$NON-NLS-1$
 
-        blockTags.add("br");
-        blockTags.add("dd");
-        blockTags.add("dt");
-        blockTags.add("frameset");
-        blockTags.add("li");
-        blockTags.add("td");
+        blockTags.add("br"); //$NON-NLS-1$
+        blockTags.add("dd"); //$NON-NLS-1$
+        blockTags.add("dt"); //$NON-NLS-1$
+        blockTags.add("frameset"); //$NON-NLS-1$
+        blockTags.add("li"); //$NON-NLS-1$
+        blockTags.add("td"); //$NON-NLS-1$
 
-        internalTags.add("tbody");
-        internalTags.add("tfoot");
-        internalTags.add("thead");
-        internalTags.add("tr");
+        internalTags.add("tbody"); //$NON-NLS-1$
+        internalTags.add("tfoot"); //$NON-NLS-1$
+        internalTags.add("thead"); //$NON-NLS-1$
+        internalTags.add("tr"); //$NON-NLS-1$
     }
 
     // set of tags that are always empty
     static final HashSet emptyTags = new HashSet();
 
     static {
-        emptyTags.add("area");
-        emptyTags.add("base");
-        emptyTags.add("basefont");
-        emptyTags.add("br");
-        emptyTags.add("col");
-        emptyTags.add("frame");
-        emptyTags.add("hr");
-        emptyTags.add("img");
-        emptyTags.add("input");
-        emptyTags.add("isindex");
-        emptyTags.add("link");
-        emptyTags.add("meta");
-        emptyTags.add("param");
+        emptyTags.add("area"); //$NON-NLS-1$
+        emptyTags.add("base"); //$NON-NLS-1$
+        emptyTags.add("basefont"); //$NON-NLS-1$
+        emptyTags.add("br"); //$NON-NLS-1$
+        emptyTags.add("col"); //$NON-NLS-1$
+        emptyTags.add("frame"); //$NON-NLS-1$
+        emptyTags.add("hr"); //$NON-NLS-1$
+        emptyTags.add("img"); //$NON-NLS-1$
+        emptyTags.add("input"); //$NON-NLS-1$
+        emptyTags.add("isindex"); //$NON-NLS-1$
+        emptyTags.add("link"); //$NON-NLS-1$
+        emptyTags.add("meta"); //$NON-NLS-1$
+        emptyTags.add("param"); //$NON-NLS-1$
     }
 
     static final byte TAG_NAME = 0;
@@ -352,7 +352,7 @@ public final class HtmlEncoder {
     static final byte BLOCK = 2;
     static final byte INTERNAL = 3;
 
-    static final String newLine = System.getProperty("line.separator");
+    static final String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
 
     /**
      *  Do "smart" encodging on a string. This means that valid HTML entities and tags,
@@ -367,7 +367,7 @@ public final class HtmlEncoder {
         int l = str.length();
 
         if (l == 0) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         // try to make stringbuffer large enough from the start
@@ -470,9 +470,9 @@ public final class HtmlEncoder {
                     } else if ('!' == str.charAt(i + 1)) {
                         // the beginning of an HTML comment or !doctype?
                         if (!insideCodeTag) {
-                            if (str.regionMatches(i + 2, "--", 0, 2)) {
+                            if (str.regionMatches(i + 2, "--", 0, 2)) { //$NON-NLS-1$
                                 insideComment = insideTag = true;
-                            } else if (str.regionMatches(true, i+2, "doctype", 0, 7)) {
+                            } else if (str.regionMatches(true, i+2, "doctype", 0, 7)) { //$NON-NLS-1$
                                 insideHtmlTag = insideTag = true;
                             }
                         }
@@ -488,7 +488,7 @@ public final class HtmlEncoder {
                         if ((j > tagStart) && (j < l)) {
                             String tagName = str.substring(tagStart, j).toLowerCase();
 
-                            if ("code".equals(tagName) && insideCloseTag &&
+                            if ("code".equals(tagName) && insideCloseTag && //$NON-NLS-1$
                                     insideCodeTag) {
                                 insideCodeTag = false;
                             }
@@ -526,9 +526,9 @@ public final class HtmlEncoder {
                                         for (int k = 1; k < t; k++) {
                                             Object tag = openTags.pop();
                                             if (!emptyTags.contains(tag)) {
-                                                ret.append("</");
+                                                ret.append("</"); //$NON-NLS-1$
                                                 ret.append(tag);
-                                                ret.append(">");
+                                                ret.append(">"); //$NON-NLS-1$
                                             }
                                         }
                                     }
@@ -538,11 +538,11 @@ public final class HtmlEncoder {
                                     openTags.push(tagName);
                                 }
 
-                                if ("code".equals(tagName) && !insideCloseTag) {
+                                if ("code".equals(tagName) && !insideCloseTag) { //$NON-NLS-1$
                                     insideCodeTag = true;
                                 }
 
-                                if ("pre".equals(tagName)) {
+                                if ("pre".equals(tagName)) { //$NON-NLS-1$
                                     insidePreTag = !insideCloseTag;
                                 }
                             }
@@ -568,8 +568,8 @@ public final class HtmlEncoder {
                           (exiting < BLOCK) &&
                           (linebreaks > 1) &&
                           paragraphStart < ret.length()) {
-                        ret.insert(paragraphStart, "<p>");
-                        ret.append("</p>");
+                        ret.insert(paragraphStart, "<p>"); //$NON-NLS-1$
+                        ret.append("</p>"); //$NON-NLS-1$
                         swallowBreaks = 2;
                     }
 
@@ -577,7 +577,7 @@ public final class HtmlEncoder {
                     int _entering = entering == SEMIBLOCK ? TEXT : entering;
                     for (int k = linebreaks-1; k>=0; k--) {
                         if (k >= swallowBreaks && k >= _entering && k >= exiting) {
-                            ret.append("<br />");
+                            ret.append("<br />"); //$NON-NLS-1$
                         }
                         ret.append(newLine);
                     }
@@ -597,7 +597,7 @@ public final class HtmlEncoder {
                     if (insideTag) {
                         ret.append('<');
                     } else {
-                        ret.append("&lt;");
+                        ret.append("&lt;"); //$NON-NLS-1$
                     }
 
                     break;
@@ -615,7 +615,7 @@ public final class HtmlEncoder {
                                 j++;
 
                             if ((j < l) && (str.charAt(j) == ';')) {
-                                ret.append("&");
+                                ret.append("&"); //$NON-NLS-1$
 
                                 break;
                             }
@@ -626,7 +626,7 @@ public final class HtmlEncoder {
                                 j++;
 
                             if ((j < l) && (str.charAt(j) == ';')) {
-                                ret.append("&");
+                                ret.append("&"); //$NON-NLS-1$
 
                                 break;
                             }
@@ -637,7 +637,7 @@ public final class HtmlEncoder {
                     if (insideMacroTag) {
                         ret.append('&');
                     } else {
-                        ret.append("&amp;");
+                        ret.append("&amp;"); //$NON-NLS-1$
                     }
                     break;
 
@@ -729,7 +729,7 @@ public final class HtmlEncoder {
                         }
 
                     } else {
-                        ret.append("&gt;");
+                        ret.append("&gt;"); //$NON-NLS-1$
                     }
 
                     // check if we still are inside any kind of tag
@@ -771,9 +771,9 @@ public final class HtmlEncoder {
                     } else if ((c >= 128) && (c < 256)) {
                         ret.append(transform[c - 128]);
                     } else {
-                        ret.append("&#");
+                        ret.append("&#"); //$NON-NLS-1$
                         ret.append((int) c);
-                        ret.append(";");
+                        ret.append(";"); //$NON-NLS-1$
                     }
 
                     escape = false;
@@ -787,9 +787,9 @@ public final class HtmlEncoder {
             for (int k = 0; k < o; k++) {
                 Object tag = openTags.pop();
                 if (!emptyTags.contains(tag)) {
-                    ret.append("</");
+                    ret.append("</"); //$NON-NLS-1$
                     ret.append(tag);
-                    ret.append(">");
+                    ret.append(">"); //$NON-NLS-1$
                 }
             }
         }
@@ -797,15 +797,15 @@ public final class HtmlEncoder {
         // add remaining newlines we may have collected
         int swallowBreaks = 0;
         if (paragraphs && entering < BLOCK) {
-            ret.insert(paragraphStart, "<p>");
-            ret.append("</p>");
+            ret.insert(paragraphStart, "<p>"); //$NON-NLS-1$
+            ret.append("</p>"); //$NON-NLS-1$
             swallowBreaks = 2;
         }
 
         if (linebreaks > 0) {
             for (int i = linebreaks-1; i>=0; i--) {
                 if (i >= swallowBreaks && i > exiting) {
-                    ret.append("<br />");
+                    ret.append("<br />"); //$NON-NLS-1$
                 }
                 ret.append(newLine);
             }
@@ -823,7 +823,7 @@ public final class HtmlEncoder {
         int l = str.length();
 
         if (l == 0) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         StringBuffer ret = new StringBuffer(Math.round(l * 1.2f));
@@ -851,7 +851,7 @@ public final class HtmlEncoder {
         int l = str.length();
 
         if (l == 0) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         StringBuffer ret = new StringBuffer(Math.round(l * 1.2f));
@@ -883,24 +883,24 @@ public final class HtmlEncoder {
 
             switch (c) {
                 case '<':
-                    ret.append("&lt;");
+                    ret.append("&lt;"); //$NON-NLS-1$
                     break;
 
                 case '>':
-                    ret.append("&gt;");
+                    ret.append("&gt;"); //$NON-NLS-1$
                     break;
 
                 case '&':
-                    ret.append("&amp;");
+                    ret.append("&amp;"); //$NON-NLS-1$
                     break;
 
                 case '"':
-                    ret.append("&quot;");
+                    ret.append("&quot;"); //$NON-NLS-1$
                     break;
 
                 case '\n':
                     if (encodeNewline) {
-                        ret.append("<br />");
+                        ret.append("<br />"); //$NON-NLS-1$
                     }
                     ret.append('\n');
                     break;
@@ -912,9 +912,9 @@ public final class HtmlEncoder {
                     } else if ((c >= 128) && (c < 256)) {
                         ret.append(transform[c - 128]);
                     } else {
-                        ret.append("&#");
+                        ret.append("&#"); //$NON-NLS-1$
                         ret.append((int) c);
-                        ret.append(";");
+                        ret.append(";"); //$NON-NLS-1$
                     }
             }
         }
@@ -934,7 +934,7 @@ public final class HtmlEncoder {
 
         int l = str.length();
         if (l == 0) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
 
         StringBuffer ret = new StringBuffer(Math.round(l * 1.2f));
@@ -960,23 +960,23 @@ public final class HtmlEncoder {
 
             switch (c) {
                 case '<':
-                    ret.append("&lt;");
+                    ret.append("&lt;"); //$NON-NLS-1$
                     break;
 
                 case '>':
-                    ret.append("&gt;");
+                    ret.append("&gt;"); //$NON-NLS-1$
                     break;
 
                 case '&':
-                    ret.append("&amp;");
+                    ret.append("&amp;"); //$NON-NLS-1$
                     break;
 
                 case '"':
-                    ret.append("&quot;");
+                    ret.append("&quot;"); //$NON-NLS-1$
                     break;
 
                 case '\'':
-                    ret.append("&#39;");
+                    ret.append("&#39;"); //$NON-NLS-1$
                     break;
 
                 default:
@@ -1000,21 +1000,21 @@ public final class HtmlEncoder {
 
         for (int i = from; i < to; i++) {
             response.append(i);
-            response.append("      ");
+            response.append("      "); //$NON-NLS-1$
             response.append((char) i);
-            response.append("      ");
+            response.append("      "); //$NON-NLS-1$
 
             if (i < 128) {
                 response.append((char) i);
             } else if ((i >= 128) && (i < 256)) {
                 response.append(transform[i - 128]);
             } else {
-                response.append("&#");
+                response.append("&#"); //$NON-NLS-1$
                 response.append(i);
-                response.append(";");
+                response.append(";"); //$NON-NLS-1$
             }
 
-            response.append("\r\n");
+            response.append("\r\n"); //$NON-NLS-1$
         }
 
         return response.toString();

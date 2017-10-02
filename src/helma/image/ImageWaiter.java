@@ -33,8 +33,8 @@ public class ImageWaiter implements ImageObserver {
 
     private ImageWaiter(Image image) {
         this.image = image;
-        waiting = true;
-        firstFrameLoaded = false;
+        this.waiting = true;
+        this.firstFrameLoaded = false;
     }
         
     public static Image waitForImage(Image image) {
@@ -48,35 +48,35 @@ public class ImageWaiter implements ImageObserver {
     }
 
     private synchronized void waitForImage() {
-        width = image.getWidth(this);
-        height = image.getHeight(this);
+        this.width = this.image.getWidth(this);
+        this.height = this.image.getHeight(this);
 
-        if (width == -1 || height == -1) {
+        if (this.width == -1 || this.height == -1) {
             try {
                 wait(45000);
             } catch (InterruptedException x) {
-                waiting = false;
+                this.waiting = false;
                 return;
             } finally {
-                waiting = false;
+                this.waiting = false;
             }
         }
 
         // if width and height haven't been set, throw tantrum
-        if (width == -1 || height == -1) {
-            throw new RuntimeException("Error loading image");
+        if (this.width == -1 || this.height == -1) {
+            throw new RuntimeException(Messages.getString("ImageWaiter.0")); //$NON-NLS-1$
         }
     }
 
     private synchronized void done() {
-        waiting = false;
+        this.waiting = false;
         notifyAll();
     }
 
     public synchronized boolean imageUpdate(Image img, int infoflags, int x,
         int y, int w, int h) {
         // check if there was an error
-        if (!waiting || (infoflags & ERROR) > 0 || (infoflags & ABORT) > 0) {
+        if (!this.waiting || (infoflags & ERROR) > 0 || (infoflags & ABORT) > 0) {
             // we either timed out or there was an error.
             notifyAll();
 
@@ -85,14 +85,14 @@ public class ImageWaiter implements ImageObserver {
 
         if ((infoflags & WIDTH) > 0 || (infoflags & HEIGHT) > 0) {
             if ((infoflags & WIDTH) > 0) {
-                width = w;
+                this.width = w;
             }
 
             if ((infoflags & HEIGHT) > 0) {
-                height = h;
+                this.height = h;
             }
 
-            if (width > -1 && h > -1 && firstFrameLoaded) {
+            if (this.width > -1 && h > -1 && this.firstFrameLoaded) {
                 notifyAll();
 
                 return false;
@@ -100,7 +100,7 @@ public class ImageWaiter implements ImageObserver {
         }
 
         if ((infoflags & ALLBITS) > 0 || (infoflags & FRAMEBITS) > 0) {
-            firstFrameLoaded = true;
+            this.firstFrameLoaded = true;
             notifyAll();
 
             return false;

@@ -8,6 +8,10 @@
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
  *
+ * Contributions:
+ *   Daniel Ruthardt
+ *   Copyright 2010 dowee Limited. All rights reserved. 
+ *
  * $RCSfile$
  * $Author$
  * $Revision$
@@ -45,7 +49,7 @@ public final class RequestEvaluator implements Runnable {
 
     public final Application app;
 
-    protected ScriptingEngine scriptingEngine;
+    protected ScriptingEngineInterface scriptingEngine;
 
     // skin depth counter, used to avoid recursive skin rendering
     protected int skinDepth;
@@ -93,15 +97,15 @@ public final class RequestEvaluator implements Runnable {
     }
 
     protected synchronized void initScriptingEngine() {
-        if (scriptingEngine == null) {
-            String engineClassName = app.getProperty("scriptingEngine",
-                                                     "helma.scripting.rhino.RhinoEngine");
+        if (this.scriptingEngine == null) {
+            String engineClassName = this.app.getProperty("scriptingEngine", //$NON-NLS-1$
+                                                     "helma.scripting.rhino.RhinoEngine"); //$NON-NLS-1$
             try {
-                app.setCurrentRequestEvaluator(this);
-                Class clazz = app.getClassLoader().loadClass(engineClassName);
+                this.app.setCurrentRequestEvaluator(this);
+                Class clazz = this.app.getClassLoader().loadClass(engineClassName);
 
-                scriptingEngine = (ScriptingEngine) clazz.newInstance();
-                scriptingEngine.init(app, this);
+                this.scriptingEngine = (ScriptingEngineInterface) clazz.newInstance();
+                this.scriptingEngine.init(this.app, this);
             } catch (Exception x) {
                 Throwable t = x;
 
@@ -109,29 +113,28 @@ public final class RequestEvaluator implements Runnable {
                     t = ((InvocationTargetException) x).getTargetException();
                 }
 
-                app.logEvent("******************************************");
-                app.logEvent("*** Error creating scripting engine: ");
-                app.logEvent("*** " + t.toString());
-                app.logEvent("******************************************");
-                app.logError("Error creating scripting engine", t);
+                this.app.logEvent(Messages.getString("RequestEvaluator.0")); //$NON-NLS-1$
+                this.app.logEvent(Messages.getString("RequestEvaluator.1")); //$NON-NLS-1$
+                this.app.logEvent(Messages.getString("RequestEvaluator.2") + t.toString()); //$NON-NLS-1$
+                this.app.logEvent(Messages.getString("RequestEvaluator.3")); //$NON-NLS-1$
+                this.app.logError(Messages.getString("RequestEvaluator.4"), t); //$NON-NLS-1$
 
                 // null out invalid scriptingEngine
-                scriptingEngine = null;
+                this.scriptingEngine = null;
                 // rethrow exception
                 if (t instanceof RuntimeException) {
                     throw((RuntimeException) t);
-                } else {
-                    throw new RuntimeException(t.toString(), t);
                 }
+                throw new RuntimeException(t.toString(), t);
             } finally {
-                app.setCurrentRequestEvaluator(null);
+                this.app.setCurrentRequestEvaluator(null);
             }
         }
     }
 
     protected synchronized void shutdown() {
-        if (scriptingEngine != null) {
-            scriptingEngine.shutdown();
+        if (this.scriptingEngine != null) {
+            this.scriptingEngine.shutdown();
         }
     }
 
@@ -147,7 +150,7 @@ public final class RequestEvaluator implements Runnable {
         try {
 
             // while this thread is serving requests
-            while (localThread == thread) {
+            while (localThread == this.thread) {
 
                 // object reference to ressolve request path
                 Object currentElement;
@@ -158,67 +161,67 @@ public final class RequestEvaluator implements Runnable {
                 ResponseTrans res = getResponse();
 
                 // request path object
-                RequestPath requestPath = new RequestPath(app);
+                RequestPath requestPath = new RequestPath(this.app);
 
-                String txname = req.getMethod() + ":" + req.getPath();
-                Log eventLog = app.getEventLog();
+                String txname = req.getMethod() + ":" + req.getPath(); //$NON-NLS-1$
+                Log eventLog = this.app.getEventLog();
                 if (eventLog.isDebugEnabled()) {
-                    eventLog.debug(txname + " starting");
+                    eventLog.debug(txname + Messages.getString("RequestEvaluator.5")); //$NON-NLS-1$
                 }
 
                 int tries = 0;
                 boolean done = false;
                 Throwable error = null;
-                String functionName = function instanceof String ?
-                        (String) function : null;
+                String functionName = this.function instanceof String ?
+                        (String) this.function : null;
 
-                while (!done && localThread == thread) {
+                while (!done && localThread == this.thread) {
                     // catch errors in path resolution and script execution
                     try {
 
                         // initialize scripting engine
                         initScriptingEngine();
-                        app.setCurrentRequestEvaluator(this);
+                        this.app.setCurrentRequestEvaluator(this);
                         // update scripting prototypes
-                        scriptingEngine.enterContext();
+                        this.scriptingEngine.enterContext();
 
 
                         // avoid going into transaction if called function doesn't exist.
                         // this only works for the (common) case that method is a plain
                         // method name, not an obj.method path
-                        if (reqtype == INTERNAL) {
+                        if (this.reqtype == INTERNAL) {
                             // if object is an instance of NodeHandle, get the node object itself.
-                            if (thisObject instanceof NodeHandle) {
-                                thisObject = ((NodeHandle) thisObject).getNode(app.nmgr.safe);
+                            if (this.thisObject instanceof NodeHandle) {
+                                this.thisObject = ((NodeHandle) this.thisObject).getNode(this.app.nmgr.safe);
                                 // If no valid node object return immediately
-                                if (thisObject == null) {
+                                if (this.thisObject == null) {
                                     done = true;
-                                    reqtype = NONE;
+                                    this.reqtype = NONE;
                                     break;
                                 }
                             }
                             // If function doesn't exist, return immediately
-                            if (functionName != null && !scriptingEngine.hasFunction(thisObject, functionName, true)) {
-                                app.logEvent(missingFunctionMessage(thisObject, functionName));
+                            if (functionName != null && !this.scriptingEngine.hasFunction(this.thisObject, functionName, true)) {
+                                this.app.logEvent(missingFunctionMessage(this.thisObject, functionName));
                                 done = true;
-                                reqtype = NONE;
+                                this.reqtype = NONE;
                                 break;
                             }
-                        } else if (function != null && functionName == null) {
+                        } else if (this.function != null && functionName == null) {
                             // only internal requests may pass a function instead of a function name
-                            throw new IllegalStateException("No function name in non-internal request ");
+                            throw new IllegalStateException(Messages.getString("RequestEvaluator.6")); //$NON-NLS-1$
                         }
 
                         // Update transaction name in case we're processing an error
                         if (error != null) {
-                            txname = "error:" + txname;
+                            txname = "error:" + txname; //$NON-NLS-1$
                         }
 
                         // begin transaction
-                        transactor = Transactor.getInstance(app.nmgr);
-                        transactor.begin(txname);
+                        this.transactor = Transactor.getInstance(this.app.nmgr);
+                        this.transactor.begin(txname);
 
-                        Object root = app.getDataRoot(scriptingEngine);
+                        Object root = this.app.getDataRoot(this.scriptingEngine);
                         initGlobals(root, requestPath);
 
                         String action = null;
@@ -227,11 +230,11 @@ public final class RequestEvaluator implements Runnable {
                             res.setError(error);
                         }
 
-                        switch (reqtype) {
+                        switch (this.reqtype) {
                             case HTTP:
 
                                 // bring over the message from a redirect
-                                session.recoverResponseMessages(res);
+                                this.session.recoverResponseMessages(res);
 
                                 // catch redirect in path resolution or script execution
                                 try {
@@ -244,8 +247,8 @@ public final class RequestEvaluator implements Runnable {
 
                                             // do not reset the requestPath so error handler can use the original one
                                             // get error handler action
-                                            String errorAction = app.props.getProperty("error",
-                                                    "error");
+                                            String errorAction = this.app.props.getProperty("error", //$NON-NLS-1$
+                                                    "error"); //$NON-NLS-1$
 
                                             action = getAction(currentElement, errorAction, req);
 
@@ -253,24 +256,24 @@ public final class RequestEvaluator implements Runnable {
                                                 throw new RuntimeException(error);
                                             }
                                         } else if ((req.getPath() == null) ||
-                                                "".equals(req.getPath().trim())) {
+                                                "".equals(req.getPath().trim())) { //$NON-NLS-1$
                                             currentElement = root;
                                             requestPath.add(null, currentElement);
 
                                             action = getAction(currentElement, null, req);
 
                                             if (action == null) {
-                                                throw new NotFoundException("Action not found");
+                                                throw new NotFoundException(Messages.getString("RequestEvaluator.7")); //$NON-NLS-1$
                                             }
                                         } else {
                                             // march down request path...
                                             StringTokenizer st = new StringTokenizer(req.getPath(),
-                                                    "/");
+                                                    "/"); //$NON-NLS-1$
                                             int ntokens = st.countTokens();
 
                                             // limit path to < 50 tokens
                                             if (ntokens > 50) {
-                                                throw new RuntimeException("Path too long");
+                                                throw new RuntimeException(Messages.getString("RequestEvaluator.8")); //$NON-NLS-1$
                                             }
 
                                             String[] pathItems = new String[ntokens];
@@ -283,7 +286,7 @@ public final class RequestEvaluator implements Runnable {
 
                                             for (int i = 0; i < ntokens; i++) {
                                                 if (currentElement == null) {
-                                                    throw new NotFoundException("Object not found.");
+                                                    throw new NotFoundException(Messages.getString("RequestEvaluator.9")); //$NON-NLS-1$
                                                 }
 
                                                 if (pathItems[i].length() == 0) {
@@ -292,7 +295,7 @@ public final class RequestEvaluator implements Runnable {
 
                                                 // if we're at the last element of the path,
                                                 // try to interpret it as action name.
-                                                if (i == (ntokens - 1) && !req.getPath().endsWith("/")) {
+                                                if (i == (ntokens - 1) && !req.getPath().endsWith("/")) { //$NON-NLS-1$
                                                     action = getAction(currentElement, pathItems[i], req);
                                                 }
 
@@ -309,7 +312,7 @@ public final class RequestEvaluator implements Runnable {
                                             }
 
                                             if (currentElement == null) {
-                                                throw new NotFoundException("Object not found.");
+                                                throw new NotFoundException(Messages.getString("RequestEvaluator.10")); //$NON-NLS-1$
                                             }
 
                                             if (action == null) {
@@ -317,7 +320,7 @@ public final class RequestEvaluator implements Runnable {
                                             }
 
                                             if (action == null) {
-                                                throw new NotFoundException("Action not found");
+                                                throw new NotFoundException(Messages.getString("RequestEvaluator.11")); //$NON-NLS-1$
                                             }
                                         }
                                     } catch (NotFoundException notfound) {
@@ -332,8 +335,8 @@ public final class RequestEvaluator implements Runnable {
                                         // specified in the property file.
                                         res.setStatus(404);
 
-                                        String notFoundAction = app.props.getProperty("notfound",
-                                                "notfound");
+                                        String notFoundAction = this.app.props.getProperty("notfound", //$NON-NLS-1$
+                                                "notfound"); //$NON-NLS-1$
 
                                         currentElement = root;
                                         action = getAction(currentElement, notFoundAction, req);
@@ -353,7 +356,7 @@ public final class RequestEvaluator implements Runnable {
 
                                         Object obj = requestPath.get(i);
 
-                                        protos[i] = app.getPrototype(obj);
+                                        protos[i] = this.app.getPrototype(obj);
 
                                         // immediately register objects with their direct prototype name
                                         if (protos[i] != null) {
@@ -380,18 +383,18 @@ public final class RequestEvaluator implements Runnable {
                                     req.setAction(action);
 
                                     // reset skin recursion detection counter
-                                    skinDepth = 0;
+                                    this.skinDepth = 0;
 
                                     // try calling onRequest() function on object before
                                     // calling the actual action
-                                    scriptingEngine.invoke(currentElement,
-                                            "onRequest",
+                                    this.scriptingEngine.invoke(currentElement,
+                                            "onRequest", //$NON-NLS-1$
                                             EMPTY_ARGS,
-                                            ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                             false);
 
                                     // reset skin recursion detection counter
-                                    skinDepth = 0;
+                                    this.skinDepth = 0;
 
                                     Object actionProcessor = req.getActionHandler() != null ?
                                         req.getActionHandler() : action;
@@ -403,37 +406,37 @@ public final class RequestEvaluator implements Runnable {
                                                 .getInputStream());
                                         Vector args = xreq.getParameters();
                                         args.add(0, xreq.getMethodName());
-                                        result = scriptingEngine.invoke(currentElement,
+                                        this.result = this.scriptingEngine.invoke(currentElement,
                                                 actionProcessor,
                                                 args.toArray(),
-                                                ScriptingEngine.ARGS_WRAP_XMLRPC,
+                                                ScriptingEngineInterface.ARGS_WRAP_XMLRPC,
                                                 false);
-                                        res.writeXmlRpcResponse(result);
-                                        app.xmlrpcCount += 1;
+                                        res.writeXmlRpcResponse(this.result);
+                                        this.app.xmlrpcCount += 1;
                                     } else {
-                                        scriptingEngine.invoke(currentElement,
+                                        this.scriptingEngine.invoke(currentElement,
                                                 actionProcessor,
                                                 EMPTY_ARGS,
-                                                ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                                ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                                 false);
                                     }
 
                                     // try calling onResponse() function on object before
                                     // calling the actual action
-                                    scriptingEngine.invoke(currentElement,
-                                            "onResponse",
+                                    this.scriptingEngine.invoke(currentElement,
+                                            "onResponse", //$NON-NLS-1$
                                             EMPTY_ARGS,
-                                            ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                             false);
 
                                 } catch (RedirectException redirect) {
                                     // if there is a message set, save it on the user object for the next request
                                     if (res.getRedirect() != null)
-                                        session.storeResponseMessages(res);
+                                        this.session.storeResponseMessages(res);
                                 }
 
                                 // check if request is still valid, or if the requesting thread has stopped waiting already
-                                if (localThread != thread) {
+                                if (localThread != this.thread) {
                                     return;
                                 }
                                 commitTransaction();
@@ -448,7 +451,7 @@ public final class RequestEvaluator implements Runnable {
                                     currentElement = root;
 
                                     if (functionName.indexOf('.') > -1) {
-                                        StringTokenizer st = new StringTokenizer(functionName, ".");
+                                        StringTokenizer st = new StringTokenizer(functionName, "."); //$NON-NLS-1$
                                         int cnt = st.countTokens();
 
                                         for (int i = 1; i < cnt; i++) {
@@ -457,44 +460,44 @@ public final class RequestEvaluator implements Runnable {
                                         }
 
                                         if (currentElement == null) {
-                                            throw new NotFoundException("Method name \"" +
-                                                    function + "\" could not be resolved.");
+                                            throw new NotFoundException(Messages.getString("RequestEvaluator.12") + //$NON-NLS-1$
+                                                    this.function + Messages.getString("RequestEvaluator.13")); //$NON-NLS-1$
                                         }
 
                                         functionName = st.nextToken();
                                     }
 
-                                    if (reqtype == XMLRPC) {
+                                    if (this.reqtype == XMLRPC) {
                                         // check XML-RPC access permissions
-                                        String proto = app.getPrototypeName(currentElement);
-                                        app.checkXmlRpcAccess(proto, functionName);
+                                        String proto = this.app.getPrototypeName(currentElement);
+                                        this.app.checkXmlRpcAccess(proto, functionName);
                                     }
 
                                     // reset skin recursion detection counter
-                                    skinDepth = 0;
-                                    if (!scriptingEngine.hasFunction(currentElement, functionName, false)) {
+                                    this.skinDepth = 0;
+                                    if (!this.scriptingEngine.hasFunction(currentElement, functionName, false)) {
                                         throw new NotFoundException(missingFunctionMessage(currentElement, functionName));
                                     }
-                                    result = scriptingEngine.invoke(currentElement,
-                                            functionName, args,
-                                            ScriptingEngine.ARGS_WRAP_XMLRPC,
+                                    this.result = this.scriptingEngine.invoke(currentElement,
+                                            functionName, this.args,
+                                            ScriptingEngineInterface.ARGS_WRAP_XMLRPC,
                                             false);
                                     // check if request is still valid, or if the requesting thread has stopped waiting already
-                                    if (localThread != thread) {
+                                    if (localThread != this.thread) {
                                         return;
                                     }
                                     commitTransaction();
                                 } catch (Exception x) {
                                     // check if request is still valid, or if the requesting thread has stopped waiting already
-                                    if (localThread != thread) {
+                                    if (localThread != this.thread) {
                                         return;
                                     }
                                     abortTransaction();
-                                    app.logError(txname + " " + error, x);
+                                    this.app.logError(txname + " " + error, x); //$NON-NLS-1$
 
                                     // If the transactor thread has been killed by the invoker thread we don't have to
                                     // bother for the error message, just quit.
-                                    if (localThread != thread) {
+                                    if (localThread != this.thread) {
                                         return;
                                     }
 
@@ -508,29 +511,29 @@ public final class RequestEvaluator implements Runnable {
 
                                 try {
                                     // reset skin recursion detection counter
-                                    skinDepth = 0;
+                                    this.skinDepth = 0;
 
-                                    result = scriptingEngine.invoke(thisObject,
-                                            function,
-                                            args,
-                                            ScriptingEngine.ARGS_WRAP_DEFAULT,
+                                    this.result = this.scriptingEngine.invoke(this.thisObject,
+                                            this.function,
+                                            this.args,
+                                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT,
                                             true);
                                     // check if request is still valid, or if the requesting thread has stopped waiting already
-                                    if (localThread != thread) {
+                                    if (localThread != this.thread) {
                                         return;
                                     }
                                     commitTransaction();
                                 } catch (Exception x) {
                                     // check if request is still valid, or if the requesting thread has stopped waiting already
-                                    if (localThread != thread) {
+                                    if (localThread != this.thread) {
                                         return;
                                     }
                                     abortTransaction();
-                                    app.logError(txname + " " + error, x);
+                                    this.app.logError(txname + " " + error, x); //$NON-NLS-1$
 
                                     // If the transactor thread has been killed by the invoker thread we don't have to
                                     // bother for the error message, just quit.
-                                    if (localThread != thread) {
+                                    if (localThread != this.thread) {
                                         return;
                                     }
 
@@ -545,7 +548,7 @@ public final class RequestEvaluator implements Runnable {
                         // res.abort() just aborts the transaction and
                         // leaves the response untouched
                         // check if request is still valid, or if the requesting thread has stopped waiting already
-                        if (localThread != thread) {
+                        if (localThread != this.thread) {
                             return;
                         }
                         abortTransaction();
@@ -556,7 +559,7 @@ public final class RequestEvaluator implements Runnable {
                         if (++tries < 8) {
                             // try again after waiting some period
                             // check if request is still valid, or if the requesting thread has stopped waiting already
-                            if (localThread != thread) {
+                            if (localThread != this.thread) {
                                 return;
                             }
                             abortTransaction();
@@ -570,30 +573,30 @@ public final class RequestEvaluator implements Runnable {
                                 res.reportError(interrupt);
                                 done = true;
                                 // and release resources and thread
-                                thread = null;
-                                transactor = null;
+                                this.thread = null;
+                                this.transactor = null;
                             }
                         } else {
                             // check if request is still valid, or if the requesting thread has stopped waiting already
-                            if (localThread != thread) {
+                            if (localThread != this.thread) {
                                 return;
                             }
                             abortTransaction();
 
                             // error in error action. use traditional minimal error message
-                            res.reportError("Application too busy, please try again later");
+                            res.reportError(Messages.getString("RequestEvaluator.14")); //$NON-NLS-1$
                             done = true;
                         }
                     } catch (Throwable x) {
                         // check if request is still valid, or if the requesting thread has stopped waiting already
-                        if (localThread != thread) {
+                        if (localThread != this.thread) {
                             return;
                         }
                         abortTransaction();
 
                         // If the transactor thread has been killed by the invoker thread we don't have to
                         // bother for the error message, just quit.
-                        if (localThread != thread) {
+                        if (localThread != this.thread) {
                             return;
                         }
 
@@ -603,14 +606,14 @@ public final class RequestEvaluator implements Runnable {
                         // or if this is an XML-RPC request
                         if (error == null) {
                             if (!(x instanceof NotFoundException)) {
-                                app.errorCount += 1;
+                                this.app.errorCount += 1;
                             }
 
                             // set done to false so that the error will be processed
                             done = false;
                             error = x;
 
-                            app.logError(txname + " " + error, x);
+                            this.app.logError(txname + " " + error, x); //$NON-NLS-1$
 
                             if (req.isXmlRpc()) {
                                 // if it's an XML-RPC exception immediately generate error response
@@ -627,11 +630,11 @@ public final class RequestEvaluator implements Runnable {
                             done = true;
                         }
                     } finally {
-                        app.setCurrentRequestEvaluator(null);
+                        this.app.setCurrentRequestEvaluator(null);
                         // exit execution context
-                        if (scriptingEngine != null) {
+                        if (this.scriptingEngine != null) {
                             try {
-                                scriptingEngine.exitContext();
+                                this.scriptingEngine.exitContext();
                             } catch (Throwable t) {
                                 // broken rhino, just get out of here
                             }
@@ -655,7 +658,7 @@ public final class RequestEvaluator implements Runnable {
     synchronized void commitTransaction() throws Exception {
         Thread localThread = Thread.currentThread();
 
-        if (localThread == thread) {
+        if (localThread == this.thread) {
             Transactor tx = Transactor.getInstance();
             if (tx != null)
                 tx.commit();
@@ -676,15 +679,15 @@ public final class RequestEvaluator implements Runnable {
      * Initialize and start the transactor thread.
      */
     private synchronized void startTransactor() {
-        if (!app.isRunning()) {
+        if (!this.app.isRunning()) {
             throw new ApplicationStoppedException();
         }
 
-        if ((thread == null) || !thread.isAlive()) {
+        if ((this.thread == null) || !this.thread.isAlive()) {
             // app.logEvent ("Starting Thread");
-            thread = new Thread(app.threadgroup, this, app.getName() + "-" + (++threadId));
-            thread.setContextClassLoader(app.getClassLoader());
-            thread.start();
+            this.thread = new Thread(this.app.threadgroup, this, this.app.getName() + "-" + (++this.threadId)); //$NON-NLS-1$
+            this.thread.setContextClassLoader(this.app.getClassLoader());
+            this.thread.start();
         } else {
             notifyAll();
         }
@@ -698,7 +701,7 @@ public final class RequestEvaluator implements Runnable {
 
         // make sure there is only one thread running per instance of this class
         // if localrtx != rtx, the current thread has been aborted and there's no need to notify
-        if (localThread != thread) {
+        if (localThread != this.thread) {
             // A new request came in while we were finishing the last one.
             // Return to run() to get the work done.
             Transactor tx = Transactor.getInstance();
@@ -708,7 +711,7 @@ public final class RequestEvaluator implements Runnable {
             return;
         }
 
-        reqtype = NONE;
+        this.reqtype = NONE;
         notifyAll();
 
         try {
@@ -716,18 +719,18 @@ public final class RequestEvaluator implements Runnable {
             wait(1000 * 60 * 10);
         } catch (InterruptedException ix) {
             // we got interrrupted, releases resources and thread
-            thread = null;
-            transactor = null;
+            this.thread = null;
+            this.transactor = null;
         }
 
         //  if no request arrived, release ressources and thread
-        if ((reqtype == NONE) && (thread == localThread)) {
+        if ((this.reqtype == NONE) && (this.thread == localThread)) {
             // comment this in to release not just the thread, but also the scripting engine.
             // currently we don't do this because of the risk of memory leaks (objects from
             // framework referencing into the scripting engine)
             // scriptingEngine = null;
-            thread = null;
-            transactor = null;
+            this.thread = null;
+            this.transactor = null;
         }
     }
 
@@ -737,20 +740,20 @@ public final class RequestEvaluator implements Runnable {
      * thread. If currently active kill the request, otherwise just notify.
      */
     synchronized boolean stopTransactor() {
-        Transactor t = transactor;
-        thread = null;
-        transactor = null;
+        Transactor t = this.transactor;
+        this.thread = null;
+        this.transactor = null;
         boolean stopped = false;
         if (t != null && t.isActive()) {
             // let the scripting engine know that the
             // current transaction is being aborted.
-            if (scriptingEngine != null) {
-                scriptingEngine.abort();
+            if (this.scriptingEngine != null) {
+                this.scriptingEngine.abort();
             }
 
-            app.logEvent("Request timeout for thread " + t);
+            this.app.logEvent(Messages.getString("RequestEvaluator.15") + t); //$NON-NLS-1$
 
-            reqtype = NONE;
+            this.reqtype = NONE;
 
             t.kill();
             t.abort();
@@ -774,18 +777,18 @@ public final class RequestEvaluator implements Runnable {
                                       throws Exception {
         initObjects(req, session);
 
-        app.activeRequests.put(req, this);
+        this.app.activeRequests.put(req, this);
 
         startTransactor();
-        wait(app.requestTimeout);
+        wait(this.app.requestTimeout);
 
-        if (reqtype != NONE && stopTransactor()) {
-            res.reset();
-            res.reportError("Request timed out");
+        if (this.reqtype != NONE && stopTransactor()) {
+            this.res.reset();
+            this.res.reportError(Messages.getString("RequestEvaluator.16")); //$NON-NLS-1$
         }
 
-        session.commit(this, app.sessionMgr);
-        return res;
+        session.commit(this.app.sessionMgr);
+        return this.res;
     }
 
     /**
@@ -796,14 +799,14 @@ public final class RequestEvaluator implements Runnable {
     public synchronized ResponseTrans attachHttpRequest(RequestTrans req)
                                              throws Exception {
         // Get a reference to the res object at the time we enter
-        ResponseTrans localRes = res;
+        ResponseTrans localRes = this.res;
 
         if (localRes == null || !req.equals(this.req)) {
             return null;
         }
 
-        if (reqtype != NONE) {
-            wait(app.requestTimeout);
+        if (this.reqtype != NONE) {
+            wait(this.app.requestTimeout);
         }
 
         return localRes;
@@ -830,20 +833,20 @@ public final class RequestEvaluator implements Runnable {
         this.args = args;
 
         startTransactor();
-        wait(app.requestTimeout);
+        wait(this.app.requestTimeout);
 
-        if (reqtype != NONE && stopTransactor()) {
-            exception = new RuntimeException("Request timed out");
+        if (this.reqtype != NONE && stopTransactor()) {
+            this.exception = new RuntimeException(Messages.getString("RequestEvaluator.17")); //$NON-NLS-1$
         }
 
         // reset res for garbage collection (res.data may hold reference to evaluator)
-        res = null;
+        this.res = null;
 
-        if (exception != null) {
-            throw (exception);
+        if (this.exception != null) {
+            throw (this.exception);
         }
 
-        return result;
+        return this.result;
     }
 
 
@@ -866,18 +869,18 @@ public final class RequestEvaluator implements Runnable {
         startTransactor();
         wait();
 
-        if (reqtype != NONE && stopTransactor()) {
-            exception = new RuntimeException("Request timed out");
+        if (this.reqtype != NONE && stopTransactor()) {
+            this.exception = new RuntimeException(Messages.getString("RequestEvaluator.18")); //$NON-NLS-1$
         }
 
         // reset res for garbage collection (res.data may hold reference to evaluator)
-        res = null;
+        this.res = null;
 
-        if (exception != null) {
-            throw (exception);
+        if (this.exception != null) {
+            throw (this.exception);
         }
 
-        return result;
+        return this.result;
     }
 
     /**
@@ -891,8 +894,8 @@ public final class RequestEvaluator implements Runnable {
      */
     public Object invokeDirectFunction(Object obj, Object function, Object[] args)
                                 throws Exception {
-        return scriptingEngine.invoke(obj, function, args,
-                ScriptingEngine.ARGS_WRAP_DEFAULT, true);
+        return this.scriptingEngine.invoke(obj, function, args,
+                ScriptingEngineInterface.ARGS_WRAP_DEFAULT, true);
     }
 
     /**
@@ -928,7 +931,7 @@ public final class RequestEvaluator implements Runnable {
                                               Object[] args, long timeout)
                                        throws Exception {
         initObjects(function, INTERNAL, RequestTrans.INTERNAL);
-        thisObject = object;
+        this.thisObject = object;
         this.function = function;
         this.args = args;
 
@@ -938,18 +941,18 @@ public final class RequestEvaluator implements Runnable {
         else
             wait(timeout);
 
-        if (reqtype != NONE && stopTransactor()) {
-            exception = new RuntimeException("Request timed out");
+        if (this.reqtype != NONE && stopTransactor()) {
+            this.exception = new RuntimeException(Messages.getString("RequestEvaluator.19")); //$NON-NLS-1$
         }
 
         // reset res for garbage collection (res.data may hold reference to evaluator)
-        res = null;
+        this.res = null;
 
-        if (exception != null) {
-            throw (exception);
+        if (this.exception != null) {
+            throw (this.exception);
         }
 
-        return result;
+        return this.result;
     }
 
 
@@ -963,9 +966,9 @@ public final class RequestEvaluator implements Runnable {
         this.req = req;
         this.reqtype = HTTP;
         this.session = session;
-        res = new ResponseTrans(app, req);
-        result = null;
-        exception = null;
+        this.res = new ResponseTrans(this.app, req);
+        this.result = null;
+        this.exception = null;
     }
 
     /**
@@ -979,12 +982,12 @@ public final class RequestEvaluator implements Runnable {
     private synchronized void initObjects(Object function, int reqtype, String reqtypeName) {
         this.reqtype = reqtype;
         String functionName = function instanceof String ?
-                (String) function : "<function>";
-        req = new RequestTrans(reqtypeName, functionName);
-        session = new Session(functionName, app);
-        res = new ResponseTrans(app, req);
-        result = null;
-        exception = null;
+                (String) function : "<function>"; //$NON-NLS-1$
+        this.req = new RequestTrans(reqtypeName, functionName);
+        this.session = new Session(functionName, this.app);
+        this.res = new ResponseTrans(this.app, this.req);
+        this.result = null;
+        this.exception = null;
     }
 
     /**
@@ -997,15 +1000,15 @@ public final class RequestEvaluator implements Runnable {
                 throws ScriptingException {
         HashMap globals = new HashMap();
 
-        globals.put("root", root);
-        globals.put("session", new SessionBean(session));
-        globals.put("req", new RequestBean(req));
-        globals.put("res", new ResponseBean(res));
-        globals.put("app", new ApplicationBean(app));
-        globals.put("path", requestPath);
+        globals.put("root", root); //$NON-NLS-1$
+        globals.put("session", new SessionBean(this.session)); //$NON-NLS-1$
+        globals.put("req", new RequestBean(this.req)); //$NON-NLS-1$
+        globals.put("res", new ResponseBean(this.res)); //$NON-NLS-1$
+        globals.put("app", new ApplicationBean(this.app)); //$NON-NLS-1$
+        globals.put("path", requestPath); //$NON-NLS-1$
 
         // enter execution context
-        scriptingEngine.setGlobals(globals);
+        this.scriptingEngine.setGlobals(globals);
     }
 
     /**
@@ -1017,13 +1020,13 @@ public final class RequestEvaluator implements Runnable {
      * @throws ScriptingException
      */
     private Object getChildElement(Object obj, String name) throws ScriptingException {
-        if (scriptingEngine.hasFunction(obj, "getChildElement", false)) {
-            return scriptingEngine.invoke(obj, "getChildElement", new Object[] {name},
-                                          ScriptingEngine.ARGS_WRAP_DEFAULT, false);
+        if (this.scriptingEngine.hasFunction(obj, "getChildElement", false)) { //$NON-NLS-1$
+            return this.scriptingEngine.invoke(obj, "getChildElement", new Object[] {name}, //$NON-NLS-1$
+                                          ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
         }
 
-        if (obj instanceof IPathElement) {
-            return ((IPathElement) obj).getChildElement(name);
+        if (obj instanceof PathElementInterface) {
+            return ((PathElementInterface) obj).getChildElement(name);
         }
 
         return null;
@@ -1033,13 +1036,13 @@ public final class RequestEvaluator implements Runnable {
      *  Null out some fields, mostly for the sake of garbage collection.
      */
     synchronized void recycle() {
-        res = null;
-        req = null;
-        session = null;
-        function = null;
-        args = null;
-        result = null;
-        exception = null;
+        this.res = null;
+        this.req = null;
+        this.session = null;
+        this.function = null;
+        this.args = null;
+        this.result = null;
+        this.exception = null;
     }
 
     /**
@@ -1051,17 +1054,17 @@ public final class RequestEvaluator implements Runnable {
             return null;
 
         if (action == null)
-            action = "main";
+            action = "main"; //$NON-NLS-1$
 
-        StringBuffer buffer = new StringBuffer(action).append("_action");
+        StringBuffer buffer = new StringBuffer(action).append("_action"); //$NON-NLS-1$
         // record length so we can check without method
         // afterwards for GET, POST, HEAD requests
         int length = buffer.length();
 
         if (req.checkXmlRpc()) {
             // append _methodname
-            buffer.append("_xmlrpc");
-            if (scriptingEngine.hasFunction(obj, buffer.toString(), false)) {
+            buffer.append("_xmlrpc"); //$NON-NLS-1$
+            if (this.scriptingEngine.hasFunction(obj, buffer.toString(), false)) {
                 // handle as XML-RPC request
                 req.setMethod(RequestTrans.XMLRPC);
                 return buffer.toString();
@@ -1075,7 +1078,7 @@ public final class RequestEvaluator implements Runnable {
         if (method != null) {
             // append _methodname
             buffer.append('_').append(method.toLowerCase());
-            if (scriptingEngine.hasFunction(obj, buffer.toString(), false))
+            if (this.scriptingEngine.hasFunction(obj, buffer.toString(), false))
                 return buffer.toString();
 
             // cut off method in case it has been appended
@@ -1083,10 +1086,10 @@ public final class RequestEvaluator implements Runnable {
         }
 
         // if no method specified or "ordinary" request try action without method
-        if (method == null || "GET".equalsIgnoreCase(method) ||
-                              "POST".equalsIgnoreCase(method) ||
-                              "HEAD".equalsIgnoreCase(method)) {
-            if (scriptingEngine.hasFunction(obj, buffer.toString(), false))
+        if (method == null || "GET".equalsIgnoreCase(method) || //$NON-NLS-1$
+                              "POST".equalsIgnoreCase(method) || //$NON-NLS-1$
+                              "HEAD".equalsIgnoreCase(method)) { //$NON-NLS-1$
+            if (this.scriptingEngine.hasFunction(obj, buffer.toString(), false))
                 return buffer.toString();
         }
 
@@ -1096,11 +1099,11 @@ public final class RequestEvaluator implements Runnable {
     /**
      * Returns this evaluator's scripting engine
      */
-    public ScriptingEngine getScriptingEngine() {
-        if (scriptingEngine == null) {
+    public ScriptingEngineInterface getScriptingEngine() {
+        if (this.scriptingEngine == null) {
             initScriptingEngine();
         }
-        return scriptingEngine;
+        return this.scriptingEngine;
     }
 
     /**
@@ -1109,7 +1112,7 @@ public final class RequestEvaluator implements Runnable {
      * @return the request object
      */
     public synchronized RequestTrans getRequest() {
-        return req;
+        return this.req;
     }
 
     /**
@@ -1118,7 +1121,7 @@ public final class RequestEvaluator implements Runnable {
      * @return the response object
      */
     public synchronized ResponseTrans getResponse() {
-        return res;
+        return this.res;
     }
 
     /**
@@ -1127,7 +1130,7 @@ public final class RequestEvaluator implements Runnable {
      * @return the current transactor thread
      */
     public synchronized Thread getThread() {
-        return thread;
+        return this.thread;
     }
 
     /**
@@ -1136,13 +1139,12 @@ public final class RequestEvaluator implements Runnable {
      * @return the session for the current request
      */
     public synchronized Session getSession() {
-        return session;
+        return this.session;
     }
 
     private String missingFunctionMessage(Object obj, String funcName) {
         if (obj == null)
-            return "Function " + funcName + " not defined in global scope";
-        else
-            return "Function " + funcName + " not defined for " + obj;
+            return Messages.getString("RequestEvaluator.20") + funcName + Messages.getString("RequestEvaluator.21"); //$NON-NLS-1$ //$NON-NLS-2$
+        return Messages.getString("RequestEvaluator.22") + funcName + Messages.getString("RequestEvaluator.23") + obj; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

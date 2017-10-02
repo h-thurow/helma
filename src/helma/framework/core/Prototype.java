@@ -19,11 +19,11 @@ package helma.framework.core;
 import helma.objectmodel.db.DbMapping;
 import helma.util.ResourceProperties;
 import helma.util.WrappedMap;
-import helma.framework.repository.Resource;
-import helma.framework.repository.Repository;
+import helma.framework.repository.ResourceInterface;
+import helma.framework.repository.RepositoryInterface;
 import helma.framework.repository.ResourceTracker;
 import helma.framework.repository.FileResource;
-import helma.scripting.ScriptingEngine;
+import helma.scripting.ScriptingEngineInterface;
 
 import java.io.*;
 import java.util.*;
@@ -43,7 +43,7 @@ public final class Prototype {
     String lowerCaseName;
 
     // this prototype's resources
-    Resource[] resources;
+    ResourceInterface[] resources;
 
     // tells us the checksum of the repositories at the time we last updated them
     long lastChecksum = -1;
@@ -76,43 +76,43 @@ public final class Prototype {
      * @param app the application this prototype is a part of
      * @param typeProps custom type mapping properties
      */
-    public Prototype(String name, Repository repository, Application app, Map typeProps) {
+    public Prototype(String name, RepositoryInterface repository, Application app, Map typeProps) {
         // app.logEvent ("Constructing Prototype "+app.getName()+"/"+name);
         this.app = app;
         this.name = name;
-        repositories = new TreeSet(app.getResourceComparator());
+        this.repositories = new TreeSet(app.getResourceComparator());
         if (repository != null) {
-            repositories.add(repository);
+            this.repositories.add(repository);
         }
-        lowerCaseName = name.toLowerCase();
+        this.lowerCaseName = name.toLowerCase();
 
         // Create and register type properties file
-        props = new ResourceProperties(app);
+        this.props = new ResourceProperties(app);
         if (typeProps != null) {
-            props.putAll(typeProps);
+            this.props.putAll(typeProps);
         } else if (repository != null) {
-            props.addResource(repository.getResource("type.properties"));
-            props.addResource(repository.getResource(name + ".properties"));
+            this.props.addResource(repository.getResource("type.properties")); //$NON-NLS-1$
+            this.props.addResource(repository.getResource(name + ".properties")); //$NON-NLS-1$
         }
 
-        dbmap = new DbMapping(app, name, props);
+        this.dbmap = new DbMapping(app, name, this.props);
         // we don't need to put the DbMapping into proto.updatables, because
         // dbmappings are checked separately in TypeManager.checkFiles() for
         // each request
 
-        code = new TreeSet(app.getResourceComparator());
-        skins = new TreeSet(app.getResourceComparator());
+        this.code = new TreeSet(app.getResourceComparator());
+        this.skins = new TreeSet(app.getResourceComparator());
 
-        trackers = new HashMap();
+        this.trackers = new HashMap();
 
-        skinMap = new SkinMap();
+        this.skinMap = new SkinMap();
     }
 
     /**
      *  Return the application this prototype is a part of
      */
     public Application getApplication() {
-        return app;
+        return this.app;
     }
 
     /**
@@ -121,17 +121,17 @@ public final class Prototype {
      * @param update indicates whether to immediately update the prototype with the new code
      * @throws IOException if reading/updating from the repository fails
      */
-    public void addRepository(Repository repository, boolean update) throws IOException {
-        if (!repositories.contains(repository)) {
-            repositories.add(repository);
-            props.addResource(repository.getResource("type.properties"));
-            props.addResource(repository.getResource(name + ".properties"));
+    public void addRepository(RepositoryInterface repository, boolean update) throws IOException {
+        if (!this.repositories.contains(repository)) {
+            this.repositories.add(repository);
+            this.props.addResource(repository.getResource("type.properties")); //$NON-NLS-1$
+            this.props.addResource(repository.getResource(this.name + ".properties")); //$NON-NLS-1$
             if (update) {
-                RequestEvaluator eval = app.getCurrentRequestEvaluator();
-                ScriptingEngine engine = eval == null ? null : eval.scriptingEngine;
+                RequestEvaluator eval = this.app.getCurrentRequestEvaluator();
+                ScriptingEngineInterface engine = eval == null ? null : eval.scriptingEngine;
                 Iterator it = repository.getAllResources().iterator();
                 while (it.hasNext()) {
-                    checkResource((Resource) it.next(), engine);
+                    checkResource((ResourceInterface) it.next(), engine);
                 }
             }
         }
@@ -146,32 +146,28 @@ public final class Prototype {
         boolean updatedResources = false;
 
         // check if any resource the prototype knows about has changed or gone
-        for (Iterator i = trackers.values().iterator(); i.hasNext();) {
+        for (Iterator i = this.trackers.values().iterator(); i.hasNext();) {
             ResourceTracker tracker = (ResourceTracker) i.next();
 
-            try {
-                if (tracker.hasChanged()) {
-                    updatedResources = true;
-                    // let tracker know we've seen the update
-                    tracker.markClean();
-                    // if resource has gone remove it
-                    if (!tracker.getResource().exists()) {
-                        i.remove();
-                        String name = tracker.getResource().getName();
-                        if (name.endsWith(TypeManager.skinExtension)) {
-                            skins.remove(tracker.getResource());
-                        } else {
-                            code.remove(tracker.getResource());
-                        }
+            if (tracker.hasChanged()) {
+                updatedResources = true;
+                // let tracker know we've seen the update
+                tracker.markClean();
+                // if resource has gone remove it
+                if (!tracker.getResource().exists()) {
+                    i.remove();
+                    String name = tracker.getResource().getName();
+                    if (name.endsWith(TypeManager.skinExtension)) {
+                        this.skins.remove(tracker.getResource());
+                    } else {
+                        this.code.remove(tracker.getResource());
                     }
                 }
-            } catch (IOException iox) {
-                iox.printStackTrace();
             }
         }
 
         // next we check if resources have been created or removed
-        Resource[] resources = getResources();
+        ResourceInterface[] resources = getResources();
 
         for (int i = 0; i < resources.length; i++) {
             updatedResources |= checkResource(resources[i], null);
@@ -179,29 +175,29 @@ public final class Prototype {
 
         if (updatedResources) {
             // mark prototype as dirty and the code as updated
-            lastCodeUpdate = System.currentTimeMillis();
-            app.typemgr.setLastCodeUpdate(lastCodeUpdate);
+            this.lastCodeUpdate = System.currentTimeMillis();
+            this.app.typemgr.setLastCodeUpdate(this.lastCodeUpdate);
         }
     }
 
-    private boolean checkResource(Resource res, ScriptingEngine engine) {
+    private boolean checkResource(ResourceInterface res, ScriptingEngineInterface engine) {
         String name = res.getName();
         boolean updated = false;
-        if (!trackers.containsKey(name)) {
+        if (!this.trackers.containsKey(name)) {
             if (name.endsWith(TypeManager.templateExtension) ||
                     name.endsWith(TypeManager.scriptExtension) ||
                     name.endsWith(TypeManager.actionExtension) ||
                     name.endsWith(TypeManager.skinExtension)) {
                 updated = true;
                 if (name.endsWith(TypeManager.skinExtension)) {
-                    skins.add(res);
+                    this.skins.add(res);
                 } else {
                     if (engine != null) {
-                        engine.injectCodeResource(lowerCaseName, res);
+                        engine.injectCodeResource(this.lowerCaseName, res);
                     }
-                    code.add(res);
+                    this.code.add(res);
                 }
-                trackers.put(res.getName(), new ResourceTracker(res));
+                this.trackers.put(res.getName(), new ResourceTracker(res));
             }
         }
         return updated;
@@ -211,32 +207,32 @@ public final class Prototype {
      *  Returns the list of resources in this prototype's repositories. Used
      *  by checkForUpdates() to see whether there is anything new.
      */
-    public Resource[] getResources() {
+    public ResourceInterface[] getResources() {
         long checksum = getRepositoryChecksum();
         // reload resources if the repositories checksum has changed
-        if (checksum != lastChecksum) {
+        if (checksum != this.lastChecksum) {
             ArrayList list = new ArrayList();
-            Iterator iterator = repositories.iterator();
+            Iterator iterator = this.repositories.iterator();
 
             while (iterator.hasNext()) {
                 try {
-                    list.addAll(((Repository) iterator.next()).getAllResources());
+                    list.addAll(((RepositoryInterface) iterator.next()).getAllResources());
                 } catch (IOException iox) {
                     iox.printStackTrace();
                 }
             }
 
-            resources = (Resource[]) list.toArray(new Resource[list.size()]);
-            lastChecksum = checksum;
+            this.resources = (ResourceInterface[]) list.toArray(new ResourceInterface[list.size()]);
+            this.lastChecksum = checksum;
         }
-        return resources;
+        return this.resources;
     }
 
     /**
      * Returns an array of repositories containing code for this prototype.
      */
-    public Repository[] getRepositories() {
-        return (Repository[]) repositories.toArray(new Repository[repositories.size()]);
+    public RepositoryInterface[] getRepositories() {
+        return (RepositoryInterface[]) this.repositories.toArray(new RepositoryInterface[this.repositories.size()]);
     }
 
     /**
@@ -245,11 +241,11 @@ public final class Prototype {
      */
     long getRepositoryChecksum() {
         long checksum = 0;
-        Iterator iterator = repositories.iterator();
+        Iterator iterator = this.repositories.iterator();
 
         while (iterator.hasNext()) {
             try {
-                checksum += ((Repository) iterator.next()).getChecksum();
+                checksum += ((RepositoryInterface) iterator.next()).getChecksum();
             } catch (IOException iox) {
                 iox.printStackTrace();
             }
@@ -264,7 +260,7 @@ public final class Prototype {
      */
     public void setParentPrototype(Prototype parent) {
         // this is not allowed for the hopobject and global prototypes
-        if ("hopobject".equals(lowerCaseName) || "global".equals(lowerCaseName)) {
+        if ("hopobject".equals(this.lowerCaseName) || "global".equals(this.lowerCaseName)) { //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
 
@@ -276,19 +272,19 @@ public final class Prototype {
      *  if we are top of the line.
      */
     public Prototype getParentPrototype() {
-        return parent;
+        return this.parent;
     }
 
     /**
      * Check if the given prototype is within this prototype's parent chain.
      */
     public final boolean isInstanceOf(String pname) {
-        if (name.equalsIgnoreCase(pname)) {
+        if (this.name.equalsIgnoreCase(pname)) {
             return true;
         }
 
-        if (parent != null) {
-            return parent.isInstanceOf(pname);
+        if (this.parent != null) {
+            return this.parent.isInstanceOf(pname);
         }
 
         return false;
@@ -302,9 +298,9 @@ public final class Prototype {
      */
     public final void registerParents(Map handlers, Object obj) {
 
-        Prototype p = parent;
+        Prototype p = this.parent;
 
-        while ((p != null) && !"hopobject".equals(p.getLowerCaseName())) {
+        while ((p != null) && !"hopobject".equals(p.getLowerCaseName())) { //$NON-NLS-1$
             Object old = handlers.put(p.name, obj);
             // if an object was already registered by this name, put it back in again.
             if (old != null) {
@@ -324,7 +320,7 @@ public final class Prototype {
      * Get the DbMapping associated with this prototype
      */
     public DbMapping getDbMapping() {
-        return dbmap;
+        return this.dbmap;
     }
 
     /**
@@ -335,9 +331,9 @@ public final class Prototype {
      */
     public Skin getSkin(Prototype proto, String skinname, String subskin, Object[] skinpath)
             throws IOException {
-        Resource res = skinMap.getResource(skinname);
+        ResourceInterface res = this.skinMap.getResource(skinname);
         while (res != null) {
-            Skin skin = Skin.getSkin(res, app);
+            Skin skin = Skin.getSkin(res, this.app);
             if (subskin == null && skin.hasMainskin()) {
                 return skin;
             } else if (subskin != null && skin.hasSubskin(subskin)) {
@@ -347,7 +343,7 @@ public final class Prototype {
             if (baseskin != null && !baseskin.equalsIgnoreCase(skinname)) {
                 // we need to call SkinManager.getSkin() to fetch overwritten
                 // base skins from skinpath
-                return app.skinmgr.getSkin(proto, baseskin, subskin, skinpath);
+                return this.app.skinmgr.getSkin(proto, baseskin, subskin, skinpath);
             }
             res = res.getOverloadedResource();
         }
@@ -360,7 +356,7 @@ public final class Prototype {
      * @return ...
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
@@ -369,14 +365,14 @@ public final class Prototype {
      * @return ...
      */
     public String getLowerCaseName() {
-        return lowerCaseName;
+        return this.lowerCaseName;
     }
 
     /**
      *  Get the last time any script has been re-read for this prototype.
      */
     public long lastCodeUpdate() {
-        return lastCodeUpdate;
+        return this.lastCodeUpdate;
     }
 
     /**
@@ -385,7 +381,7 @@ public final class Prototype {
      *  the evaluators.
      */
     public void markUpdated() {
-        lastCodeUpdate = System.currentTimeMillis();
+        this.lastCodeUpdate = System.currentTimeMillis();
     }
 
     /**
@@ -393,9 +389,9 @@ public final class Prototype {
      * @param map the custom type mapping properties.
      */
     public void setTypeProperties(Map map) {
-        props.clear();
-        props.putAll(map);
-        dbmap.update();
+        this.props.clear();
+        this.props.putAll(map);
+        this.dbmap.update();
     }
 
     /**
@@ -404,7 +400,7 @@ public final class Prototype {
      * @return type.properties
      */
     public ResourceProperties getTypeProperties() {
-        return props;
+        return this.props;
     }
 
     /**
@@ -416,13 +412,13 @@ public final class Prototype {
      */
     public synchronized Iterator getCodeResources() {
     	// if code has never been updated, do so now before returning an empty or incomplete list
-    	if (lastCodeUpdate == 0) {
+    	if (this.lastCodeUpdate == 0) {
     		checkForUpdates();
     	}
-    	
+
         // we copy over to a new list, because the underlying set may grow
         // during compilation through use of app.addRepository()
-        return new ArrayList(code).iterator();
+        return new ArrayList(this.code).iterator();
     }
 
     /**
@@ -433,14 +429,15 @@ public final class Prototype {
      *  @return an iterator over this prototype's skin resources
      */
     public Iterator getSkinResources() {
-        return skins.iterator();
+        return this.skins.iterator();
     }
 
     /**
      *  Return a string representing this prototype.
      */
+    @Override
     public String toString() {
-        return "[Prototype " + app.getName() + "/" + name + "]";
+        return "[Prototype " + this.app.getName() + "/" + this.name + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
@@ -473,8 +470,9 @@ public final class Prototype {
             super(wrapped);
         }
 
+        @Override
         public Object get(Object key) {
-            Resource res = (Resource) super.get(key);
+            ResourceInterface res = (ResourceInterface) super.get(key);
 
             if (res == null || !res.exists()) {
                 return null;
@@ -498,95 +496,107 @@ public final class Prototype {
         Object[] skinpath;
 
         SkinMap() {
-            skinpath = null;
+            this.skinpath = null;
         }
 
         SkinMap(Object[] path) {
-            skinpath = path;
+            this.skinpath = path;
         }
 
+        @Override
         public boolean containsKey(Object key) {
             checkForUpdates();
             return super.containsKey(key);
         }
 
+        @Override
         public boolean containsValue(Object value) {
             checkForUpdates();
             return super.containsValue(value);
         }
 
+        @Override
         public Set entrySet() {
             checkForUpdates();
             return super.entrySet();
         }
 
+        @Override
         public boolean equals(Object obj) {
             checkForUpdates();
             return super.equals(obj);
         }
 
         public Skin getSkin(Object key) throws IOException {
-            Resource res = (Resource) get(key);
+            ResourceInterface res = (ResourceInterface) get(key);
 
             if (res != null) {
-                return Skin.getSkin(res, app);
-            } else {
-                return null;
+                return Skin.getSkin(res, Prototype.this.app);
             }
+            return null;
         }
 
-        public Resource getResource(Object key) {
-            return (Resource) get(key);
+        public ResourceInterface getResource(Object key) {
+            return (ResourceInterface) get(key);
         }
 
+        @Override
         public Object get(Object key) {
             checkForUpdates();
             return super.get(key);
         }
 
+        @Override
         public int hashCode() {
             checkForUpdates();
             return super.hashCode();
         }
 
+        @Override
         public boolean isEmpty() {
             checkForUpdates();
             return super.isEmpty();
         }
 
+        @Override
         public Set keySet() {
             checkForUpdates();
             return super.keySet();
         }
 
+        @Override
         public Object put(Object key, Object value) {
             // checkForUpdates ();
             return super.put(key, value);
         }
 
+        @Override
         public void putAll(Map t) {
             // checkForUpdates ();
             super.putAll(t);
         }
 
+        @Override
         public Object remove(Object key) {
             checkForUpdates();
             return super.remove(key);
         }
 
+        @Override
         public int size() {
             checkForUpdates();
             return super.size();
         }
 
+        @Override
         public Collection values() {
             checkForUpdates();
             return super.values();
         }
 
         private void checkForUpdates() {
-            if (lastCodeUpdate > lastSkinmapLoad) {
-                if (lastCodeUpdate == 0) {
+            if (Prototype.this.lastCodeUpdate > this.lastSkinmapLoad) {
+                if (Prototype.this.lastCodeUpdate == 0) {
                     // if prototype resources haven't been checked yet, check them now
                     Prototype.this.checkForUpdates();
                 }
@@ -595,29 +605,29 @@ public final class Prototype {
         }
 
         private synchronized void loadSkins() {
-            if (lastCodeUpdate == lastSkinmapLoad) {
+            if (Prototype.this.lastCodeUpdate == this.lastSkinmapLoad) {
                 return;
             }
 
             super.clear();
 
             // load Skins
-            for (Iterator i = skins.iterator(); i.hasNext();) {
-                Resource res = (Resource) i.next();
-                Resource prev = (Resource) super.put(res.getBaseName(), res);
+            for (Iterator i = Prototype.this.skins.iterator(); i.hasNext();) {
+                ResourceInterface res = (ResourceInterface) i.next();
+                ResourceInterface prev = (ResourceInterface) super.put(res.getBaseName(), res);
                 res.setOverloadedResource(prev);
             }
 
             // if skinpath is not null, overload/add skins from there
-            if (skinpath != null) {
-                for (int i = skinpath.length - 1; i >= 0; i--) {
-                    if ((skinpath[i] != null) && skinpath[i] instanceof String) {
-                        loadSkinFiles((String) skinpath[i]);
+            if (this.skinpath != null) {
+                for (int i = this.skinpath.length - 1; i >= 0; i--) {
+                    if ((this.skinpath[i] != null) && this.skinpath[i] instanceof String) {
+                        loadSkinFiles((String) this.skinpath[i]);
                     }
                 }
             }
 
-            lastSkinmapLoad = lastCodeUpdate;
+            this.lastSkinmapLoad = Prototype.this.lastCodeUpdate;
         }
 
         private void loadSkinFiles(String skinDir) {
@@ -630,7 +640,7 @@ public final class Prototype {
                 }
             }
 
-            String[] skinNames = dir.list(app.skinmgr);
+            String[] skinNames = dir.list(Prototype.this.app.skinmgr);
 
             if ((skinNames == null) || (skinNames.length == 0)) {
                 return;
@@ -640,15 +650,16 @@ public final class Prototype {
                 String name = skinNames[i].substring(0, skinNames[i].length() - 5);
                 File file = new File(dir, skinNames[i]);
 
-                Resource res = new FileResource(file);
-                Resource prev = (Resource) super.put(name, res);
+                ResourceInterface res = new FileResource(file);
+                ResourceInterface prev = (ResourceInterface) super.put(name, res);
                 res.setOverloadedResource(prev);
             }
 
         }
 
+        @Override
         public String toString() {
-            return "[SkinMap " + name + "]";
+            return "[SkinMap " + Prototype.this.name + "]";  //$NON-NLS-1$//$NON-NLS-2$
         }
     }
 }

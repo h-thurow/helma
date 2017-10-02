@@ -55,9 +55,10 @@ public class SystemMap extends HashMap {
      * the one returned by java.util.HashMap.toString(), but additionally displays
      * Object arrays in a human friendly way.
      */
+    @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("{");
+        buf.append("{"); //$NON-NLS-1$
 
         Iterator i = entrySet().iterator();
             boolean hasNext = i.hasNext();
@@ -66,15 +67,15 @@ public class SystemMap extends HashMap {
                 Object key = e.getKey();
                 Object value = e.getValue();
                 append(buf, key);
-                buf.append("=");
+                buf.append("="); //$NON-NLS-1$
                 append(buf, value);
 
                 hasNext = i.hasNext();
                 if (hasNext)
-                    buf.append(", ");
+                    buf.append(", "); //$NON-NLS-1$
             }
 
-        buf.append("}");
+        buf.append("}"); //$NON-NLS-1$
         return buf.toString();
     }
 
@@ -84,19 +85,19 @@ public class SystemMap extends HashMap {
      */
     protected void append(StringBuffer buf, Object obj) {
         if (obj == this) {
-            buf.append("(this Map)");
+            buf.append("(this Map)"); //$NON-NLS-1$
         } else if (obj instanceof Object[]) {
             Object[] array = (Object[]) obj;
             if (array.length == 1) {
                 append(buf, array[0]);
             } else {
-                buf.append("[");
+                buf.append("["); //$NON-NLS-1$
                 for (int i = 0; i < array.length; i++) {
                     append(buf, array[i]);
                     if (i < array.length - 1)
-                        buf.append(",");
+                        buf.append(","); //$NON-NLS-1$
                 }
-                buf.append("]");
+                buf.append("]"); //$NON-NLS-1$
             }
         } else {
             buf.append(obj);

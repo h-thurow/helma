@@ -42,91 +42,106 @@ public class CopyOnWriteMap extends WrappedMap {
     }
 
     public synchronized boolean wasModified() {
-        return modified;
+        return this.modified;
     }
 
+    @Override
     public synchronized int size() {
-        return wrapped.size();
+        return this.wrapped.size();
     }
 
+    @Override
     public synchronized boolean isEmpty() {
-        return wrapped.isEmpty();
+        return this.wrapped.isEmpty();
     }
 
+    @Override
     public synchronized boolean containsKey(Object key) {
-        return wrapped.containsKey(key);
+        return this.wrapped.containsKey(key);
     }
 
+    @Override
     public synchronized boolean containsValue(Object value) {
-        return wrapped.containsValue(value);
+        return this.wrapped.containsValue(value);
     }
 
+    @Override
     public synchronized Object get(Object key) {
-        return wrapped.get(key);
+        return this.wrapped.get(key);
     }
 
     // Modification Operations - check for readonly
 
+    @Override
     public synchronized Object put(Object key, Object value) {
-        if (!modified) {
-            wrapped = new HashMap(wrapped);
-            modified = true;
+        if (!this.modified) {
+            this.wrapped = new HashMap(this.wrapped);
+            this.modified = true;
         }
-        return wrapped.put(key, value);
+        return this.wrapped.put(key, value);
     }
 
+    @Override
     public synchronized Object remove(Object key) {
-        if (!modified) {
-            wrapped = new HashMap(wrapped);
-            modified = true;
+        if (!this.modified) {
+            this.wrapped = new HashMap(this.wrapped);
+            this.modified = true;
         }
-        return wrapped.remove(key);
+        return this.wrapped.remove(key);
     }
 
+    @Override
     public synchronized void putAll(Map t) {
-        if (!modified) {
-            wrapped = new HashMap(wrapped);
-            modified = true;
+        if (!this.modified) {
+            this.wrapped = new HashMap(this.wrapped);
+            this.modified = true;
         }
-        wrapped.putAll(t);
+        this.wrapped.putAll(t);
     }
 
+    @Override
     public synchronized void clear() {
-        if (!modified) {
-            wrapped = new HashMap(wrapped);
-            modified = true;
+        if (!this.modified) {
+            this.wrapped = new HashMap(this.wrapped);
+            this.modified = true;
         }
-        wrapped.clear();
+        this.wrapped.clear();
     }
 
     // Views
 
+    @Override
     public synchronized Set keySet() {
-        return wrapped.keySet();
+        return this.wrapped.keySet();
     }
 
+    @Override
     public synchronized Collection values() {
-        return wrapped.values();
+        return this.wrapped.values();
     }
 
+    @Override
     public synchronized Set entrySet() {
-        return wrapped.entrySet();
+        return this.wrapped.entrySet();
     }
 
     // Comparison and hashing
 
+    @Override
     public synchronized boolean equals(Object o) {
-        return wrapped.equals(o);
+        return this.wrapped.equals(o);
     }
 
+    @Override
     public synchronized int hashCode() {
-        return wrapped.hashCode();
+        return this.wrapped.hashCode();
     }
 
     // toString
 
+    @Override
     public synchronized String toString() {
-        return wrapped.toString();
+        return this.wrapped.toString();
     }
 
 }

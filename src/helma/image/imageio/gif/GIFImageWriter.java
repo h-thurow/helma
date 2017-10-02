@@ -32,52 +32,58 @@ public class GIFImageWriter extends ImageWriter {
 
     public GIFImageWriter(GIFImageWriterSpi originatingProvider) {
         super(originatingProvider);
-        encoder = new GIFEncoder();
+        this.encoder = new GIFEncoder();
     }
 
+    @Override
     public void write(IIOMetadata streamMetadata, IIOImage image,
         ImageWriteParam param) throws IOException {
         if (image == null)
-            throw new IllegalArgumentException("image == null");
+            throw new IllegalArgumentException(Messages.getString("GIFImageWriter.0")); //$NON-NLS-1$
 
         if (image.hasRaster())
-            throw new UnsupportedOperationException("Cannot write rasters");
+            throw new UnsupportedOperationException(Messages.getString("GIFImageWriter.1")); //$NON-NLS-1$
 
         Object output = getOutput();
         if (output == null)
-            throw new IllegalStateException("output was not set");
+            throw new IllegalStateException(Messages.getString("GIFImageWriter.2")); //$NON-NLS-1$
 
         if (param == null)
             param = getDefaultWriteParam();
 
         RenderedImage ri = image.getRenderedImage();
         if (!(ri instanceof BufferedImage))
-            throw new IOException("RenderedImage is not a BufferedImage");
+            throw new IOException(Messages.getString("GIFImageWriter.3")); //$NON-NLS-1$
         if (!(output instanceof DataOutput))
-            throw new IOException("output is not a DataOutput");
-        encoder.encode((BufferedImage) ri, (DataOutput) output,
+            throw new IOException(Messages.getString("GIFImageWriter.4")); //$NON-NLS-1$
+        this.encoder.encode((BufferedImage) ri, (DataOutput) output,
             param.getProgressiveMode() != ImageWriteParam.MODE_DISABLED, null);
     }
 
+    @Override
     public IIOMetadata convertStreamMetadata(IIOMetadata inData,
         ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public IIOMetadata convertImageMetadata(IIOMetadata inData,
         ImageTypeSpecifier imageType, ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public IIOMetadata getDefaultImageMetadata(ImageTypeSpecifier imageType,
         ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public IIOMetadata getDefaultStreamMetadata(ImageWriteParam param) {
         return null;
     }
 
+    @Override
     public ImageWriteParam getDefaultWriteParam() {
         return new GIFImageWriteParam(getLocale());
     }

@@ -27,10 +27,10 @@ import java.util.Map;
  *  columns. It is constructed from the logical table (type) name and the
  *  column name/column value pairs that identify the key's object
  *
- *  NOTE: This class doesn't fully support the Key interface - getID always
+ *  NOTE: This class doesn't fully support the KeyInterface interface - getID always
  *  returns null since there is no unique key (at least we don't know about it).
  */
-public final class MultiKey implements Key, Serializable {
+public final class MultiKey implements KeyInterface, Serializable {
     // the name of the prototype which defines the storage of this object.
     // this is the name of the object's prototype, or one of its ancestors.
     // If null, the object is stored in the embedded db.
@@ -63,7 +63,7 @@ public final class MultiKey implements Key, Serializable {
     private String getStorageNameFromParts(DbMapping dbmap, Map parts) {
         if (dbmap == null)
             return null;
-        String protoName = (String) parts.get("$prototype");
+        String protoName = (String) parts.get("$prototype"); //$NON-NLS-1$
         if (protoName != null) {
             DbMapping dynamap = dbmap.app.getDbMapping(protoName);
             if (dynamap != null) {
@@ -80,6 +80,7 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return true if both keys are identical
      */
+    @Override
     public boolean equals(Object what) {
         if (what == this) {
             return true;
@@ -93,8 +94,8 @@ public final class MultiKey implements Key, Serializable {
 
         // storageName is an interned string (by DbMapping, from where we got it)
         // so we can compare by using == instead of the equals method.
-        return (storageName == k.storageName) &&
-                ((parts == k.parts) || parts.equals(k.parts));
+        return (this.storageName == k.storageName) &&
+                ((this.parts == k.parts) || this.parts.equals(k.parts));
     }
 
     /**
@@ -102,14 +103,15 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return this key's hash code
      */
+    @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = (storageName == null) ? (17 + (37 * parts.hashCode()))
-                                             : (17 + (37 * storageName.hashCode()) +
-                                             (+37 * parts.hashCode()));
+        if (this.hashcode == 0) {
+            this.hashcode = (this.storageName == null) ? (17 + (37 * this.parts.hashCode()))
+                                             : (17 + (37 * this.storageName.hashCode()) +
+                                             (+37 * this.parts.hashCode()));
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
@@ -117,7 +119,7 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return the key of this key's object's parent object
      */
-    public Key getParentKey() {
+    public KeyInterface getParentKey() {
         return null;
     }
 
@@ -127,7 +129,7 @@ public final class MultiKey implements Key, Serializable {
      * @return the unique storage name for this key's object
      */
     public String getStorageName() {
-        return storageName;
+        return this.storageName;
     }
 
     /**
@@ -144,25 +146,26 @@ public final class MultiKey implements Key, Serializable {
      *
      * @return a string representation for this key
      */
+    @Override
     public String toString() {
-        return (storageName == null) ? ("[" + parts + "]") : (storageName + "[" + parts + "]");
+        return (this.storageName == null) ? ("[" + this.parts + "]") : (this.storageName + "[" + this.parts + "]");   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
     }
 
     // We implement write/readObject to set storageName
     // to the interned version of the string.
 
     private void writeObject(ObjectOutputStream stream) throws IOException {
-        stream.writeObject(storageName);
-        stream.writeObject(parts);
+        stream.writeObject(this.storageName);
+        stream.writeObject(this.parts);
     }
 
     private void readObject(ObjectInputStream stream)
                                         throws IOException, ClassNotFoundException {
-        storageName = (String) stream.readObject();
-        parts = (Map) stream.readObject();
+        this.storageName = (String) stream.readObject();
+        this.parts = (Map) stream.readObject();
         // if storageName is not null, set it to the interned version
-        if (storageName != null) {
-            storageName = storageName.intern();
+        if (this.storageName != null) {
+            this.storageName = this.storageName.intern();
         }
     }
 

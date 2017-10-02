@@ -32,55 +32,56 @@ public class XmlIDGenerator {
     transient volatile boolean dirty;
 
     /**
-     * Builds a new IDGenerator starting with 0.
+     * Builds a new IDGeneratorInterface starting with 0.
      */
     public XmlIDGenerator() {
         this.counter = 0L;
-        dirty = false;
+        this.dirty = false;
     }
 
     /**
-     * Builds a new IDGenerator starting with value.
+     * Builds a new IDGeneratorInterface starting with value.
      */
     public XmlIDGenerator(long value) {
         this.counter = value;
-        dirty = false;
+        this.dirty = false;
     }
 
     /**
      * Delivers a unique id and increases counter by 1.
      */
     public synchronized String newID() {
-        counter += 1L;
-        dirty = true;
+        this.counter += 1L;
+        this.dirty = true;
 
-        return Long.toString(counter);
+        return Long.toString(this.counter);
     }
 
     /**
      * Set the counter to a new value
      */
     protected synchronized void setValue(long value) {
-        counter = value;
-        dirty = true;
+        this.counter = value;
+        this.dirty = true;
     }
 
     /**
      * Get the current counter  value
      */
     public long getValue() {
-        return counter;
+        return this.counter;
     }
 
     /**
-     * Returns a string representation of this IDGenerator
+     * Returns a string representation of this IDGeneratorInterface
      */
+    @Override
     public String toString() {
-        return "IDGenerator[counter=" + counter + ",dirty=" + dirty + "]";
+        return "IDGeneratorInterface[counter=" + this.counter + ",dirty=" + this.dirty + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
-     * Read an IDGenerator from file
+     * Read an IDGeneratorInterface from file
      *
      * @param file
      * @return
@@ -89,13 +90,13 @@ public class XmlIDGenerator {
     public static XmlIDGenerator getIDGenerator(File file)
             throws ObjectNotFoundException {
         if (!file.exists()) {
-            throw new ObjectNotFoundException("IDGenerator not found in idgen.xml");
+            throw new ObjectNotFoundException(Messages.getString("XmlIDGenerator.0")); //$NON-NLS-1$
         }
 
         try {
             Document document = XmlUtil.parse(new FileInputStream(file));
             org.w3c.dom.Element tmp = (Element) document.getDocumentElement()
-                    .getElementsByTagName("counter")
+                    .getElementsByTagName("counter") //$NON-NLS-1$
                     .item(0);
 
             return new XmlIDGenerator(Long.parseLong(XmlUtil.getTextContent(tmp)));
@@ -115,12 +116,12 @@ public class XmlIDGenerator {
             throws IOException {
         OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file));
 
-        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        out.write("<!-- printed by helma object publisher     -->\n");
-        out.write("<!-- created " + (new Date()).toString() + " -->\n");
-        out.write("<xmlroot>\n");
-        out.write("  <counter>" + idgen.getValue() + "</counter>\n");
-        out.write("</xmlroot>\n");
+        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //$NON-NLS-1$
+        out.write("<!-- printed by helma object publisher     -->\n"); //$NON-NLS-1$
+        out.write("<!-- created " + (new Date()).toString() + " -->\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        out.write("<xmlroot>\n"); //$NON-NLS-1$
+        out.write("  <counter>" + idgen.getValue() + "</counter>\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        out.write("</xmlroot>\n"); //$NON-NLS-1$
         out.close();
     }
 }

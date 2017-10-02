@@ -79,32 +79,30 @@ public final class JSAdapter implements Scriptable, Function {
         obj.setParentScope(scope);
         obj.setPrototype(getFunctionPrototype(scope));
         obj.isPrototype = true;
-        ScriptableObject.defineProperty(scope, "JSAdapter",  obj,
+        ScriptableObject.defineProperty(scope, "JSAdapter",  obj, //$NON-NLS-1$
                 ScriptableObject.DONTENUM);
     }
     
     public String getClassName() {
-        return "JSAdapter";
+        return "JSAdapter"; //$NON-NLS-1$
     }
     
     public Object get(String name, Scriptable start) {
         Function func = getAdapteeFunction(GET_PROP);
         if (func != null) {
             return call(func, new Object[] { name });
-        } else {
-            start = getAdaptee();
-            return start.get(name, start);
         }
+        start = getAdaptee();
+        return start.get(name, start);
     }
     
     public Object get(int index, Scriptable start) {
         Function func = getAdapteeFunction(GET_PROP);
         if (func != null) {
             return call(func, new Object[] { new Integer(index) });
-        } else {
-            start = getAdaptee();
-            return start.get(index, start);
         }
+        start = getAdaptee();
+        return start.get(index, start);
     }
     
     public boolean has(String name, Scriptable start) {
@@ -112,10 +110,9 @@ public final class JSAdapter implements Scriptable, Function {
         if (func != null) {
             Object res = call(func, new Object[] { name });
             return Context.toBoolean(res);
-        } else {
-            start = getAdaptee();
-            return start.has(name, start);
         }
+        start = getAdaptee();
+        return start.has(name, start);
     }
     
     public boolean has(int index, Scriptable start) {
@@ -123,10 +120,9 @@ public final class JSAdapter implements Scriptable, Function {
         if (func != null) {
             Object res = call(func, new Object[] { new Integer(index) });
             return Context.toBoolean(res);
-        } else {
-            start = getAdaptee();
-            return start.has(index, start);
         }
+        start = getAdaptee();
+        return start.has(index, start);
     }
     
     public void put(String name, Scriptable start, Object value) {
@@ -176,7 +172,7 @@ public final class JSAdapter implements Scriptable, Function {
     }
     
     public Scriptable getPrototype() {
-        return prototype;
+        return this.prototype;
     }
     
     public void setPrototype(Scriptable prototype) {
@@ -184,7 +180,7 @@ public final class JSAdapter implements Scriptable, Function {
     }
     
     public Scriptable getParentScope() {
-        return parent;
+        return this.parent;
     }
     
     public void setParentScope(Scriptable parent) {
@@ -222,22 +218,20 @@ public final class JSAdapter implements Scriptable, Function {
                 // some other return type, just return empty array
                 return Context.emptyArgs;
             }
-        } else {
-            return getAdaptee().getIds();
         }
+        return getAdaptee().getIds();
     }
     
     public boolean hasInstance(Scriptable scriptable) {
         if (scriptable instanceof JSAdapter) {
             return true;
-        } else {
-            Scriptable proto = scriptable.getPrototype();
-            while (proto != null) {
-                if (proto.equals(this)) return true;
-                proto = proto.getPrototype();
-            }
-            return false;
         }
+        Scriptable proto = scriptable.getPrototype();
+        while (proto != null) {
+            if (proto.equals(this)) return true;
+            proto = proto.getPrototype();
+        }
+        return false;
     }
     
     public Object getDefaultValue(Class hint) {
@@ -247,46 +241,42 @@ public final class JSAdapter implements Scriptable, Function {
     public Object call(Context cx, Scriptable scope, Scriptable thisObj,
             Object[] args)
             throws RhinoException {
-        if (isPrototype) {
+        if (this.isPrototype) {
             return construct(cx, scope, args);
-        } else {
-            Scriptable tmp = getAdaptee();
-            if (tmp instanceof Function) {
-                return ((Function)tmp).call(cx, scope, tmp, args);
-            } else {
-                throw Context.reportRuntimeError("TypeError: not a function");
-            }
         }
+        Scriptable tmp = getAdaptee();
+        if (tmp instanceof Function) {
+            return ((Function)tmp).call(cx, scope, tmp, args);
+        }
+        throw Context.reportRuntimeError(Messages.getString("JSAdapter.0")); //$NON-NLS-1$
     }
     
     public Scriptable construct(Context cx, Scriptable scope, Object[] args)
     throws RhinoException {
-        if (isPrototype) {
+        if (this.isPrototype) {
             Scriptable topLevel = ScriptableObject.getTopLevelScope(scope);
             JSAdapter newObj;
             if (args.length > 0) {
                 newObj = new JSAdapter(Context.toObject(args[0], topLevel));
             } else {
-                throw Context.reportRuntimeError("JSAdapter requires adaptee");
+                throw Context.reportRuntimeError(Messages.getString("JSAdapter.1")); //$NON-NLS-1$
             }
             return newObj;
-        } else {
-            Scriptable tmp = getAdaptee();
-            if (tmp instanceof Function) {
-                return ((Function)tmp).construct(cx, scope, args);
-            } else {
-                throw Context.reportRuntimeError("TypeError: not a constructor");
-            }
         }
+        Scriptable tmp = getAdaptee();
+        if (tmp instanceof Function) {
+            return ((Function)tmp).construct(cx, scope, args);
+        }
+        throw Context.reportRuntimeError(Messages.getString("JSAdapter.2")); //$NON-NLS-1$
     }
     
     public Scriptable getAdaptee() {
-        return adaptee;
+        return this.adaptee;
     }
     
     public void setAdaptee(Scriptable adaptee) {
         if (adaptee == null) {
-            throw new NullPointerException("adaptee can not be null");
+            throw new NullPointerException(Messages.getString("JSAdapter.3")); //$NON-NLS-1$
         }
         this.adaptee = adaptee;
     }
@@ -297,9 +287,8 @@ public final class JSAdapter implements Scriptable, Function {
     private Object mapToId(Object tmp) {
         if (tmp instanceof Double) {
             return new Integer(((Double)tmp).intValue());
-        } else {
-            return Context.toString(tmp);
         }
+        return Context.toString(tmp);
     }
     
     private static Scriptable getFunctionPrototype(Scriptable scope) {
@@ -328,9 +317,9 @@ public final class JSAdapter implements Scriptable, Function {
     private boolean isPrototype;
     
     // names of adaptee JavaScript functions
-    private static final String GET_PROP = "__get__";
-    private static final String HAS_PROP = "__has__";
-    private static final String PUT_PROP = "__put__";
-    private static final String DEL_PROP = "__delete__";
-    private static final String GET_PROPIDS = "__getIds__";
+    private static final String GET_PROP = "__get__"; //$NON-NLS-1$
+    private static final String HAS_PROP = "__has__"; //$NON-NLS-1$
+    private static final String PUT_PROP = "__put__"; //$NON-NLS-1$
+    private static final String DEL_PROP = "__delete__"; //$NON-NLS-1$
+    private static final String GET_PROPIDS = "__getIds__"; //$NON-NLS-1$
 }

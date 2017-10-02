@@ -37,7 +37,7 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Zero arg constructor for creating the PathWrapper prototype.
      */
-    public PathWrapper (RhinoCore core) throws NoSuchMethodException {
+    public PathWrapper (RhinoCore core) {
         this.core = core;
         // create a dummy path object
         this.path = new RequestPath(core.app);
@@ -45,8 +45,8 @@ public class PathWrapper extends ScriptableObject {
         // initialize properties and functions
         setParentScope(core.getScope());
         setPrototype(null);
-        defineProperty("length", PathWrapper.class, DONTENUM | READONLY | PERMANENT);
-        defineFunctionProperties(new String[] {"href", "contains"}, 
+        defineProperty("length", PathWrapper.class, DONTENUM | READONLY | PERMANENT); //$NON-NLS-1$
+        defineFunctionProperties(new String[] {"href", "contains"},  //$NON-NLS-1$ //$NON-NLS-2$
                                  PathWrapper.class, DONTENUM | PERMANENT);
     }
 
@@ -62,11 +62,12 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Returns a path object in the wrapped path by property name.
      */
+    @Override
     public Object get(String name, Scriptable start) {
-        Object obj = path.getByPrototypeName(name);
+        Object obj = this.path.getByPrototypeName(name);
 
         if (obj != null) {
-            return Context.toObject(obj, core.getScope());
+            return Context.toObject(obj, this.core.getScope());
         }
 
         return super.get(name, start);
@@ -75,11 +76,12 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Returns a path object in the wrapped path by property name.
      */
+    @Override
     public Object get(int idx, Scriptable start) {
-        Object obj = path.get(idx);
+        Object obj = this.path.get(idx);
 
         if (obj != null) {
-            return Context.toObject(obj, core.getScope());
+            return Context.toObject(obj, this.core.getScope());
         }
 
         return null;
@@ -88,22 +90,25 @@ public class PathWrapper extends ScriptableObject {
     /**
      * Checks if an object with the given name is contained in the path.
      */
+    @Override
     public boolean has(String name, Scriptable start) {
-        return path.getByPrototypeName(name) != null;
+        return this.path.getByPrototypeName(name) != null;
     }
 
     /**
      * Checks if an object with the given index is contained in the path.
      */
+    @Override
     public boolean has(int index, Scriptable start) {
-        return index >= 0 && index < path.size();
+        return index >= 0 && index < this.path.size();
     }
 
     /**
      * Returns a list of array indices 0..length-1.
      */
+    @Override
     public Object[] getIds() {
-        Object[] ids = new Object[path.size()];
+        Object[] ids = new Object[this.path.size()];
 
         for (int i=0; i<ids.length; i++) {
             ids[i] = new Integer(i);
@@ -116,7 +121,7 @@ public class PathWrapper extends ScriptableObject {
      * Getter for length property.
      */
     public long getLength() {
-        return path.size();
+        return this.path.size();
     }
 
     /**
@@ -124,12 +129,12 @@ public class PathWrapper extends ScriptableObject {
      */
     public String href(Object action) throws UnsupportedEncodingException {
         if (action != null && action != Undefined.instance) {
-            return path.href(action.toString());
+            return this.path.href(action.toString());
         }
 
-        return path.href(null);
+        return this.path.href(null);
     }
-    
+
     /**
      * Checks if the given object is contained in the request path
      *
@@ -139,17 +144,19 @@ public class PathWrapper extends ScriptableObject {
     public int contains(Object obj) {
         if (obj instanceof Wrapper)
             obj = ((Wrapper) obj).unwrap();
-        return path.indexOf(obj);
+        return this.path.indexOf(obj);
     }
 
+    @Override
     public String getClassName() {
-        return "[PathWrapper]";
+        return "[PathWrapper]"; //$NON-NLS-1$
     }
 
+    @Override
     public String toString() {
-        return "PathWrapper["+path.toString()+"]";
+        return "PathWrapper["+this.path.toString()+"]";  //$NON-NLS-1$//$NON-NLS-2$
     }
-    
+
     /**
      * Return a primitive representation for this object.
      * FIXME: We always return a string representation.
@@ -157,6 +164,7 @@ public class PathWrapper extends ScriptableObject {
      * @param hint the type hint
      * @return the default value for the object
      */
+    @Override
     public Object getDefaultValue(Class hint) {
         return toString();
     }

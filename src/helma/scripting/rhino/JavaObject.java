@@ -17,8 +17,7 @@
 package helma.scripting.rhino;
 
 import helma.framework.core.*;
-import helma.framework.ResponseTrans;
-import helma.framework.repository.Resource;
+import helma.framework.repository.ResourceInterface;
 import org.mozilla.javascript.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -44,11 +43,11 @@ public class JavaObject extends NativeJavaObject {
         overload = new HashMap();
         Method[] m = JavaObject.class.getMethods();
         for (int i=0; i<m.length; i++) {
-            if ("href".equals(m[i].getName()) ||
-                "renderSkin".equals(m[i].getName()) ||
-                "renderSkinAsString".equals(m[i].getName()) ||
-                "getResource".equals(m[i].getName()) ||
-                "getResources".equals(m[i].getName())) {
+            if ("href".equals(m[i].getName()) || //$NON-NLS-1$
+                "renderSkin".equals(m[i].getName()) || //$NON-NLS-1$
+                "renderSkinAsString".equals(m[i].getName()) || //$NON-NLS-1$
+                "getResource".equals(m[i].getName()) || //$NON-NLS-1$
+                "getResources".equals(m[i].getName())) { //$NON-NLS-1$
                 overload.put(m[i].getName(), m[i]);
             }
         }
@@ -63,8 +62,8 @@ public class JavaObject extends NativeJavaObject {
         this.javaObject = obj;
         this.protoName = protoName;
         this.core = core;
-        staticType = obj.getClass();
-        unscriptedJavaObj = new NativeJavaObject(scope, obj, staticType);
+        this.staticType = obj.getClass();
+        this.unscriptedJavaObj = new NativeJavaObject(scope, obj, this.staticType);
         setPrototype(prototype);
         initMembers();
     }
@@ -80,10 +79,10 @@ public class JavaObject extends NativeJavaObject {
     public boolean renderSkin(Object skinobj, Object paramobj)
             throws UnsupportedEncodingException, IOException {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
-        Skin skin = engine.toSkin(skinobj, protoName);
+        Skin skin = engine.toSkin(skinobj, this.protoName);
 
         if (skin != null) {
-            skin.render(engine.reval, javaObject, 
+            skin.render(engine.reval, this.javaObject, 
                     (paramobj == Undefined.instance) ? null : paramobj);
         }
 
@@ -101,14 +100,14 @@ public class JavaObject extends NativeJavaObject {
     public String renderSkinAsString(Object skinobj, Object paramobj)
             throws UnsupportedEncodingException, IOException {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
-        Skin skin = engine.toSkin(skinobj, protoName);
+        Skin skin = engine.toSkin(skinobj, this.protoName);
 
         if (skin != null) {
-            return skin.renderAsString(engine.reval, javaObject,
+            return skin.renderAsString(engine.reval, this.javaObject,
                     (paramobj == Undefined.instance) ? null : paramobj);
         }
 
-        return "";
+        return ""; //$NON-NLS-1$
     }
 
     /**
@@ -121,13 +120,13 @@ public class JavaObject extends NativeJavaObject {
      */
     public Object href(Object action, Object params)
             throws UnsupportedEncodingException, IOException {
-        if (javaObject == null) {
+        if (this.javaObject == null) {
             return null;
         }
 
         String actionName = null;
         Map queryParams = params instanceof Scriptable ?
-                core.scriptableToProperties((Scriptable) params) : null;
+                this.core.scriptableToProperties((Scriptable) params) : null;
 
         if (action != null) {
             if (action instanceof Wrapper) {
@@ -137,13 +136,14 @@ public class JavaObject extends NativeJavaObject {
             }
         }
 
-        String basicHref = core.app.getNodeHref(javaObject, actionName, queryParams);
-        return core.postProcessHref(javaObject, protoName, basicHref);
+        String basicHref = this.core.app.getNodeHref(this.javaObject, actionName, queryParams);
+        return this.core.postProcessHref(this.javaObject, this.protoName, basicHref);
     }
 
     /**
      * Checks whether the given property is defined in this object.
      */
+    @Override
     public boolean has(String name, Scriptable start) {
         return overload.containsKey(name) || super.has(name, start);
     }
@@ -151,6 +151,7 @@ public class JavaObject extends NativeJavaObject {
     /** 
      * Get a named property from this object.
      */
+    @Override
     public Object get(String name, Scriptable start) {
         Object value;
 
@@ -174,16 +175,16 @@ public class JavaObject extends NativeJavaObject {
             return new FunctionObject(name, (Method) value, this);
         }
 
-        if ("_prototype".equals(name) || "__prototype__".equals(name)) {
-            return protoName;
+        if ("_prototype".equals(name) || "__prototype__".equals(name)) { //$NON-NLS-1$ //$NON-NLS-2$
+            return this.protoName;
         }
 
-        if ("__proto__".equals(name)) {
+        if ("__proto__".equals(name)) { //$NON-NLS-1$
             return getPrototype();
         }
 
-        if ("__javaObject__".equals(name)) {
-            return unscriptedJavaObj;
+        if ("__javaObject__".equals(name)) { //$NON-NLS-1$
+            return this.unscriptedJavaObj;
         }
 
         return super.get(name, start);
@@ -199,13 +200,13 @@ public class JavaObject extends NativeJavaObject {
      */
     public Object getResource(String resourceName) {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
-        Prototype prototype = engine.core.app.getPrototypeByName(protoName);
+        Prototype prototype = engine.core.app.getPrototypeByName(this.protoName);
         while (prototype != null) {
-            Resource[] resources = prototype.getResources();
+            ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                Resource resource = resources[i];
+                ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(resourceName))
-                    return Context.toObject(resource, core.global);
+                    return Context.toObject(resource, this.core.global);
             }
             prototype =  prototype.getParentPrototype();
         }
@@ -222,18 +223,18 @@ public class JavaObject extends NativeJavaObject {
      */
     public Object getResources(String resourceName) {
         RhinoEngine engine = RhinoEngine.getRhinoEngine();
-        Prototype prototype = engine.core.app.getPrototypeByName(protoName);
+        Prototype prototype = engine.core.app.getPrototypeByName(this.protoName);
         ArrayList a = new ArrayList();
         while (prototype != null) {
-            Resource[] resources = prototype.getResources();
+            ResourceInterface[] resources = prototype.getResources();
             for (int i = resources.length - 1; i >= 0; i--) {
-                Resource resource = resources[i];
+                ResourceInterface resource = resources[i];
                 if (resource.exists() && resource.getShortName().equals(resourceName))
-                    a.add(Context.toObject(resource, core.global));
+                    a.add(Context.toObject(resource, this.core.global));
             }
             prototype =  prototype.getParentPrototype();
         }
-        return Context.getCurrentContext().newArray(core.global, a.toArray());
+        return Context.getCurrentContext().newArray(this.core.global, a.toArray());
     }
 
 }

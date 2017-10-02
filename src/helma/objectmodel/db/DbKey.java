@@ -27,7 +27,7 @@ import java.io.Serializable;
  *  from the logical table (type) name and the object's primary key
  *  within the table. Currently only single keys are supported.
  */
-public final class DbKey implements Key, Serializable {
+public final class DbKey implements KeyInterface, Serializable {
     // the name of the prototype which defines the storage of this object.
     // this is the name of the object's prototype, or one of its ancestors.
     // If null, the object is stored in the embedded db.
@@ -46,7 +46,7 @@ public final class DbKey implements Key, Serializable {
      */
     public DbKey(DbMapping dbmap, String id) {
         if (id == null) {
-            throw new IllegalArgumentException("id null in DbKey");
+            throw new IllegalArgumentException(Messages.getString("DbKey.0")); //$NON-NLS-1$
         }
         this.id = id;
         this.storageName = (dbmap == null) ? null : dbmap.getStorageTypeName();
@@ -59,6 +59,7 @@ public final class DbKey implements Key, Serializable {
      *
      * @return true if both keys are identical
      */
+    @Override
     public boolean equals(Object what) {
         if (what == this) {
             return true;
@@ -72,7 +73,7 @@ public final class DbKey implements Key, Serializable {
 
         // storageName is an interned string (by DbMapping, from where we got it)
         // so we can compare by using == instead of the equals method.
-        return (storageName == k.storageName) && ((id == k.id) || id.equals(k.id));
+        return (this.storageName == k.storageName) && ((this.id == k.id) || this.id.equals(k.id));
     }
 
     /**
@@ -80,14 +81,15 @@ public final class DbKey implements Key, Serializable {
      *
      * @return this key's hash code
      */
+    @Override
     public int hashCode() {
-        if (hashcode == 0) {
-            hashcode = (storageName == null) ? (17 + (37 * id.hashCode()))
-                                             : (17 + (37 * storageName.hashCode()) +
-                                             (+37 * id.hashCode()));
+        if (this.hashcode == 0) {
+            this.hashcode = (this.storageName == null) ? (17 + (37 * this.id.hashCode()))
+                                             : (17 + (37 * this.storageName.hashCode()) +
+                                             (+37 * this.id.hashCode()));
         }
 
-        return hashcode;
+        return this.hashcode;
     }
 
     /**
@@ -95,7 +97,7 @@ public final class DbKey implements Key, Serializable {
      *
      * @return the key of this key's object's parent object
      */
-    public Key getParentKey() {
+    public KeyInterface getParentKey() {
         return null;
     }
 
@@ -105,7 +107,7 @@ public final class DbKey implements Key, Serializable {
      * @return the unique storage name for this key's object
      */
     public String getStorageName() {
-        return storageName;
+        return this.storageName;
     }
 
     /**
@@ -114,7 +116,7 @@ public final class DbKey implements Key, Serializable {
      * @return this key's object's id
      */
     public String getID() {
-        return id;
+        return this.id;
     }
 
     /**
@@ -122,25 +124,26 @@ public final class DbKey implements Key, Serializable {
      *
      * @return a string representation for this key
      */
+    @Override
     public String toString() {
-        return (storageName == null) ? ("[" + id + "]") : (storageName + "[" + id + "]");
+        return (this.storageName == null) ? ("[" + this.id + "]") : (this.storageName + "[" + this.id + "]");  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     // We implement write/readObject to set storageName
     // to the interned version of the string.
 
     private void writeObject(ObjectOutputStream stream) throws IOException {
-        stream.writeObject(storageName);
-        stream.writeObject(id);
+        stream.writeObject(this.storageName);
+        stream.writeObject(this.id);
     }
 
     private void readObject(ObjectInputStream stream)
                                         throws IOException, ClassNotFoundException {
-        storageName = (String) stream.readObject();
-        id = (String) stream.readObject();
+        this.storageName = (String) stream.readObject();
+        this.id = (String) stream.readObject();
         // if storageName is not null, set it to the interned version
-        if (storageName != null) {
-            storageName = storageName.intern();
+        if (this.storageName != null) {
+            this.storageName = this.storageName.intern();
         }
     }
 

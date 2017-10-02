@@ -45,7 +45,7 @@ public class RequestBean implements Serializable {
      * @return ...
      */
     public Object get(String name) {
-        return req.get(name);
+        return this.req.get(name);
     }
 
 
@@ -54,7 +54,7 @@ public class RequestBean implements Serializable {
      * one of the Helma pseudo methods defined in RequestTrans.
      */
     public String getMethod() {
-        return req.getMethod();
+        return this.req.getMethod();
     }
 
     /**
@@ -63,7 +63,7 @@ public class RequestBean implements Serializable {
      * @return ...
      */
     public boolean isGet() {
-        return req.isGet();
+        return this.req.isGet();
     }
 
     /**
@@ -72,7 +72,7 @@ public class RequestBean implements Serializable {
      * @return ...
      */
     public boolean isPost() {
-        return req.isPost();
+        return this.req.isPost();
     }
 
     /**
@@ -80,7 +80,7 @@ public class RequestBean implements Serializable {
      * Returns null for internal and XML-RPC requests.
      */
     public HttpServletRequest getServletRequest() {
-        return req.getServletRequest();
+        return this.req.getServletRequest();
     }
 
     /**
@@ -89,7 +89,7 @@ public class RequestBean implements Serializable {
      * @return the header value, or null
      */
     public String getHeader(String name) {
-        return req.getHeader(name);        
+        return this.req.getHeader(name);        
     }
 
     /**
@@ -98,7 +98,7 @@ public class RequestBean implements Serializable {
      * @return the header values as string array
      */
     public String[] getHeaders(String name) {
-        return req.getHeaders(name);
+        return this.req.getHeaders(name);
     }
 
     /**
@@ -107,7 +107,7 @@ public class RequestBean implements Serializable {
      * @return the header parsed as integer or -1
      */
     public int getIntHeader(String name) {
-        return req.getIntHeader(name);
+        return this.req.getIntHeader(name);
     }
 
     /**
@@ -116,21 +116,22 @@ public class RequestBean implements Serializable {
      * @return the date in milliseconds, or -1
      */
     public long getDateHeader(String name) {
-        return req.getDateHeader(name);
+        return this.req.getDateHeader(name);
     }
 
     /**
      * @return A string representation of this request
      */
+    @Override
     public String toString() {
-        return "[Request]";
+        return "[Request]"; //$NON-NLS-1$
     }
 
     /**
      * @return the invoked action
      */
     public String getAction() {
-        return req.getAction();
+        return this.req.getAction();
     }
 
     /**
@@ -138,70 +139,70 @@ public class RequestBean implements Serializable {
      * assorted HTTP headers
      */
     public Map getData() {
-        return req.getRequestData();
+        return this.req.getRequestData();
     }
 
     /**
      * @return the req.params map containing combined query and post parameters
      */
     public Map getParams() {
-        return req.getParams();
+        return this.req.getParams();
     }
 
     /**
      * @return the req.queryParams map containing parameters parsed from the query string
      */
     public Map getQueryParams() {
-        return req.getQueryParams();
+        return this.req.getQueryParams();
     }
 
     /**
      * @return the req.postParams map containing params parsed from post data
      */
     public Map getPostParams() {
-        return req.getPostParams();
+        return this.req.getPostParams();
     }
 
     /**
      * @return the req.cookies map containing request cookies
      */
     public Map getCookies() {
-        return req.getCookies();
+        return this.req.getCookies();
     }
 
     /**
      * @return the time this request has been running, in milliseconds
      */
     public long getRuntime() {
-        return (System.currentTimeMillis() - req.getStartTime());
+        return (System.currentTimeMillis() - this.req.getStartTime());
     }
 
     /**
      * @return the password if using HTTP basic authentication
      */
     public String getPassword() {
-        return req.getPassword();
+        return this.req.getPassword();
     }
 
     /**
      * @return the request path
      */
     public String getPath() {
-        return req.getPath();
+        return this.req.getPath();
     }
 
     /**
      * @return the request URI
      */
     public String getUri() {
-        return req.getUri();
+        return this.req.getUri();
     }
 
     /**
      * @return the username if using HTTP basic authentication
      */
     public String getUsername() {
-        return req.getUsername();
+        return this.req.getUsername();
     }
 
     /**
@@ -211,7 +212,7 @@ public class RequestBean implements Serializable {
      * @return the action handler
      */
     public Object getActionHandler() {
-        return req.getActionHandler();
+        return this.req.getActionHandler();
     }
 
     /**
@@ -221,6 +222,6 @@ public class RequestBean implements Serializable {
      * @param handler the action handler
      */
     public void setActionHandler(Object handler) {
-        req.setActionHandler(handler);
+        this.req.setActionHandler(handler);
     }
 }
