@@ -111,7 +111,8 @@
             debug="${debug}"
             deprecation="${deprecation}"
             optimize="${optimize}"
-            includeAntRuntime="no">
+            includeAntRuntime="no"
+            encoding="UTF-8">
             <classpath refid="build.class.path" />
         </javac>
         <delete dir="${build.work}/src"/>
