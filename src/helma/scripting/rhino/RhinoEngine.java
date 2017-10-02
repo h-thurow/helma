@@ -607,7 +607,9 @@ public class RhinoEngine implements ScriptingEngineInterface {
                     return super.resolveObject(obj);
                 }
             };
-            return sin.readObject();
+            Object object =  sin.readObject();
+            sin.close();
+            return object;
         } finally {
             Context.exit();
         }

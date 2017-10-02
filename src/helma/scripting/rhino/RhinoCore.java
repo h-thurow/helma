@@ -38,9 +38,12 @@ import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.WrapFactory;
 import org.mozilla.javascript.Wrapper;
+import org.mozilla.javascript.commonjs.module.RequireBuilder;
+import org.mozilla.javascript.commonjs.module.provider.*;
 import org.mozilla.javascript.tools.debugger.ScopeProvider;
 
 import java.io.*;
+import java.net.URI;
 import java.text.*;
 import java.util.*;
 import java.lang.ref.WeakReference;
@@ -85,8 +88,8 @@ public final class RhinoCore implements ScopeProvider {
     // optimization level for rhino engine, ranges from -1 to 9
     int optLevel = 0;
 
-    // language version - default to JS 1.7
-    int languageVersion = 170;
+    // language version - default to JS 1.8
+    int languageVersion = 180;
 
     // debugger/tracer flags
     boolean hasDebugger = false;
@@ -156,6 +159,27 @@ public final class RhinoCore implements ScopeProvider {
             // importClass() and importPackage() are set up.
             this.global.initStandardObjects(context, false);
             this.global.init();
+
+            // Enable loading and exporting of CommonJS modules with require and module.exports, resp.
+            // Inspiration: http://stackoverflow.com/a/30355409/5281580
+
+            List<URI> commonJsPaths = new ArrayList<URI>();
+            commonJsPaths.add(this.app.getAppDir().toURI());
+            String commonJsAppPath = this.app.getProperty("commonjs.dir"); //$NON-NLS-1$
+
+            if (commonJsAppPath != null) {
+                File commonJsAppDir = new File(this.app.getAppDir(), commonJsAppPath);
+                if (commonJsAppDir.isDirectory()) {
+                    commonJsPaths.add(commonJsAppDir.toURI());
+                }
+            }
+
+            new RequireBuilder()
+                .setModuleScriptProvider(new StrongCachingModuleScriptProvider(
+                    new UrlModuleSourceProvider(commonJsPaths, null)))
+                .setSandboxed(true)
+                .createRequire(context, global)
+                .install(global);
 
             this.pathProto = new PathWrapper(this);
 
@@ -1218,6 +1242,7 @@ public final class RhinoCore implements ScopeProvider {
             } else {
                 RhinoCore.this.app.logError(Messages.getString("RhinoCore.14") + RhinoCore.this.languageVersion); //$NON-NLS-1$
             }
+
             // Set up visual debugger if rhino.debug = true
             if (RhinoCore.this.hasDebugger)
                 initDebugger(cx);

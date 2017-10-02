@@ -593,10 +593,10 @@ public abstract class AbstractServletClient extends HttpServlet {
             // lowercase domain for IE
             buffer.append("; Domain=").append(domain.toLowerCase()); //$NON-NLS-1$
         }
-        if (!"false".equalsIgnoreCase(app.getProperty("httpOnlySessionCookie"))) {  //$NON-NLS-1$//$NON-NLS-2$
+        if (!"false".equalsIgnoreCase(app.getProperty("cookies.httpOnly"))) {  //$NON-NLS-1$//$NON-NLS-2$
             buffer.append("; HttpOnly"); //$NON-NLS-1$
         }
-        if ("true".equalsIgnoreCase(app.getProperty("secureSessionCookie"))) { //$NON-NLS-1$ //$NON-NLS-2$
+        if ("true".equalsIgnoreCase(app.getProperty("cookies.secure"))) { //$NON-NLS-1$ //$NON-NLS-2$
             buffer.append("; Secure"); //$NON-NLS-1$
         }
         response.addHeader("Set-Cookie", buffer.toString()); //$NON-NLS-1$

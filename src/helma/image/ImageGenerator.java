@@ -41,6 +41,8 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import helma.main.Server;
+
 /**
  * Factory class for generating Image objects from various sources.
  *
@@ -54,8 +56,41 @@ public class ImageGenerator {
      * @return a new AbstractImageGenerator instance
      */
     public static ImageGenerator getInstance() {
-        if (generator == null)
-            generator = new ImageGenerator();
+        if (generator == null) {
+            // first see wether an image wrapper class was specified in
+            // server.properties:
+            String className = null;
+            if (Server.getServer() != null) {
+                className = Server.getServer().getProperty("imageGenerator"); //$NON-NLS-1$
+            }
+
+            Class generatorClass = null;
+            if (className == null) {
+                // if no class is defined, try the default ones:
+                try {
+                    // start with ImageIO
+                    Class.forName("javax.imageio.ImageIO"); //$NON-NLS-1$
+                    // if we're still here, ImageIOWrapper can be used
+                    className = "helma.image.imageio.ImageIOGenerator"; //$NON-NLS-1$
+                } catch (ClassNotFoundException e1) {
+                    throw new RuntimeException(Messages.getString("ImageGenerator.0")); //$NON-NLS-1$
+                }
+            }
+            // now let's get the generator class and create an instance:
+            try {
+                generatorClass = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(
+                    Messages.getString("ImageGenerator.1") + className); //$NON-NLS-1$
+            }
+            try {
+                generator = (ImageGenerator)generatorClass.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    Messages.getString("ImageGenerator.2") //$NON-NLS-1$
+                        + className);
+            }
+        }
         return generator;
     }
 

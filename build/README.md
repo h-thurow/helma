@@ -7,9 +7,7 @@ For more information about Ant, see <http://ant.apache.org/>.
 
 ## Building
 
-The build system is started by invoking the shell script appropriate to your platform, ie. build.sh for *nix (Linux,
-NetBSD etc.) and build.bat for Windows systems. You probably need to modify the script and set the `JAVA_HOME` to fit
-your system.
+The build system is started by invoking the shell script appropriate to your platform, ie. build.sh for *nix (Linux, NetBSD etc.) and build.bat for Windows systems. You probably need to modify the script and set the `JAVA_HOME` to fit your system.
 
 The generic syntax is
 

@@ -66,8 +66,7 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorderIn
     public void init() {
         String[] globalFuncs = {
                                    "renderSkin", "renderSkinAsString", "getProperty", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                                   "authenticate", "createSkin", "format", "encode",   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$
-                                   "encodeXml", "encodeForm", "stripTags", "formatParagraphs",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                                   "authenticate", "createSkin", "format", "formatParagraphs", //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$//$NON-NLS-4$
                                    "getXmlDocument", "getHtmlDocument", "seal",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
                                    "getURL", "write", "writeln", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                    "serialize", "deserialize", "defineLibraryScope",   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
@@ -470,39 +469,6 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorderIn
      *
      * @return ...
      */
-    public String encode(Object obj) {
-        return HtmlEncoder.encodeAll(toString(obj));
-    }
-
-    /**
-     *
-     *
-     * @param obj ...
-     *
-     * @return ...
-     */
-    public String encodeXml(Object obj) {
-        return HtmlEncoder.encodeXml(toString(obj));
-    }
-
-    /**
-     *
-     *
-     * @param obj ...
-     *
-     * @return ...
-     */
-    public String encodeForm(Object obj) {
-        return HtmlEncoder.encodeFormValue(toString(obj));
-    }
-
-    /**
-     *
-     *
-     * @param obj ...
-     *
-     * @return ...
-     */
     public String format(Object obj) {
         return HtmlEncoder.encode(toString(obj));
     }
@@ -575,47 +541,6 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorderIn
             Object arg = args[i];
             ((ScriptableObject)arg).sealObject();
         }
-    }
-
-    /**
-     * (Try to) strip all HTML/XML style tags from the given string argument
-     *
-     * @param str a string
-     * @return the string with tags removed
-     */
-    public String stripTags(String str) {
-        if (str == null) {
-            return null;
-        }
-
-        char[] c = str.toCharArray();
-        boolean inTag = false;
-        int i;
-        int j = 0;
-
-        for (i = 0; i < c.length; i++) {
-            if (c[i] == '<') {
-                inTag = true;
-            }
-
-            if (!inTag) {
-                if (i > j) {
-                    c[j] = c[i];
-                }
-
-                j++;
-            }
-
-            if (c[i] == '>') {
-                inTag = false;
-            }
-        }
-
-        if (i > j) {
-            return new String(c, 0, j);
-        }
-
-        return str;
     }
 
     /**

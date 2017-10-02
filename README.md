@@ -32,8 +32,7 @@ Helma is built with [Apache Ant](http://ant.apache.org/).
 
 Clone this repository to your machine and start the build process with `ant jar`.
 
-After compilation start Helma by invoking `start.bat` or `start.sh`, depending on whether you are on Windows or Linux / Unix / OS X. If the java command is not found, try setting the `JAVA_HOME` variable in the start script to the location of your Java
-installation.
+After compilation start Helma by invoking `start.bat` or `start.sh`, depending on whether you are on Windows or Linux / Unix / OS X. If the java command is not found, try setting the `JAVA_HOME` variable in the start script to the location of your Java installation.
 
 You may also want to have a look at the start script for other settings. You can adjust server wide settings in the `server.properties` file. For example, you should set the `smtp` property to the name of the SMTP server that Helma should use to send e-mail. Applications can be started or stopped by editing the `apps.properties` file through the web interface using the management application that is part of Helma.
 
