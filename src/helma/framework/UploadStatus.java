@@ -7,11 +7,6 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 2007 Helma Software. All Rights Reserved.
- *
- * $RCSfile$
- * $Author$
- * $Revision$
- * $Date$
  */
 
 package helma.framework;
