@@ -7,18 +7,8 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
- *
- * Contributions:
- * 	Daniel Ruthardt
- * 	Copyright 2010 dowee it solutions GmbH. All rights reserved.
- *  Copyright 2010 dowee Limited. All rights reserved. 
- * 
- *
- * $RCSfile$
- * $Author$
- * $Revision$
- * $Date$
  */
+
 package helma.scripting.rhino;
 
 import java.lang.reflect.Constructor;
@@ -45,7 +35,7 @@ public class HopObjectCtor extends FunctionObject {
 
     static Method hopObjCtor;
 
-    static long collectionId = 0;    
+    static long collectionId = 0;
 
     static {
         try {
@@ -57,7 +47,7 @@ public class HopObjectCtor extends FunctionObject {
     }
 
     static final int attr = DONTENUM | PERMANENT;
-    
+
     /**
      * Create and install a HopObject constructor.
      * Part of this is copied from o.m.j.FunctionObject.addAsConstructor().
@@ -196,7 +186,7 @@ public class HopObjectCtor extends FunctionObject {
 
         @Override
         public int getArity() {
-            return 1; 
+            return 1;
         }
 
         @Override

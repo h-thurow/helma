@@ -7,15 +7,6 @@
  * http://adele.helma.org/download/helma/license.txt
  *
  * Copyright 1998-2003 Helma Software. All Rights Reserved.
- *
- * Contributions:
- *   Daniel Ruthardt
- *   Copyright 2010 dowee Limited. All rights reserved. 
- *
- * $RCSfile$
- * $Author$
- * $Revision$
- * $Date$
  */
 
 package helma.framework.core;
@@ -569,7 +560,7 @@ public final class RequestEvaluator implements Runnable {
                                 int base = 800 * tries;
                                 Thread.sleep((long) (base + (Math.random() * base * 2)));
                             } catch (InterruptedException interrupt) {
-                                // we got interrrupted, create minimal error message 
+                                // we got interrrupted, create minimal error message
                                 res.reportError(interrupt);
                                 done = true;
                                 // and release resources and thread
