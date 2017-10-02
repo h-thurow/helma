@@ -248,35 +248,9 @@ public class HelmaSecurityManager extends SecurityManager {
 
     /**
      *
-     *
-     * @param window ...
-     *
-     * @return ...
-     */
-    @Override
-    public boolean checkTopLevelWindow(Object window) {
-        return true;
-    }
-
-    /**
-     *
      */
     @Override
     public void checkPrintJobAccess() {
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void checkSystemClipboardAccess() {
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void checkAwtEventQueueAccess() {
     }
 
     /**
@@ -302,16 +276,6 @@ public class HelmaSecurityManager extends SecurityManager {
      */
     @Override
     public void checkSetFactory() {
-    }
-
-    /**
-     *
-     *
-     * @param clazz ...
-     * @param which ...
-     */
-    @Override
-    public void checkMemberAccess(Class clazz, int which) {
     }
 
     /**

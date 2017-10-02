@@ -11,21 +11,21 @@
 
 /*
  * A few explanations:
- * 
+ *
  * - this.image is either an AWT Image or a BufferedImage.
  *   It depends on the AbstractImageGenerator in what form the Image initially is.
  *   (the ImageIO implementation only uses BufferedImages for example.)
- * 
- *   As soon as some action that needs the graphics object is performed and the  
+ *
+ *   As soon as some action that needs the graphics object is performed and the
  *   image is still in AWT format, it is converted to a BufferedImage
- * 
+ *
  *   Any internal function that performs graphical actions needs to call
  *   getGraphics, never rely on this.graphics being set correctly!
- * 
+ *
  * - ImageWrapper objects are created and safed by the AbstractImageGenerator class
  *   all different implementations of Imaging functionallity are implemented
  *   as a AbstractImageGenerator extending class.
- * 
+ *
  */
 
 package helma.image;
@@ -42,18 +42,18 @@ public class ImageWrapper {
     protected Image image;
     protected int width;
     protected int height;
-    protected AbstractImageGenerator generator;
+    protected ImageGenerator generator;
     private Graphics2D graphics;
 
     /**
      * Creates a new ImageWrapper object.
-     * 
+     *
      * @param image ...
      * @param width ...
      * @param height ...
      */
     public ImageWrapper(Image image, int width, int height,
-        AbstractImageGenerator generator) {
+        ImageGenerator generator) {
         this.image = image;
         this.width = width;
         this.height = height;
@@ -61,8 +61,8 @@ public class ImageWrapper {
         // graphics are turned off by default. getGraphics activates it if necessary.
         this.graphics = null;
     }
-    
-    public ImageWrapper(Image image, AbstractImageGenerator generator) {
+
+    public ImageWrapper(Image image, ImageGenerator generator) {
         this(image, image.getWidth(null), image.getHeight(null), generator);
     }
 
@@ -73,7 +73,7 @@ public class ImageWrapper {
      * not. By using getBufferedImage, images are only converted to a
      * getBufferedImage when this is actually needed, which is better than
      * storing images as BufferedImage in general.
-     * 
+     *
      * @return the Image object as a BufferedImage
      */
     public BufferedImage getBufferedImage() {
@@ -89,9 +89,9 @@ public class ImageWrapper {
     }
 
     /**
-     * Returns the Graphics object to directly paint to this Image. Converts the 
+     * Returns the Graphics object to directly paint to this Image. Converts the
      * internal image to a BufferedImage if necessary.
-     * 
+     *
      * @return the Graphics object for drawing into this image
      */
     public Graphics2D getGraphics() {
@@ -102,7 +102,7 @@ public class ImageWrapper {
         }
         return this.graphics;
     }
-    
+
     /**
      * Sets the internal image and clears the stored graphics object.
      * Any code that is changing the internal image should do it through this function
@@ -124,7 +124,7 @@ public class ImageWrapper {
 
     /**
      * Creates and returns a copy of this image.
-     * 
+     *
      * @return a clone of this image.
      */
     @Override
@@ -137,7 +137,7 @@ public class ImageWrapper {
 
     /**
      * Returns the Image object represented by this ImageWrapper.
-     * 
+     *
      * @return the image object
      */
     public Image getImage() {
@@ -146,7 +146,7 @@ public class ImageWrapper {
 
     /**
      * Returns the ImageProducer of the wrapped image
-     * 
+     *
      * @return the images's ImageProducer
      */
     public ImageProducer getSource() {
@@ -176,7 +176,7 @@ public class ImageWrapper {
 
     /**
      * Sets the color used to write/paint to this image.
-     * 
+     *
      * @param red ...
      * @param green ...
      * @param blue ...
@@ -187,7 +187,7 @@ public class ImageWrapper {
 
     /**
      * Sets the color used to write/paint to this image.
-     * 
+     *
      * @param color ...
      */
     public void setColor(int color) {
@@ -196,7 +196,7 @@ public class ImageWrapper {
 
     /**
      * Sets the color used to write/paint to this image.
-     * 
+     *
      * @param color ...
      */
     public void setColor(Color color) {
@@ -205,7 +205,7 @@ public class ImageWrapper {
 
     /**
      * Sets the color used to write/paint to this image.
-     * 
+     *
      * @param color ...
      */
     public void setColor(String color) {
@@ -213,7 +213,7 @@ public class ImageWrapper {
     }
     /**
      * Draws a string to this image at the given coordinates.
-     * 
+     *
      * @param str ...
      * @param x ...
      * @param y ...
@@ -224,7 +224,7 @@ public class ImageWrapper {
 
     /**
      * Draws a line to this image from x1/y1 to x2/y2.
-     * 
+     *
      * @param x1 ...
      * @param y1 ...
      * @param x2 ...
@@ -236,7 +236,7 @@ public class ImageWrapper {
 
     /**
      * Draws a rectangle to this image.
-     * 
+     *
      * @param x ...
      * @param y ...
      * @param w ...
@@ -248,12 +248,12 @@ public class ImageWrapper {
 
     /**
      * Draws another image to this image.
-     * 
+     *
      * @param filename ...
      * @param x ...
      * @param y ...
      */
-    public void drawImage(String filename, int x, int y) 
+    public void drawImage(String filename, int x, int y)
         throws IOException {
         Image img = this.generator.read(filename);
         if (img != null)
@@ -262,7 +262,7 @@ public class ImageWrapper {
 
     /**
      * Draws another image to this image.
-     * 
+     *
      * @param image ...
      * @param x ...
      * @param y ...
@@ -273,7 +273,7 @@ public class ImageWrapper {
 
     /**
      * Draws another image to this image.
-     * 
+     *
      * @param image ...
      * @param at ...
      */
@@ -283,7 +283,7 @@ public class ImageWrapper {
 
     /**
      * Draws a filled rectangle to this image.
-     * 
+     *
      * @param x ...
      * @param y ...
      * @param w ...
@@ -295,7 +295,7 @@ public class ImageWrapper {
 
     /**
      * Returns the width of this image.
-     * 
+     *
      * @return the width of this image
      */
     public int getWidth() {
@@ -304,7 +304,7 @@ public class ImageWrapper {
 
     /**
      * Returns the height of this image.
-     * 
+     *
      * @return the height of this image
      */
     public int getHeight() {
@@ -313,7 +313,7 @@ public class ImageWrapper {
 
     /**
      * Crops the image.
-     * 
+     *
      * @param x ...
      * @param y ...
      * @param w ...
@@ -334,21 +334,21 @@ public class ImageWrapper {
             setImage(buffered);
         }
     }
-    
+
     /**
      * Trims the image.
-     * 
+     *
      * @param x the x-coordinate of the pixel specifying the background color
      * @param y the y-coordinate of the pixel specifying the background color
      */
-    
+
    public void trim(int x, int y) {
        trim(x, y, true, true, true, true);
    }
 
    /**
     * Trims the image.
-    * 
+    *
     * @param x
     * @param y
     * @param trimLeft
@@ -356,15 +356,18 @@ public class ImageWrapper {
     * @param trimRight
     * @param trimBottom
     */
-   public void trim(int x, int y, boolean trimLeft, boolean trimTop, boolean trimRight, boolean trimBottom) {
+    public void trim(int x, int y, boolean trimLeft, boolean trimTop,
+            boolean trimRight, boolean trimBottom) {
         BufferedImage bi = this.getBufferedImage();
         int color = bi.getRGB(x, y);
         int left = 0, top = 0, right = this.width - 1, bottom = this.height - 1;
 
-        // create a BufferedImage of only 1 pixel height for fetching the rows of the image in the correct format (ARGB)
-        // This speeds up things by more than factor 2, compared to the standard BufferedImage.getRGB solution,
-        // which is supposed to be fast too. This is probably the case because drawing to BufferedImages uses 
-        // very optimized code which may even be hardware accelerated.
+        // Create a BufferedImage of only 1 pixel height for fetching the rows
+        // of the image in the correct format (ARGB) This speeds up things by
+        // more than factor 2, compared to the standard BufferedImage.getRGB
+        // solution, which is supposed to be fast too. This is probably the case
+        // because drawing to BufferedImages uses very optimized code which may
+        // even be hardware accelerated.
         if (trimTop || trimBottom) {
             BufferedImage row = new BufferedImage(this.width, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = row.createGraphics();
@@ -439,20 +442,21 @@ public class ImageWrapper {
         }
         crop(left, top, right - left + 1, bottom - top + 1);
     }
-    
+
     /**
      * Resizes the image using the Graphics2D approach
      */
     protected void resize(int w, int h, boolean smooth) {
-        BufferedImage buffered = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage buffered = new BufferedImage(w, h,
+                BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = buffered.createGraphics();
 
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, 
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
             smooth ? RenderingHints.VALUE_INTERPOLATION_BICUBIC :
                 RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
         );
 
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
             smooth ? RenderingHints.VALUE_RENDER_QUALITY :
                 RenderingHints.VALUE_RENDER_SPEED
         );
@@ -461,6 +465,7 @@ public class ImageWrapper {
             (double) w / this.width,
             (double) h / this.height
         );
+        g2d.setComposite(AlphaComposite.Src);
         g2d.drawImage(this.image, at, null);
         g2d.dispose();
         setImage(buffered);
@@ -468,7 +473,7 @@ public class ImageWrapper {
 
     /**
      * Resizes the image
-     * 
+     *
      * @param w ...
      * @param h ...
      */
@@ -485,10 +490,11 @@ public class ImageWrapper {
             // Area averaging has the best results for shrinking of images:
 
             // As getScaledInstance is asynchronous, the ImageWaiter is needed here too:
-            // Image scaled = ImageWaiter.waitForImage(image.getScaledInstance(w, h, Image.SCALE_AREA_AVERAGING));
+            // Image scaled = ImageWaiter.waitForImage(image.getScaledInstance(w, h,
+            //         Image.SCALE_AREA_AVERAGING));
             // if (scaled == null)
             //     throw new RuntimeException("Image cannot be resized.");
-            
+
             // This version is up to 4 times faster than getScaledInstance:
             ImageFilterOp filter = new ImageFilterOp(new AreaAveragingScaleFilter(w, h));
             setImage(filter.filter(getBufferedImage(), null));
@@ -497,7 +503,7 @@ public class ImageWrapper {
 
     /**
      * Resize the image, using a fast and cheap algorithm
-     * 
+     *
      * @param w ...
      * @param h ...
      */
@@ -507,7 +513,7 @@ public class ImageWrapper {
 
     /**
      * Reduces the colors used in the image. Necessary before saving as GIF.
-     * 
+     *
      * @param colors colors the number of colors to use, usually <= 256.
      */
     public void reduceColors(int colors) {
@@ -516,7 +522,7 @@ public class ImageWrapper {
 
     /**
      * Reduces the colors used in the image. Necessary before saving as GIF.
-     * 
+     *
      * @param colors colors the number of colors to use, usually <= 256.
      * @param dither ...
      */
@@ -527,7 +533,7 @@ public class ImageWrapper {
     /**
      * Reduce the colors used in this image. Useful and necessary before saving
      * the image as GIF file.
-     * 
+     *
      * @param colors the number of colors to use, usually <= 256.
      * @param dither ...
      * @param alphaToBitmask ...
@@ -540,7 +546,7 @@ public class ImageWrapper {
 
     /**
      * Save the image. Image format is deduced from filename.
-     * 
+     *
      * @param filename ...
      * @throws IOException
      */
@@ -551,7 +557,7 @@ public class ImageWrapper {
 
     /**
      * Saves the image. Image format is deduced from filename.
-     * 
+     *
      * @param filename ...
      * @param quality ...
      * @throws IOException
@@ -563,7 +569,7 @@ public class ImageWrapper {
 
     /**
      * Saves the image. Image format is deduced from filename.
-     * 
+     *
      * @param filename ...
      * @param quality ...
      * @param alpha ...
@@ -573,10 +579,10 @@ public class ImageWrapper {
         throws IOException {
         this.generator.write(this, checkFilename(filename), quality, alpha);
     }
-    
+
     /**
      * Saves the image. Image format is deduced from mimeType.
-     * 
+     *
      * @param out ...
      * @param mimeType ...
      * @throws IOException
@@ -585,10 +591,10 @@ public class ImageWrapper {
         throws IOException {
         this.generator.write(this, out, mimeType, -1f, false); // -1 means default quality
     }
-    
+
     /**
      * Saves the image. Image format is deduced from mimeType.
-     * 
+     *
      * @param out ...
      * @param mimeType ...
      * @param quality ...
@@ -601,7 +607,7 @@ public class ImageWrapper {
 
     /**
      * Saves the image. Image format is deduced from mimeType.
-     * 
+     *
      * @param out ...
      * @param mimeType ...
      * @param quality ...
@@ -612,7 +618,7 @@ public class ImageWrapper {
         throws IOException {
         this.generator.write(this, out, mimeType, quality, alpha);
     }
-    
+
     /**
      * Sets the palette index of the transparent color for Images with an
      * IndexColorModel. This can be used together with
@@ -642,7 +648,7 @@ public class ImageWrapper {
     /**
      * Returns the pixel at x, y. If the image is indexed, it returns the
      * palette index, otherwise the rgb code of the color is returned.
-     * 
+     *
      * @param x the x coordinate of the pixel
      * @param y the y coordinate of the pixel
      * @return the pixel at x, y

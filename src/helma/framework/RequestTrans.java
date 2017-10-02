@@ -134,7 +134,13 @@ public class RequestTrans implements Serializable {
             setETags(header);
         }
 
-        header = request.getRemoteAddr();
+        header = request.getHeader("X-Real-IP"); //$NON-NLS-1$
+        if (header == null) {
+            header = request.getHeader("X-Forwarded-For"); //$NON-NLS-1$
+        }
+        if (header == null) {
+            header = request.getRemoteAddr();
+        }
         if (header != null) {
             this.values.put("http_remotehost", header); //$NON-NLS-1$
         }
@@ -700,7 +706,7 @@ public class RequestTrans implements Serializable {
                     return value instanceof Cookie ? value : null;
                 } else if (value instanceof Object[]) {
                     Object[] values = ((Object[]) value);
-                    return values.length > 0 ? values[0] : null;
+                    return values.length > 0 ? values[values.length - 1] : null;
                 } else if (value instanceof Cookie) {
                     Cookie cookie = (Cookie) value;
                     return cookie.getValue();

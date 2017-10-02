@@ -100,7 +100,11 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
             return Context.toObject(obj, this.core.global);
         }
 
-        return obj;
+        if (obj != null)
+            return obj;
+        if (map.containsKey(name))
+            return null;
+        return Scriptable.NOT_FOUND;
     }
 
     /**
@@ -164,7 +168,8 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
             return null;
         }
 
-        Object obj = this.map.get(Integer.toString(idx));
+        String name = Integer.toString(idx);
+        Object obj = this.map.get(name);
 
         if (obj != null && !(obj instanceof Scriptable)) {
             // do NOT wrap primitives - otherwise they'll be wrapped as Objects,
@@ -178,7 +183,11 @@ public class MapWrapper extends ScriptableObject implements Wrapper {
             return Context.toObject(obj, this.core.global);
         }
 
-        return obj;
+        if (obj != null)
+            return obj;
+        if (map.containsKey(name))
+            return null;
+        return Scriptable.NOT_FOUND;
     }
 
     /**

@@ -11,9 +11,12 @@
 
 package helma.objectmodel.db;
 
+import helma.framework.core.RequestEvaluator;
 import helma.objectmodel.DatabaseException;
 import helma.objectmodel.NodeInterface;
 import helma.objectmodel.TransactionInterface;
+import helma.scripting.ScriptingEngineInterface;
+import helma.scripting.ScriptingException;
 
 import java.sql.Connection;
 import java.sql.Statement;
@@ -306,7 +309,6 @@ public class Transactor {
      * @throws Exception ...
      */
     public synchronized void commit() throws Exception {
-    	execute();
 
     	Iterator connections = this.sqlConnections.values().iterator();
         while (connections.hasNext()) {
@@ -316,85 +318,34 @@ public class Transactor {
         	}
         }
 
-        int numberOfInsertedNodes = 0;
-        int numberOfModifiedNodes = 0;
-        int numberOfDeletedNodes = 0;
+        ScriptingEngineInterface engine = nmgr.app.getCurrentRequestEvaluator().getScriptingEngine();
 
-        boolean hasListeners = this.nmgr.hasNodeChangeListeners();
-
-        Iterator<Transaction> iterator = this.transactions.iterator();
-        while (iterator.hasNext()) {
-        	Transaction transaction = iterator.next();
-
-        	if (hasListeners) {
-                this.nmgr.fireNodeChangeEvent(transaction.getInsertedNodes(),
-                	transaction.getModifiedNodes(),
-                	transaction.getDeletedNodes(),
-                	transaction.getUpdatedParentNodes());
-            }
-
-        	Log eventLog = this.nmgr.app.getEventLog();
-
-        	if (eventLog.isDebugEnabled()) {
-    	    	Iterator<Node> insertedNodes = transaction.getInsertedNodes().iterator();
-    	    	while (insertedNodes.hasNext()) {
-    	    		Node node = insertedNodes.next();
-    	            eventLog.debug(Messages.getString("Transactor.3") + node.getPrototype() + Messages.getString("Transactor.4") + node.getID()); //$NON-NLS-1$ //$NON-NLS-2$
-        		}
-
-    	    	Iterator<Node> modifiedNodes = transaction.getModifiedNodes().iterator();
-    	    	while (modifiedNodes.hasNext()) {
-    	    		Node node = modifiedNodes.next();
-                    eventLog.debug(Messages.getString("Transactor.5") + node.getPrototype() + Messages.getString("Transactor.6") + node.getID());	             //$NON-NLS-1$ //$NON-NLS-2$
-        		}
-
-    	    	Iterator<Node> deletedNodes = transaction.getDeletedNodes().iterator();
-    	    	while (deletedNodes.hasNext()) {
-    	    		Node node = deletedNodes.next();
-                    eventLog.debug(Messages.getString("Transactor.7") + node.getPrototype() + Messages.getString("Transactor.8") + node.getID());	             //$NON-NLS-1$ //$NON-NLS-2$
-        		}
-        	}
-
-        	numberOfInsertedNodes += transaction.getNumberOfInsertedNodes();
-        	numberOfModifiedNodes += transaction.getNumberOfModifiedNodes();
-        	numberOfDeletedNodes += transaction.getNumberOfDeletedNodes();
+        try {
+            // call onBeforeCommit, if defined
+            engine.invoke(null, "onBeforeCommit", RequestEvaluator.EMPTY_ARGS, //$NON-NLS-1$
+                    ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
+        } catch (ScriptingException e) {
+            nmgr.app.logError(Messages.getString("Transactor.17"), e); //$NON-NLS-1$
         }
 
-        StringBuffer msg = new StringBuffer(this.tname).append(Messages.getString("Transactor.9")) //$NON-NLS-1$
-			.append(System.currentTimeMillis() - this.tstart).append(Messages.getString("Transactor.10")); //$NON-NLS-1$
-        if (numberOfInsertedNodes +
-        	numberOfModifiedNodes +
-        	numberOfDeletedNodes > 0) {
-        	msg.append(" [+") //$NON-NLS-1$
-        		.append(numberOfInsertedNodes).append(", ~") //$NON-NLS-1$
-        		.append(numberOfModifiedNodes).append(", -") //$NON-NLS-1$
-        		.append(numberOfDeletedNodes).append("]"); //$NON-NLS-1$
-        }
-        this.nmgr.app.logAccess(msg.toString());
+        int inserted = 0;
+        int updated = 0;
+        int deleted = 0;
 
-        this.transactions.clear();
+        ArrayList insertedNodes = null;
+        ArrayList updatedNodes = null;
+        ArrayList deletedNodes = null;
+        ArrayList modifiedParentNodes = null;
+        // if nodemanager has listeners collect dirty nodes
+        boolean hasListeners = nmgr.hasNodeChangeListeners();
+        boolean hasOnCommit = engine.hasFunction(null, "onCommit", false); //$NON-NLS-1$
+        boolean collectNodes = hasListeners || hasOnCommit;
 
-    	if (this.active) {
-	        this.active = false;
-	        this.nmgr.db.commitTransaction(this.txn);
-	        this.txn = null;
-	    }
-
-	    // unset transaction name
-	    this.tname = null;
-    }
-
-    /**
-     * Execute the current transaction, persisting all changes to the database,
-     * but not yet commiting the changes.
-     *
-     * @throws Exception
-     */
-    public synchronized Transaction execute() throws Exception {
-        if (this.killed) {
-            throw new DatabaseException(Messages.getString("Transactor.11")); //$NON-NLS-1$
-        } else if (!this.active) {
-            return new Transaction();
+        if (collectNodes) {
+            insertedNodes = new ArrayList();
+            updatedNodes = new ArrayList();
+            deletedNodes = new ArrayList();
+            modifiedParentNodes = new ArrayList();
         }
 
         Transaction transaction = new Transaction();
@@ -417,7 +368,11 @@ public class Transactor {
                     node.setState(NodeInterface.CLEAN);
 
                     // register node with nodemanager cache
-                    this.nmgr.registerNode(node);
+                    nmgr.registerNode(node);
+
+                    if (collectNodes) {
+                        insertedNodes.add(node);
+                    }
 
                     transaction.addInsertedNode(node);
                 } else if (nstate == NodeInterface.MODIFIED) {
@@ -428,7 +383,11 @@ public class Transactor {
                     node.setState(NodeInterface.CLEAN);
 
                     // update node with nodemanager cache
-                    this.nmgr.registerNode(node);
+                    nmgr.registerNode(node);
+
+                    if (collectNodes) {
+                        updatedNodes.add(node);
+                    }
 
                     transaction.addModifiedNode(node);
                 } else if (nstate == NodeInterface.DELETED) {
@@ -436,7 +395,11 @@ public class Transactor {
                     dirtyDbMappings.add(node.getDbMapping());
 
                     // remove node from nodemanager cache
-                    this.nmgr.evictNode(node);
+                    nmgr.evictNode(node);
+
+                    if (collectNodes) {
+                        deletedNodes.add(node);
+                    }
 
                     transaction.addDeletedNode(node);
                 }
@@ -458,16 +421,54 @@ public class Transactor {
             for (Iterator i = this.parentNodes.iterator(); i.hasNext(); ) {
                 Node node = (Node) i.next();
                 node.markSubnodesChanged();
-
-                transaction.addUpdatedParentNode(node);
+                if (collectNodes) {
+                    modifiedParentNodes.add(node);
+                }
             }
         }
 
         // clear the node collections
         recycle();
 
-        this.transactions.add(transaction);
-        return transaction;
+        if (active) {
+            active = false;
+            // call onCommit if defined, passing inserted, updated, deleted and
+            // parents to it
+            if (hasOnCommit) {
+                try {
+                    engine.invoke(null, "onCommit", new Object[] { //$NON-NLS-1$
+                            insertedNodes.toArray(),
+                            updatedNodes.toArray(),
+                            deletedNodes.toArray(),
+                            modifiedParentNodes.toArray()
+                    }, ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
+                } catch (ScriptingException e) {
+                    nmgr.app.logError(Messages.getString("Transactor.19"), e); //$NON-NLS-1$
+                }
+            }
+            nmgr.db.commitTransaction(txn);
+            // call onAfterCommit, if defined
+            try {
+                engine.invoke(null, Messages.getString("Transactor.20"), RequestEvaluator.EMPTY_ARGS, //$NON-NLS-1$
+                        ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
+            } catch (ScriptingException e) {
+                nmgr.app.logError(Messages.getString("Transactor.18"), e); //$NON-NLS-1$
+            }
+            txn = null;
+        }
+
+        StringBuffer msg = new StringBuffer(tname).append(Messages.getString("Transactor.21")) //$NON-NLS-1$
+                .append(System.currentTimeMillis() - tstart).append(Messages.getString("Transactor.22")); //$NON-NLS-1$
+        if(inserted + updated + deleted > 0) {
+            msg.append(" [+") //$NON-NLS-1$
+                    .append(inserted).append(", ~") //$NON-NLS-1$
+                    .append(updated).append(", -") //$NON-NLS-1$
+                    .append(deleted).append("]"); //$NON-NLS-1$
+        }
+        nmgr.app.logAccess(msg.toString());
+
+        // unset transaction name
+        tname = null;
     }
 
     /**

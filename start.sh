@@ -71,8 +71,8 @@ if [ "$RMI_PORT" ]; then
    echo Starting RMI server on port $RMI_PORT
 fi
 if [ "$HOP_HOME" ]; then
-   SWITCHES="$SWITCHES -h $HOP_HOME"
+   SWITCHES="$SWITCHES -i $HOP_HOME -h $HOP_HOME"
 fi
 
 # Invoke the Java VM
-$JAVACMD $JAVA_OPTIONS -jar "$INSTALL_DIR/launcher.jar" $SWITCHES $*
+exec $JAVACMD $JAVA_OPTIONS -jar "$INSTALL_DIR/launcher.jar" $SWITCHES $*

@@ -63,10 +63,10 @@ public class UploadStatus implements Serializable {
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer("{current: ").append(this.current) //$NON-NLS-1$
-                .append(", total: ").append(this.total) //$NON-NLS-1$
-                .append(", itemsRead: ").append(this.itemsRead) //$NON-NLS-1$
-                .append(", error: "); //$NON-NLS-1$
+        StringBuffer buffer = new StringBuffer("{\"current\": ").append(current) //$NON-NLS-1$
+                .append(", \"total\": ").append(this.total) //$NON-NLS-1$
+                .append(", \"itemsRead\": ").append(this.itemsRead) //$NON-NLS-1$
+                .append(", \"error\": "); //$NON-NLS-1$
         if (this.error == null) {
             buffer.append("null"); //$NON-NLS-1$
         } else {

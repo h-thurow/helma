@@ -11,17 +11,18 @@
 
 package helma.scripting.rhino;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Properties;
-
-import helma.objectmodel.NodeInterface;
-import helma.objectmodel.db.DbMapping;
-import helma.objectmodel.db.DbKey;
+import helma.framework.core.*;
+import helma.objectmodel.*;
+import helma.objectmodel.db.*;
 import helma.objectmodel.db.Node;
-import helma.objectmodel.db.WrappedNodeManager;
 
 import org.mozilla.javascript.*;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 public class HopObjectCtor extends FunctionObject {
 
@@ -126,19 +127,39 @@ public class HopObjectCtor extends FunctionObject {
     @Override
     public void put(String name, Scriptable start, Object value) {
         if (value instanceof Function) {
-            // reset static function's parent scope, needed because of the way we compile
+            // reset static function's parent scope, needed because of the way
+            // we compile prototype code, using the prototype objects as scope
+            propertyChanged(name, value, null, null);
+        }
+        super.put(name, start, value);
+    }
+
+    protected void propertyChanged(Object id, Object value, Object get, Object set) {
+        if (value != null)
+            correctScope(value);
+        if (get != null)
+            correctScope(get);
+        if (set != null)
+            correctScope(set);
+    }
+
+    protected void correctScope(Object object) {
+        if (object instanceof Function) {
+            // reset function's parent scope, needed because of the way we compile
             // prototype code, using the prototype objects as scope
-            Scriptable scriptable = (Scriptable) value;
+            Scriptable scriptable = (Scriptable) object;
             while (scriptable != null) {
                 Scriptable scope = scriptable.getParentScope();
-                if (scope == this.protoProperty) {
+                // do not just support switching of this HopObject prototype to
+                // global, but all prototypes, e.g. when compiling into
+                // another prototype from one prototype folder (bad practise!)
+                if (scope instanceof HopObject) {
                     scriptable.setParentScope(this.core.global);
                     break;
                 }
                 scriptable = scope;
             }
         }
-        super.put(name, start, value);
     }
 
     class GetById extends BaseFunction {

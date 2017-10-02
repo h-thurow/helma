@@ -12,10 +12,12 @@
 package helma.scripting.rhino;
 
 import helma.scripting.rhino.extensions.*;
+import helma.scripting.rhino.observer.ObjectObserver;
 import helma.framework.core.*;
 import helma.util.HtmlEncoder;
 import helma.util.MimePart;
 import helma.util.XmlUtils;
+
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.serialize.*;
 import org.xml.sax.SAXException;
@@ -69,7 +71,8 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorderIn
                                    "getXmlDocument", "getHtmlDocument", "seal",  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
                                    "getURL", "write", "writeln", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                    "serialize", "deserialize", "defineLibraryScope",   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-                                   "wrapJavaMap", "unwrapJavaMap", "toJava", "definePrototype"  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
+                                   "wrapJavaMap", "unwrapJavaMap", "toJava", "definePrototype",  //$NON-NLS-1$ //$NON-NLS-2$//$NON-NLS-3$ //$NON-NLS-4$
+                                   "createObserver" //$NON-NLS-1$
                                };
 
         defineFunctionProperties(globalFuncs, GlobalObject.class, DONTENUM | PERMANENT);
@@ -114,6 +117,22 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorderIn
         }
         super.put(name, start, value);
     }
+
+    public void defineOwnProperty(Context cx, Object id, ScriptableObject desc) {
+        // register property for PropertyRecorder interface
+        if (isRecording) {
+            // if during compilation a property is set on the thread scope
+            // forward it to the shared scope (bug 504)
+            if (isThreadScope) {
+                core.global.defineOwnProperty(cx, id, desc);
+                return;
+            } else {
+                changedProperties.add(id.toString());
+            }
+        }
+        super.defineOwnProperty(cx, id, desc);
+    }
+
 
     /**
      * Override ScriptableObject.get() to use the per-thread scope if possible,
@@ -408,6 +427,13 @@ public class GlobalObject extends ImporterTopLevel implements PropertyRecorderIn
         }
         obj = ((MapWrapper) obj).unwrap();
         return new NativeJavaObject(this.core.global, obj, Map.class);
+    }
+
+    public static Object createObserver(Context cx, Scriptable thisObj,
+            Object[] args, Function funObj) {
+        if (args[1] instanceof Callable)
+            return ObjectObserver.create(args[0], null, (Callable) args[1]);
+        return null;
     }
 
     /**

@@ -11,7 +11,7 @@
 
 package helma.scripting.rhino;
 
-import helma.scripting.rhino.debug.HelmaDebugger;
+import helma.scripting.rhino.extensions.*;
 import helma.framework.core.*;
 import helma.framework.repository.ResourceInterface;
 import helma.objectmodel.*;
@@ -19,6 +19,8 @@ import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.NodeHandle;
 import helma.scripting.*;
 import helma.util.*;
+
+import org.eclipse.wst.jsdt.debug.rhino.debugger.RhinoDebugger;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextAction;
 import org.mozilla.javascript.ContextFactory;
@@ -78,7 +80,7 @@ public final class RhinoCore implements ScopeProvider {
     String globalError;
 
     // the debugger, if active
-    HelmaDebugger debugger = null;
+    RhinoDebugger debugger = null;
 
     // optimization level for rhino engine, ranges from -1 to 9
     int optLevel = 0;
@@ -88,6 +90,7 @@ public final class RhinoCore implements ScopeProvider {
 
     // debugger/tracer flags
     boolean hasDebugger = false;
+    String debuggerSettings;
     boolean hasTracer = false;
     boolean hasProfiler = false;
     private boolean isInitialized = false;
@@ -113,9 +116,12 @@ public final class RhinoCore implements ScopeProvider {
      */
     protected synchronized void initialize() {
 
-        this.hasDebugger = "true".equalsIgnoreCase(this.app.getProperty("rhino.debug"));  //$NON-NLS-1$//$NON-NLS-2$
-        this.hasTracer = "true".equalsIgnoreCase(this.app.getProperty("rhino.trace"));  //$NON-NLS-1$//$NON-NLS-2$
-        this.hasProfiler = "true".equalsIgnoreCase(this.app.getProperty("rhino.profile")); //$NON-NLS-1$ //$NON-NLS-2$
+    	String debug = app.getProperty("rhino.debug"); //$NON-NLS-1$
+        hasDebugger = debug != null && !"false".equalsIgnoreCase(debug); //$NON-NLS-1$
+        if (hasDebugger)
+          this.debuggerSettings = debug;
+        hasTracer = "true".equalsIgnoreCase(app.getProperty("rhino.trace")); //$NON-NLS-1$//$NON-NLS-2$
+        hasProfiler = "true".equalsIgnoreCase(app.getProperty("rhino.profile")); //$NON-NLS-1$//$NON-NLS-2$
 
         // Set default optimization level according to whether debugger is on
         if (this.hasDebugger || this.hasTracer || this.hasProfiler) {
@@ -196,7 +202,12 @@ public final class RhinoCore implements ScopeProvider {
 
     public void shutdown() {
         if (this.debugger != null) {
-            this.debugger.dispose();
+            try {
+              contextFactory.removeListener(this.debugger);
+              debugger.stop();
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
             this.debugger = null;
         }
     }
@@ -205,9 +216,9 @@ public final class RhinoCore implements ScopeProvider {
         context.setGeneratingDebug(true);
         try {
             if (this.debugger == null) {
-                this.debugger = new HelmaDebugger(this.app.getName());
-                this.debugger.setScopeProvider(this);
-                this.debugger.attachTo(this.contextFactory);
+                this.debugger = new RhinoDebugger(this.debuggerSettings);
+                this.debugger.start();
+                contextFactory.addListener(this.debugger);
             }
         } catch (Exception x) {
             this.app.logError(Messages.getString("RhinoCore.3"), x); //$NON-NLS-1$

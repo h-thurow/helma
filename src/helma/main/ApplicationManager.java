@@ -13,21 +13,20 @@ package helma.main;
 
 import helma.framework.core.*;
 import helma.framework.repository.RepositoryInterface;
+import helma.servlet.EmbeddedServletClient;
 import helma.framework.repository.FileRepository;
 import helma.util.StringUtils;
 import org.apache.xmlrpc.XmlRpcHandler;
 import org.apache.commons.logging.Log;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import java.io.*;
 import java.util.*;
 import helma.util.ResourceProperties;
-import helma.servlet.EmbeddedServletClient;
 
 /**
  * This class is responsible for starting and stopping Helma applications.
@@ -494,12 +493,12 @@ public class ApplicationManager implements XmlRpcHandler {
                         staticContext.start();
                     }
 
-                    appContext = new ServletContextHandler(context, pathPattern);
+                    ServletContextHandler handler = new ServletContextHandler();
                     Class servletClass = servletClassName == null ?
                             EmbeddedServletClient.class : Class.forName(servletClassName);
 
                     ServletHolder holder = new ServletHolder(servletClass);
-                    appContext.addServlet(holder, "/*"); //$NON-NLS-1$
+                    handler.addServlet(holder, "/*"); //$NON-NLS-1$
 
                     holder.setInitParameter("application", appName); //$NON-NLS-1$
 

@@ -30,20 +30,6 @@ import java.util.ArrayList;
  *  be able to set up class and install paths.
  */
 public class Main {
-    public static final String[] jars = {
-                                            "helma.jar", "rhino.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "commons-logging.jar", "crimson.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "xmlrpc.jar", "mail.jar", "activation.jar", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                                            "commons-fileupload.jar", "commons-codec-1.4.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "commons-io.jar", "commons-net.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "tagsoup.jar", "servlet-api-2.5.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "jetty-ajp-7.6.2.v20120308.jar", "jetty-continuation-7.6.2.v20120308.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "jetty-http-7.6.2.v20120308.jar", "jetty-io-7.6.2.v20120308.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "jetty-security-7.6.2.v20120308.jar", "jetty-server-7.6.2.v20120308.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "jetty-servlet-7.6.2.v20120308.jar", "jetty-util-7.6.2.v20120308.jar", //$NON-NLS-1$ //$NON-NLS-2$
-                                            "jetty-xml-7.6.2.v20120308.jar", //$NON-NLS-1$
-                                        };
-
     private Class serverClass;
     private Object server;
 
@@ -120,6 +106,22 @@ public class Main {
         }
     }
 
+    static void addJars(ArrayList jarlist, File dir) throws MalformedURLException {
+        File[] files = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                String n = name.toLowerCase();
+                return n.endsWith(".jar") || n.endsWith(".zip");  //$NON-NLS-1$//$NON-NLS-2$
+            }
+        });
+
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                jarlist.add(new URL("file:" + files[i].getAbsolutePath())); //$NON-NLS-1$
+                System.err.println(Messages.getString("Main.8") + ": " + files[i].getAbsolutePath()); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+    }
+
     /**
      * Create a server-wide ClassLoader from our install directory.
      * This will be used as parent ClassLoader for all application
@@ -139,26 +141,10 @@ public class Main {
         File libdir = new File(installDir, "lib"); //$NON-NLS-1$
         ArrayList jarlist = new ArrayList();
 
-        for (int i = 0; i < jars.length; i++) {
-            File jar = new File(libdir, jars[i]);
-            jarlist.add(new URL("file:" + jar.getAbsolutePath())); //$NON-NLS-1$
-        }
-
+        // add all jar files from the lib directory
+        addJars(jarlist, libdir);
         // add all jar files from the lib/ext directory
-        File extdir = new File(libdir, "ext"); //$NON-NLS-1$
-        File[] files = extdir.listFiles(new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    String n = name.toLowerCase();
-                    return n.endsWith(".jar") || n.endsWith(".zip"); //$NON-NLS-1$ //$NON-NLS-2$
-                }
-            });
-
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                jarlist.add(new URL("file:" + files[i].getAbsolutePath())); //$NON-NLS-1$
-                System.err.println(Messages.getString("Main.4") + files[i].getAbsolutePath()); //$NON-NLS-1$
-            }
-        }
+        addJars(jarlist, new File(libdir, "ext")); //$NON-NLS-1$
 
         URL[] urls = new URL[jarlist.size()];
 

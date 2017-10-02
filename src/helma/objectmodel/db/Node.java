@@ -216,6 +216,8 @@ public final class Node implements NodeInterface {
             throw new ConcurrencyException(Messages.getString("Node.3") + this + //$NON-NLS-1$
                                            Messages.getString("Node.4")); //$NON-NLS-1$
         }
+        /*
+        */
 
         tx.visitDirtyNode(this);
         this.lock = tx;
@@ -1652,12 +1654,12 @@ public final class Node implements NodeInterface {
      */
     public String getString(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getStringValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getStringValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return null;
     }
 
@@ -1670,12 +1672,12 @@ public final class Node implements NodeInterface {
      */
     public long getInteger(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getIntegerValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getIntegerValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return 0;
     }
 
@@ -1688,12 +1690,12 @@ public final class Node implements NodeInterface {
      */
     public double getFloat(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getFloatValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getFloatValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return 0.0;
     }
 
@@ -1706,12 +1708,12 @@ public final class Node implements NodeInterface {
      */
     public Date getDate(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getDateValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getDateValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return null;
     }
 
@@ -1724,12 +1726,12 @@ public final class Node implements NodeInterface {
      */
     public boolean getBoolean(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getBooleanValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getBooleanValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return false;
     }
 
@@ -1742,12 +1744,12 @@ public final class Node implements NodeInterface {
      */
     public NodeInterface getNode(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getNodeValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getNodeValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return null;
     }
 
@@ -1760,12 +1762,12 @@ public final class Node implements NodeInterface {
      */
     public Object getJavaObject(String propname) {
         Property prop = getProperty(propname);
-
-        try {
-            return prop.getJavaObjectValue();
-        } catch (Exception ignore) {
+        if (prop != null) {
+            try {
+                return prop.getJavaObjectValue();
+            } catch (Exception ignore) {
+            }
         }
-
         return null;
     }
 

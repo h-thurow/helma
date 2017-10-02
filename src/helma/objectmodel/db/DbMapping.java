@@ -1650,7 +1650,7 @@ public final class DbMapping {
         String str = value == null ? null : value.toString();
         if (str == null) {
             return null;
-        } else if (str.indexOf("'") < 0) { //$NON-NLS-1$
+        } else if (str.indexOf('\'') < 0 && str.indexOf('\\') < 0) {
             return str;
         }
 
@@ -1661,9 +1661,12 @@ public final class DbMapping {
             char c = str.charAt(i);
 
             if (c == '\'') {
-                sbuf.append('\'');
+                sbuf.append("\\'"); //$NON-NLS-1$
+            } else if (c == '\\') {
+                sbuf.append("\\\\"); //$NON-NLS-1$
+            } else {
+            	sbuf.append(c);
             }
-            sbuf.append(c);
         }
         return sbuf.toString();
     }

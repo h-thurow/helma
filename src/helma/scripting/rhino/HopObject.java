@@ -723,24 +723,9 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
             if ("constructor".equals(name) && value instanceof NativeFunction) { //$NON-NLS-1$
                 name = "__constructor__"; //$NON-NLS-1$
             }
-            // register property for PropertyRecorderInterface interface
-            if (this.isRecording) {
-                this.changedProperties.add(name);
-                if (value instanceof Function) {
-                    // reset function's parent scope, needed because of the way we compile
-                    // prototype code, using the prototype objects as scope
-                    Scriptable scriptable = (Scriptable) value;
-                    while (scriptable != null) {
-                        Scriptable scope = scriptable.getParentScope();
-                        if (scope == this) {
-                            scriptable.setParentScope(this.core.global);
-                            break;
-                        }
-                        scriptable = scope;
-                    }
-                }
-            }
-            super.put(name, start, value);
+            propertyChanged(name, value, null, null);
+            // register property for PropertyRecorder interface
+           super.put(name, start, value);
         } else if (super.has(name, start)) {
             // if property is defined as ScriptableObject slot
             // (e.g. via __defineGetter__/__defineSetter__)
@@ -785,6 +770,38 @@ public class HopObject extends ScriptableObject implements Wrapper, PropertyReco
                 node.setNode(name, (NodeInterface) value);
             } else {
                 node.setJavaObject(name, value);
+            }
+        }
+    }
+
+    protected void propertyChanged(Object id, Object value, Object get,
+            Object set) {
+        if (isRecording) {
+            changedProperties.add(id.toString());
+        }
+        if (value != null)
+            correctScope(value);
+        if (get != null)
+            correctScope(get);
+        if (set != null)
+            correctScope(set);
+    }
+
+    protected void correctScope(Object object) {
+        if (object instanceof Function) {
+            // reset function's parent scope, needed because of the way we compile
+            // prototype code, using the prototype objects as scope
+            Scriptable scriptable = (Scriptable) object;
+            while (scriptable != null) {
+                Scriptable scope = scriptable.getParentScope();
+                // do not just support switching of this HopObject prototype to
+                // global, but all prototypes, e.g. when compiling into
+                // another prototype from one prototype folder (bad practise!)
+                if (scope instanceof HopObject) {
+                    scriptable.setParentScope(core.global);
+                    break;
+                }
+                scriptable = scope;
             }
         }
     }

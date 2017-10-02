@@ -100,8 +100,8 @@ public class Profiler implements Debugger {
 
     class ProfilerFrame implements DebugFrame {
 
-        Stack timer = new Stack();
-        int runtime, invocations, lineNumber;
+        int runtime, invocations, lineNumber, recursion;
+        long start;
         String name;
 
         ProfilerFrame(String name) {
@@ -115,8 +115,10 @@ public class Profiler implements Debugger {
         public void onEnter(Context cx, Scriptable activation,
                             Scriptable thisObj, Object[] args) {
 
-            long time = System.nanoTime();
-            this.timer.push(new Long(time));
+            if (recursion == 0) {
+                start = System.nanoTime();
+            }
+            recursion++;
         }
 
         /**
@@ -130,9 +132,10 @@ public class Profiler implements Debugger {
          *  Called when the function or script for this frame is about to return.
          */
         public void onExit(Context cx, boolean byThrow, Object resultOrException) {
-            this.invocations ++;
-            Long time = (Long) this.timer.pop();
-            this.runtime += System.nanoTime() - time.longValue();
+            this.invocations++;
+            if (--recursion == 0) {
+                runtime += System.nanoTime() - start;
+            }
         }
 
         /**
@@ -152,15 +155,15 @@ public class Profiler implements Debugger {
         }
 
         public String renderLine(int prefixLength) {
-            long millis = Math.round(this.runtime / 1000000);
+            double millis = this.runtime / 1000000.0;
             Formatter formatter = new java.util.Formatter();
             Object[] args = new Object[] {
-                    Integer.valueOf((int) millis),
-                    Integer.valueOf(Math.round(millis / this.invocations)),
+                    Double.valueOf(millis),
+                    Double.valueOf(millis / this.invocations),
                     Integer.valueOf(this.invocations),
-                    this.name.substring(prefixLength)
+                    name.substring(prefixLength)
             };
-            formatter.format("%1$7d ms %2$5d ms %3$6d    %4$s%n", args); //$NON-NLS-1$
+            formatter.format("%9.3f ms %9.3f ms %6d    %s%n", args); //$NON-NLS-1$
             formatter.close();
             return formatter.toString();
         }

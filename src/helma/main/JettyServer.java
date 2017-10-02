@@ -14,7 +14,6 @@ package helma.main;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.ajp.Ajp13SocketConnector;
-import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.xml.XmlConfiguration;
 
