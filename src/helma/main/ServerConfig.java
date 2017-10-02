@@ -17,12 +17,11 @@ import java.net.InetSocketAddress;
 /**
  * Utility class for server config
  */
- 
+
 public class ServerConfig {
 
     private InetSocketAddress xmlrpcPort = null;
     private InetSocketAddress websrvPort = null;
-    private InetSocketAddress ajp13Port  = null;
     private File propFile   = null;
     private File homeDir    = null;
     private File configFile = null;
@@ -48,10 +47,6 @@ public class ServerConfig {
         return (this.websrvPort != null);
     }
 
-    public boolean hasAjp13Port() {
-        return (this.ajp13Port != null);
-    }
-
     public boolean hasApps() {
         return (this.apps != null);
     }
@@ -72,14 +67,6 @@ public class ServerConfig {
         this.websrvPort = websrvPort;
     }
 
-    public InetSocketAddress getAjp13Port() {
-        return this.ajp13Port;
-    }
-
-    public void setAjp13Port(InetSocketAddress ajp13Port) {
-        this.ajp13Port = ajp13Port;
-    }
-
     public File getPropFile() {
         return this.propFile;
     }
@@ -95,7 +82,7 @@ public class ServerConfig {
     public void setHomeDir(File homeDir) {
         this.homeDir = homeDir == null ? null : homeDir.getAbsoluteFile();
     }
-    
+
     public File getConfigFile() {
 		return this.configFile;
 	}

@@ -61,11 +61,17 @@ public class Logging extends LogFactory {
         }
         // normalize log name
         logname = logname.replaceAll("[^\\w\\d\\.]", ""); //$NON-NLS-1$ //$NON-NLS-2$
-        if ("console".equals(this.logdir)) { //$NON-NLS-1$
-            return getConsoleLog();
+        if ("console".equals(logdir)) { //$NON-NLS-1$
+            if (logname.startsWith("org.eclipse.jetty.")) //$NON-NLS-1$
+                return getConsoleLog().getSedatedLog();
+            else
+                return getConsoleLog();
+        } else {
+            if (logname.startsWith("org.eclipse.jetty.")) //$NON-NLS-1$
+                return getFileLog(logname).getSedatedLog();
+            else
+                return getFileLog(logname);
         }
-
-        return getFileLog(logname);
     }
 
     /**

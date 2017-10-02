@@ -192,14 +192,6 @@ public class Server implements Runnable {
             }
         }
 
-        if (!config.hasAjp13Port() && sysProps.getProperty("ajp13Port") != null) { //$NON-NLS-1$
-            try {
-                config.setAjp13Port(getInetSocketAddress(sysProps.getProperty("ajp13Port"))); //$NON-NLS-1$
-            } catch (Exception portx) {
-                throw new Exception(Messages.getString("Server.7") + portx); //$NON-NLS-1$
-            }
-        }
-
         if (!config.hasXmlrpcPort() && sysProps.getProperty("xmlrpcPort") != null) { //$NON-NLS-1$
             try {
                 config.setXmlrpcPort(getInetSocketAddress(sysProps.getProperty("xmlrpcPort"))); //$NON-NLS-1$
@@ -236,12 +228,6 @@ public class Server implements Runnable {
                     config.setWebsrvPort(getInetSocketAddress(args[++i]));
                 } catch (Exception portx) {
                     throw new Exception(Messages.getString("Server.10") + portx); //$NON-NLS-1$
-                }
-            } else if (args[i].equals("-jk") && ((i + 1) < args.length)) { //$NON-NLS-1$
-                try {
-                    config.setAjp13Port(getInetSocketAddress(args[++i]));
-                } catch (Exception portx) {
-                    throw new Exception(Messages.getString("Server.11") + portx); //$NON-NLS-1$
                 }
             } else if (args[i].equals("-c") && ((i + 1) < args.length)) { //$NON-NLS-1$
                 config.setConfigFile(new File(args[++i]));
@@ -315,7 +301,6 @@ public class Server implements Runnable {
         System.out.println(Messages.getString("Server.20")); //$NON-NLS-1$
         System.out.println(Messages.getString("Server.21")); //$NON-NLS-1$
         System.out.println(Messages.getString("Server.22")); //$NON-NLS-1$
-        System.out.println(Messages.getString("Server.23")); //$NON-NLS-1$
         System.out.println(""); //$NON-NLS-1$
         System.out.println(Messages.getString("Server.24")); //$NON-NLS-1$
         System.out.println(Messages.getString("Server.25")); //$NON-NLS-1$
@@ -343,9 +328,6 @@ public class Server implements Runnable {
                 checkPort(config.getXmlrpcPort());
             }
 
-            if (config.hasAjp13Port()) {
-                checkPort(config.getAjp13Port());
-            }
         } catch (Exception running) {
             System.out.println(running.getMessage());
             System.exit(1);

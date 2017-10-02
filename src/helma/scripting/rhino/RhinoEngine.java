@@ -580,6 +580,7 @@ public class RhinoEngine implements ScriptingEngineInterface {
 
             sout.writeObject(obj);
             sout.flush();
+            sout.close();
         } finally {
             Context.exit();
         }
