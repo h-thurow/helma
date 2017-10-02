@@ -1,8 +1,10 @@
+apps/*
+!apps/manage
 bin/*
 classes/
+db/*
 launcher.jar
 lib/helma*.jar
-work/
 lib/ext/*
-db/*
 log/*
+work/

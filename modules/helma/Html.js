@@ -19,7 +19,7 @@
  * @fileoverview Fields and methods of the helma.Html
  * and helma.Html.Tablewriter classes.
  * <br /><br />
- * To use this optional module, its repository needs to be added to the 
+ * To use this optional module, its repository needs to be added to the
  * application, for example by calling app.addRepository('modules/helma/Html.js')
  */
 
@@ -58,7 +58,7 @@ helma.Html.renderMarkupPart = function(name, start, end, attr) {
     res.write(name);
     if (attr) {
         for (var i in attr) {
-            if (i == "prefix" || i == "suffix" || 
+            if (i == "prefix" || i == "suffix" ||
                 i == "default" || attr[i] == null) {
                 continue;
             }
@@ -267,9 +267,7 @@ helma.Html.prototype.input = function(param) {
         return;
     }
     var attr = Object.prototype.reduce.call(param);
-    attr.type = "text";
-    if (!attr.size)
-        attr.size = 20;
+    attr.type = param.type || "text";
     attr.value = (attr.value != null) ? encodeForm(attr.value) : "";
     this.tag("input", attr);
     return;
@@ -404,7 +402,7 @@ helma.Html.prototype.submit = function(param) {
         attr.name = attr.type;
     attr.value = (attr.value != null) ? encodeForm(attr.value) : attr.type;
     this.tag("input", attr);
-    return;  
+    return;
 };
 
 /**
@@ -435,7 +433,7 @@ helma.Html.prototype.button = function(param) {
         attr.name = attr.type;
     attr.value = (attr.value != null) ? encodeForm(attr.value) : attr.type;
     this.tag("input", attr);
-    return;  
+    return;
 };
 
 /**
@@ -454,8 +452,8 @@ helma.Html.prototype.buttonAsString = function(attr) {
 /**
  * Renders a x/html drop down select box
  * @param {Object} param An object containing the tag attributes
- * @param {Array} options Either an array of strings, an array with 
- * several <code>{value: v, display: d}</code> objects, or a collection 
+ * @param {Array} options Either an array of strings, an array with
+ * several <code>{value: v, display: d}</code> objects, or a collection
  * of <code>["value", "display"]</code> arrays in an array
  * @param {String} selectedValue The value to pre-select
  * @param {String} firstOption An optional first option to display in the
@@ -467,8 +465,6 @@ helma.Html.prototype.dropDown = function(param, options, selectedValue, firstOpt
         return;
     }
     var attr = Object.prototype.reduce.call(param);
-    if (!attr.size)
-        attr.size = 1;
     this.openTag("select", attr);
     res.write("\n ");
     if (firstOption) {
@@ -477,7 +473,13 @@ helma.Html.prototype.dropDown = function(param, options, selectedValue, firstOpt
         this.closeTag("option");
         res.write("\n ");
     }
+    var hasOpenGroup = false;
     for (var i in options) {
+        if (options[i].group) {
+            hasOpenGroup && html.closeTag("optgroup");
+            html.openTag("optgroup", {label: options[i].group});
+            hasOpenGroup = true;
+        }
         var attr = new Object();
         var display = "";
         if ((options[i] instanceof Array) && options[i].length > 0) {
@@ -503,6 +505,7 @@ helma.Html.prototype.dropDown = function(param, options, selectedValue, firstOpt
         this.closeTag("option");
         res.write("\n ");
     }
+    hasOpenGroup && html.closeTag("optgroup");
     this.closeTag("select");
     res.write("\n ");
     return;
@@ -511,8 +514,8 @@ helma.Html.prototype.dropDown = function(param, options, selectedValue, firstOpt
 /**
  * Returns a rendered x/html drop down select box
  * @param {Object} param An object containing the tag attributes
- * @param {Array} options Either an array of strings, an array with 
- * several <code>{value: v, display: d}</code> objects, or a collection 
+ * @param {Array} options Either an array of strings, an array with
+ * several <code>{value: v, display: d}</code> objects, or a collection
  * of <code>["value", "display"]</code> arrays in an array
  * @param {String} selectedValue The value to pre-select
  * @param {String} firstOption An optional first option to display in the
@@ -649,7 +652,7 @@ helma.Html.prototype.tableAsString = function(headers, data, attr) {
 
 /**
  * Renders an x/html opening link tag
- * @param {Object} attr An object containing the tag attributes 
+ * @param {Object} attr An object containing the tag attributes
  */
 helma.Html.prototype.openLink = function(attr) {
     this.openTag("a", attr);
@@ -658,7 +661,7 @@ helma.Html.prototype.openLink = function(attr) {
 
 /**
  * Returns an x/html opening link tag
- * @param {Object} attr An object containing the tag attributes 
+ * @param {Object} attr An object containing the tag attributes
  * @returns The rendered open link tag
  * @type String
  * @see #openTag
@@ -751,8 +754,6 @@ helma.Html.prototype.password = function(attr) {
         return;
     }
     attr.type = "password";
-    if (!attr.size)
-        attr.size = 20;
     this.tag("input", attr);
     return;
 };
