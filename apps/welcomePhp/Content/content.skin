@@ -1,5 +1,5 @@
 <div class="boxed">
 	<h2><% this.title %></h2>
 	<p><% this.text %></p>
-	<p><a href="<% this.href page="edit"%>">edit</a> | <a href="<% this.href page="delete"%>">delete</a></p>
+	<p><a href="<% this.href action="edit"%>">edit</a> | <a href="<% this.href action="delete"%>">delete</a></p>
 </div>

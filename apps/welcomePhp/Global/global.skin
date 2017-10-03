@@ -22,20 +22,20 @@ Released for free under a Creative Commons Attribution 2.5 License
 	<div id="sidebar">
 		<div id="menu">
 			<ul>
-				<li class="active"><a href="<% root.href %>" title="Welcome Homepage">Welcome Homepage</a></li>
-				<li><a href="http://helma.org" title="Helma Homepage">Hop Homepage</a></li>
-				<li><a href="http://github.com/helma-next/helma-next" title="GitHub Homepage">GitHub Homepage</a></li>
+				<li class="active"><a href="<% root.href %>" title="Welcome Homepage">Welcome</a></li>
+				<li><a href="http://helma.org" title="Helma Homepage">Helma Website</a></li>
+				<li><a href="http://github.com/zoesolutions/helma" title="GitHub Homepage">GitHub</a></li>
 			</ul>
 		</div>
 		<div class="extra">&nbsp;</div>
 	</div>
 	<div id="content">
-		<a href="<% root.href page="add" %>">add</a>
+		<a href="<% root.href action="add" %>">add</a>
 		<% param.content %>
 	</div>
 </div>
 <div id="footer">
-	<p id="legal">Copyright 2010 dowee it solutions GmbH. All rights Reserved.</p>
+	<p id="legal">Copyright 2017 Daniel Ruthardt. All rights Reserved.</p>
 	<p id="links">Designed by <a href="http://www.freecsstemplates.org/">Free CSS Templates</a>.</p>
 </div>
 </body>
