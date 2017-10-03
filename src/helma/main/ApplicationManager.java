@@ -487,18 +487,18 @@ public class ApplicationManager implements XmlRpcHandler {
                         rhandler.setResourceBase(staticContent.getPath());
                         rhandler.setWelcomeFiles(staticHome);
 
-                        staticContext = context.addContext(staticMountpoint, ""); //$NON-NLS-1$
+                        staticContext = ApplicationManager.this.context.addContext(staticMountpoint, ""); //$NON-NLS-1$
                         staticContext.setHandler(rhandler);
 
                         staticContext.start();
                     }
 
-                    ServletContextHandler handler = new ServletContextHandler();
+                    appContext = new ServletContextHandler(context, pathPattern);
                     Class servletClass = servletClassName == null ?
                             EmbeddedServletClient.class : Class.forName(servletClassName);
 
                     ServletHolder holder = new ServletHolder(servletClass);
-                    handler.addServlet(holder, "/*"); //$NON-NLS-1$
+                    appContext.addServlet(holder, "/*"); //$NON-NLS-1$
 
                     holder.setInitParameter("application", appName); //$NON-NLS-1$
 
