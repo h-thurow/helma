@@ -11,10 +11,12 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.NodeInterface;
-import helma.framework.repository.FileResource;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 
-import java.io.*;
+import helma.framework.repository.FileResource;
+import helma.objectmodel.NodeInterface;
 
 /**
  * Manages skins for a Helma application

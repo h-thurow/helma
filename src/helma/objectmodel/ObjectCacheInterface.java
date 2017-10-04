@@ -11,9 +11,9 @@
 
 package helma.objectmodel;
 
-import helma.framework.core.Application;
-
 import java.util.Properties;
+
+import helma.framework.core.Application;
 
 /**
  * Interface Helma object cache classes need to implement.

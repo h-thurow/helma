@@ -11,20 +11,23 @@
 
 package helma.scripting.quercus;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Map;
 
-import javax.management.StringValueExp;
+import com.caucho.quercus.annotation.Construct;
+import com.caucho.quercus.annotation.Optional;
+import com.caucho.quercus.env.ArrayValueImpl;
+import com.caucho.quercus.env.Env;
+import com.caucho.quercus.env.NullValue;
+import com.caucho.quercus.env.NumberValue;
+import com.caucho.quercus.env.ObjectExtValue;
+import com.caucho.quercus.env.StringValue;
+import com.caucho.quercus.env.Value;
+import com.caucho.quercus.env.Var;
 
-import helma.framework.PathElementInterface;
 import helma.framework.RedirectException;
-import helma.framework.ResponseTrans;
 import helma.framework.core.Prototype;
 import helma.framework.core.Skin;
 import helma.framework.repository.ResourceInterface;
@@ -33,31 +36,6 @@ import helma.objectmodel.db.DbKey;
 import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Node;
 import helma.scripting.ScriptingException;
-
-import com.caucho.config.program.ValueArg;
-import com.caucho.quercus.annotation.Construct;
-import com.caucho.quercus.annotation.Optional;
-import com.caucho.quercus.annotation.This;
-import com.caucho.quercus.env.ArrayValue;
-import com.caucho.quercus.env.ArrayValueImpl;
-import com.caucho.quercus.env.Env;
-import com.caucho.quercus.env.LongValue;
-import com.caucho.quercus.env.NullValue;
-import com.caucho.quercus.env.NumberValue;
-import com.caucho.quercus.env.ObjectExtJavaValue;
-import com.caucho.quercus.env.ObjectExtValue;
-import com.caucho.quercus.env.QuercusClass;
-import com.caucho.quercus.env.StringBuilderValue;
-import com.caucho.quercus.env.StringValue;
-import com.caucho.quercus.env.Value;
-import com.caucho.quercus.env.Var;
-import com.caucho.quercus.function.AbstractFunction;
-import com.caucho.quercus.program.Function;
-import com.caucho.quercus.program.InterpretedClassDef;
-import com.caucho.quercus.program.JavaClassDef;
-import com.caucho.quercus.program.ObjectMethod;
-import com.caucho.server.snmp.types.IntegerValue;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 /**
  * A wrapper for NodeInterface objects.

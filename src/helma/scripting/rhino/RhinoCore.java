@@ -11,20 +11,35 @@
 
 package helma.scripting.rhino;
 
-import helma.scripting.rhino.extensions.*;
-import helma.framework.core.*;
-import helma.framework.repository.ResourceInterface;
-import helma.objectmodel.*;
-import helma.objectmodel.db.DbMapping;
-import helma.objectmodel.db.NodeHandle;
-import helma.scripting.*;
-import helma.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
+import java.net.URI;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
 
 import org.eclipse.wst.jsdt.debug.rhino.debugger.RhinoDebugger;
+import org.mozilla.javascript.BaseFunction;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextAction;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.BaseFunction;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.JavaScriptException;
@@ -32,21 +47,32 @@ import org.mozilla.javascript.LazilyLoadedCtor;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
+import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.WrapFactory;
 import org.mozilla.javascript.Wrapper;
 import org.mozilla.javascript.commonjs.module.RequireBuilder;
-import org.mozilla.javascript.commonjs.module.provider.*;
+import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider;
+import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 import org.mozilla.javascript.tools.debugger.ScopeProvider;
 
-import java.io.*;
-import java.net.URI;
-import java.text.*;
-import java.util.*;
-import java.lang.ref.WeakReference;
+import helma.framework.core.Application;
+import helma.framework.core.Prototype;
+import helma.framework.core.Skin;
+import helma.framework.repository.ResourceInterface;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.PropertyInterface;
+import helma.objectmodel.db.DbMapping;
+import helma.objectmodel.db.NodeHandle;
+import helma.scripting.ScriptingEngineInterface;
+import helma.scripting.ScriptingException;
+import helma.util.CacheMap;
+import helma.util.ResourceProperties;
+import helma.util.SystemMap;
+import helma.util.WeakCacheMap;
+import helma.util.WrappedMap;
 
 /**
  * This is the implementation of ScriptingEnvironment for the Mozilla Rhino EcmaScript interpreter.

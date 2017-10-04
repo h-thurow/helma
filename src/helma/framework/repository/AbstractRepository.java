@@ -11,11 +11,11 @@
 
 package helma.framework.repository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Iterator;
-import java.io.IOException;
+import java.util.List;
 
 /**
  * Provides common methods and fields for the default implementations of the

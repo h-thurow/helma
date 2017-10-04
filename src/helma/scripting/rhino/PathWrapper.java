@@ -11,10 +11,15 @@
 
 package helma.scripting.rhino;
 
-import helma.framework.core.RequestPath;
-import org.mozilla.javascript.*;
-
 import java.io.UnsupportedEncodingException;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.Wrapper;
+
+import helma.framework.core.RequestPath;
 
 /**
  * This class wraps around instances of helma.framework.core.RequestPath and

@@ -11,11 +11,11 @@
 
 package helma.extensions;
 
+import java.util.HashMap;
+
 import helma.framework.core.Application;
 import helma.main.Server;
 import helma.scripting.ScriptingEngineInterface;
-
-import java.util.HashMap;
 
 /**
  * Helma extensions have to implement this. The extensions to be loaded are

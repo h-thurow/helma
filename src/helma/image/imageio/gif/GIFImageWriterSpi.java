@@ -15,9 +15,11 @@
 
 package helma.image.imageio.gif;
 
-import java.util.*;
-import javax.imageio.*;
-import javax.imageio.spi.*;
+import java.util.Locale;
+
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriter;
+import javax.imageio.spi.ImageWriterSpi;
 
 public class GIFImageWriterSpi extends ImageWriterSpi {
 	

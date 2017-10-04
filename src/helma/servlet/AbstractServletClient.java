@@ -14,21 +14,46 @@
 
 package helma.servlet;
 
-import helma.framework.*;
-import helma.framework.core.Application;
-import helma.util.*;
-
-import java.io.*;
-import java.util.*;
-import java.security.SecureRandom;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.security.NoSuchAlgorithmException;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.StringTokenizer;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.ProgressListener;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.*;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
+
+import helma.framework.CookieTrans;
+import helma.framework.RequestTrans;
+import helma.framework.ResponseTrans;
+import helma.framework.UploadStatus;
+import helma.framework.core.Application;
+import helma.util.MimePart;
+import helma.util.UrlEncoded;
 
 /**
  * This is an abstract Hop servlet adapter. This class communicates with hop applications

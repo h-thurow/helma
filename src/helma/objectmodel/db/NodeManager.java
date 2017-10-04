@@ -11,18 +11,40 @@
 
 package helma.objectmodel.db;
 
-import helma.framework.core.Application;
-import helma.framework.core.RequestEvaluator;
-import helma.objectmodel.*;
-import helma.objectmodel.dom.XmlDatabase;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
-import java.sql.*;
-import java.util.*;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import helma.framework.core.Application;
+import helma.framework.core.RequestEvaluator;
+import helma.objectmodel.DatabaseException;
+import helma.objectmodel.DatabaseInterface;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.ObjectCacheInterface;
+import helma.objectmodel.TransactionInterface;
+import helma.objectmodel.dom.XmlDatabase;
 
 /**
  * The NodeManager is responsible for fetching Nodes from the internal or

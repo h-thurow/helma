@@ -1,12 +1,12 @@
 package helma.util;
 
+import java.util.Iterator;
+import java.util.List;
+
 import helma.framework.core.Application;
 import helma.framework.core.RequestEvaluator;
 import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.ScriptingException;
-
-import java.util.Iterator;
-import java.util.List;
 
 public class DefaultNodeChangeListener implements
 		helma.objectmodel.db.NodeChangeListenerInterface {

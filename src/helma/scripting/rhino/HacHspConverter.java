@@ -11,12 +11,12 @@
 
 package helma.scripting.rhino;
 
-import helma.framework.repository.ResourceInterface;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+
+import helma.framework.repository.ResourceInterface;
 
 /**
  *  Support for .hac (action) and .hsp (template) files

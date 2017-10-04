@@ -11,17 +11,24 @@
 
 package helma.framework.core;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import helma.framework.repository.FileResource;
+import helma.framework.repository.RepositoryInterface;
+import helma.framework.repository.ResourceInterface;
+import helma.framework.repository.ResourceTracker;
 import helma.objectmodel.db.DbMapping;
+import helma.scripting.ScriptingEngineInterface;
 import helma.util.ResourceProperties;
 import helma.util.WrappedMap;
-import helma.framework.repository.ResourceInterface;
-import helma.framework.repository.RepositoryInterface;
-import helma.framework.repository.ResourceTracker;
-import helma.framework.repository.FileResource;
-import helma.scripting.ScriptingEngineInterface;
-
-import java.io.*;
-import java.util.*;
 
 /**
  * The Prototype class represents Script prototypes/type defined in a Helma

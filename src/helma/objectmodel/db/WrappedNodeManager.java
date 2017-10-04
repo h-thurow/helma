@@ -11,10 +11,10 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.ObjectNotFoundException;
-
-import java.util.Vector;
 import java.util.List;
+import java.util.Vector;
+
+import helma.objectmodel.ObjectNotFoundException;
 
 /**
  * A wrapper around NodeManager that catches most Exceptions, or rethrows them as RuntimeExceptions.

@@ -11,10 +11,11 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.NodeInterface;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.Serializable;
+
+import helma.objectmodel.NodeInterface;
 
 /**
  * Container implementation for subnode collections.

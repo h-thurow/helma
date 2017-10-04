@@ -11,8 +11,6 @@
 
 package helma.objectmodel.db;
 
-import helma.util.ResourceProperties;
-
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -21,10 +19,11 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import java.util.Hashtable;
+import helma.util.ResourceProperties;
 
 /**
  *  This class describes a releational data source (URL, driver, user and password).

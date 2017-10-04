@@ -11,8 +11,9 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.NodeInterface;
 import java.io.Serializable;
+
+import helma.objectmodel.NodeInterface;
 
 /**
  * This class is a handle or reference to a Node. This is to abstract from different

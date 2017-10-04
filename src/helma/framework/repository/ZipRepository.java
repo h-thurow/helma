@@ -11,13 +11,14 @@
 
 package helma.framework.repository;
 
-import helma.util.StringUtils;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import helma.util.StringUtils;
 
 public final class ZipRepository extends AbstractRepository {
 

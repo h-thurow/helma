@@ -11,20 +11,30 @@
 
 package helma.main;
 
-import helma.extensions.HelmaExtensionInterface;
-import helma.framework.repository.FileResource;
-import helma.framework.core.*;
-import helma.objectmodel.db.DbSource;
-import helma.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.UnknownHostException;
+import java.util.Hashtable;
+import java.util.Locale;
+import java.util.StringTokenizer;
+import java.util.TimeZone;
+import java.util.Vector;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xmlrpc.*;
+import org.apache.xmlrpc.WebServer;
+import org.apache.xmlrpc.XmlRpc;
 
-import java.io.*;
-import java.util.*;
-import java.net.*;
-
+import helma.extensions.HelmaExtensionInterface;
+import helma.framework.core.Application;
+import helma.framework.repository.FileResource;
+import helma.objectmodel.db.DbSource;
+import helma.util.Logging;
 import helma.util.ResourceProperties;
+import helma.util.StringUtils;
 
 /**
  * Helma server main class.

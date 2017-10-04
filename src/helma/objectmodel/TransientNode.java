@@ -11,17 +11,18 @@
 
 package helma.objectmodel;
 
-import helma.framework.PathElementInterface;
-import helma.objectmodel.db.DbMapping;
-import helma.objectmodel.db.Relation;
-import helma.objectmodel.db.Node;
-import java.io.*;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import helma.framework.PathElementInterface;
+import helma.objectmodel.db.DbMapping;
+import helma.objectmodel.db.Node;
+import helma.objectmodel.db.Relation;
 
 /**
  * A transient implementation of NodeInterface. An instance of this class can't be

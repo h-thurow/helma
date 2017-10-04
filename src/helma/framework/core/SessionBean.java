@@ -11,11 +11,11 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.NodeInterface;
-import helma.framework.UploadStatus;
-
 import java.io.Serializable;
 import java.util.Date;
+
+import helma.framework.UploadStatus;
+import helma.objectmodel.NodeInterface;
 
 /**
  * The SessionBean wraps a <code>Session</code> object and

@@ -11,12 +11,13 @@
 
 package helma.scripting.rhino;
 
-import helma.objectmodel.NodeInterface;
-import helma.objectmodel.db.NodeHandle;
-import helma.objectmodel.db.Node;
+import java.io.Serializable;
+
 import org.mozilla.javascript.Context;
 
-import java.io.Serializable;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.db.Node;
+import helma.objectmodel.db.NodeHandle;
 
 /**
  * Serialization proxy/placeholder interface. This is used for

@@ -11,19 +11,23 @@
 
 package helma.objectmodel.db;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 import helma.framework.core.RequestEvaluator;
 import helma.objectmodel.DatabaseException;
 import helma.objectmodel.NodeInterface;
 import helma.objectmodel.TransactionInterface;
 import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.ScriptingException;
-
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.util.*;
-
-import org.apache.commons.logging.Log;
 
 /**
  * A subclass of thread that keeps track of changed nodes and triggers

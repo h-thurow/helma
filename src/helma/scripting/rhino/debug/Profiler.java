@@ -11,13 +11,16 @@
 
 package helma.scripting.rhino.debug;
 
-import org.mozilla.javascript.debug.Debugger;
-import org.mozilla.javascript.debug.DebuggableScript;
-import org.mozilla.javascript.debug.DebugFrame;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Formatter;
+import java.util.HashMap;
+
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
-
-import java.util.*;
+import org.mozilla.javascript.debug.DebugFrame;
+import org.mozilla.javascript.debug.DebuggableScript;
+import org.mozilla.javascript.debug.Debugger;
 
 import helma.util.StringUtils;
 

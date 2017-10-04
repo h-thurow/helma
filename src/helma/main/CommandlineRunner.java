@@ -11,9 +11,10 @@
 
 package helma.main;
 
-import helma.framework.core.Application;
 import java.io.File;
-import java.util.*;
+import java.util.Vector;
+
+import helma.framework.core.Application;
 
 /**
  *  Helma command line runner class. This class creates and starts a single application,

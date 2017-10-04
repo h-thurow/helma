@@ -11,9 +11,11 @@
 
 package helma.servlet;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+
 import helma.framework.core.Application;
-import helma.main.*;
-import javax.servlet.*;
+import helma.main.Server;
 
 /**
  *  Servlet client that runs a Helma application for the embedded

@@ -11,9 +11,11 @@
 
 package helma.objectmodel;
 
+import java.util.Date;
+import java.util.Enumeration;
+
 import helma.framework.PathElementInterface;
 import helma.objectmodel.db.DbMapping;
-import java.util.*;
 
 /**
  * Interface that all Nodes implement. Currently, there are two implementations:

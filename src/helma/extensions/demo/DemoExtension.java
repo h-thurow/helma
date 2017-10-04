@@ -12,13 +12,14 @@
 package helma.extensions.demo;
 
 
+import java.util.HashMap;
+
 import helma.extensions.ConfigurationException;
 import helma.extensions.HelmaExtensionInterface;
 import helma.framework.core.Application;
 import helma.main.Server;
 import helma.scripting.ScriptingEngineInterface;
 import helma.scripting.rhino.RhinoEngine;
-import java.util.HashMap;
 
 /**
  * a demo extension implementation, to activate this add <code>extensions =

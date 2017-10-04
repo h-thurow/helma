@@ -11,16 +11,24 @@
 
 package helma.objectmodel.dom;
 
-import helma.objectmodel.*;
-import helma.objectmodel.db.NodeManager;
-import helma.objectmodel.db.Node;
-import helma.framework.core.Application;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.xml.sax.SAXException;
+
+import helma.framework.core.Application;
+import helma.objectmodel.DatabaseException;
+import helma.objectmodel.DatabaseInterface;
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.ObjectNotFoundException;
+import helma.objectmodel.TransactionInterface;
+import helma.objectmodel.db.Node;
+import helma.objectmodel.db.NodeManager;
 
 /**
  * A simple XML-database

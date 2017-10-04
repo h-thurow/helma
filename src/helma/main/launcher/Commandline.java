@@ -11,7 +11,7 @@
 
 package helma.main.launcher;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 
 /**
  *  Helma bootstrap class. Figures out Helma home directory, sets up class path and

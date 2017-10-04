@@ -11,11 +11,12 @@
 
 package helma.main;
 
-import helma.framework.core.AppClassLoader;
 import java.io.FileDescriptor;
 import java.net.InetAddress;
 import java.security.Permission;
 import java.util.HashSet;
+
+import helma.framework.core.AppClassLoader;
 
 /**
  *  Liberal security manager for Helma system that makes sure application code

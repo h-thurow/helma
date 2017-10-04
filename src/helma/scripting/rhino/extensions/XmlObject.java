@@ -11,14 +11,17 @@
 
 package helma.scripting.rhino.extensions;
 
-import helma.scripting.rhino.*;
-import helma.objectmodel.NodeInterface;
-import helma.objectmodel.db.Node;
-import helma.objectmodel.dom.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.db.Node;
+import helma.objectmodel.dom.XmlConverter;
+import helma.objectmodel.dom.XmlReader;
+import helma.objectmodel.dom.XmlWriter;
+import helma.scripting.rhino.RhinoCore;
 
 /**
  *  This class provides methods for converting HopObjects to XML and back.

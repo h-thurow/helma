@@ -11,9 +11,6 @@
 
 package helma.objectmodel.db;
 
-import helma.objectmodel.NodeInterface;
-import helma.objectmodel.PropertyInterface;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,6 +18,9 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import helma.objectmodel.NodeInterface;
+import helma.objectmodel.PropertyInterface;
 
 /**
  * A property implementation for Nodes stored inside a database. Basically

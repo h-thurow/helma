@@ -12,8 +12,6 @@
 
 package helma.scripting.rhino.observer;
 
-import helma.scripting.rhino.HopObject;
-
 import java.util.ArrayList;
 
 import org.mozilla.javascript.BaseFunction;
@@ -21,6 +19,8 @@ import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
+
+import helma.scripting.rhino.HopObject;
 
 class FunctionObserver extends BaseFunction implements Observer {
 	/**

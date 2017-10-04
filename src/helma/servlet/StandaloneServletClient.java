@@ -11,15 +11,17 @@
 
 package helma.servlet;
 
-import helma.framework.repository.RepositoryInterface;
+import java.io.File;
+import java.util.ArrayList;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+
 import helma.framework.core.Application;
 import helma.framework.repository.FileRepository;
-import helma.main.ServerConfig;
+import helma.framework.repository.RepositoryInterface;
 import helma.main.Server;
-
-import java.io.*;
-import javax.servlet.*;
-import java.util.*;
+import helma.main.ServerConfig;
 
 /**
  *  Standalone servlet client that runs a Helma application all by itself

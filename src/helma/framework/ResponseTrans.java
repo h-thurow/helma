@@ -11,18 +11,27 @@
 
 package helma.framework;
 
-import helma.framework.core.Skin;
-import helma.framework.core.Application;
-import helma.util.*;
-import helma.scripting.ScriptingException;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.security.*;
-import java.util.*;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xmlrpc.XmlRpcResponseProcessor;
+
+import helma.framework.core.Application;
+import helma.framework.core.Skin;
+import helma.scripting.ScriptingException;
+import helma.util.HtmlEncoder;
+import helma.util.SystemMap;
 
 /**
  * A Transmitter for a response to the servlet client. Objects of this

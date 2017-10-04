@@ -11,10 +11,10 @@
 
 package helma.objectmodel;
 
-import helma.framework.core.Application;
-
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+
+import helma.framework.core.Application;
 
 /**
  * Interface that is implemented by Database wrappers

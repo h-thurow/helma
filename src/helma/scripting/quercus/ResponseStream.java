@@ -11,12 +11,12 @@
 
 package helma.scripting.quercus;
 
-import helma.framework.ResponseTrans;
-
 import java.io.IOException;
 import java.util.Arrays;
 
 import com.caucho.vfs.StreamImpl;
+
+import helma.framework.ResponseTrans;
 
 /**
  * This is a helper class wich ensures to have the full functionality of the PHP scripting language 

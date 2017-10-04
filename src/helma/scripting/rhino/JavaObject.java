@@ -11,15 +11,23 @@
 
 package helma.scripting.rhino;
 
-import helma.framework.core.*;
-import helma.framework.repository.ResourceInterface;
-import org.mozilla.javascript.*;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
-import java.io.UnsupportedEncodingException;
-import java.io.IOException;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.FunctionObject;
+import org.mozilla.javascript.NativeJavaObject;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.Wrapper;
+
+import helma.framework.core.Prototype;
+import helma.framework.core.Skin;
+import helma.framework.repository.ResourceInterface;
 
 /**
  *

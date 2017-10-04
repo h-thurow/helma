@@ -11,15 +11,21 @@
 
 package helma.framework.core;
 
-import helma.objectmodel.db.DbMapping;
-import helma.framework.repository.ResourceInterface;
-import helma.framework.repository.RepositoryInterface;
-import helma.util.StringUtils;
-
-import java.io.*;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import helma.framework.repository.RepositoryInterface;
+import helma.framework.repository.ResourceInterface;
+import helma.objectmodel.db.DbMapping;
+import helma.util.StringUtils;
 
 /**
  * The type manager periodically checks the prototype definitions for its

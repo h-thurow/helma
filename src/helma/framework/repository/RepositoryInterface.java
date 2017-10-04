@@ -11,9 +11,9 @@
 
 package helma.framework.repository;
 
-import java.util.List;
-import java.util.Iterator;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * RepositoryInterface represents an abstract container of resources (e.g. code, skins, ...).

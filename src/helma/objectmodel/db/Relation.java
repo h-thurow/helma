@@ -11,17 +11,17 @@
 
 package helma.objectmodel.db;
 
+import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
+
 import helma.framework.core.Application;
 import helma.objectmodel.NodeInterface;
 import helma.objectmodel.PropertyInterface;
 import helma.util.StringUtils;
-
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Enumeration;
-import java.util.Vector;
 
 /**
  * This describes how a property of a persistent Object is stored in a

@@ -11,23 +11,17 @@
 
 package helma.scripting.quercus;
 
-import helma.framework.RedirectException;
-import helma.framework.ResponseTrans;
-import helma.framework.core.Skin;
-import helma.scripting.ScriptingException;
-
-import java.io.IOException;
-import java.util.Map;
-
 import com.caucho.quercus.annotation.Optional;
-import com.caucho.quercus.env.ArrayValue;
 import com.caucho.quercus.env.ArrayValueImpl;
 import com.caucho.quercus.env.Env;
 import com.caucho.quercus.env.NullValue;
-import com.caucho.quercus.env.ObjectExtJavaValue;
 import com.caucho.quercus.env.StringValue;
 import com.caucho.quercus.env.Value;
 import com.caucho.quercus.module.AbstractQuercusModule;
+
+import helma.framework.RedirectException;
+import helma.framework.core.Skin;
+import helma.scripting.ScriptingException;
 
 /**
  * This class provides some of the global functions the JS engine is providing too.
