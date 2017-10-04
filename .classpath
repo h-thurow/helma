@@ -22,9 +22,9 @@
 	<classpathentry kind="lib" path="lib/jetty-util-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-xml-9.4.3.v20170317.jar"/>
 	<classpathentry kind="lib" path="lib/mail-1.4.7.jar"/>
-	<classpathentry kind="lib" path="lib/resin.jar"/>
 	<classpathentry kind="lib" path="lib/rhino-1.7.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/tagsoup-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/xmlrpc-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/resin-4.0.53.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

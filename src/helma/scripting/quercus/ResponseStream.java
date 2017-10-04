@@ -6,7 +6,7 @@
  * compliance with the License. A copy of the License is available at
  * http://adele.helma.org/download/helma/license.txt
  *
- * Copyright 2010 dowee it solutions GmbH. All rights reserved.
+ * Copyright 2010-2017 Daniel Ruthardt. All rights reserved.
  */
 
 package helma.scripting.quercus;
@@ -19,29 +19,28 @@ import java.util.Arrays;
 import com.caucho.vfs.StreamImpl;
 
 /**
- * This is a helper class wich ensures to have the full functionality of the PHP
- * scripting language regarding output handling. The QuercusEngine exposes the
- * ResponseTransmitter to the PHP context, but PHP scripts are uses to produce
- * output in a more direct way (e.g. by calling the echo function). This class
- * catches output produced in a direct wy and forwards it to the
- * ResponseTransmitter.
+ * This is a helper class wich ensures to have the full functionality of the PHP scripting language 
+ * regarding output handling.
  * 
- * @author daniel.ruthardt
+ * The QuercusEngine exposes the ResponseTransmitter to the PHP context, but PHP scripts are uses to produce
+ * output in a more direct way (e.g. by calling the echo function). This class catches output produced in a 
+ * direct wy and forwards it to the ResponseTransmitter.
  */
 public class ResponseStream extends StreamImpl {
 
     /**
-     * The response transactor to write to
+     * The response transactor to write to.
      */
     private ResponseTrans _response;
 
     /**
-     * Default constructor
+     * Default constructor.
      * 
      * @param response
-     *            The response transactor to write to
+     *  The response transactor to write to.
      */
     public ResponseStream(final ResponseTrans response) {
+        // set the response transactor
         this._response = response;
     }
 
@@ -51,7 +50,9 @@ public class ResponseStream extends StreamImpl {
      */
     @Override
     public void close() throws IOException {
+        // flush the response transactor
         this._response.flush();
+        // do what would have been done anyways
         super.close();
     }
 
@@ -61,7 +62,9 @@ public class ResponseStream extends StreamImpl {
      */
     @Override
     public void closeWrite() throws IOException {
+        // flush the response transactor
         this._response.flush();
+        // do what would have been done anyways
         super.closeWrite();
     }
 
@@ -71,7 +74,9 @@ public class ResponseStream extends StreamImpl {
      */
     @Override
     public void flush() throws IOException {
+        // flush the response transactor
         this._response.flush();
+        // do what would have been done anyways
         super.flush();
     }
 
@@ -86,11 +91,17 @@ public class ResponseStream extends StreamImpl {
     }
 
     /**
+     * Replaced the current response transactor with the given one.
+     * 
      * @param response
-     *            the response to set
+     *  The response transactor to write to.
+     * @return
+     *  No return value.
      */
     protected void setResponse(final ResponseTrans response) {
+        // check if a new response transactor is provided
         if (response != null) {
+            // replace the existing response transactor with the new one
             this._response = response;
         }
     }
@@ -100,12 +111,15 @@ public class ResponseStream extends StreamImpl {
      * @see com.caucho.vfs.StreamImpl#write(byte[], int, int, boolean)
      */
     @Override
-    public void write(final byte[] buffer, final int offset, final int length,
-            final boolean isEnd) {
+    public void write(final byte[] buffer, final int offset, final int length, final boolean isEnd) {
+        // get the binary data to write to the response transactor
         final byte[] usedBuffer = Arrays.copyOfRange(buffer, offset, length);
+        // write the binary data to the response transactor
         this._response.writeBinary(usedBuffer);
 
+        // check if we are done writing binary data to the response transactor
         if (isEnd) {
+            // flush the response transactor
             this._response.flush();
         }
     }
@@ -116,13 +130,15 @@ public class ResponseStream extends StreamImpl {
      * boolean)
      */
     @Override
-    public boolean write(final byte[] buffer1, final int offset1,
-            final int length1, final byte[] buffer2, final int offset2,
-            final int length2, final boolean isEnd) {
+    public boolean write(final byte[] buffer1, final int offset1, final int length1, final byte[] buffer2, 
+            final int offset2, final int length2, final boolean isEnd) {
+        // write the binary data to the response transactor
         write(buffer1, offset1, length1, isEnd);
+        // write the binary data to the response transactor
         write(buffer2, offset2, length2, isEnd);
 
-        // FIXME: always true?
+        // TODO check if it really is a good idea to always return true
+        // we are done writing binary data to the response transactor
         return true;
     }
 

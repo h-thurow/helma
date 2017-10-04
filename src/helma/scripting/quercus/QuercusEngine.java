@@ -6,12 +6,7 @@
  * compliance with the License. A copy of the License is available at
  * http://adele.helma.org/download/helma/license.txt
  *
- * Copyright 2010 dowee it solutions GmbH. All rights reserved.
- *
- * Contributions:
- *   Daniel Ruthardt
- *   Copyright 2010 dowee Limited. All rights reserved. 
- *
+ * Copyright 2010-2017 Daniel Ruthardt. All rights reserved.
  */
 
 package helma.scripting.quercus;
@@ -19,6 +14,7 @@ package helma.scripting.quercus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,9 +23,11 @@ import java.util.Map;
 import helma.extensions.ConfigurationException;
 import helma.extensions.HelmaExtensionInterface;
 import helma.framework.RedirectException;
+import helma.framework.ResponseTrans;
 import helma.framework.core.Application;
 import helma.framework.core.Prototype;
 import helma.framework.core.RequestEvaluator;
+import helma.framework.core.Skin;
 import helma.framework.repository.ResourceInterface;
 import helma.main.Server;
 import helma.objectmodel.NodeInterface;
@@ -39,7 +37,11 @@ import helma.scripting.ScriptingException;
 
 import com.caucho.quercus.Quercus;
 import com.caucho.quercus.QuercusException;
+import com.caucho.quercus.env.ArrayValue;
+import com.caucho.quercus.env.ArrayValueImpl;
 import com.caucho.quercus.env.Env;
+import com.caucho.quercus.env.JavaConstructor;
+import com.caucho.quercus.env.NullValue;
 import com.caucho.quercus.env.QuercusClass;
 import com.caucho.quercus.env.StringValue;
 import com.caucho.quercus.env.Value;
@@ -57,7 +59,6 @@ import com.caucho.quercus.lib.FunctionModule;
 import com.caucho.quercus.lib.HashModule;
 import com.caucho.quercus.lib.HtmlModule;
 import com.caucho.quercus.lib.HttpModule;
-import com.caucho.quercus.lib.ImageModule;
 import com.caucho.quercus.lib.JavaModule;
 import com.caucho.quercus.lib.MathModule;
 import com.caucho.quercus.lib.MhashModule;
@@ -96,63 +97,62 @@ import com.caucho.quercus.lib.zip.ZipModule;
 import com.caucho.quercus.lib.zlib.ZlibModule;
 import com.caucho.quercus.module.ModuleContext;
 import com.caucho.quercus.function.AbstractFunction;
+import com.caucho.quercus.program.ClassDef;
 import com.caucho.quercus.program.Function;
 import com.caucho.quercus.program.InterpretedClassDef;
 import com.caucho.quercus.program.JavaClassDef;
 import com.caucho.quercus.program.ObjectMethod;
+import com.caucho.quercus.program.QuercusProgram;
 import com.caucho.vfs.WriteStream;
 
 /**
- * Hop scripting engine implementation that allows to use the Quercus PHP
- * interpreter.
- * 
- * @author daniel.ruthardt
+ * Helma scripting engine implementation that allows to use the Quercus PHP interpreter.
  */
 public class QuercusEngine implements ScriptingEngineInterface {
 
     /**
-     * Indirect (pull) reference to ourself, which can be read in situations,
-     * were it was not possible to push a direct refernece.
+     * Indirect (pull) reference to ourself, which can be read in situations, were it was not possible to 
+     * push a direct refernece.
      */
-    protected static ThreadLocal<QuercusEngine> ENGINE                     = new ThreadLocal<QuercusEngine>();
+    protected static ThreadLocal<QuercusEngine> ENGINE = new ThreadLocal<QuercusEngine>();
 
     /**
-     * The application
+     * The application we belong to.
      */
-    private Application                         _application;
+    private Application _application;
 
     /**
-     * The request evaluator we belong to
+     * The request evaluator we belong to.
      */
-    private RequestEvaluator                    _requestEvaluator;
+    private RequestEvaluator _requestEvaluator;
 
     /**
-     * The quercus PHP engine
+     * The quercus PHP engine.
      */
-    private Quercus                             _quercus;
+    private Quercus _quercus;
 
     /**
-     * The environment will be created on enterContext() and will be unique for
-     * each function invoked
+     * The PHP context.
+     * It will be created on enterContext() and will be unique for each invoked function.
      */
-    private Env                                 _environment;
+    private Env _environment;
 
     /**
-     * The last this value, so it can be restored after a function has been
-     * invoked
+     * The last this value, so it can be restored after a function has been invoked.
      */
-    private Value                               _lastThisValue;
+    private Value _lastThisValue;
 
     /**
-     * Global objects provided by extensions
+     * Global objects provided by extensions.
      */
-    private final HashMap<String, Object>       _globalObjectsOfExtensions = new HashMap<String, Object>();
+    private final HashMap<String, Object> _globalObjectsOfExtensions = new HashMap<String, Object>();
 
+    
     /**
-     * Default constructor
+     * Default constructor.
      */
     public QuercusEngine() {
-        // empty by intention
+        // nothing to be done
     }
 
     /*
@@ -161,7 +161,8 @@ public class QuercusEngine implements ScriptingEngineInterface {
      */
     @Override
     public void abort() {
-        // TODO: implement
+        // let the PHP context die
+        this._environment.die();
     }
 
     /*
@@ -184,190 +185,181 @@ public class QuercusEngine implements ScriptingEngineInterface {
         // set indirect back reference to ourself
         ENGINE.set(this);
 
-        // create the script envoirement
-        this._environment = this._quercus.createEnv(null, new WriteStream(
-                new ResponseStream(this._requestEvaluator.getResponse())), null,
-                null);
+        // re-init the scripting engine
+        // TODO try to cache more and re-init less
+        this.init(this._application, this._requestEvaluator);
 
-        try {
-            // update prototypes
-            this._application.typemgr.checkPrototypes();
-        } catch (final IOException e) {
-            e.printStackTrace();
-            return;
-        }
+        // create the PHP context
+        this._environment = this._quercus.createEnv(null, new WriteStream(new ResponseStream(
+                this._requestEvaluator.getResponse())), null, null);
+
+        // update prototypes
+        this._application.typemgr.checkPrototypes();
 
         // get the global prototype
-        final Prototype globalPrototype = this._application
-                .getPrototypeByName("Global"); //$NON-NLS-1$
+        final Prototype globalPrototype = this._application.getPrototypeByName("Global"); //$NON-NLS-1$
         if (globalPrototype != null) {
-            // FIXME: resources need to be named *.js for getCodeResources()
-            // scriptExtension should be moved to a getter on Application which
-            // gets the information from a static
-            // getter on ScriptingEngineInterface
-            // get all code resources
+            // TODO resources need to be named *.js for getCodeResources()
+            // scriptExtension should be moved to a getter on Application which gets the information from a 
+            // static getter on ScriptingEngineInterface get all code resources
             final ResourceInterface[] resources = globalPrototype.getResources();
             // loop all code resources
             for (final ResourceInterface resource : resources) {
+                // check if the current resource is a PHP resource
                 if (resource.getName().endsWith(".php")) { //$NON-NLS-1$
                     try {
-                        // include the code (i.e. load defined functions and add
-                        // as methods)
-                        final Iterator<Function> functions = this._quercus
-                                .parseCode(resource.getContent())
-                                .getFunctions().iterator();
+                        // include the code (i.e. load defined functions and add as methods)
+                        final Iterator<Function> functions = this._quercus.parseCode(StringValue.create(
+                                resource.getContent()).toStringValue()).getFunctionList().iterator();
+                        // loop all functions
                         while (functions.hasNext()) {
+                            // get the current function
                             final Function function = functions.next();
-                            this._environment.addFunction(function.getName(),
-                                    function);
+                            // add the current function to the PHP context as global function
+                            this._environment.addFunction(function.getName(), function);
                         }
                     } catch (final IOException e) {
                         throw new ScriptingException(Messages.getString("QuercusEngine.0") //$NON-NLS-1$
-                                + resource.getName() + Messages.getString("QuercusEngine.1"), //$NON-NLS-1$
-                                e);
+                                + resource.getName() + Messages.getString("QuercusEngine.1"), e); //$NON-NLS-1$
                     }
                 }
             }
         }
 
-        // FIXME: needed?
+        // start the PHP context
         this._environment.start();
 
-        // create the HopObject class
-        // FIXME: the class is visible in the PHP context. This is not that bad,
-        // but at least it is confusing to have a
-        // class called HopObjectJava and one called HopObject.
-        final JavaClassDef classDefHopObject = new JavaClassDef(
-                new ModuleContext(null, ClassLoader.getSystemClassLoader()),
-                "HopObjectJava", HopObject.class); //$NON-NLS-1$
-        this._environment.addClassDef("HopObjectJava", classDefHopObject); //$NON-NLS-1$
+        // create the wrapper class
+        this._environment.addClassDef("HopObjectWrapper", new JavaClassDef(new ModuleContext(null, //$NON-NLS-1$
+                ClassLoader.getSystemClassLoader()), "HopObjectWrapper", HopObject.class)); //$NON-NLS-1$
 
+        // if the HopObject prototype is defined explicetely
         boolean containsHopObject = false;
-        // solve dependencies beteween prototypes and order them in a way that
-        // all dependencies are (hopefully) resolved
+        // solve dependencies beteween prototypes and order them in a way that all dependencies are 
+        // (hopefully) resolved
         // TODO: further testing
         final ArrayList<Prototype> prototypesOrderedByDependencies = new ArrayList<Prototype>();
+        // get all prototypes
         Iterator<Prototype> prototypes = this._application.getPrototypes().iterator();
+        // loop all prototypes
         while (prototypes.hasNext()) {
+            // get the next prototype
             final Prototype prototype = prototypes.next();
-            // skip prototypes we already know or if it is the global prototype
-            if (prototypesOrderedByDependencies.contains(prototype)
+            // check if the current prototype is already known (the Global prototype is always already known)
+            if (prototypesOrderedByDependencies.contains(prototype) 
                     || prototype.getName().equals("Global")) { //$NON-NLS-1$
+                // ignore the current prototype, it is already known
                 continue;
             }
 
-            if (prototype.getName().equals("HopObject")) { //$NON-NLS-1$
-                // prototype is HopObject, we need to add it as first
+            // check if the current prototype is the HopObject prototype
+            if (prototype.getName().equalsIgnoreCase("HopObject")) { //$NON-NLS-1$
+                // add the HopObject prototype as first prototype, all other prototypes depend on it
                 prototypesOrderedByDependencies.add(0, prototype);
+                // the HopObject prototype is defined explicitely
                 containsHopObject = true;
-            } else if (prototype.getParentPrototype() != null) {
-                // not HopObject, parent prototype is set
-                if (prototype.getParentPrototype().getName()
-                        .equals("HopObject")) { //$NON-NLS-1$
-                    // not HopObject, parent protype is HopObject, we need to
-                    // add right after HopObject
-                    prototypesOrderedByDependencies.add(
-                            prototypesOrderedByDependencies.indexOf(prototype
-                                    .getParentPrototype()) + 1, prototype);
-                } else if (prototypesOrderedByDependencies.indexOf(prototype
-                        .getParentPrototype()) >= 0
-                        && prototypesOrderedByDependencies.indexOf(prototype
-                                .getParentPrototype()) < prototypesOrderedByDependencies
-                                .size()) {
-                    // not HopObject, parent is not HopObject, but is already
-                    // added, we need to add after it
-                    prototypesOrderedByDependencies.add(
-                            prototypesOrderedByDependencies.indexOf(prototype
-                                    .getParentPrototype()) + 1, prototype);
+            }
+            // check if the current prototype has a parent prototype, i.e. depends on another prototype
+            else if (prototype.getParentPrototype() != null) {
+                // check if the current prototype's parent prototype is the HopObject prototype
+                if (prototype.getParentPrototype().getName().equalsIgnoreCase("HopObject")) { //$NON-NLS-1$
+                    // add the current prototype right after the HopObject prototype
+                    prototypesOrderedByDependencies.add(prototypesOrderedByDependencies
+                            .indexOf(prototype.getParentPrototype()) + 1, prototype);
+                }
+                // check if the current prototype's parent prototype is already known
+                else if (prototypesOrderedByDependencies.indexOf(prototype.getParentPrototype()) >= 0
+                        && prototypesOrderedByDependencies.indexOf(prototype.getParentPrototype()) < 
+                        prototypesOrderedByDependencies.size()) {
+                    // add the current prototype right after the already known parent prototype
+                    prototypesOrderedByDependencies.add(prototypesOrderedByDependencies
+                            .indexOf(prototype.getParentPrototype()) + 1, prototype);
                 } else {
-                    // not HopObject, parent is not HopObject, parent is not
-                    // added, we can add at the end
+                    // the current prototype is not the HopObject prototype, the parent prototype is not the
+                    // HopObject prototype and the parent prototype is not known already, add the current
+                    // prototype at the end (which will hopefully prevent issues)
                     prototypesOrderedByDependencies.add(prototype);
                 }
             } else {
-                // not HopObject, parent prototype is null, we can safely add at
-                // the end
+                // the current prototype is not the HopObject prototype and also does not have a parent
+                // prototype (can this even be possible?)
+                // TODO check if this case is even possible
                 prototypesOrderedByDependencies.add(prototype);
             }
         }
 
-        // check if HopObject is in the list
+        // check if the HopObject prototype is still not known
         if (!containsHopObject) {
-            // HopObject is not in the list yet, add it as first
-            prototypesOrderedByDependencies.add(0, new Prototype("HopObject", //$NON-NLS-1$
-                    null, this._application, null));
+            // add the HopObject prototype as first prototype
+            prototypesOrderedByDependencies.add(0, new Prototype("HopObject", null, this._application, //$NON-NLS-1$
+                    null));
         }
 
-        // loop all prototypes in the (finally) correct order
+        // get all prototypes now sorted by dependency
         prototypes = prototypesOrderedByDependencies.iterator();
+        // loop all prototypes now sorted by dependency
         while (prototypes.hasNext()) {
+            // get the next prototype
             final Prototype prototype = prototypes.next();
 
+            // the PHP parent class
             String parentClass;
-            if (prototype.getName().equals("HopObject")) { //$NON-NLS-1$
-                // HopObject needs HopObjectJava as parent prototype
-                parentClass = "HopObjectJava"; //$NON-NLS-1$
-            } else if (prototype.getParentPrototype() != null) {
+            // check if the current prototype is the HopObject prototype
+            if (prototype.getName().equalsIgnoreCase("HopObject")) { //$NON-NLS-1$
+                // use the wrapper class as parent class 
+                parentClass = "HopObjectWrapper"; //$NON-NLS-1$
+            }
+            // check if the current prototype has a parent prototype
+            else if (prototype.getParentPrototype() != null) {
+                // us the corresponding class as parent class
                 parentClass = prototype.getParentPrototype().getName();
             } else {
-                // default parent prototype is HopObject
+                // default to the HopObject class
                 parentClass = "HopObject"; //$NON-NLS-1$
             }
 
-            final InterpretedClassDef classDefinitionJava = new InterpretedClassDef(
-                    prototype.getName(), parentClass, new String[0]);
+            // create a PHP class for the current prototype the quick and ugly way
+            final InterpretedClassDef classDefinitionJava = this._quercus.parseCode(StringValue.create(
+                "class " + prototype.getName() + " extends " + parentClass + " {" + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    "public function __construct($prototype = null) {" + //$NON-NLS-1$
+                        "parent::__construct($prototype ? $prototype : get_called_class())" + //$NON-NLS-1$
+                    "}" + //$NON-NLS-1$
+                "}").toStringValue()).getClassList().iterator().next(); //$NON-NLS-1$
 
-            /*
-             * System.out.println("Defining class " +
-             * classDefinitionJava.getName() + " with " +
-             * classDefinitionJava.getParentName() + " as parent");
-             */
-
-            // FIXME: resources need to be named *.js
-            // scriptExtension should be moved to a getter on Application which
-            // gets the information from a static
-            // getter on ScriptingEngineInterface
-            // get all code resources
+            // FIXME resources need to be named *.js
+            // scriptExtension should be moved to a getter on Application which gets the information from a 
+            // static getter on ScriptingEngineInterface get all code resources
             final ResourceInterface[] resources = prototype.getResources();
             // loop all code resources
             for (final ResourceInterface resource : resources) {
+                // check if the current resource is a PHP resource
                 if (resource.getName().endsWith(".php")) { //$NON-NLS-1$
                     try {
-                        // include the code (i.e. load defined functions and add
-                        // as methods)
+                        // include the code (i.e. load defined functions and add as methods)
                         final Iterator<InterpretedClassDef> classes = this._quercus
-                                .parseCode(resource.getContent()).getClasses()
-                                .iterator();
+                                .parseCode(StringValue.create(resource.getContent()).toStringValue())
+                                .getClassList().iterator();
+                        // loop all defined classes
                         while (classes.hasNext()) {
-                            final InterpretedClassDef classDefinitionPHP = classes
-                                    .next();
-                            final Iterator<Map.Entry<String, AbstractFunction>> functions = classDefinitionPHP
-                                    .functionSet().iterator();
+                            // get the next class
+                            final InterpretedClassDef classDefinitionPHP = classes.next();
+                            // get all defined functions
+                            final Iterator<Map.Entry<StringValue, AbstractFunction>> functions = 
+                                    classDefinitionPHP.functionSet().iterator();
+                            // loop all defined functions
                             while (functions.hasNext()) {
-                                final AbstractFunction function = functions
-                                        .next().getValue();
+                                // get the next function
+                                final AbstractFunction function = functions.next().getValue();
+                                // check if the current function is a method
                                 if (function instanceof ObjectMethod) {
-                                    classDefinitionJava
-                                            .addFunction(function.getName(),
-                                                    (ObjectMethod) function);
-
-                                    // System.out.println(" Adding method " +
-                                    // function.getName());
+                                    // add the current function to the prototype's class
+                                    classDefinitionJava.addFunction(
+                                            StringValue.create(function.getName()).toStringValue(), 
+                                            (ObjectMethod) function);
                                 }
                             }
 
-                            // TODO: handle defined static and non-static fields
-                            // as well
-                            /*
-                             * final Iterator<Entry<StringValue, Expr>> fields =
-                             * classDefinitionPHP.fieldSet().iterator(); while
-                             * (fields.hasNext()) { final Entry<StringValue,
-                             * Expr> field = fields.next();
-                             * classDefinitionJava.addValue(field.getKey(),
-                             * field.getValue());
-                             * System.out.println("Added field " +
-                             * field.getKey()); }
-                             */
+                            // TODO handle all the other stuff like static functions, fields, etc.
                         }
                     } catch (final IOException e) {
                         throw new ScriptingException(e.getMessage(), e);
@@ -375,16 +367,8 @@ public class QuercusEngine implements ScriptingEngineInterface {
                 }
             }
 
-            // add a constructor, which simply calls the HopObjectJava
-            // constructor with the class name as argument so
-            // that the NodeInterface knows the prototype
-            classDefinitionJava.addFunction("__construct", this._quercus.parseCode( //$NON-NLS-1$
-                    "function __construct() {HopObjectJava::__construct(\"" //$NON-NLS-1$
-                            + prototype.getName() + "\")}").getFunctions() //$NON-NLS-1$
-                    .iterator().next());
-
+            // add the current prototype's class to the PHP context
             this._environment.addClass(prototype.getName(), classDefinitionJava);
-            // System.out.println("Added.");
         }
     }
 
@@ -394,27 +378,35 @@ public class QuercusEngine implements ScriptingEngineInterface {
      */
     @Override
     public void exitContext() {
-        // FIXME: is this really all what needs to be done?
+        // exit the PHP context
+        this._environment.exit();
+        // close the PHP context
+        this._environment.close();
+        // cleanup
+        this._environment = null;
         ENGINE.set(null);
     }
 
     /**
-     * Returns the application we belong to
+     * Returns the application we belong to.
      * 
-     * @return The application we belong to
+     * @return
+     *  The application we belong to.
      */
     public Application getApplication() {
+        // return the application we belong to
         return this._application;
     }
 
     /**
-     * Returns the environment of the currently invoked function
+     * Returns the the currently invoked function's PHP context.
      * 
-     * @return The environment of the currently invoked function or the
-     *         environment of the latestly invoked function, if there is no
-     *         function currently active
+     * @return 
+     *  The PHP context of the currently invoked function or the latest invoked function, if no function is
+     *  currently active.
      */
     public Env getEnvironment() {
+        // return the currently invoked function's PHP context
         return this._environment;
     }
 
@@ -430,12 +422,13 @@ public class QuercusEngine implements ScriptingEngineInterface {
             return this._environment.getGlobalValue(propertyName);
         } else if (thisObject instanceof HopObject) {
             return ((HopObject) thisObject).getFieldExt(this._environment,
-                    StringValue.create(propertyName).toStringValue());
+                    this._environment.createString(propertyName));
+        } else if (thisObject instanceof ArrayValueImpl) {
+            return ((ArrayValueImpl) thisObject).get(Env.getCurrent().createString(propertyName));
         } else if (thisObject instanceof NodeInterface) {
-            return new HopObject((NodeInterface) thisObject, this).getFieldExt(
-                    this._environment, StringValue.create(propertyName)
-                            .toStringValue());
-        } else if (thisObject instanceof Value[]) {
+            return new HopObject((NodeInterface) thisObject).getFieldExt(Env.getCurrent(), 
+                    Env.getCurrent().createString(propertyName));
+        }/* else if (thisObject instanceof Value[]) {
             final Value[] values = (Value[]) thisObject;
             if (values.length > 0 && values[0] instanceof HopObject) {
                 final Object value = ((HopObject) values[0]).getFieldExt(
@@ -448,26 +441,32 @@ public class QuercusEngine implements ScriptingEngineInterface {
 
                 return value;
             }
-        }
-
+        } else if (thisObject instanceof ArrayValue) {
+            return ((ArrayValue) thisObject).get(StringValue.create(propertyName));
+        }*/
+        
         return null;
     }
 
     /**
-     * Returns the Quercus PHP engine
+     * Returns the Quercus PHP engine.
      * 
-     * @return The Quercus PHP engine
+     * @return
+     *  The Quercus PHP engine.
      */
     public Quercus getQuercus() {
+        // return the Quercus PHP engine
         return this._quercus;
     }
 
     /**
-     * Returns the request evaluator we belong to
+     * Returns the request evaluator we belong to.
      * 
-     * @return The request evaluator we belong to
+     * @return
+     *  The request evaluator we belong to.
      */
     protected RequestEvaluator getRequestEvaluator() {
+        // return the request evaluator we belong to
         return this._requestEvaluator;
     }
 
@@ -477,51 +476,34 @@ public class QuercusEngine implements ScriptingEngineInterface {
      * java.lang.String, boolean)
      */
     @Override
-    public boolean hasFunction(final Object thisObject,
-            final String functionName, final boolean resolve) {
-        QuercusClass classDef = null;
+    public boolean hasFunction(final Object thisObject, final String functionName, final boolean resolve) {
+        QuercusClass classDefinition = null;
 
         if (thisObject == null || thisObject instanceof NodeInterface
                 && ((NodeInterface) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
-            // no thisObject or an NodeInterface with prototype Global, look for a
-            // global function
-            return this._environment.findFunction(functionName) != null;
+            // no thisObject or an NodeInterface with prototype Global, look for a global function
+            return this._environment.findFunction(this._environment.createString(functionName)) != null;
         } else if (thisObject instanceof HopObject) {
-            // thisObject is a wrapped NodeInterface, look for a method of the
-            // corresponding class
-            classDef = this._environment
-                    .getClass(((HopObject) thisObject).getName());
+            // thisObject is a wrapped NodeInterface, look for a method of the corresponding class
+            classDefinition = this._environment.getClass(((HopObject) thisObject).getNode().getPrototype());
         } else if (thisObject instanceof NodeInterface) {
-            // thisObject is an unwrapped NodeInterface, look for a method of the
-            // corresponding class
-            classDef = this._environment.getClass(((NodeInterface) thisObject)
-                    .getPrototype());
-        } else if (thisObject instanceof Value[]) {
-            // thisObject is an array of values
-            final Value[] values = (Value[]) thisObject;
-            // check if the first value is a wrapped NodeInterface
-            if (values.length > 0 && values[0] instanceof HopObject) {
-                // first value is a wrapped NodeInterface, look for a method of the
-                // corresponding class
-                classDef = this._environment.getClass(((HopObject) values[0])
-                        .getName());
-            }
+            // thisObject is an unwrapped NodeInterface, look for a method of the corresponding class
+            classDefinition = this._environment.getClass(((NodeInterface) thisObject).getPrototype());
         }
 
         boolean found = false;
-        // follow the parent chain as long as possible and try to find the
-        // function (if not found above)
-        while (!found && classDef != null) {
-            found = classDef.findFunction(functionName) != null;
+        // follow the parent chain as long as possible and try to find the function (if not found above)
+        while (!found && classDefinition != null) {
+            found = classDefinition.findFunction(functionName) != null;
             if (!resolve) {
                 return found;
             }
 
             // check for existance of parent class
-            if (classDef.getParentName() != null) {
-                classDef = this._environment.getClass(classDef.getParentName());
+            if (classDefinition.getParentName() != null) {
+                classDefinition = this._environment.getClass(classDefinition.getParentName());
             } else {
-                classDef = null;
+                classDefinition = null;
             }
         }
 
@@ -534,23 +516,22 @@ public class QuercusEngine implements ScriptingEngineInterface {
      * java.lang.String)
      */
     @Override
-    public boolean hasProperty(final Object thisObject,
-            final String propertyName) {
+    public boolean hasProperty(final Object thisObject, final String propertyName) {
         if (thisObject == null || thisObject instanceof NodeInterface
                 && ((NodeInterface) thisObject).getPrototype().equals("Global")) { //$NON-NLS-1$
-            // no thisObject or an NodeInterface with prototype Global, look for a
-            // global variable
+            // no thisObject or an NodeInterface with prototype Global, look for a global variable
             return this._environment.getGlobalValue(propertyName) != null;
         } else if (thisObject instanceof HopObject) {
             // thisObject is a wrapped NodeInterface, look for a value in the NodeInterface
             return ((HopObject) thisObject).getFieldExt(this._environment,
-                    StringValue.create(propertyName).toStringValue()) != null;
+                    this._environment.createString(propertyName)) != null;
+        } else if (thisObject instanceof ArrayValueImpl) {
+            return ((ArrayValueImpl) thisObject).keyExists(Env.getCurrent().createString(propertyName));
         } else if (thisObject instanceof NodeInterface) {
             // thisObject is an unwrapped NodeInterface, look for a value in the NodeInterface
-            return new HopObject((NodeInterface) thisObject, this).getFieldExt(
-                    this._environment, StringValue.create(propertyName)
-                            .toStringValue()) != null;
-        } else if (thisObject instanceof Value[]) {
+            return new HopObject((NodeInterface) thisObject).getFieldExt(Env.getCurrent(), 
+                    Env.getCurrent().createString(propertyName)) != NullValue.NULL;
+        }/* else if (thisObject instanceof Value[]) {
             // thisObject is an array of values
             final Value[] values = (Value[]) thisObject;
             // check if the first value is a wrapped NodeInterface
@@ -560,7 +541,9 @@ public class QuercusEngine implements ScriptingEngineInterface {
                         StringValue.create(propertyName).toStringValue())
                         .toJavaObject() != null;
             }
-        }
+        } else if (thisObject instanceof ArrayValue) {
+            return ((ArrayValue) thisObject).keyExists(StringValue.create(propertyName));
+        }*/
 
         return false;
     }
@@ -581,69 +564,72 @@ public class QuercusEngine implements ScriptingEngineInterface {
 
         // create the quercus php engine
         this._quercus = new Quercus();
+        // disable unicode support
+        this._quercus.setUnicodeSemantics(false);
 
         // load all available php modules to be as close to native php as
         // possible
         // TODO: make it configurable
-        this._quercus.addModule(new ApacheModule());
-        this._quercus.addModule(new ApcModule());
-        this._quercus.addModule(new ArrayModule());
-        this._quercus.addModule(new BcmathModule());
-        this._quercus.addModule(new ClassesModule());
-        this._quercus.addModule(new CtypeModule());
-        this._quercus.addModule(new DateModule());
-        this._quercus.addModule(new ErrorModule());
-        this._quercus.addModule(new ExifModule());
-        this._quercus.addModule(new FileModule());
-        this._quercus.addModule(new FunctionModule());
-        this._quercus.addModule(new HashModule());
-        this._quercus.addModule(new HtmlModule());
-        this._quercus.addModule(new HttpModule());
-        this._quercus.addModule(new ImageModule());
-        this._quercus.addModule(new JavaModule());
-        this._quercus.addModule(new JMSModule());
-        this._quercus.addModule(new JsonModule());
-        this._quercus.addModule(new MailModule());
-        this._quercus.addModule(new MathModule());
-        this._quercus.addModule(new MbstringModule());
-        this._quercus.addModule(new McryptModule());
-        this._quercus.addModule(new MhashModule());
-        this._quercus.addModule(new MiscModule());
-        this._quercus.addModule(new MysqliModule());
-        this._quercus.addModule(new MysqlModule());
-        this._quercus.addModule(new NetworkModule());
-        this._quercus.addModule(new OptionsModule());
-        this._quercus.addModule(new OracleModule());
-        this._quercus.addModule(new OutputModule());
-        this._quercus.addModule(new PDFModule());
-        this._quercus.addModule(new PDOModule());
-        this._quercus.addModule(new PostgresModule());
-        this._quercus.addModule(new QuercusDOMModule());
-        this._quercus.addModule(new QuercusModule());
-        this._quercus.addModule(new ReflectionModule());
-        this._quercus.addModule(new RegexpModule());
-        this._quercus.addModule(new SessionModule());
-        this._quercus.addModule(new SimpleXMLModule());
-        this._quercus.addModule(new SocketModule());
-        this._quercus.addModule(new SplModule());
-        this._quercus.addModule(new StreamModule());
-        this._quercus.addModule(new StringModule());
-        this._quercus.addModule(new TokenModule());
-        this._quercus.addModule(new UnicodeModule());
-        this._quercus.addModule(new VariableModule());
-        this._quercus.addModule(new XmlModule());
-        this._quercus.addModule(new ZipModule());
-        this._quercus.addModule(new ZlibModule());
+        this._quercus.addInitModule(new ApacheModule());
+        this._quercus.addInitModule(new ApcModule());
+        this._quercus.addInitModule(new ArrayModule());
+        this._quercus.addInitModule(new BcmathModule());
+        this._quercus.addInitModule(new ClassesModule());
+        this._quercus.addInitModule(new CtypeModule());
+        this._quercus.addInitModule(new DateModule());
+        this._quercus.addInitModule(new ErrorModule());
+        this._quercus.addInitModule(new ExifModule());
+        this._quercus.addInitModule(new FileModule());
+        this._quercus.addInitModule(new FunctionModule());
+        this._quercus.addInitModule(new HashModule());
+        this._quercus.addInitModule(new HtmlModule());
+        this._quercus.addInitModule(new HttpModule());
+        this._quercus.addInitModule(new JavaModule());
+        this._quercus.addInitModule(new JMSModule());
+        this._quercus.addInitModule(new JsonModule());
+        this._quercus.addInitModule(new MailModule());
+        this._quercus.addInitModule(new MathModule());
+        this._quercus.addInitModule(new MbstringModule());
+        this._quercus.addInitModule(new McryptModule());
+        this._quercus.addInitModule(new MhashModule());
+        this._quercus.addInitModule(new MiscModule());
+        this._quercus.addInitModule(new MysqliModule());
+        this._quercus.addInitModule(new MysqlModule());
+        this._quercus.addInitModule(new NetworkModule());
+        this._quercus.addInitModule(new OptionsModule());
+        this._quercus.addInitModule(new OracleModule());
+        this._quercus.addInitModule(new OutputModule());
+        this._quercus.addInitModule(new PDFModule());
+        this._quercus.addInitModule(new PDOModule());
+        this._quercus.addInitModule(new PostgresModule());
+        this._quercus.addInitModule(new QuercusDOMModule());
+        this._quercus.addInitModule(new QuercusModule());
+        this._quercus.addInitModule(new ReflectionModule());
+        this._quercus.addInitModule(new RegexpModule());
+        this._quercus.addInitModule(new SessionModule());
+        this._quercus.addInitModule(new SimpleXMLModule());
+        this._quercus.addInitModule(new SocketModule());
+        this._quercus.addInitModule(new SplModule());
+        this._quercus.addInitModule(new StreamModule());
+        this._quercus.addInitModule(new StringModule());
+        this._quercus.addInitModule(new TokenModule());
+        this._quercus.addInitModule(new UnicodeModule());
+        this._quercus.addInitModule(new VariableModule());
+        this._quercus.addInitModule(new XmlModule());
+        this._quercus.addInitModule(new ZipModule());
+        this._quercus.addInitModule(new ZlibModule());
 
         // load our own module which provides some global functions
-        this._quercus.addModule(new GlobalFunctions());
+        this._quercus.addInitModule(new GlobalFunctions());
+        
+        // init the modules
+        this._quercus.init();
 
-        // activate php to java byte code compilation (only available in the pro
-        // engine, evaluation licenses are
-        // available, but I didn't figure out how to load them yet)
+        // activate php to java byte code compilation (only available in the pro engine, evaluation licenses 
+        // are available, but I didn't figure out how to load them yet)
         // FIXME: how to activate it?
         // TODO: make it configurable
-        this._quercus.setCompile(true);
+        this._quercus.setCompile(false);
         this._quercus.setLazyCompile(true);
 
         // start the quercus php engine
@@ -729,7 +715,7 @@ public class QuercusEngine implements ScriptingEngineInterface {
 
             try {
                 // global function call
-                return this._environment.call((String) functionName).toJavaObject();
+                return this._environment.call(StringValue.create((String) functionName).toStringValue()).toJavaObject();
             } catch (final QuercusException e) {
                 // check if we should throw an exception, or if we just caught a
                 // RedirectExcpetion, which we will ignore
@@ -749,7 +735,7 @@ public class QuercusEngine implements ScriptingEngineInterface {
         // another function call might be active, store the current this value
         this._lastThisValue = this._environment.getThis();
         // set the new this value
-        this._environment.setThis(new HopObject((NodeInterface) thisObject, this));
+        this._environment.setThis(new HopObject((NodeInterface) thisObject));
 
         // wrap the arguments (actually this is done to have the arguments a
         // little bit more unwrapped, than a direct
@@ -786,7 +772,6 @@ public class QuercusEngine implements ScriptingEngineInterface {
      */
     @Override
     public boolean isTypedObject(final Object obj) {
-        // TODO: implement
         return false;
     }
 
@@ -809,27 +794,20 @@ public class QuercusEngine implements ScriptingEngineInterface {
     public void setGlobals(final Map globals) throws ScriptingException {
         if (globals != null) {
             // loop all globals
-            final Iterator<Map.Entry<String, Object>> globalObjects = globals
-                    .entrySet().iterator();
+            final Iterator<Map.Entry<String, Object>> globalObjects = globals.entrySet().iterator();
             while (globalObjects.hasNext()) {
-                final Map.Entry<String, Object> globalObject = globalObjects
-                        .next();
+                final Map.Entry<String, Object> globalObject = globalObjects.next();
                 try {
                     // check type of global
                     if (globalObject.getValue() instanceof NodeInterface) {
-                        // global is an NodeInterface, we need to wrap it as HopObject
+                        // global is a NodeInterface, we need to wrap it as HopObject
                         final NodeInterface node = (NodeInterface) globalObject.getValue();
-                        this._environment.setGlobalValue(globalObject.getKey(),
-                                new HopObject(node, this));
-                        // System.out.println("Adding global " +
-                        // globalObject.getKey() + " wrapped");
+                        this._environment.setGlobalValue(globalObject.getKey(), new HopObject(node));
                     } else {
                         // global is something else, let Quercus do the default
                         // wrapping
                         this._environment.setGlobalValue(globalObject.getKey(),
                                 this._environment.wrapJava(globalObject.getValue()));
-                        // System.out.println("Adding global " +
-                        // globalObject.getKey() + " as is");
                     }
                 } catch (final QuercusException e) {
                     throw new ScriptingException(e.getMessage(), e);
@@ -840,7 +818,8 @@ public class QuercusEngine implements ScriptingEngineInterface {
 
     @Override
     public void shutdown() {
-        // TODO: implement
+        this._quercus.close();
+        this._quercus = null;
     }
 
     /*
@@ -869,6 +848,47 @@ public class QuercusEngine implements ScriptingEngineInterface {
     public Object getGlobalProperty(String propertyName) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    /**
+     * Returns a skin for the given name and class.
+     * 
+     * @param className
+     *  The name of the class.
+     * @param name
+     *  The name of the skin.
+     * @return
+     *  The skin for the given name and class. 
+     * 
+     * @throws ScriptingException
+     */
+    public Skin getSkin(final String className, final String name) throws ScriptingException {
+        final ResponseTrans response = this.getRequestEvaluator().getResponse();
+        
+        Skin skin;
+        if (name.startsWith("#")) { //$NON-NLS-1$
+            // evaluate relative subskin name against currently rendering skin
+            skin = response.getActiveSkin();
+            return skin == null ? null : skin.getSubskin(name.substring(1));
+        }
+
+        final Integer hashCode = Integer.valueOf(className.hashCode() + name.hashCode());
+        skin = response.getCachedSkin(hashCode);
+
+        if (skin == null) {
+            // retrieve res.skinpath, an array of objects that tell us where to look for skins (strings for 
+            // directory names and INodes for internal, db-stored skinsets)
+            final Object[] skinpath = response.getSkinpath();
+            try {
+                skin = this.getApplication().getSkin(className, name, skinpath);
+            } catch (final IOException e) {
+                throw new ScriptingException(Messages.getString("QuercusEngine.6"), e); //$NON-NLS-1$
+            }
+            
+            response.cacheSkin(hashCode, skin);
+        }
+        
+        return skin;
     }
 
 }

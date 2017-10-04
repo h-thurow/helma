@@ -6,11 +6,7 @@
  * compliance with the License. A copy of the License is available at
  * http://adele.helma.org/download/helma/license.txt
  *
- * Copyright 2010 dowee it solutions GmbH. All rights reserved.
- *
- * Contributions:
- *   Daniel Ruthardt
- *   Copyright 2010 dowee Limited. All rights reserved. 
+ * Copyright 2010-2017 Daniel Ruthardt. All rights reserved.
  */
 
 package helma.scripting.quercus;
@@ -18,9 +14,15 @@ package helma.scripting.quercus;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Map;
 
+import javax.management.StringValueExp;
+
+import helma.framework.PathElementInterface;
 import helma.framework.RedirectException;
 import helma.framework.ResponseTrans;
 import helma.framework.core.Prototype;
@@ -32,304 +34,236 @@ import helma.objectmodel.db.DbMapping;
 import helma.objectmodel.db.Node;
 import helma.scripting.ScriptingException;
 
+import com.caucho.config.program.ValueArg;
 import com.caucho.quercus.annotation.Construct;
+import com.caucho.quercus.annotation.Optional;
+import com.caucho.quercus.annotation.This;
+import com.caucho.quercus.env.ArrayValue;
+import com.caucho.quercus.env.ArrayValueImpl;
 import com.caucho.quercus.env.Env;
+import com.caucho.quercus.env.LongValue;
 import com.caucho.quercus.env.NullValue;
 import com.caucho.quercus.env.NumberValue;
 import com.caucho.quercus.env.ObjectExtJavaValue;
+import com.caucho.quercus.env.ObjectExtValue;
+import com.caucho.quercus.env.QuercusClass;
+import com.caucho.quercus.env.StringBuilderValue;
 import com.caucho.quercus.env.StringValue;
 import com.caucho.quercus.env.Value;
 import com.caucho.quercus.env.Var;
 import com.caucho.quercus.function.AbstractFunction;
+import com.caucho.quercus.program.Function;
+import com.caucho.quercus.program.InterpretedClassDef;
+import com.caucho.quercus.program.JavaClassDef;
+import com.caucho.quercus.program.ObjectMethod;
+import com.caucho.server.snmp.types.IntegerValue;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 /**
- * The HopObject is used to wrap NodeInterface objects for use in the Quercus
- * PHP interpreter.<br/>
- * Quercus does not automatically make use of the generic getter (__get) and
- * setter (__set), if defined in the PHP context (extending a Java object). This
- * functionality is also provided by this class. It first checks, if a generic
- * getter or setter is defined in the PHP context, and if so does a callback to
- * PHP. If no generic getter or setter is defined in the PHP context, the
- * HopObject's generic getter or setter method is called.
+ * A wrapper for NodeInterface objects.
+ * Quercus does not automatically make use of the generic getter (__get) and setter (__set), if defined in 
+ * the PHP context (extending a Java object). This functionality is also provided by this class.
  */
-public class HopObject extends ObjectExtJavaValue {
+public class HopObject extends ObjectExtValue {
 
-    private static final long   serialVersionUID = -5555069166328227883L;
+    // serialization UID
+    private static final long serialVersionUID = -5555069166328227883L;
 
     /**
-     * The underlying NodeInterface that is wrapped
+     * The wrapped object.
      */
-    private final NodeInterface         _node;
+    private final NodeInterface _node;
 
     /**
-     * The quercus engine we belong to
-     */
-    private final QuercusEngine _engine;
-
-    /**
-     * Constructor for situations where there is no direct reference available
-     * to the quercus engine
+     * Wrap the given NodeInterface object.
      * 
      * @param node
-     *            The NodeInterface to wrap
+     *  The object to wrap.
      */
-    private HopObject(final NodeInterface node) {
-        super(
-                QuercusEngine.ENGINE.get().getEnvironment().getClass(
-                        "HopObject"), new Object(), QuercusEngine.ENGINE.get() //$NON-NLS-1$
-                        .getEnvironment().getClass("HopObject") //$NON-NLS-1$
-                        .getJavaClassDef());
+    public HopObject(final NodeInterface node) {
+        // do what would have been done anyways
+        super(Env.getCurrent(), Env.getCurrent().getClass(node.getPrototype()));
+
+        // remember the wrapped object
         this._node = node;
-        this._engine = QuercusEngine.ENGINE.get();
     }
 
     /**
-     * Default constructor
+     * PHP constructor wrapping a new Node of the given prototype.
      * 
-     * @param node
-     *            The NodeInterface to wrap
-     * @param engine
-     *            The quercus engine
-     */
-    protected HopObject(final NodeInterface node, final QuercusEngine engine) {
-        super(engine.getEnvironment()
-                .getClass(
-                        node.getPrototype() != null ? node.getPrototype()
-                                : "HopObject"), new HopObject(node), engine //$NON-NLS-1$
-                .getEnvironment().getClass(
-                        node.getPrototype() != null ? node.getPrototype()
-                                : "HopObject").getJavaClassDef()); //$NON-NLS-1$
-        this._node = node;
-        this._engine = engine;
-    }
-
-    /**
-     * Default constructor for the PHP context.<br/>
-     * Creates a HopObject that wraps a Node
-     * 
-     * @param prototype The prototype for the new object
+     * @param prototype
+     *  The prototype to use for creating the wrapped Node.
      */
     @Construct
-    public HopObject(final StringValue prototype) {
-        this(new Node(null, prototype.toJavaString(), QuercusEngine.ENGINE
-                .get().getApplication().getWrappedNodeManager()));
-
+    public HopObject(@Optional final String prototype) {
+        // create a new Node of the given prototype and wrap it
+        this(new Node(null, prototype, 
+                QuercusEngine.ENGINE.get().getRequestEvaluator().app.getWrappedNodeManager()));
     }
 
     /**
-     * Returns a property's value by name.<br/>
-     * This method implements the magic properties known from the JS scripting
-     * engine. All other properties are directly taken from the underlying
-     * NodeInterface.
-     * 
-     * @param name
-     *            The name of the property to return
-     * @return The value of the property
-     */
-    public Object __get(final String name) {
-        // check what we are looking for
-        if (name.startsWith("_")) { //$NON-NLS-1$
-            // we are looking for an internal property
-
-            // TODO: make naming more consistent
-            // will break backwards compatibility to HopObject however
-            if (name.equals("_prototype") || name.equals("__prototype__")) {  //$NON-NLS-1$//$NON-NLS-2$
-                return this._node.getPrototype();
-            } else if (name.equals("_name") || name.equals("__name__")) { //$NON-NLS-1$ //$NON-NLS-2$
-                return this._node.getName();
-            } else if (name.equals("_parent") || name.equals("__parent__")) {  //$NON-NLS-1$//$NON-NLS-2$
-                return new HopObject(this._node.getParent(), this._engine);
-            } else if (name.equals("cache")) { //$NON-NLS-1$
-                return new HopObject(this._node.getCacheNode(), this._engine);
-            } else if (name.equals("_id") || name.equals("__id__")) {  //$NON-NLS-1$//$NON-NLS-2$
-                return this._node.getID();
-            } else if (name.equals("__proto__")) { //$NON-NLS-1$
-                return this._engine.getApplication().getPrototypeByName(
-                        this._node.getPrototype());
-            } else if (name.equals("__hash__") && this._node instanceof Node) { //$NON-NLS-1$
-                return Integer.valueOf(((Node) this._node).hashCode());
-            } else if (name.equals("__node__")) { //$NON-NLS-1$
-                return this._node;
-            } else if (name.equalsIgnoreCase("__created__")) { //$NON-NLS-1$
-                return Long.valueOf(this._node.created());
-            } else if (name.equalsIgnoreCase("__lastmodified__")) { //$NON-NLS-1$
-                return Long.valueOf(this._node.lastModified());
-            }
-        } else if (name.equals("subnodeRelation")) { //$NON-NLS-1$
-            // we are looking for a special property
-
-            // TODO: make naming more consistent
-            // will break backwards compatibility to HopObject however
-            return this._node.getSubnodeRelation();
-        }
-
-        // we are looking for a normal property
-        return this._node.get(name);
-    }
-
-    /**
-     * Sets a property given by name to the given value
-     * 
-     * @param name
-     *            The name of the property to set
-     * @param value
-     *            The value to set for the given property
-     */
-    public void __set(final String name, final Object value) {
-        // check which property or which value to set, as we might need to user
-        // special methods depending on the
-        // property or the value
-
-        // TODO: make naming more consistent
-        // will break backwards compatibility to HopObject however
-        if (name.equals("subnodeRelation")) { //$NON-NLS-1$
-            this._node.setSubnodeRelation(value.toString());
-        } else if (value == null) {
-            this._node.unset(name);
-        } else if (name.equals("_prototype")) { //$NON-NLS-1$
-            this._node.setPrototype(value.toString());
-        } else if (name.equals("_name")) { //$NON-NLS-1$
-            this._node.setName(value.toString());
-        } else if (value instanceof Boolean) {
-            this._node.setBoolean(name, ((Boolean) value).booleanValue());
-        } else if (value instanceof Date) {
-            this._node.setDate(name, (Date) value);
-        } else if (value instanceof Float) {
-            this._node.setFloat(name, ((Float) value).floatValue());
-        } else if (value instanceof Boolean) {
-            this._node.setInteger(name, ((Integer) value).intValue());
-        } else if (value instanceof HopObject) {
-            this._node.setNode(name, ((HopObject) value).getNode());
-        } else if (value instanceof String) {
-            this._node.setString(name, (String) value);
-        } else {
-            this._node.setJavaObject(name, value);
-        }
-    }
-
-    /**
-     * No idea what the orignal overridden method does, but it conflicts with
-     * add(HopObject), so we need to either delegate to add(HopObject) or to
-     * super.add(Value).
+     * No idea what the orignal overridden method does, but it conflicts with add(HopObject), so we need to 
+     * either delegate to HopObject::add(HopObject) or to super::add(Value).
      * 
      * @see com.caucho.quercus.env.Value#add(com.caucho.quercus.env.Value)
      */
     @Override
     public Value add(final Value value) {
+        // check if the un-marshalled value is a HopObject
         if (value.toJavaObject() instanceof HopObject) {
-            add((HopObject) value.toJavaObject());
-            return NullValue.create();
+            // delegate
+            this.add((HopObject) value.toJavaObject());
+            // nothing to return
+            return NullValue.NULL;
         }
 
+        // do what would have been done anyways
         return super.add(value);
     }
 
     /**
-     * Adds the given node to the end of this node's child collection.
+     * Attaches a HopObject as an additional subnode. 
      * 
-     * @param node
-     *            The node to add
-     * @return True, if the node was added (although one can never be sure if
-     *         the operation really was successful internally), false if this
-     *         node's child collection already contained the node to add
+     * Adds a HopObject as new subnode to another HopObject. The new subnode is added after the last subnode 
+     * already contained in the parent HopObject. 
+     * 
+     * If the subnode is already attached, it is moved to the last index position.
+     * 
+     * @param subnode
+     *  The subnode to add to this node.
+     * @return
+     *  True, if the addition or move was successful.
      */
-    public boolean add(final HopObject node) {
-        if (this._node.contains(node.getNode()) >= 0) {
-            return false;
-        }
+    public boolean add(final HopObject subnode) {
+        // delegate
+        this._node.addNode(subnode._node);
 
-        this._node.addNode(node.getNode());
+        // addition or move was successful
         return true;
     }
 
     /**
-     * Adds or moves the given node to the given index position.
+     * Attaches an additional subnode at the given index. 
      * 
-     * @param index
-     *            The index position to add at or to move the geiven node to
-     * @param node
-     *            The node to add or or to move
-     * @return Always true, one can not be sure if the operation was really
-     *         successful internally
+     * Adds a HopObject to a collection at a certain position, and shifts the index of all succeeding 
+     * objects in that collection by one. Index positions start with 0. Any out of range moves will move the 
+     * subnode to the last index position.
+     * 
+     * Just makes sense for HopObjects, that are not mapped on a relational DB, since the sort order of the 
+     * collection would otherwise be defined by type.properties, resp. by the database itself. Returns true 
+     * in case of success. If the subnode is already attached, it will be moved to the specified index 
+     * position.
+     * 
+     * @param position
+     *  The index position where the subnode is to be inserted.
+     * @param subnode
+     *  The subnode to add to this node.
+     * @return
+     *  True, if the addition or move was successful.
      */
-    public boolean addAt(final int index, final HopObject node) {
-        this._node.addNode(node.getNode(), index);
+    public boolean addAt(final int position, final HopObject subnode) {
+        // delegate
+        this._node.addNode(subnode._node, position);
+
+        // addition or move was successful
         return true;
     }
 
-    
-    @Override
-    public Value callMethod(Env env, StringValue methodName, int hash,
-            Value []args) {
-        // TODO: implement the generic callee (__call)
-        return super.callMethod(env, methodName, hash, args);
-    }
-
     /**
-     * Clears the cache node
+     * Clears this HopObject's cache property. 
+     * 
+     * Removes all information stored in the cache object. Doing this by just calling 'obj.cache = null' is 
+     * not possible, since the property itself can not be set.
      */
     public void clearCache() {
+        // delegate
         this._node.clearCacheNode();
     }
 
     /**
-     * Checks if the given node is in this node's child collection
+     * Determines if this node contains a certain subnode.
      * 
      * @param node
-     *            The node to look for
-     * @return True, if the given node is in this node's child collection
+     *  The node to look for.
+     * @return
+     *  True, if a this node contains the given subnode.
      */
     public boolean contains(final HopObject node) {
-        return this._node.contains(node.getNode()) >= 0;
+        // check if this node contains the given subnode
+        return this._node.contains(node._node) >= 0;
     }
 
     /**
-     * Returns the number of nodes in this node's child collection
+     * Retrieves a persisted HopObject that is a subnode or a mapped property of this HopObject.
      * 
-     * @return The number of subnodes
-     * @deprecated use size() instead
-     * @see size()
-     */
-    @Deprecated
-    public int count() {
-        return this._node.numberOfNodes();
-    }
-
-    /**
-     * Returns a child node at the given index in this node's child collection
+     * If the argument is a number, this method returns the subnode of this HopObject at the corresponding 
+     * index position. 
+     * 
+     * If the argument is a string and matches a property name mapped in this prototype's type.properties 
+     * file to a mountpoint, object, or collection, this function returns the corresponding HopObject. 
+     * 
+     * If the string argument produces no such match, the behavior depends on whether this HopObject's 
+     * _children have an accessname defined in the prototype's type.properties. 
+     * 
+     * If an accessname is defined, this function first attempts to return the subnode with the 
+     * corresponding name. Otherwise, or if that attempt fails, a string argument will result in a null 
+     * return unless the string argument is numeric, in which case this function will return the child with 
+     * an _id matching the numeric value of the argument. However, retrieving a HopObject based on its _id 
+     * value is better achieved using the getById() HopObject method.
      * 
      * @param index
-     *            The index position in this node's child collection
-     * @return The child node or null, if the index was out of range
+     *  The index position.
+     * @return
+     *  The subnode at the specified index position.
      */
     public HopObject get(final int index) {
-        return new HopObject(this._node.getSubnodeAt(index), this._engine);
+        // get the subnode the specified index position
+        NodeInterface node = this._node.getSubnodeAt(index);
+        // return the wrapped subnode or null
+        return node != null ? new HopObject(node) : null;
     }
 
     /**
-     * Returns a child node by name<br/>
-     * Mapped object properties are considered child nodes too.
+     * Retrieves a persisted HopObject that is a subnode or a mapped property of this HopObject.
+     * 
+     * If the argument is a number, this method returns the subnode of this HopObject at the corresponding 
+     * index position. 
+     * 
+     * If the argument is a string and matches a property name mapped in this prototype's type.properties 
+     * file to a mountpoint, object, or collection, this function returns the corresponding HopObject. 
+     * 
+     * If the string argument produces no such match, the behavior depends on whether this HopObject's 
+     * _children have an accessname defined in the prototype's type.properties. 
+     * 
+     * If an accessname is defined, this function first attempts to return the subnode with the 
+     * corresponding name. Otherwise, or if that attempt fails, a string argument will result in a null 
+     * return unless the string argument is numeric, in which case this function will return the child with 
+     * an _id matching the numeric value of the argument. However, retrieving a HopObject based on its _id 
+     * value is better achieved using the getById() HopObject method.
      * 
      * @param name
-     *            The name of the child node
-     * @return The child node or null, if no child node could be found by the
-     *         given name
-     * @see type.properties
+     *  The name of a property name, the accessname of a subnode or the id of a subnode.
+     * @return
+     *  The property or the subnode with the given accessname or id.
      */
     public Object get(final String name) {
+        // get the property or subnode
         final Object node = this._node.getChildElement(name);
 
+        // check if the property or subnode is a Node
         if (node instanceof NodeInterface) {
-            return new HopObject((NodeInterface) node, this._engine);
+            // return the wrapped Node
+            return new HopObject((NodeInterface) node);
         }
 
-        return node;
+        // return the wrapped property or subnode
+        return Env.getCurrent().wrapJava(node);
     }
 
     /**
-     * No idea what the orignal overridden method does, but it conflicts with
-     * get(int) and get(name), so we need to either delegate to get(int),
-     * get(name) or to super.get(Value).
+     * No idea what the orignal overridden method does, but it conflicts with HopObject::get(int) and 
+     * HopObject::get(name), so we need to either delegate to HopObject::get(int), HopObject::get(name) or 
+     * to super::get(Value).
      * 
      * @see com.caucho.quercus.env.Value#get(com.caucho.quercus.env.Value)
      */
@@ -337,226 +271,282 @@ public class HopObject extends ObjectExtJavaValue {
     public Value get(Value key) {
         // check if key is a variable
         if (key instanceof Var) {
-            // key is a variable, get the value
+            // get the variable's value
             key = ((Var) key).toValue();
         }
 
-        // check type of key
+        // check if the key is a number
         if (key instanceof NumberValue) {
-            // key is a number, we want to call get(int)
+            // key is a number, we want to call HopObject::get(int)
             return get(((NumberValue) key).toInt());
-        } else if (key instanceof StringValue) {
+        }
+        // check if the key is a string
+        else if (key instanceof StringValue) {
             // key is a string, we want to call get(String)
             final Object value = get(((StringValue) key).toJavaString());
+
+            // check if the value is a Node
             if (value instanceof NodeInterface) {
-                // don't forget to wrap the value if it is an NodeInterface
+                // return the wrapped Node
                 return new HopObject((NodeInterface) value);
             }
 
-            return this._engine.getEnvironment().wrapJava(value);
+            // return the wrapped value
+            return Env.getCurrent().wrapJava(value);
         }
 
+        // do what would have been done anyways
         return super.get(key);
     }
 
     /**
-     * Returns a child node by id
+     * Retrieves the specified HopObject.
+     * 
+     * If called on a HopObject instance, this getById() retrieves a child object by ID. If called on a 
+     * HopObject constructor, it retrieves the persisted HopObject of that prototype and with the specified 
+     * ID.
+     * 
+     * Fetches a HopObject of a certain prototype through its ID and its prototype name. The prototype name 
+     * can either be passed as a second argument, or alternatively the function can also be called on the 
+     * prototype itself with a single argument (e.g. Story.getById(123)).
+     * 
+     * In case of multiple prototypes being mapped on the same table (which is for instance the case with 
+     * inherited prototypes) Helma will not check whether the prototype of the fetched object actually 
+     * matches the specified prototype.
+     * 
+     * Note, that this refers to the static method 'getById', not to be mixed up with the method getById 
+     * called on a specific HopObject. 
      * 
      * @param id
-     *            The id of the child node
-     * @return The child node or null, if no child node could be found by the
-     *         given id
+     *  The id of a child node.
+     * @return
+     *  The child node that was retrieved.
      */
     public HopObject getById(final String id) {
-        return new HopObject(this._node.getSubnode(id), this._engine);
+     // get the subnode the specified index position
+        NodeInterface node = this._node.getSubnode(id);
+        // return the wrapped child node or null
+        return node != null ? new HopObject(node) : null;
     }
 
     /**
-     * Returns a node by id and prototype.<br/>
-     * The node specified by id and prototype is not needed to be a child of of
-     * this node, it can be any node.
+     * Retrieves the specified HopObject.
      * 
-     * @param prototype
-     *            The prototype of the node to get
+     * If called on a HopObject instance, this getById() retrieves a child object by ID. If called on a 
+     * HopObject constructor, it retrieves the persisted HopObject of that prototype and with the specified 
+     * ID.
+     * 
+     * Fetches a HopObject of a certain prototype through its ID and its prototype name. The prototype name 
+     * can either be passed as a second argument, or alternatively the function can also be called on the 
+     * prototype itself with a single argument (e.g. Story.getById(123)).
+     * 
+     * In case of multiple prototypes being mapped on the same table (which is for instance the case with 
+     * inherited prototypes) Helma will not check whether the prototype of the fetched object actually 
+     * matches the specified prototype.
+     * 
+     * Note, that this refers to the static method 'getById', not to be mixed up with the method getById 
+     * called on a specific HopObject. 
+     * 
      * @param id
-     *            The id of the node to get
-     * @return The node as specified by prototype and id or null, if the node
-     *         was not found
+     *  The id of the child node.
+     * @param prototype
+     *  The name of the prototype.
+     * @return
+     *  The child node that was retrieved.
+     * 
      * @throws ScriptingException 
      */
-    public HopObject getById(final String prototype, final String id)
-            throws ScriptingException {
-        final DbMapping dbMapping = this._engine.getApplication().getDbMapping(
-                prototype);
+    public static Value getById(final String id, final String prototype) throws ScriptingException {
+        // get the db mapping for the given prototype
+        final DbMapping dbMapping = QuercusEngine.ENGINE.get().getApplication().getDbMapping(prototype);
+        // check if there is no db mapping for the given prototype
         if (dbMapping == null) {
-            return null;
+            // no child node can be returned
+            return NullValue.NULL;
         }
 
+        // create a db kex for the given id
         final DbKey dbKey = new DbKey(dbMapping, id);
         try {
-            final NodeInterface node = this._engine.getApplication().getNodeManager()
+            // get the child node
+            final NodeInterface node = QuercusEngine.ENGINE.get().getApplication().getNodeManager()
                     .getNode(dbKey);
+            
+            // check if a child node was retrieved
             if (node != null) {
-                return new HopObject(node, this._engine);
+                // return the wrapped childe node
+                return new HopObject(node);
             }
         } catch (final Exception e) {
-            throw new ScriptingException(Messages.getString("HopObject.0"), e); //$NON-NLS-1$
+            // return an exception as PHP error
+            return Env.getCurrent().error(new ScriptingException(Messages.getString(Messages.getString("HopObject.0")), e)); //$NON-NLS-1$
         }
 
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * com.caucho.quercus.env.ObjectExtValue#getFieldArg(com.caucho.quercus.
-     * env.Env, com.caucho.quercus.env.StringValue, boolean isTop)
-     */
-    @Override
-    public Value getFieldArg(final Env env, final StringValue name, boolean isTop) {
-        return getFieldExt(env, name);
+        // no child node was retrieved
+        return NullValue.NULL;
     }
 
     /**
-     * Implements the generic getter (__get)
+     * The magic getter.
+     * 
+     * @param name
+     *  The name of the property.
+     * @return
+     *  The value of the property.
+     */
+    public Value __getField(StringValue name) {
+        // delegate
+        return this.getFieldExt(Env.getCurrent(), name);
+    }
+
+    /**
+     * The actual magic getter.
      * 
      * @see com.caucho.quercus.env.ObjectExtJavaValue#getFieldExt(com.caucho.quercus.env.Env,
      *      com.caucho.quercus.env.StringValue)
      */
     @Override
     protected Value getFieldExt(final Env environment, final StringValue name) {
-        if (findFunction("__get") != null) { //$NON-NLS-1$
-            return callMethod(environment, StringValue.create("__get") //$NON-NLS-1$
-                    .toStringValue(), new Value[] {name});
+        // check if we are looking for an internal property
+        if (name.startsWith("_")) { //$NON-NLS-1$
+            // swirtch the property we are looking for
+            switch (name.toJavaString()) {
+                case "_prototype": //$NON-NLS-1$
+                case "__prototype__": //$NON-NLS-1$
+                    // return the Node's prototype name
+                    return Env.getCurrent().createString(this._node.getPrototype());
+                case "_name": //$NON-NLS-1$
+                case "__name__": //$NON-NLS-1$
+                    // return the Node's name
+                    return Env.getCurrent().createString(this._node.getName());
+                case "_parent": //$NON-NLS-1$
+                case "__parent__": //$NON-NLS-1$
+                    // return the wrapped Node's parent
+                    return new HopObject(this._node.getParent());
+                case "cache": //$NON-NLS-1$
+                    // return the wrapped Node's cache Node
+                    return new HopObject(this._node.getCacheNode());
+                case "_id": //$NON-NLS-1$
+                case "__id__": //$NON-NLS-1$
+                    // return the Node's id
+                    return Env.getCurrent().createString(this._node.getID());
+                case "__proto__": //$NON-NLS-1$
+                    // return the wrapped Node's prototype
+                    return Env.getCurrent().wrapJava(QuercusEngine.ENGINE.get().getApplication()
+                            .getPrototypeByName(this._node.getPrototype()));
+                case "__hash__": //$NON-NLS-1$
+                    // return the Node's hash
+                    return Env.getCurrent().wrapJava(new Integer(this._node.hashCode()));
+                case "__node__": //$NON-NLS-1$
+                    // return the Node
+                    return Env.getCurrent().wrapJava(this._node);
+                case "__created__": //$NON-NLS-1$
+                    // return the Node's creation date
+                    return Env.getCurrent().wrapJava(new Long(this._node.created()));
+                case "__lastmodified__": //$NON-NLS-1$
+                    // return the Node's last modified date
+                    return Env.getCurrent().wrapJava(new Long(this._node.lastModified()));
+            }            
+        }
+        // check if we are looking for a special, but not internal, property
+        else if (name.toJavaString().equals("subnodeRelation")) { //$NON-NLS-1$
+            // return the subnode relation configuration
+            return Env.getCurrent().createString(this._node.getSubnodeRelation());
         }
 
-        final Object value = __get(name.toJavaString());
-        if (value != null) {
-            return environment.wrapJava(value);
-        }
-
-        return super.getFieldExt(environment, name);
+        // delegate
+        return Env.getCurrent().wrapJava(this._node.get(name.toJavaString()));
     }
 
     /**
-     * Returns the underlying NodeInterface
+     * Returns the wrapped Node.
      * 
-     * @return The underlying NodeInterface
+     * @return
+     *  The wrapped Node.
      */
     protected NodeInterface getNode() {
+        // return the wrapped node
         return this._node;
     }
 
     /**
+     * Returns a helma.framework.repository.Resource object defined for the prototype.
+     * 
+     * Returns a resource referenced by its name for the current HopObject's prototype - getResource() walks 
+     * up the inheritance chain and through all defined repositories to find the resource and returns null 
+     * if unsuccessful. 
+     * 
      * @param name
+     *  The name of the requested resource.
      * @return
-     * @throws ScriptingException
-     * 
-     * TODO: implement
-     */
-    public HopObject getOrderedView(
-            @SuppressWarnings("unused") final String name)
-            throws ScriptingException {
-        // TODO: implement
-        throw new ScriptingException(Messages.getString("HopObject.1"), null); //$NON-NLS-1$
-    }
-
-    /**
-     * Returns a resource by the given name
-     * 
-     * @param name
-     *            The resource to get
-     * @return The resource by the given name or null, if no resource could be
-     *         found by the given name
+     *  The requested resource.
      */
     public ResourceInterface getResource(final String name) {
-        Prototype prototype = this._engine.getApplication().getPrototypeByName(
+        // get the prototype
+        Prototype prototype = QuercusEngine.ENGINE.get().getApplication().getPrototypeByName(
                 this._node.getPrototype());
+        // loop up the prototype chain
         while (prototype != null) {
+            // get the current prototype's resources
             final ResourceInterface[] resources = prototype.getResources();
+            // loop the current prototype's resources
             for (int i = resources.length - 1; i >= 0; i--) {
+                // get the current resource
                 final ResourceInterface resource = resources[i];
+                // check if the resource actually exists and matches the given name
                 if (resource.exists() && resource.getShortName().equals(name)) {
+                    // return the found resource
                     return resource;
                 }
             }
 
+            // move on to the parent prototype
             prototype = prototype.getParentPrototype();
         }
 
+         // the resource was not found
         return null;
     }
 
     /**
-     * Returns all resources of this node by the given name
+     * Returns an Array of helma.framework.repository.Resource objects defined for the prototype. 
+     * 
+     * Returns an array of resources by the specified name for the current HopObject's prototype - 
+     * getResources() walks up the inheritance chain and through all defined repositories to collect all the 
+     * resources by that name and returns null if unsuccessful.
      * 
      * @param name
-     *            The name of the resources to get
-     * @return All resources by the given name as array or an empty arry, if no
-     *         resources could be found by the given name
+     *  The name of the requested resource.
+     * @return
+     *  The requested resources.
      */
     public ResourceInterface[] getResources(final String name) {
-        Prototype prototype = this._engine.getApplication().getPrototypeByName(
+        // get the prototype
+        Prototype prototype =  QuercusEngine.ENGINE.get().getApplication().getPrototypeByName(
                 this._node.getPrototype());
+        // the found resources
         final ArrayList<ResourceInterface> foundResources = new ArrayList<ResourceInterface>();
+        // loop up the prototype chain
         while (prototype != null) {
+            // get the current prototype's resources
             final ResourceInterface[] resources = prototype.getResources();
+            // loop the current prototype's resources
             for (int i = resources.length - 1; i >= 0; i--) {
+                // get the current resource
                 final ResourceInterface resource = resources[i];
+                // check if the resource actually exists and matches the given name
                 if (resource.exists() && resource.getShortName().equals(name)) {
+                    // add the current resource to the found resources
                     foundResources.add(resource);
                 }
             }
 
+            // move on to the parent prototype
             prototype = prototype.getParentPrototype();
         }
 
+        // return the found resources
         return foundResources.toArray(new ResourceInterface[0]);
-    }
-
-    /**
-     * Returns the appropriate skin for the given name.<br/>
-     * The returned skin might be a subskin, a cached skin or a newly loaded
-     * skin.
-     * 
-     * @param name
-     *            The name of the skin to get
-     * @return A skin with the given name or null, if no skin by the given name
-     *         could be found
-     * @throws ScriptingException
-     */
-    private Skin getSkin(final String name) throws ScriptingException {
-        Skin skin;
-        final ResponseTrans response = this._engine.getRequestEvaluator()
-                .getResponse();
-        if (name.startsWith("#")) { //$NON-NLS-1$
-            // evaluate relative subskin name against currently rendering skin
-            skin = response.getActiveSkin();
-            return skin == null ? null : skin.getSubskin(name.substring(1));
-        }
-
-        final Integer hashCode = Integer.valueOf(this._node.getPrototype()
-                .hashCode()
-                + name.hashCode());
-        skin = response.getCachedSkin(hashCode);
-
-        if (skin == null) {
-            // retrieve res.skinpath, an array of objects that tell us where to
-            // look for skins
-            // (strings for directory names and INodes for internal, db-stored
-            // skinsets)
-            final Object[] skinpath = response.getSkinpath();
-            try {
-                skin = this._engine.getApplication().getSkin(this._node.getPrototype(),
-                        name, skinpath);
-            } catch (final IOException e) {
-                throw new ScriptingException(
-                        Messages.getString("HopObject.2"), //$NON-NLS-1$
-                        e);
-            }
-            response.cacheSkin(hashCode, skin);
-        }
-        return skin;
     }
 
     /**
@@ -567,311 +557,427 @@ public class HopObject extends ObjectExtJavaValue {
      */
     @Override
     public Value getThisFieldArg(final Env env, final StringValue name) {
+        // delegate
         return getFieldExt(env, name);
     }
 
     /**
-     * Returns the url to this node
+     * Returns the absoulte URL path of a HopObject relative to the application's root.
+     * 
+     * This function is useful when referring to a HopObject in a markup tag (e.g. with a href attribute in 
+     * an HTML <a>-tag). An optional string argument is appended to the return value.
      * 
      * @param action
-     *            The action to append to the url
-     * @return The url to this node, optionally appended by the provided action
-     * @throws ScriptingException 
+     *  Optional part to be attached to the URL of this HopObject
+     * @return
+     *  The URL path for this HopObject.
      */
-    public String href(final String action) throws ScriptingException {
+    public Value href(@Optional final String action) throws ScriptingException {
         try {
-            return this._engine.getApplication().getNodeHref(this._node, action, null);
+            // delegate
+            return Env.getCurrent().createString(QuercusEngine.ENGINE.get().getApplication()
+                    .getNodeHref(this._node, action, null));
         } catch (final UnsupportedEncodingException e) {
-            throw new ScriptingException(e.getMessage(), e);
+            // return an exception as PHP error
+            return Env.getCurrent().error(new ScriptingException(e.getMessage(), e));
         }
     }
 
     /**
-     * Returns the index position of the given child node in this node's child
-     * collection
+     * Determines if a HopObject contains a certain subnode.
+     * 
+     * Returns the index position of a Subnode contained by a HopObject (as usual for JavaScript, 0 refers 
+     * to the first position).
+     * 
+     * The index position is a relative value inside a HopObject (not to be confused with a Hop ID which is 
+     * unique for each HopObject).
+     * 
+     * If there is no appropriate subnode inside the HopObject the returned value equals -1. 
      * 
      * @param node
-     *            The child node to determine the index position for
-     * @return The index position of the given child node, or -1 if the child
-     *         node is not contained in this node's child collection
+     *  The node to look for.
+     * @return
+     *  The index position of the subnode.
      */
     public int indexOf(final HopObject node) {
-        return this._node.contains(node.getNode());
+        // return the subnode's index position
+        return this._node.contains(node._node);
     }
 
     /**
-     * Invalidates this node
+     * Marks a HopObject as invalid so that it is fetched again from the database.
+     * 
+     * Helma will overwrite the HopObject's node cache with the database contents the next time the 
+     * HopObject is accessed.
+     * 
+     * In other words, use this function to kick out an HopObject of Helma's node cache and force a database 
+     * retrieval of the HopObject data. 
      */
     public void invalidate() {
-        if (this._node instanceof Node) {
-            if (this._node.getState() == NodeInterface.INVALID) {
-                return;
-            }
-
+        // check if the wrapped Node can be invalidated
+        if (this._node instanceof Node && this._node.getState() != NodeInterface.INVALID) {
+            // invalidate the wraped Node
             ((Node) this._node).invalidate();
         }
     }
 
     /**
-     * Invalidates a child node given by id
+     * Returns true if the HopObject is in persistent state, meaning that it is stored in the database, and 
+     * false if it is transient.
      * 
-     * @param id
-     *            The child node to invalidate
-     * @return True, if the child node was found and thus could be invalidated
-     * @deprecated use get(id).invalidate() instead
-     */
-    @Deprecated
-    public boolean invalidate(final String id) {
-        if (id != null && this._node instanceof Node) {
-            ((Node) this._node).invalidateNode(id);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if this node is persisted in some way
+     * Persistent state is also assumed if the object is currently in the process of being inserted into or 
+     * deleted from the database.
      * 
-     * @return True, if this node is persistent
+     * @return
+     *  True, if the HopObject is in persistent state.
      */
     public boolean isPersistent() {
-        return this._node instanceof Node && this._node.getState() != NodeInterface.TRANSIENT;
+        // check and return, if the wrapped Node is persistent
+        return this._node.getState() != NodeInterface.TRANSIENT;
     }
 
     /**
-     * Checks if this node is transient
+     * Returns true if the HopObject is in transient state, meaning that it is not stored in the database.
      * 
-     * @return True, if this node is transient
+     * This method returns false if the object is stored in the database, or is in the process of being 
+     * inserted into or deleted from the database.
+     * 
+     * @return
+     *  True if the HopObject is in transient state.
      */
     public boolean isTransient() {
+        // check and return, if the wrapped Node is transient
         return !(this._node instanceof Node) || this._node.getState() == NodeInterface.TRANSIENT;
     }
 
     /**
-     * Returns this node's child collection as array
+     * Returns an array including all subnodes of a HopObject.
      * 
-     * @return This node's child collection as array
-     * @deprecated use a loop, size and get instead to build it yourself in PHP
+     * The startIndex and length parameters are optional, if omitted, an array of the entire collection of 
+     * subnodes is returned, otherwise only the specified range.
+     * 
+     * @return
+     *  All subnodes of a HopObject.
      */
-    @SuppressWarnings("unchecked")
-    @Deprecated
     public HopObject[] list() {
+        // all subnodes of this wrapped Node
         final ArrayList<HopObject> children = new ArrayList<HopObject>();
+        // get all subnodes
         final Enumeration subnodes = this._node.getSubnodes();
+        // loop all subnodes
         while (subnodes.hasMoreElements()) {
-            children
-                    .add(new HopObject((NodeInterface) subnodes.nextElement(), this._engine));
+            // add the current subnode as wrapped HopObject
+            children.add(new HopObject((NodeInterface) subnodes.nextElement()));
         }
 
+        // return all subnodes
         return children.toArray(new HopObject[0]);
     }
 
     /**
-     * Persist the node
+     * Stores a transient HopObject and all HopObjects reachable from it to database.
      * 
-     * @return The id after persisting the node or null, if the node was not
-     *         persisted
+     * The function returns the id (primary key) of the newly stored HopObject as string, or null if the 
+     * HopObject couldn't be stored for some reason. 
+     * 
+     * @return
+     *  The id (primary key) of the newly stored HopObject. 
      */
     public String persist() {
+        // check if wrapped Node can be persisted
         if (this._node instanceof Node) {
+            // persist the wrapped Node
             ((Node) this._node).persist();
+            // return the id
             return this._node.getID();
         }
 
+        // wrapped Node is not persistable, no id to return
         return null;
     }
 
     /**
-     * Prefetches some child nodes to the node-manager's cache. Otherwise they
-     * would be fetched dynamically as soon as they are accessed. Prefetching
-     * has the advantage that a bigger number of child nodes can be fetched with
-     * one single SQL statement, where as dynamically fetching child nodes would
-     * lead to one SQL statement per child node being fetched.
+     * Manually retrieving a particular set of subnodes.
+     * 
+     * This function provides some control of how many subnodes Helma should retrieve from the database and 
+     * hold prepared in the node cache for further processing. 
+     * 
+     * This means that for large collections Helma does not need to retrieve neither the subset of subnodes 
+     * via one SQL statement for each subnode nor the whole collection at once via one statement. 
+     * 
+     * Moreover, only subnodes are retrieved that are not in the node cache already which leads to a maximum 
+     * of caching efficiency and loading performance. 
      * 
      * @param startIndex
-     *            The index position in this node's child collection to start
-     *            prefetching from
+     *  The first subnode to retrieve.
      * @param length
-     *            The number of child nodes to prefetch
-     * @throws ScriptingException 
+     *  The number of subnodes to retrieve. 
      */
-    public void prefetchChildren(final int startIndex, final int length)
-            throws ScriptingException {
+    public void prefetchChildren(final int startIndex, final int length) {
+        // check if subnodes can be prefetched for the wrapped Node
         if (this._node instanceof Node) {
             try {
+                // delegate
                 ((Node) this._node).prefetchChildren(startIndex, length);
             } catch (final Exception e) {
-                throw new ScriptingException(Messages.getString("HopObject.3"), e); //$NON-NLS-1$
+                // throw an exception as PHP error
+                Env.getCurrent().error(new ScriptingException(Messages.getString(Messages.getString("HopObject.15")), e)); //$NON-NLS-1$
             }
         }
     }
 
     /**
-     * Implements the generic setter (__set)
+     * The generic setter.
+     * 
+     * @param name
+     * @param value
+     */
+    public void __setField(String name, Value value) {
+        // delegate
+        this.putFieldExt(Env.getCurrent(), Env.getCurrent().createString(name), value);
+    }
+
+    /**
+     * The actual generic setter.
      * 
      * @see com.caucho.quercus.env.ObjectExtJavaValue#putFieldExt(com.caucho.quercus.env.Env,
      *      com.caucho.quercus.env.StringValue, com.caucho.quercus.env.Value)
      */
     @Override
-    protected Value putFieldExt(final Env environment, final StringValue name,
-            final Value value) {
-        final Value oldValue = getFieldExt(environment, name);
-
-        if (findFunction("__set") != null) { //$NON-NLS-1$
-            callMethod(environment,
-                    StringValue.create("__set").toStringValue(), new Value[] { //$NON-NLS-1$
-                            name, value});
+    protected Value putFieldExt(final Env environment, final StringValue name, final Value value) {
+        // check if to set the subnode relation configuaration
+        if (name.toJavaString().equals("subnodeRelation")) { //$NON-NLS-1$
+            // set the subnode relation configuration
+            this._node.setSubnodeRelation(value.toJavaString());
+        }
+        // check if to unset a value
+        else if (value.isNull()) {
+            // unset the value
+            this._node.unset(name.toJavaString());
+        }
+        // check if to set the prototype
+        else if (name.toJavaString().equals("_prototype")) { //$NON-NLS-1$
+            // set the prototype
+            this._node.setPrototype(value.toJavaString());
+        }
+        // check if to set the name
+        else if (name.toJavaString().equals("_name")) { //$NON-NLS-1$
+            // set the name
+            this._node.setName(value.toJavaString());
+        }
+        // check if to set a boolean value
+        else if (value.isBoolean()) {
+            // set boolean value
+            this._node.setBoolean(name.toJavaString(), value.toBoolean());
+        }
+        // check if to set a Date
+        else if (value.toJavaObject() instanceof Date) {
+            // set the Date
+            this._node.setDate(name.toJavaString(), value.toJavaDate());
+        }
+        // check if to set a float value
+        else if (value.isNumeric() && value.toJavaObject() instanceof Float) {
+            // set the float value
+            this._node.setFloat(name.toJavaString(), ((Float) value.toJavaObject()).floatValue());
+        }
+        // check if to set an integer value
+        else if (value.isNumeric() && value.toJavaObject() instanceof Integer) {
+            // set the integer value
+            this._node.setInteger(name.toJavaString(), ((Integer) value.toJavaObject()).intValue());
+        }
+        // check if to set a HopObject
+        else if (value.toJavaObject() instanceof HopObject) {
+            // set the HopObject's wrapped Node
+            this._node.setNode(name.toJavaString(), ((HopObject) value.toJavaObject())._node);
+        }
+        // check if to set a string value
+        else if (value.isString()) {
+            // set the string value
+            this._node.setString(name.toJavaString(), value.toJavaString());
         } else {
-            __set(name.toJavaString(), value.toJavaObject());
+            // set the value as Java value
+            this._node.setJavaObject(name.toJavaString(), value.toJavaObject());
         }
 
-        return oldValue;
+        // FIXME
+        return NullValue.NULL;
     }
 
     /**
-     * Unpersists / removes / deletes this node
+     * Deletes a HopObject from the database.
+     * 
+     * The remove() function deletes a persistent HopObject from the database.
+     * 
+     * Note that additionally you may want to call the removeChild() function on any object holding the 
+     * deleted object in its child collection in order to notify it that the child object has been removed.
      */
     public void remove() {
+        // delegate
         this._node.remove();
     }
 
     /**
-     * Removes the given node from this node's child collection without
-     * unpersisting neither of both
+     * Notifies a parent object that a child object has been removed.
+     * 
+     * The removeChild() function lets a parent object know that a child object has been removed. Note that 
+     * calling removeChild() will not actually delete the child object. Directly call remove() on the child 
+     * object in order to delete it from the database. 
      * 
      * @param node
-     *            The node to remove from this node's child collection
-     * @deprecated use removeChild() instead
-     * @see removeChild()
-     */
-    @Deprecated
-    public void remove(final HopObject node) {
-        removeChild(node);
-    }
-
-    /**
-     * Removes the given node from this node's child collection without
-     * unpersisting neither of both
-     * 
-     * @param node
-     *            The node to remove from this node's child collection
+     *  The removed child object
      */
     public void removeChild(final HopObject node) {
-        this._node.removeNode(node.getNode());
+        // delegate
+        this._node.removeNode(node._node);
     }
 
     /**
-     * Renders a skin
+     * Renders the passed skin object to the response buffer.
+     * The properties of the optional parameter object are accessible within the skin through the 'param' 
+     * macro handler.
      * 
      * @param skin
-     *            The skin to render
+     *  The skin object.
      * @param parameters
-     *            The parameters to provide to the skin
-     * @throws ScriptingException
+     *  Optional properties to be passed to the skin.
      */
-    private void renderSkin(final Skin skin, final Object[] parameters) {
+    public void renderSkin(final Skin skin, @Optional final ArrayValueImpl parameters) {
         try {
-            skin.render(this._engine.getRequestEvaluator(), this._node, parameters);
+            // render the skin
+            skin.render(QuercusEngine.ENGINE.get().getRequestEvaluator(), this._node, parameters);
         } catch (final RedirectException e) {
             // ignored by intention
         }
     }
 
     /**
-     * Renders a skin given by name
+     * Renders the skin matching the passed name to the response buffer.
+     * The properties of the optional parameter object are accessible within the skin through the 'param' 
+     * macro handler.
      * 
-     * @param name
-     *            The name of the skin to render
+     * @param skin
+     *  The name of the skin.
      * @param parameters
-     *            The parameters to provide to the skin
-     * @throws ScriptingException
+     *  Optional properties to be passed to the skin.
      */
-    public void renderSkin(final String name, final Object[] parameters)
-            throws ScriptingException {
-        final Skin skin = getSkin(name);
-        if (skin != null) {
-            renderSkin(skin, parameters);
+    public Value renderSkin(final String name, @Optional final ArrayValueImpl parameters) {
+        try {
+            // get the skin
+            Skin skin = QuercusEngine.ENGINE.get().getSkin(this._node.getPrototype(), name);
+            // render the skin
+            this.renderSkin(skin, parameters);
+        } catch (ScriptingException e) {
+            // return the exception as PHP error
+            return Env.getCurrent().error(e);
         }
+
+        // nothing to return
+        return NullValue.NULL;
     }
 
     /**
-     * Returns the result of rendering the given skin
+     * Returns the result of the rendered skin object.
+     * The properties of the optional parameter object are accessible within the skin through the 'param' 
+     * macro handler.
      * 
      * @param skin
-     *            The skin to render
+     *  The skin object.
      * @param parameters
-     *            The parameters to provide to the skin
-     * @return The result of rendering the given skin with the given parameters
-     * @throws ScriptingException
+     *  Optional properties to be passed to the skin.
+     * @return
+     *  The rendered skin.
      */
-    private String renderSkinAsString(final Skin skin, final Object[] parameters) {
+    public StringValue renderSkinAsString(final Skin skin, @Optional final ArrayValueImpl parameters) {
         try {
-            return skin.renderAsString(this._engine.getRequestEvaluator(), this._node,
-                    parameters);
+            // delegate
+            return Env.getCurrent().createString(skin.renderAsString(QuercusEngine.ENGINE.get()
+                    .getRequestEvaluator(), this._node, parameters));
         } catch (final RedirectException e) {
             // ignored by intention
         }
 
-        return ""; //$NON-NLS-1$
+        // rendering failed
+        return StringValue.EMPTY;
     }
 
     /**
-     * Returns the result of rendering a skin given by name
-     * 
-     * @param name
-     *            The skin to render
-     * @param parameters
-     *            The parameters to provide to the skin
-     * @return The result of rendering the given skin with the given parameters
-     *         or null, if no skin by the given name could be found
-     * @throws ScriptingException
-     */
-    public String renderSkinAsString(final String name,
-            final Object[] parameters) throws ScriptingException {
-        final Skin skin = getSkin(name);
-        if (skin != null) {
-            return renderSkinAsString(skin, parameters);
+    * Returns the result of a rendered skin matching the passed name.
+    * The properties of the optional parameter object are accessible within the skin through the 'param' 
+    * macro handler.
+    * 
+    * @param skin
+    *  The name of the skin.
+    * @param parameters
+    *  Optional properties to be passed to the skin.
+    * @return
+    *  The rendered skin.
+    */
+    public Value renderSkinAsString(final String name, @Optional final ArrayValueImpl parameters) { 
+        try {
+            // get the skin
+            Skin skin = QuercusEngine.ENGINE.get().getSkin(this._node.getPrototype(), name);
+            // return the result of rendering the skin
+            return this.renderSkinAsString(skin, parameters);
+        } catch (ScriptingException e) {
+            // return the exception as PHP errpr
+            return Env.getCurrent().error(e);
         }
-
-        return ""; //$NON-NLS-1$
     }
 
     /**
-     * Returns the number of nodes in this node's child collection
+     * Get the number of subnodes attached to this HopObject. 
      * 
-     * @return The number of nodes in this node's child collection
+     * @return
+     *  The number of subnodes.
      */
-
     public int size() {
+        // return the number of subnodes
         return this._node.numberOfNodes();
     }
 
     /**
-     * Simply returns this. If not overridden, this method would return an
-     * Object which would be the wrong runtime class for various reflection
-     * actions.
+     * Simply return the wrapped Node as is.
+     * If not overridden, this method would return an object which would be the wrong runtime class for 
+     * various reflection actions.
      * 
      * @see com.caucho.quercus.env.ObjectExtJavaValue#toJavaObject()
      */
     @Override
     public Object toJavaObject() {
+        // simply return the wrapped Node as is
         return this;
     }
 
     /**
-     * Updates this node's child collection by reloading it
+     * Refetches updateable Subnode-Collections from the database.
      * 
-     * @return The number of child nodes updated
+     * The following conditions must be met to make a subnodecollection updateable:
+     * 1) the collection must be specified with collection.updateable=true
+     * 2) the id's of this collection must be in ascending order, meaning, that new records do have a higher 
+     * id than the last record loaded by this collection.
+     * 
+     * @return
+     *  The number of updated nodes
      */
     public int update() {
+        // check if the wrapped Node can be updated
         if (this._node instanceof Node) {
+            // delegate
             ((Node) this._node).markSubnodesChanged();
             // FIXME
             return 0;
         }
 
+        // wrapped Node can not be updated
         return 0;
+    }
+
+    /**
+     * @see Object::equals()
+     */
+    public boolean equals(Object object) {
+        // check if objects equal
+        return object instanceof HopObject && this._node.equals(((HopObject) object)._node);
     }
 
 }
