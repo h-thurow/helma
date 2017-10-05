@@ -2,7 +2,7 @@ _This is the README file for version 1.7.3 of the Helma Javascript Web Applicati
 
 # Starting Helma
 
-- Make sure you have Java 1.4 or higher installed
+- Make sure you have Java 1.7 or higher as well as Apache Ant installed
 - Clone this repository
 - Build Helma with `ant jar`
 - Invoke `start.sh`, resp. `start.bat`, depending on your platform
@@ -20,11 +20,11 @@ Helma has proven itself to be stable and fast, capable of serving high traffic s
 
 ## System Requirements
 
-You need a Java virtual machine 1.4 or higher to run Helma.
+You need a Java virtual machine 1.7 or higher to run Helma.
 
 For Windows, Linux and Solaris you can get a [Java runtime or development kit](http://java.com/en/download/). If you are on Mac OS X, you might already have a Java runtime that will work well with Helma.
 
-For other operating systems, please consult the documentation about the availability of a Java 1.4 (or higher) runtime.
+For other operating systems, please consult the documentation about the availability of a Java 1.7 (or higher) runtime.
 
 Helma is built with [Apache Ant](http://ant.apache.org/).
 
@@ -38,11 +38,10 @@ You may also want to have a look at the start script for other settings. You can
 
 After startup you should be able to connect your browser to http://localhost:8080 – port 8080 on the local machine, that is.
 
-Helma comes with a version of [Jetty](http://eclipse.org/jetty/), a lightweight yet industrial strenth web server developed by Mortbay Consulting.
+Helma comes with a version of [Jetty](http://eclipse.org/jetty/), a lightweight yet industrial strenth web server developed by The Eclipse Foundation.
 
-While Jetty works well for deploying real web sites, you may want to run Helma behind an existing web server. This is most easily done by running Helma with the [AJPv13](http://tomcat.apache.org/connectors-doc/index.html) listener which allows you to plug Helma into any web server using the Apache `mod_jk` module.
-
-Finally, Helma can be plugged into Servlet containers using Servlet classes that communicate with Helma either directly or via Java RMI. Be warned that these options may be harder to set up and maintain though, since most of the recent development efforts have been geared towards the AJPv13 setup.
+While Jetty works well for deploying real web sites, you may want to run Helma behind an existing web server.
+Helma can be plugged into Servlet containers using Servlet classes that communicate with Helma either directly or via Java RMI.
 
 ## Documentation and Further Information
 
