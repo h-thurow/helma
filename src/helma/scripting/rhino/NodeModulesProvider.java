@@ -48,22 +48,22 @@ public class NodeModulesProvider extends UrlModuleSourceProvider {
         // check if the module is an existing directory
         if (directory.exists() && directory.isDirectory()) {
             // we assume that there is a "package.json" file in the directory
-            File packageFile = new File(directory, "package.json");
+            File packageFile = new File(directory, "package.json"); //$NON-NLS-1$
             
             // the default JS file for NodeJS modules is "index"
-            String main = "index";
+            String main = "index"; //$NON-NLS-1$
             // check if the module has a "package.json" file
             if (packageFile.exists() && packageFile.isFile()) {
                 // parse the JSON file
                 JsonObject json = new JsonParser()
                         .parse(new String(Files.readAllBytes(packageFile.toPath()))).getAsJsonObject();
                 // get the main JS file's name from the JSON file
-                main = json.has("main") ? json.get("main").getAsString() : main;
+                main = json.has("main") ? json.get("main").getAsString() : main;  //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             // rewrite the uri pointing to the module's main JS file rather than pointing to the module's
             // directory
-            uri = URI.create(uri.toString() + "/" + main);
+            uri = URI.create(uri.toString() + "/" + main); //$NON-NLS-1$
         }
 
         // do what would have been done anyways
