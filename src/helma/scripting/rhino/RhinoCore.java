@@ -55,7 +55,6 @@ import org.mozilla.javascript.WrapFactory;
 import org.mozilla.javascript.Wrapper;
 import org.mozilla.javascript.commonjs.module.RequireBuilder;
 import org.mozilla.javascript.commonjs.module.provider.StrongCachingModuleScriptProvider;
-import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 import org.mozilla.javascript.tools.debugger.ScopeProvider;
 
 import helma.framework.core.Application;
@@ -200,9 +199,11 @@ public final class RhinoCore implements ScopeProvider {
                 }
             }
 
+            // install the global require() function using our custom modules provider, so that 
+            // CommonJS-style as well as NodeJS-style modules can be required
             new RequireBuilder()
                 .setModuleScriptProvider(new StrongCachingModuleScriptProvider(
-                    new UrlModuleSourceProvider(commonJsPaths, null)))
+                        new NodeModulesProvider(commonJsPaths, null)))
                 .setSandboxed(true)
                 .createRequire(context, global)
                 .install(global);
