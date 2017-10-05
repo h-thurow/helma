@@ -317,7 +317,7 @@ public class Transactor {
     	Iterator connections = this.sqlConnections.values().iterator();
         while (connections.hasNext()) {
         	Connection connection = (Connection) connections.next();
-        	if (!connection.getAutoCommit()) {
+        	if (connection.getMetaData().supportsTransactions() && !connection.getAutoCommit()) {
         		connection.commit();
         	}
         }
@@ -510,7 +510,7 @@ public class Transactor {
         while (connections.hasNext()) {
         	Connection connection = (Connection) connections.next();
         	try {
-				if (!connection.getAutoCommit()) {
+				if (connection.getMetaData().supportsTransactions() && !connection.getAutoCommit()) {
 					connection.rollback();
 				}
 			} catch (SQLException e) {
