@@ -414,8 +414,8 @@ public class ApplicationManager implements XmlRpcHandler {
                 repositoryList.add(new FileRepository(
                         new File(ApplicationManager.this.server.getAppsHome(), this.appName)));
             }
-            this.repositories = new RepositoryInterface[repositoryList.size()];
-            this.repositories = (RepositoryInterface[]) repositoryList.toArray(this.repositories);
+
+            this.repositories = (RepositoryInterface[]) repositoryList.toArray(new RepositoryInterface[repositoryList.size()]);
         }
 
 
