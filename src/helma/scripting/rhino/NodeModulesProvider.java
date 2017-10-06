@@ -57,8 +57,13 @@ public class NodeModulesProvider extends UrlModuleSourceProvider {
                 // parse the JSON file
                 JsonObject json = new JsonParser()
                         .parse(new String(Files.readAllBytes(packageFile.toPath()))).getAsJsonObject();
-                // get the main JS file's name from the JSON file
-                main = json.has("main") ? json.get("main").getAsString() : main;  //$NON-NLS-1$ //$NON-NLS-2$
+                // check if the JSON file defines a main JS file
+                if (json.has("main")) {
+                    // get the main JS file
+                    main = json.get("main").getAsString();
+                    // remove filename suffix
+                    main = main.substring(0, main.indexOf("."));
+                }
             }
 
             // rewrite the uri pointing to the module's main JS file rather than pointing to the module's
