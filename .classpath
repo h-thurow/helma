@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-3.6.jar"/>
 	<classpathentry kind="lib" path="lib/debugger.jar"/>
-	<classpathentry kind="lib" path="lib/helma-20171002.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-ajp-8.1.19.v20160209.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-continuation-8.1.19.v20160209.jar"/>
