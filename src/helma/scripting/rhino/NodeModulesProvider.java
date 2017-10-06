@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 
+import org.apache.commons.io.FilenameUtils;
 import org.mozilla.javascript.commonjs.module.provider.ModuleSource;
 import org.mozilla.javascript.commonjs.module.provider.UrlModuleSourceProvider;
 
@@ -58,11 +59,9 @@ public class NodeModulesProvider extends UrlModuleSourceProvider {
                 JsonObject json = new JsonParser()
                         .parse(new String(Files.readAllBytes(packageFile.toPath()))).getAsJsonObject();
                 // check if the JSON file defines a main JS file
-                if (json.has("main")) {
-                    // get the main JS file
-                    main = json.get("main").getAsString();
-                    // remove filename suffix
-                    main = main.substring(0, main.indexOf("."));
+                if (json.has("main")) { //$NON-NLS-1$
+                    // get the main JS file, removing the filename extension, the super method will re-add it
+                    main = FilenameUtils.removeExtension(json.get("main").getAsString()); //$NON-NLS-1$
                 }
             }
 
