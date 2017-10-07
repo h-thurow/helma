@@ -35,9 +35,11 @@ String.NULL           = String.EMPTY; // to be deprecated?
 /**
  * @fileoverview Adds useful methods to the JavaScript String type.
  * <br /><br />
- * To use this optional module, its repository needs to be added to the 
+ * To use this optional module, its repository needs to be added to the
  * application, for example by calling app.addRepository('modules/core/String.js')
  */
+
+app.addRepository('modules/core/Global.js');
 
 /**
  * checks if a date format pattern is correct
@@ -243,10 +245,10 @@ String.prototype.entitize = function() {
 /**
  * breaks up a string into two parts called
  * head and tail at the given position
- * don't apply this to HTML, i.e. use stripTags() in advance 
+ * don't apply this to HTML, i.e. use stripTags() in advance
  * @param Number number of charactrers or of segments separated by the delimiter
  * @param String pre-/suffix to be pre-/appended to shortened string
- * @param String delimiter 
+ * @param String delimiter
  * @return Object containing head and tail properties
  */
 String.prototype.embody = function(limit, clipping, delimiter) {
@@ -316,7 +318,7 @@ String.prototype.group = function(interval, str, ignoreWhiteSpace) {
     for (var i=0; i<this.length; i=i+interval) {
         var strPart = this.substring(i, i+interval);
         res.write(strPart);
-        if (ignoreWhiteSpace == true || 
+        if (ignoreWhiteSpace == true ||
             (strPart.length == interval && !/\s/g.test(strPart))) {
             res.write(str);
         }
@@ -337,7 +339,7 @@ String.prototype.unwrap = function(removeTags, replacement) {
     var str = this.replace(/[\n|\r]/g, replacement);
     if (removeTags)
         str = str.replace(/<[w]?br *\/?>/g, replacement);
-    return str;    
+    return str;
 };
 
 
@@ -444,8 +446,8 @@ String.prototype.contains = function(str, fromIndex) {
  * function compares a string with the one passed as argument
  * using diff
  * @param String String to compare against String object value
- * @param String Optional regular expression string to use for 
- *                 splitting. If not defined, newlines will be used.    
+ * @param String Optional regular expression string to use for
+ *                 splitting. If not defined, newlines will be used.
  * @return Object Array containing one JS object for each line
  *                     with the following properties:
  *                     .num Line number
@@ -549,7 +551,7 @@ String.prototype.debase64 = function() {
 };
 
 
-// wrapper methods for string-related 
+// wrapper methods for string-related
 // global helma functions
 
 String.prototype.encode = function() {
