@@ -62,7 +62,8 @@ public class Profiler implements Debugger {
     static String getFunctionName(DebuggableScript script) {
         if (script.isFunction()) {
             StringBuffer b = new StringBuffer(script.getSourceName()).append(" #"); //$NON-NLS-1$
-            b.append(script.getLineNumbers()[0]);
+            int[] lineNumbers = script.getLineNumbers();
+            b.append(lineNumbers.length > 0 ? lineNumbers[0] : "?");
             String funcName = script.getFunctionName();
             if (funcName != null && funcName.length() > 0) {
                 b.append(": ").append(script.getFunctionName()); //$NON-NLS-1$
@@ -167,8 +168,9 @@ public class Profiler implements Debugger {
                     name.substring(prefixLength)
             };
             formatter.format("%9.3f ms %9.3f ms %6d    %s%n", args); //$NON-NLS-1$
+            String formattedLine = formatter.toString();
             formatter.close();
-            return formatter.toString();
+            return formattedLine;
         }
     }
 }
