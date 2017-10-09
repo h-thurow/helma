@@ -1079,15 +1079,46 @@ public final class RequestEvaluator implements Runnable {
             buffer.setLength(length);
         }
 
+        // is the request an AJAX request?
+        boolean isAjaxRequest = "XMLHttpRequest".equals(req.getHeader("X-Requested-With"));  //$NON-NLS-1$//$NON-NLS-2$
+
         String method = req.getMethod();
         // append HTTP method to action name
         if (method != null) {
+            // check if the request is an AJAX request
+            if (isAjaxRequest) {
+                // append _ajax_methodname
+                buffer.append("_ajax_").append(method.toLowerCase()); //$NON-NLS-1$
+                // check if a function exists for the current action
+                if (this.scriptingEngine.hasFunction(obj, buffer.toString(), false)) {
+                    // we have found the action
+                    return buffer.toString();
+                }
+
+                // cut off _ajax_methodname
+                buffer.setLength(length);
+            }
+
             // append _methodname
             buffer.append('_').append(method.toLowerCase());
             if (this.scriptingEngine.hasFunction(obj, buffer.toString(), false))
                 return buffer.toString();
 
             // cut off method in case it has been appended
+            buffer.setLength(length);
+        }
+
+        // check if the request is an AJAX request
+        if (isAjaxRequest) {
+            // append _ajax
+            buffer.append("_ajax"); //$NON-NLS-1$
+            // check if a function exists for the current action
+            if (this.scriptingEngine.hasFunction(obj, buffer.toString(), false)) {
+                // we have found the action
+                return buffer.toString();
+            }
+
+            // cut off _ajax
             buffer.setLength(length);
         }
 
