@@ -936,16 +936,16 @@ public final class DbMapping {
     /**
      * Update and return the columns meta-information for this database mapping based on the given result-set's
      * meta-information.
-     * New columns meta-information will be added, but missing columns meta-information will bot be removed. Consecutive
+     * New columns meta-information will be added, but missing columns meta-information will not be removed. Consecutive
      * calls can as such only extend the missing columns meta-information.
      *
      * Some JDBC drivers, especially JDBC drivers for NoSQL databases or other schema-less databases (e.g. LDAP) only
-     * provide schema-meta-information togehter with result-sets. While this is true for some relational databases as
+     * provide schema-meta-information together with result-sets. While this is true for some relational databases as
      * well, for relational databases it is easy to work around this limitation retrieving a fake result-set (e.g.
      * something like "SELECT * FROM Table WHERE 1 = 0"). Some JDBC drivers for the above mentioned non-relational
      * databases (e.g. LDAP) do however not even fully support SQL, so the generic workaround can not be used and
      * specific workaround for specific drivers would be needed, so rather than retrieving the schema-meta-information
-     * from fake result-sets, the schema-metainformation is gradually updated and extended from real result-sets.
+     * from fake result-sets, the schema-meta-information is gradually updated and extended from real result-sets.
      *
      * @param resultSet
      *  The result-set to use for updating the columns meta-information.
