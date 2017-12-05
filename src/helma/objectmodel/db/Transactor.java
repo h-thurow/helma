@@ -322,14 +322,23 @@ public class Transactor {
         	}
         }
 
-        ScriptingEngineInterface engine = nmgr.app.getCurrentRequestEvaluator().getScriptingEngine();
+        // the request evaluator's scripting engine
+        ScriptingEngineInterface engine = null;
+        // check if a request evaluator is associated with the current thread
+        if (nmgr.app.getCurrentRequestEvaluator() != null) {
+            // get the request evaluator's scripting engine
+            engine = nmgr.app.getCurrentRequestEvaluator().getScriptingEngine();
+        }
 
-        try {
-            // call onBeforeCommit, if defined
-            engine.invoke(null, "onBeforeCommit", RequestEvaluator.EMPTY_ARGS, //$NON-NLS-1$
-                    ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
-        } catch (ScriptingException e) {
-            nmgr.app.logError(Messages.getString("Transactor.17"), e); //$NON-NLS-1$
+        // check if a scripting engine is available
+        if (engine != null) {
+            try {
+                // call onBeforeCommit, if defined
+                engine.invoke(null, "onBeforeCommit", RequestEvaluator.EMPTY_ARGS, //$NON-NLS-1$
+                        ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
+            } catch (ScriptingException e) {
+                nmgr.app.logError(Messages.getString("Transactor.17"), e); //$NON-NLS-1$
+            }
         }
 
         int inserted = 0;
@@ -342,7 +351,8 @@ public class Transactor {
         ArrayList modifiedParentNodes = null;
         // if nodemanager has listeners collect dirty nodes
         boolean hasListeners = nmgr.hasNodeChangeListeners();
-        boolean hasOnCommit = engine.hasFunction(null, "onCommit", false); //$NON-NLS-1$
+        // check if a scripting engine is available and has a function called "onCommit"
+        boolean hasOnCommit = engine != null && engine.hasFunction(null, "onCommit", false); //$NON-NLS-1$
         boolean collectNodes = hasListeners || hasOnCommit;
 
         if (collectNodes) {
@@ -451,13 +461,18 @@ public class Transactor {
                 }
             }
             nmgr.db.commitTransaction(txn);
-            // call onAfterCommit, if defined
-            try {
-                engine.invoke(null, Messages.getString("Transactor.20"), RequestEvaluator.EMPTY_ARGS, //$NON-NLS-1$
-                        ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
-            } catch (ScriptingException e) {
-                nmgr.app.logError(Messages.getString("Transactor.18"), e); //$NON-NLS-1$
+            
+            // check if a scripting engine is available
+            if (engine != null) {
+                // call onAfterCommit, if defined
+                try {
+                    engine.invoke(null, Messages.getString("Transactor.20"), RequestEvaluator.EMPTY_ARGS, //$NON-NLS-1$
+                            ScriptingEngineInterface.ARGS_WRAP_DEFAULT, false);
+                } catch (ScriptingException e) {
+                    nmgr.app.logError(Messages.getString("Transactor.18"), e); //$NON-NLS-1$
+                }
             }
+            
             txn = null;
         }
 
