@@ -129,4 +129,10 @@ public class EmptyFileRepository extends FileRepository {
         return new StringBuffer("EmptyFileRepository[").append(this.name).append("]").toString(); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Override
+    public synchronized ResourceInterface getResource(String name) {
+        // there are no resources in this repository
+        return null;
+    }
+
 }
