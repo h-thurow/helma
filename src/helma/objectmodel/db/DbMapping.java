@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -957,11 +957,11 @@ public final class DbMapping {
      */
     public synchronized DbColumn[] getColumns(ResultSet resultSet) throws SQLException {
         // create a temporary hash table for all columns to avoid duplicates
-        Hashtable<String, DbColumn> allColumns = new Hashtable<String, DbColumn>();
+        LinkedHashMap<String, DbColumn> allColumns = new LinkedHashMap<String, DbColumn>();
 
         // loop the existing columns (if there are existing columns)
         for (int i = 0; this.columns != null && i < this.columns.length; i++) {
-            // put the current column to the hash table
+            // put the current column to the linked hash map
             allColumns.put(this.columns[i].getName(), this.columns[i]);
         }
 
@@ -972,6 +972,8 @@ public final class DbMapping {
         // create a temporary array for the result set's columns
         DbColumn[] columns = new DbColumn[numberOfColumns];
 
+        // flag indicating, if there are new columns
+        boolean newColumns = false;
         // loop the result-set's columns
         for (int i = 0; i < numberOfColumns; i++) {
             // get the current column's column name
@@ -984,14 +986,23 @@ public final class DbMapping {
 
             // check if the column is not known yet
             if (!allColumns.containsKey(columnName)) {
-                // create a db column and add it to the hash table
-                allColumns.put(columnName, new DbColumn(columnName, metaData.getColumnType(i + 1),
-                        columnNameToRelation(columnName), this));
+                // add the column to the linked hash map
+                allColumns.put(columnName, dbColumn);
+                // there are new columns
+                newColumns = true;
             }
         }
 
         // overwrite the existing array
         this.columns = allColumns.values().toArray(new DbColumn[allColumns.size()]);
+
+        // check if there are new columns
+        if (newColumns) {
+            // re-set the pre-rendered SQL statement
+            this.selectString = null;
+            this.insertString = null;
+            this.updateString = null;
+        }
 
         // return the result-set's columns
         return columns;
