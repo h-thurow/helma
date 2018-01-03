@@ -202,7 +202,7 @@ public final class RhinoCore implements ScopeProvider {
             // install the global require() function using our custom modules provider, so that 
             // CommonJS-style as well as NodeJS-style modules can be required
             new RequireBuilder()
-                .setModuleScriptProvider(new StrongCachingModuleScriptProvider(
+                .setModuleScriptProvider(new CompiledOrInterpretedModuleScriptProvider(
                         new NodeModulesProvider(commonJsPaths, null)))
                 .setSandboxed(true)
                 .createRequire(context, global)
