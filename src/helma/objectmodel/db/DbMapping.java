@@ -53,6 +53,9 @@ public final class DbMapping {
 
     // name of db table
     private String tableName;
+    
+    // name of db table to use for insert and/or update
+    private String insertUpdateTableName;
 
     // the verbatim, unparsed _parent specification
     private String parentSetting;
@@ -193,6 +196,9 @@ public final class DbMapping {
      */
     private void readBasicProperties() {
         this.tableName = this.props.getProperty("_table"); //$NON-NLS-1$
+        // get the name of the table to use for insert/update operations, defaulting to the table to use 
+        // for select operations, i.e. defaulting to use the same (the default) table for all operations
+        this.insertUpdateTableName = this.props.getProperty("_tableInsertUpdate", this.tableName); //$NON-NLS-1$
         this.dbSourceName = this.props.getProperty("_db"); //$NON-NLS-1$
 
         if (this.dbSourceName != null) {
@@ -267,6 +273,12 @@ public final class DbMapping {
                 if (this.tableName != null &&
                         this.tableName.equals(this.parentMapping.getTableName())) {
                     this.tableName = null;
+                }
+                // if insertUpdateTableName or DbSource are inherited from the parent mapping
+                // set them to null so we are aware of the fact.
+                if (this.insertUpdateTableName != null &&
+                        this.insertUpdateTableName.equals(this.parentMapping.getInsertUpdateTableName())) {
+                    this.insertUpdateTableName = null;
                 }
                 if (this.dbSourceName != null &&
                         this.dbSourceName.equals(this.parentMapping.getDbSourceName())) {
@@ -537,6 +549,22 @@ public final class DbMapping {
         }
 
         return this.tableName;
+    }
+    
+    /**
+     * Returns the name of the table to use for insert/update operations.
+     * 
+     * @return The name of the table to use for insert/update operations.
+     */
+    public String getInsertUpdateTableName() {
+        // check if no insert/update tale is defined, but a parent mapping, which might define one, exists
+        if ((this.insertUpdateTableName == null) && (this.parentMapping != null)) {
+            // return the insert/update table from the parent mapping
+            return this.parentMapping.getInsertUpdateTableName();
+        }
+
+        // return the name of the table to use for insert/update operations
+        return this.insertUpdateTableName;
     }
 
     /**
@@ -1178,7 +1206,8 @@ public final class DbMapping {
 
         StringBuffer b1 = new StringBuffer("INSERT INTO "); //$NON-NLS-1$
         StringBuffer b2 = new StringBuffer(" ) VALUES ( "); //$NON-NLS-1$
-        b1.append(getTableName());
+        // append the name of the table to use for insert/update operations
+        b1.append(getInsertUpdateTableName());
         b1.append(" ( "); //$NON-NLS-1$
 
         DbColumn[] cols = getColumns();
@@ -1222,7 +1251,8 @@ public final class DbMapping {
 
         StringBuffer s = new StringBuffer("UPDATE "); //$NON-NLS-1$
 
-        s.append(getTableName());
+        // append the name of the table to use for insert/update operations
+        s.append(getInsertUpdateTableName());
         s.append(" SET "); //$NON-NLS-1$
 
         // cache rendered string for later calls.
@@ -1648,10 +1678,30 @@ public final class DbMapping {
      * @throws SQLException
      * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
      */
-    protected void appendCondition(StringBuffer q, String column, String val)
+    protected void appendCondition(StringBuffer q, String column, String val) 
+            throws SQLException, NoDriverException {
+        // delegate, assuming non insert/update operation
+        appendCondition(q, column, val, false);
+    }
+    
+    /**
+     * Append a sql-condition for the given column which must have
+     * the value given to the given StringBuffer.
+     * @param q the StringBuffer to append to
+     * @param column the column which must match one of the values
+     * @param val the value
+     * @param insertUpdate
+     *  If to append the operation for an insert/update operation, in which case the identifier column will
+     *  be qualified with the name of the table to use for insert/update operations instead of the name of
+     *  the table to use for select operations.
+     *
+     * @throws SQLException
+     * @throws NoDriverException if the JDBC driver could not be loaded or is unusable
+     */
+    protected void appendCondition(StringBuffer q, String column, String val, boolean insertUpdate)
             throws SQLException, NoDriverException {
         if (column.indexOf('(') == -1 && column.indexOf('.') == -1) {
-            q.append(getTableName()).append("."); //$NON-NLS-1$
+            q.append(insertUpdate ? getInsertUpdateTableName() : getTableName()).append("."); //$NON-NLS-1$
         }
         q.append(column).append(" = "); //$NON-NLS-1$
 
@@ -1688,7 +1738,7 @@ public final class DbMapping {
             } else if (c == '\\') {
                 sbuf.append("\\\\"); //$NON-NLS-1$
             } else {
-            	sbuf.append(c);
+                sbuf.append(c);
             }
         }
         return sbuf.toString();

@@ -648,7 +648,7 @@ public final class NodeManager {
             }
 
             b.append(" WHERE "); //$NON-NLS-1$
-            dbm.appendCondition(b, dbm.getIDField(), node.getID());
+            dbm.appendCondition(b, dbm.getIDField(), node.getID(), true);
 
             Connection con = dbm.getConnection();
             // set connection to write mode
