@@ -832,7 +832,7 @@ public final class NodeManager {
         } finally {
             if (this.logSql) {
                 long logTimeStop = System.currentTimeMillis();
-                logSqlStatement("SQL SELECT_MAX", map.getTableName(), //$NON-NLS-1$
+                logSqlStatement("SQL SELECT_MAX", map.getInsertUpdateTableName(), //$NON-NLS-1$
                                 logTimeStart, logTimeStop, q);
             }
             if (stmt != null) {
