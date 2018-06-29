@@ -49,6 +49,11 @@ public final class Skin {
     private Skin parentSkin = this;
     private String extendz = null;
     private boolean hasContent = false;
+    
+    /**
+     * The resource the skin was built from/for.
+     */
+    private ResourceInterface resource;
 
     static private final int PARSE_MACRONAME = 0;
     static private final int PARSE_PARAM = 1;
@@ -98,6 +103,20 @@ public final class Skin {
     }
 
     /**
+     *  Create a skin without any restrictions on the macros from a char array, remembering the resource the
+     *  skin was built from/for.
+     */
+    public Skin(char[] content, int length, Application app, ResourceInterface resource) {
+        this.app = app;
+        this.sandbox = null;
+        this.source = content;
+        this.offset = 0;
+        this.length = length;
+        this.resource = resource;
+        parse();
+    }
+    
+    /**
      *  Create a skin without any restrictions on the macros from a char array.
      */
     public Skin(char[] content, int length, Application app) {
@@ -145,7 +164,7 @@ public final class Skin {
         } finally {
             reader.close();
         }
-        return new Skin(characterBuffer, read, app);
+        return new Skin(characterBuffer, read, app, res);
     }
 
     /**
@@ -1196,6 +1215,28 @@ public final class Skin {
         MacroException(String message) {
             super(message);
         }
+    }
+
+    /**
+     * Returns the resource this skin was built from/for.
+     * 
+     * @return
+     *  The resource this skin was built from/for.
+     */
+    public ResourceInterface getResource() {
+        // return the resource this skin was built from/for
+        return this.resource;
+    }
+    
+    /**
+     * Returns the parent skin, if there is any, i.e. if this skin is a subskin.
+     * 
+     * @return
+     *  The parent skin.
+     */
+    public Skin getParentSkin() {
+        // return the parent skin
+        return this.parentSkin;
     }
 
 }
