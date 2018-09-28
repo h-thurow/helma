@@ -8,3 +8,4 @@ lib/helma*.jar
 lib/ext/*
 log/*
 work/
+/bin/
