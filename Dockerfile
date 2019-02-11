@@ -1,5 +1,4 @@
-FROM openjdk:8
-MAINTAINER Daniel Ruthardt <dr@zoesolutions.eu>
+FROM openjdk:8 AS stage1
 
 # update the packages database
 RUN apt-get update
@@ -13,6 +12,11 @@ COPY . /opt/helma
 WORKDIR /opt/helma
 # build Helma
 RUN ant jar
+
+FROM openjdk:8 AS stage2
+
+# copy Helma from stage1 to stage2
+COPY --from=stage1 /opt/helma /opt/helma
 
 # expose the web port
 EXPOSE 8080
