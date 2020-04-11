@@ -84,8 +84,8 @@ public class Main {
 
     public void stop() {
         try {
-            Method start = this.serverClass.getMethod("stop", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
-            start.invoke(this.server, EMPTY_OBJECT_ARRAY);
+            Method stop = this.serverClass.getMethod("stop", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
+            stop.invoke(this.server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             System.err.println(Messages.getString("Main.2")); //$NON-NLS-1$
@@ -96,8 +96,8 @@ public class Main {
 
     public void destroy() {
         try {
-            Method start = this.serverClass.getMethod("shutdown", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
-            start.invoke(this.server, EMPTY_OBJECT_ARRAY);
+            Method shutdown = this.serverClass.getMethod("shutdown", EMPTY_CLASS_ARRAY); //$NON-NLS-1$
+            shutdown.invoke(this.server, EMPTY_OBJECT_ARRAY);
         } catch (Exception x) {
             // unable to get Helma installation dir from launcher jar
             System.err.println(Messages.getString("Main.3")); //$NON-NLS-1$
