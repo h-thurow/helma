@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.Vector;
 
 /**
+ * Version 1.9 can be found here: <a href="https://gist.github.com/janih/4536956">janih/gist:4536956</a>
+ * <p>
  * Get file format, image resolution, number of bits per pixel and optionally 
  * number of images, comments and physical resolution from 
  * JPEG, GIF, BMP, PCX, PNG, IFF, RAS, PBM, PGM, PPM, PSD and SWF files 
