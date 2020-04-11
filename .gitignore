@@ -1,5 +1,6 @@
 apps/*
 !apps/manage
+!apps/welcome
 bin/*
 classes/
 db/*
@@ -9,3 +10,4 @@ lib/ext/*
 log/*
 work/
 /bin/
+/out/
