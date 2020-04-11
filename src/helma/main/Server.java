@@ -41,7 +41,7 @@ import helma.util.StringUtils;
  */
 public class Server implements Runnable {
     // version string
-    public static final String version = "1.7.3 (__builddate__)"; //$NON-NLS-1$
+    public static final String version = "1.7.4 (__builddate__)"; //$NON-NLS-1$
 
     // static server instance
     private static Server server;
