@@ -45,13 +45,6 @@ Helma can be plugged into Servlet containers using Servlet classes that communic
 
 ## Documentation and Further Information
 
-After installing and running Helma, you will be able to access introductions to the features of Helma and the various included development tools. Further information you will find on the helma.org website:
+After installing and running Helma, you will be able to access introductions to the features of Helma and the various included development tools under http://localhost:8080:
 
-- [Guide](http://helma.org/docs/guide/)
-- [API Reference](http://helma.org/docs/reference/)
-- [Tutorial](http://helma.org/docs/tutorial/)
-- [DocBook](http://helma.org/docs/docbook/)
-
-## Mailing List and Support
-
-Please join us on the [Helma mailing lists](http://helma.org/development/mailinglists/) where we will be happy to answer any further questions you may have!
+<img src="https://github.com/h-thurow/helma/blob/master/overview.png">
