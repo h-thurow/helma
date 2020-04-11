@@ -55,6 +55,6 @@ The JavaScript API for request/response processing
 
 <img src="https://github.com/h-thurow/helma/blob/master/docs_js.png">
 
-The frameworks internal API
+The framework's internal API
 
 <img src="https://github.com/h-thurow/helma/blob/master/docs_java.png">
