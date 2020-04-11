@@ -71,7 +71,7 @@
         <echo message=" app [name]    --> gets an application from svn and zips it"/>
         <echo message=" module [name] --> gets a module from svn and zips it"/>
         <echo message=" core          --> generates core for production updates (zip and tar.gz)"/>
-        <echo message=" clean         --> clean up temporary build directories and files"/>
+        <echo message=" clean         --> clean up temporary build directories and files (includes lib/helma.jar and launcher.jar)"/>
         <echo message=""/>
         <echo message=" usage         --> provides help on using the build tool (default)"/>
         <echo message=""/>
@@ -151,6 +151,7 @@
             doctitle="${Name} ${version} API"
             bottom="Copyright &#169; ${year} Helma.org. All Rights Reserved."
             classpathref="build.class.path"
+            encoding="UTF8"
         />
     </target>
 
@@ -173,7 +174,7 @@
         </copy>
 
     	<mkdir dir="${build.jsdocs}"/>
-    	<java dir="${home.dir}" fork="true" jar="${build.lib}/rhino.jar">
+    	<java dir="${home.dir}" fork="true" jar="${build.lib}/rhino-1.7.7.1.jar">
           <sysproperty key="jsdoc.dir" value="work/reference"/>
           <arg value="work/reference/app/run.js"/>
           <arg value="-t=work/reference/templates"/>
