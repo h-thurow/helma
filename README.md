@@ -51,5 +51,10 @@ After installing and running Helma, you will be able to access introductions to 
 
 After creating JavaScript and Java docs with `ant jsdocs` and `ant javadocs` you will find further documentation under http://localhost:8080/docs:
 
+The JavaScript API for request/response processing
+
 <img src="https://github.com/h-thurow/helma/blob/master/docs_js.png">
+
+The frameworks internal API
+
 <img src="https://github.com/h-thurow/helma/blob/master/docs_java.png">
