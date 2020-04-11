@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="helma.main.launcher.Main" />
+    <module name="helma-github" />
+    <option name="PROGRAM_PARAMETERS" value="-w 8080 -i $PROJECT_DIR$ -h $PROJECT_DIR$" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="helma.main.launcher.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
