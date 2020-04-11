@@ -48,3 +48,8 @@ Helma can be plugged into Servlet containers using Servlet classes that communic
 After installing and running Helma, you will be able to access introductions to the features of Helma and the various included development tools under http://localhost:8080:
 
 <img src="https://github.com/h-thurow/helma/blob/master/overview.png">
+
+After creating JavaScript and Java docs with `ant jsdocs` and `ant javadocs` you will find further documentation under http://localhost:8080/docs:
+
+<img src="https://github.com/h-thurow/helma/blob/master/docs_js.png">
+<img src="https://github.com/h-thurow/helma/blob/master/docs_java.png">
