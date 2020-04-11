@@ -111,7 +111,7 @@ function mrtg_action() {
 
     } else if (req.data.action == "netstat" && isLinux()) {
 
-        var str = (new File("/proc/net/tcp")).readAll();
+        var str = (new helma.File("/proc/net/tcp")).readAll();
         var arr = str.split("\n");
         res.write(arr.length - 2 + "\n");
         res.write("0\n0\n0\n");
@@ -119,7 +119,7 @@ function mrtg_action() {
     } else if (req.data.action == "loadavg" && isLinux()) {
 
         // load average of last 5 minutes:
-        var str = (new File("/proc/loadavg")).readAll();
+        var str = (new helma.File("/proc/loadavg")).readAll();
         var arr = str.split(" ");
         res.write(arr[1] * 100 + "\n");
         res.write("0\n0\n0\n");

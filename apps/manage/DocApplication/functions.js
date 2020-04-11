@@ -31,7 +31,7 @@ function getDir(dir, obj) {
         return dir;
     } else {
         var protoObj = this.getDocPrototype(obj);
-        var dir = new File (dir, protoObj.getElementName());
+        var dir = new helma.File (dir, protoObj.getElementName());
         dir.mkdir();
         return dir;
     }
@@ -64,9 +64,9 @@ function storePage(obj, action, backPath, filename) {
         var filename = action + ".html";
     var str = this.getPage(obj, action, backPath);
     var appObj = this.getParentElement();
-    var dir = new File (appObj.getAppDir().getAbsolutePath(), ".docs");
+    var dir = new helma.File (appObj.getAppDir().getAbsolutePath(), ".docs");
     dir = this.getDir(dir, obj);
-    var f = new File (dir, filename);
+    var f = new helma.File (dir, filename);
     f.remove();
     f.open();
     f.write(str);

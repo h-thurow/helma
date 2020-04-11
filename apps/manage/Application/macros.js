@@ -51,9 +51,9 @@ function title_macro() {
 function description_macro(param) {
     var str = "";
     var appHome = this.getAppDir();
-    var f = new File(this.getAppDir().toString(), "description.txt");
+    var f = new helma.File(this.getAppDir().toString(), "description.txt");
     if (!f.exists())
-        f = new File(this.getAppDir().toString(), "doc.html");
+        f = new helma.File(this.getAppDir().toString(), "doc.html");
     if (f.exists()) {
         str = f.readAll();
         if (str.length > 200)
